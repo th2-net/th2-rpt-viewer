@@ -16,6 +16,7 @@
 
 import { Observer, observer } from 'mobx-react-lite';
 import { showNotification } from 'helpers/showNotification';
+import { MessagesStoreProvider } from 'modules/messages/components/MessagesStoreProvider';
 import Workspace from './Workspace';
 import { WorkspaceContextProvider } from '../WorkspaceStoreProvider';
 import { useWorkspaces } from '../../hooks';
@@ -119,7 +120,9 @@ const WorkspacesLayout = () => {
 			)}
 			tabPanels={workspacesStore.workspaces.map(workspace => (
 				<WorkspaceContextProvider value={workspace} key={workspace.id}>
-					<Workspace />
+					<MessagesStoreProvider value={workspace.messagesStore}>
+						<Workspace />
+					</MessagesStoreProvider>
 				</WorkspaceContextProvider>
 			))}
 		/>

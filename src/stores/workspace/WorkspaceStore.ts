@@ -17,10 +17,10 @@
 import { action, computed, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import { SearchStore } from 'modules/search/stores/SearchStore';
-import { IEventsStore, IFilterConfigStore, ISearchStore } from 'models/Stores';
+import { IBookmarksStore, IEventsStore, IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { Panel } from 'models/Panel';
-import { SessionHistoryStore } from 'modules/messages/stores//SessionHistoryStore';
-import MessageDisplayRulesStore from 'modules/messages/stores/MessageDisplayRulesStore';
+import { Session, SessionHistoryStore } from 'modules/messages/stores//SessionHistoryStore';
+import { MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
@@ -70,7 +70,7 @@ export default class WorkspaceStore {
 		private workspacesStore: WorkspacesStore,
 		private sessionsStore: SessionHistoryStore,
 		private filterConfigStore: IFilterConfigStore,
-		private messageDisplayRulesStore: MessageDisplayRulesStore,
+		private bookmarksStore: IBookmarksStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -88,11 +88,22 @@ export default class WorkspaceStore {
 		this.messagesStore = new MessagesStore(
 			this.filterConfigStore,
 			this.api,
-			messageDisplayRulesStore,
 			initialState.messages,
+			{
+				onSessionsSubmit: this.sessionsStore.saveSessions,
+				toggleBookmark: this.bookmarksStore.toggleMessagePin,
+			},
 		);
 
 		reaction(() => this.eventsStore.selectedNode, this.messagesStore.onSelectedEventChange);
+
+		reaction(() => this.bookmarksStore.messages, this.onMessagesBookmarkChange, {
+			fireImmediately: true,
+		});
+
+		reaction(() => this.sessionsStore.sessions, this.onSessionHistoryChange, {
+			fireImmediately: true,
+		});
 	}
 
 	@computed
@@ -190,6 +201,14 @@ export default class WorkspaceStore {
 		if (!this.viewStore.isExpanded(Panel.Search)) {
 			this.viewStore.expandPanel(Panel.Search);
 		}
+	};
+
+	private onMessagesBookmarkChange = (bookmarks: MessageBookmark[]) => {
+		this.messagesStore.onBookmarksChange(bookmarks.map(bookmark => bookmark.item));
+	};
+
+	private onSessionHistoryChange = (sessions: Session[]) => {
+		this.messagesStore.onSessionHistoryChange(sessions.map(s => s.session));
 	};
 
 	public dispose = () => {

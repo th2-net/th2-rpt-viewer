@@ -15,11 +15,11 @@
  ***************************************************************************** */
 
 import { getElapsedTime } from 'modules/events/helpers/date';
-import { formatTime } from '../../helpers/date';
-import { createBemBlock } from '../../helpers/styleCreators';
-import { EventAction } from '../../models/EventAction';
-import { getEventStatus } from '../../helpers/event';
-import CardDisplayType from '../../models/util/CardDisplayType';
+import { formatTime } from '../../../helpers/date';
+import { createBemBlock } from '../../../helpers/styleCreators';
+import { EventAction } from '../../../models/EventAction';
+import { getEventStatus } from '../../../helpers/event';
+import CardDisplayType from '../../../models/util/CardDisplayType';
 
 interface Props {
 	displayType?: CardDisplayType;

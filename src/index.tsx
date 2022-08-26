@@ -34,12 +34,10 @@ const viewMode = Object.values(ViewMode).includes(viewModeParam as ViewMode)
 	? (viewModeParam as ViewMode)
 	: ViewMode.Full;
 
-if (viewMode === ViewMode.Embedded) {
-	App = lazy(() => import('./components/embedded/EmbeddedApp'));
-} else if (viewMode === ViewMode.EmbeddedMessages) {
-	App = lazy(() => import('./components/embedded/EmbeddedMessages'));
-} else {
+if (viewMode === ViewMode.Full) {
 	App = lazy(() => import('./components/App'));
+} else {
+	App = lazy(() => import('./components/EmbeddedApp'));
 }
 
 ReactDOM.render(

@@ -24,6 +24,8 @@ import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
 import { sortMessagesByTimestamp, isEventMessage } from 'helpers/message';
 import { getItemAt } from 'helpers/array';
 import { timestampToNumber } from 'helpers/date';
+import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
+import MessageBodySortOrderStore from './MessageBodySortStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import MessagesExportStore from './MessagesExportStore';
@@ -36,6 +38,13 @@ type MessagesStoreDefaultState = MessagesStoreURLState & {
 	targetMessage?: EventMessage;
 };
 
+type MessageStoreOptions = Partial<{
+	toggleBookmark: (message: EventMessage) => void;
+	onFilterSubmit: (filter: MessagesFilter) => void;
+	onSessionsSubmit: (sessions: string[]) => void;
+	isLive: boolean;
+}>;
+
 export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | null | undefined;
 
 export default class MessagesStore {
@@ -46,6 +55,10 @@ export default class MessagesStore {
 	public exportStore = new MessagesExportStore();
 
 	public messageViewStore: MessagesViewTypeStore;
+
+	public messageDisplayRulesStore: MessageDisplayRulesStore;
+
+	public messageBodySortStore: MessageBodySortOrderStore;
 
 	@observable
 	public selectedMessageId: String | null = null;
@@ -66,19 +79,21 @@ export default class MessagesStore {
 	public hintMessages: EventMessage[] = [];
 
 	constructor(
-		private filterConfigStore: IFilterConfigStore,
+		public filterConfigStore: IFilterConfigStore,
 		private api: ApiSchema,
-		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		defaultState: MessagesStoreDefaultStateType,
+		private options: MessageStoreOptions,
 	) {
 		this.filterStore = new MessagesFilterStore(
 			this.filterConfigStore,
 			defaultState && typeof defaultState === 'object' ? defaultState : undefined,
 		);
 		this.dataStore = new MessagesDataProviderStore(this, this.api);
+		this.messageDisplayRulesStore = MessageDisplayRulesStore.getInstance(this.api.indexedDb);
+		this.messageBodySortStore = MessageBodySortOrderStore.getInstance(this.api.indexedDb);
 		this.messageViewStore = new MessagesViewTypeStore(this.messageDisplayRulesStore);
 
-		this.init(defaultState);
+		this.init(defaultState, Boolean(options.isLive));
 
 		reaction(() => this.attachedMessages, this.onAttachedMessagesChange);
 
@@ -90,6 +105,49 @@ export default class MessagesStore {
 			},
 		);
 	}
+
+	@observable
+	public bookmarks: Map<string, true> = new Map();
+
+	@observable
+	public sessionsHistory: string[] = [];
+
+	public onSessionHistoryChange = (sessions: string[]) => {
+		this.sessionsHistory = sessions;
+	};
+
+	@action
+	public onBookmarksChange = (bookmarks: EventMessage[]) => {
+		this.bookmarks = bookmarks.reduce(
+			(map, bookmark) => map.set(bookmark.id, true),
+			new Map<string, true>(),
+		);
+	};
+
+	public toggleBookmark = (message: EventMessage) => {
+		if (this.options.toggleBookmark) {
+			this.options.toggleBookmark(message);
+		}
+	};
+
+	@observable
+	public filtersHistory: FiltersHistoryType<MessagesFilter>[] = [];
+
+	public onFilterHistoryChange = (filtersHistory: FiltersHistoryType<MessagesFilter>[]) => {
+		this.filtersHistory = filtersHistory;
+	};
+
+	public saveFilter = (filter: MessagesFilter) => {
+		if (this.options.onFilterSubmit) {
+			this.options.onFilterSubmit(filter);
+		}
+	};
+
+	public saveSessions = (sessions: string[]) => {
+		if (this.options.onSessionsSubmit) {
+			this.options.onSessionsSubmit(sessions);
+		}
+	};
 
 	@observable.ref
 	public messagesInView: EventMessage[] = [];
@@ -113,12 +171,11 @@ export default class MessagesStore {
 		this.filterStore.setMessagesFilter(params, filter);
 	};
 
-	private init = async (defaultState: MessagesStoreDefaultStateType) => {
-		if (defaultState) {
-			const message = defaultState.targetMessage;
-			if (isEventMessage(message)) {
-				this.onMessageSelect(message);
-			}
+	private init = async (defaultState: MessagesStoreDefaultStateType, isLive: boolean) => {
+		if (defaultState && isEventMessage(defaultState.targetMessage)) {
+			this.onMessageSelect(defaultState.targetMessage);
+		} else if (isLive) {
+			this.dataStore.updateStore.subscribeOnChanges();
 		} else {
 			this.dataStore.loadMessages();
 		}

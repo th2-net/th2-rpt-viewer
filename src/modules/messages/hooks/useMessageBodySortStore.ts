@@ -16,7 +16,7 @@
 
 import { useMessagesStore } from './useMessagesStore';
 
-export const useMessageDisplayRulesStore = () => {
+export const useMessageBodySortStore = () => {
 	const messagesStore = useMessagesStore();
-	return messagesStore.messageDisplayRulesStore;
+	return messagesStore.messageBodySortStore;
 };

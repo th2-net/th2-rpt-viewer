@@ -21,7 +21,7 @@ import EventsPanel from 'modules/events';
 import SearchPanel from 'modules/search';
 import { getItemId } from 'helpers/event';
 import { Panel } from 'models/Panel';
-import MessagesWindow from 'modules/messages';
+import MessagesPanel from 'modules/messages';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import { useActivePanel, useWorkspaceStore } from '../../hooks';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
@@ -95,7 +95,7 @@ function Workspace() {
 					{
 						title: 'Messages',
 						color: panelColors.messages,
-						component: <MessagesWindow />,
+						component: <MessagesPanel />,
 						isActive: activePanel === Panel.Messages,
 						panel: Panel.Messages,
 						setActivePanel: workspaceStore.viewStore.setActivePanel,

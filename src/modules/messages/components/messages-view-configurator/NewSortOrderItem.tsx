@@ -17,7 +17,7 @@
 import { useState } from 'react';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import { useMessageBodySortStore } from '../../../../hooks';
+import { useMessageBodySortStore } from '../../hooks/useMessageBodySortStore';
 import StringFilterRow from '../../../../components/filter/row/StringRow';
 
 const NewSortOrderItem = () => {

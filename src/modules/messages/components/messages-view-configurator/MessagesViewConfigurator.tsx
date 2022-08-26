@@ -16,8 +16,8 @@
 
 import { useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
 import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
+import { useMessagesFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { ModalPortal } from '../../../../components/util/Portal';
 import RulesList from './RulesList';
 import { createStyleSelector } from '../../../../helpers/styleCreators';
@@ -25,7 +25,7 @@ import BodySortConfig from './BodySortConfig';
 import 'styles/messages-view-configurator.scss';
 
 const MessageViewConfigurator = () => {
-	const { messageSessions } = useFilterConfigStore();
+	const { messageSessions } = useMessagesFilterConfigStore();
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');

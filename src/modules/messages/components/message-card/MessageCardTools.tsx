@@ -55,7 +55,7 @@ const MessageCardTools = ({
 }: MessageCardToolsProps & OwnProps) => {
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
-	const appViewMode = useViewMode();
+	const viewMode = useViewMode();
 
 	useOutsideClickListener(rootRef, (e: MouseEvent) => {
 		if (e.target instanceof Element && rootRef.current && !rootRef.current.contains(e.target)) {
@@ -159,7 +159,7 @@ const MessageCardTools = ({
 				<div className='message-card-tools__header'>
 					{!isScreenshotMsg ? <span>Action</span> : null}
 				</div>
-				{toggleMessagePin && (
+				{viewMode !== ViewMode.EmbeddedMessages && toggleMessagePin && (
 					<div className='message-card-tools__controls-group'>
 						<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
 							<div
@@ -223,7 +223,7 @@ const MessageCardTools = ({
 						<span className='message-card-tools__item-title'>Download</span>
 					</div>
 				)}
-				{appViewMode === ViewMode.EmbeddedMessages && (
+				{viewMode === ViewMode.EmbeddedMessages && (
 					<div className='message-card-tools__controls-group'>
 						{parsedMessage && (
 							<div

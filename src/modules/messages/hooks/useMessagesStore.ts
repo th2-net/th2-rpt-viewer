@@ -14,11 +14,16 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useWorkspaceStore } from 'hooks/useWorkspaceStore';
+import { useContext } from 'react';
+import { MessagesStoreContext } from '../components/MessagesStoreProvider';
 import MessagesStore from '../stores/MessagesStore';
 
 export const useMessagesStore = (): MessagesStore => {
-	const workspaceStore = useWorkspaceStore();
+	const messagesStore = useContext(MessagesStoreContext);
 
-	return workspaceStore.messagesStore;
+	if (!messagesStore) {
+		throw new Error('useMessagesStore should be used inside of MessagesStoreProvider');
+	}
+
+	return messagesStore;
 };

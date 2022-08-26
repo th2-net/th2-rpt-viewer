@@ -24,7 +24,7 @@ import CardDisplayType from 'models/util/CardDisplayType';
 import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
-import MessageCardListItem from '../message-card/MessageCardListItem';
+import MessageCardListItem from './MessageCardListItem';
 import 'styles/messages.scss';
 
 const ERROR_MESSAGE = 'Error occured while loading messages';

@@ -21,7 +21,6 @@ import ApiSchema from 'api/ApiSchema';
 import { DbData } from 'api/indexedDb';
 import { SearchStore } from 'modules/search/stores/SearchStore';
 import { SessionHistoryStore } from 'modules/messages/stores/SessionHistoryStore';
-import MessageDisplayRulesStore from 'modules/messages/stores/MessageDisplayRulesStore';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
@@ -48,12 +47,11 @@ export default class WorkspacesStore {
 		private rootStore: RootStore,
 		private api: ApiSchema,
 		private filterConfigStore: IFilterConfigStore,
-		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		public filtersHistoryStore: FiltersHistoryStore,
 		private sessionsStore: SessionHistoryStore,
 		initialState: WorkspacesUrlState | null,
 	) {
-		this.init(initialState || null);
+		this.bookmarksStore = new BookmarksStore(this, this.api.indexedDb);
 
 		this.searchStore = new SearchStore(
 			this,
@@ -63,7 +61,7 @@ export default class WorkspacesStore {
 			filterConfigStore,
 		);
 
-		this.bookmarksStore = new BookmarksStore(this, this.api.indexedDb);
+		this.init(initialState || null);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
@@ -131,7 +129,7 @@ export default class WorkspacesStore {
 			this,
 			this.rootStore.sessionsStore,
 			this.filterConfigStore,
-			this.messageDisplayRulesStore,
+			this.bookmarksStore,
 			this.api,
 			workspaceInitialState,
 		);

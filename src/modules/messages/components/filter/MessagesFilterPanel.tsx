@@ -14,32 +14,33 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import FilterConfig from 'components/filter/FilterConfig';
 import FilterButton from 'components/filter/FilterButton';
 import { useFilterConfig } from 'hooks/useFilterConfig';
+import useViewMode from 'hooks/useViewMode';
 import {
 	FilterRowMultipleStringsConfig,
 	ActionFilterConfig,
 	FilterRowConfig,
 } from 'models/filter/FilterInputs';
 import { MessageFilterKeys } from 'api/sse';
-import { useFiltersHistoryStore } from 'hooks/index';
+import { ViewMode } from 'components/ViewModeProvider';
 import {
 	useMessageFiltersAutocomplete,
 	useSessionAutocomplete,
 } from '../../hooks/useMessagesAutocomplete';
 import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
+import { useMessagesFilterConfigStore } from '../../hooks/useFilterConfigStore';
+import { useFilterStore } from '../../hooks/useFilterStore';
 import SessionFilter from './SessionFilterRow';
 import FilterWarning from './FilterWarning';
 import ReplayModal from './ReplayModal';
 import MessageExport from '../MessageExport';
-import { useSessionsHistoryStore } from '../../hooks/useSessionsStore';
 
 const filterOrder: MessageFilterKeys[] = [
 	'attachedEventIds',
@@ -50,21 +51,20 @@ const filterOrder: MessageFilterKeys[] = [
 ];
 
 const MessagesFilterPanel = () => {
+	const viewMode = useViewMode();
+
 	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
-	const sessionsStore = useSessionsHistoryStore();
-	const { onMessageFilterSubmit } = useFiltersHistoryStore();
+	const filterStore = useFilterStore();
+	const filterConfigStore = useMessagesFilterConfigStore();
 
-	const { filterStore } = messagesStore;
-	const filterConfigStore = useFilterConfigStore();
-
-	const autocompleteLists = useMessageFiltersAutocomplete(filterStore.filterInfo);
+	const filtersAutocomplete = useMessageFiltersAutocomplete();
 
 	const { config, filter, setFilter } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
 		filter: filterStore.sseMessagesFilter,
 		order: filterOrder,
-		autocompleteLists,
+		autocompleteLists: filtersAutocomplete,
 	});
 
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -89,11 +89,11 @@ const MessagesFilterPanel = () => {
 		);
 
 		if (filter) {
-			onMessageFilterSubmit(filter);
+			messagesStore.saveFilter(filter);
 		}
 
 		if (streams.length) {
-			sessionsStore.saveSessions(streams);
+			messagesStore.saveSessions(streams);
 		}
 	}, [filter, filterStore.params, streams]);
 
@@ -154,6 +154,30 @@ const MessagesFilterPanel = () => {
 		[config, sseFiltersErrorConfig],
 	);
 
+	const reportURL = useMemo(() => {
+		if (viewMode !== ViewMode.EmbeddedMessages) return undefined;
+
+		const messagesStoreState = {
+			timestampFrom: messagesStore.filterStore.params.timestampFrom,
+			timestampTo: messagesStore.filterStore.params.timestampTo,
+			streams: messagesStore.filterStore.params.streams,
+			sse: messagesStore.filterStore.sseMessagesFilter,
+			isSoftFilter: false,
+		};
+
+		const searchString = new URLSearchParams({
+			workspaces: window.btoa(
+				JSON.stringify([
+					{
+						messages: messagesStoreState,
+					},
+				]),
+			),
+		});
+
+		return [window.location.origin, window.location.pathname, `?${searchString}`].join('');
+	}, [viewMode, messagesStore.filterStore.params, messagesStore.filterStore.sseMessagesFilter]);
+
 	return (
 		<>
 			<FilterButton
@@ -172,8 +196,12 @@ const MessagesFilterPanel = () => {
 				setFilter={setFilter as any}
 				type='message'
 			/>
-			<ReplayModal />
-			<FilterWarning />
+			{viewMode !== ViewMode.EmbeddedMessages && (
+				<>
+					<ReplayModal />
+					<FilterWarning />
+				</>
+			)}
 			<SessionFilter
 				config={sessionFilterConfig}
 				submitChanges={submitChanges}
@@ -187,6 +215,9 @@ const MessagesFilterPanel = () => {
 				endExport={messagesStore.exportStore.endExport}
 				exportAmount={messagesStore.exportStore.exportMessages.length}
 			/>
+			<a href={reportURL} rel='noreferrer' target='_blank' className='report-viewer-link'>
+				Report viewer
+			</a>
 		</>
 	);
 };

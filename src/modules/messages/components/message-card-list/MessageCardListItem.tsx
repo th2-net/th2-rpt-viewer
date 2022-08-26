@@ -19,13 +19,13 @@ import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { createBemBlock } from 'helpers/styleCreators';
 import CardDisplayType from 'models/util/CardDisplayType';
-import { useMessageBodySortStore, useBookmarksStore } from 'hooks/index';
 import StateSaver from 'components/util/StateSaver';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
 import { useMessagesViewTypeStore } from '../../hooks/useMessagesViewTypeStore';
-import MessageCard from './MessageCard';
+import { useMessageBodySortStore } from '../../hooks/useMessageBodySortStore';
+import MessageCard from '../message-card/MessageCard';
 import 'styles/messages.scss';
 
 export interface OwnProps {
@@ -48,7 +48,6 @@ const MessageCardListItem = observer((props: Props) => {
 
 	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
-	const bookmarksStore = useBookmarksStore();
 	const { sortOrderItems } = useMessageBodySortStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
@@ -88,8 +87,7 @@ const MessageCardListItem = observer((props: Props) => {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
-	const isBookmarked =
-		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !== -1;
+	const isBookmarked = computed(() => messagesStore.bookmarks.get(id)).get();
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
 
@@ -102,8 +100,8 @@ const MessageCardListItem = observer((props: Props) => {
 	).get();
 
 	const toggleMessagePin = React.useCallback(() => {
-		bookmarksStore.toggleMessagePin(message);
-	}, [bookmarksStore.toggleMessagePin]);
+		messagesStore.toggleBookmark(message);
+	}, [messagesStore.toggleBookmark]);
 
 	const rootClass = createBemBlock(
 		'messages-list__item',

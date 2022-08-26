@@ -1,3 +1,3 @@
-import MessagesWindow from './components/MessagesWindow';
+import MessagesPanel from './components/MessagesPanel';
 
-export default MessagesWindow;
+export default MessagesPanel;

@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2022-2022 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,17 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useMessagesStore } from './useMessagesStore';
+import React from 'react';
+import MessagesStore from '../stores/MessagesStore';
 
-export const useMessageDisplayRulesStore = () => {
-	const messagesStore = useMessagesStore();
-	return messagesStore.messageDisplayRulesStore;
-};
+const MessagesStoreContext = React.createContext<MessagesStore | null>(null);
+
+interface MessagesStoreContextProviderProps {
+	children: React.ReactNode;
+	value: MessagesStore;
+}
+const MessagesStoreProvider = ({ children, value }: MessagesStoreContextProviderProps) => (
+	<MessagesStoreContext.Provider value={value}>{children}</MessagesStoreContext.Provider>
+);
+
+export { MessagesStoreContext, MessagesStoreProvider };

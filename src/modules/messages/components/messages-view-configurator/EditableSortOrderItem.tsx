@@ -15,7 +15,8 @@
  ***************************************************************************** */
 
 import { useState, useCallback, useEffect } from 'react';
-import { useMessageBodySortStore, usePrevious } from '../../../../hooks';
+import { usePrevious } from '../../../../hooks';
+import { useMessageBodySortStore } from '../../hooks/useMessageBodySortStore';
 import Reorder from './Reorder';
 import AutocompleteInput from '../../../../components/util/AutocompleteInput';
 import { MessageSortOrderItem } from '../../../../models/EventMessage';

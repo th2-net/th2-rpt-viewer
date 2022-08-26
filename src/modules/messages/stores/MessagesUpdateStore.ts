@@ -15,15 +15,11 @@
  ***************************************************************************** */
 
 import { action, computed, observable } from 'mobx';
-import EmbeddedMessagesStore from 'components/embedded/embedded-stores/EmbeddedMessagesStore';
 import { MessagesDataStore } from 'models/Stores';
 import MessagesStore from './MessagesStore';
 
 export default class MessagesUpdateStore {
-	constructor(
-		private messagesDataStore: MessagesDataStore,
-		private messagesStore: MessagesStore | EmbeddedMessagesStore,
-	) {}
+	constructor(private messagesDataStore: MessagesDataStore, private messagesStore: MessagesStore) {}
 
 	private timer: ReturnType<typeof setTimeout> | null = null;
 

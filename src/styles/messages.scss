@@ -29,10 +29,10 @@
 		position: absolute;
 		width: 4px;
 		height: calc(100% - 75px);
-    border-radius: 2px;
-    visibility: hidden;
-    left: 8px;
-    top: 12px;
+		border-radius: 2px;
+		visibility: hidden;
+		left: 8px;
+		top: 12px;
 
 		&.bookmarked {
 			background: #a65cd6;
@@ -54,7 +54,7 @@
 	}
 
 	& > div:last-child {
-		border-radius:  0 0 16px 16px;
+		border-radius: 0 0 16px 16px;
 	}
 
 	&__messages {
@@ -812,6 +812,22 @@
 	animation: highlight 1s infinite ease-in-out;
 }
 
+.messages-panel.embeddedmessages {
+	padding: 0;
+
+	& > div {
+		width: 100%;
+		padding: 5px 10px;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.35);
+		color: $primaryTextColor;
+		font-size: 14px;
+		line-height: 15px;
+		font-weight: bold;
+	}
+}
 .messages-window-header {
 	height: 100%;
 	width: 100%;
@@ -819,7 +835,7 @@
 	justify-content: space-between;
 	align-items: center;
 	gap: 10px;
-
+	
 	&__realtime-button {
 		@include clickable;
 
@@ -1008,6 +1024,20 @@
 			@include icon(url(../../resources/icons/settings.svg), 15px, 15px);
 			display: inline-block;
 		}
+	}
+
+	.report-viewer-link {
+		@include clickable;
+
+		padding: 4px 5px;
+		background-color: transparent;
+		border: none;
+		outline: none;
+		color: $primaryTextColor;
+		font-size: 14px;
+		line-height: 15px;
+		font-weight: bold;
+		text-decoration: none;
 	}
 }
 

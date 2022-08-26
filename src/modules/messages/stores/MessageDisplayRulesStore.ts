@@ -26,7 +26,6 @@ import {
 	MessageViewType,
 } from '../../../models/EventMessage';
 import notificationsStore from '../../../stores/NotificationsStore';
-import RootStore from '../../../stores/RootStore';
 
 export const ROOT_DISPLAY_NAME_ID = 'root';
 
@@ -43,10 +42,20 @@ export function isRootDisplayRule(displayRule: MessageDisplayRule) {
 }
 
 class MessageDisplayRulesStore {
-	constructor(private rootStore: RootStore, private indexedDb: IndexedDB) {
+	private static instance: MessageDisplayRulesStore;
+
+	private constructor(private indexedDb: IndexedDB) {
 		this.init();
 
 		reaction(() => this.rulesOrder, this.saveRulesOrder);
+	}
+
+	static getInstance(indexedDb: IndexedDB) {
+		if (!this.instance) {
+			this.instance = new MessageDisplayRulesStore(indexedDb);
+		}
+
+		return this.instance;
 	}
 
 	@computed
@@ -180,7 +189,7 @@ class MessageDisplayRulesStore {
 			await this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule));
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
-				this.rootStore.handleQuotaExceededError(rule);
+				// this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
@@ -198,7 +207,7 @@ class MessageDisplayRulesStore {
 			await this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule));
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
-				this.rootStore.handleQuotaExceededError(rule);
+				// this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
 					notificationType: 'genericError',

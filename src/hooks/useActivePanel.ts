@@ -24,24 +24,23 @@ export function useActivePanel(panel?: Panel) {
 
 	const workspaceViewStore = useWorkspaceViewStore();
 
-	function handlePanelClick(e: MouseEvent) {
-		if (
-			panel !== undefined &&
-			panelRef.current &&
-			e.target instanceof Node &&
-			panelRef.current.contains(e.target)
-		) {
-			workspaceViewStore.setActivePanel(panel);
-		}
-	}
-
 	useEffect(() => {
+		function handlePanelClick(e: MouseEvent) {
+			if (
+				panel !== undefined &&
+				panelRef.current &&
+				e.target instanceof Node &&
+				panelRef.current.contains(e.target)
+			) {
+				workspaceViewStore.setActivePanel(panel);
+			}
+		}
 		document.addEventListener('click', handlePanelClick);
 
 		return () => {
 			document.removeEventListener('click', handlePanelClick);
 		};
-	}, []);
+	}, [panel]);
 
 	return {
 		ref: panelRef,

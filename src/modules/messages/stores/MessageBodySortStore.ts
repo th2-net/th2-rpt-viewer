@@ -17,23 +17,32 @@
 import { action, observable, reaction, runInAction, computed, toJS } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import { move } from '../helpers/array';
+import { move } from '../../../helpers/array';
 import {
 	MessageSortOrderItem,
 	isMessageBodySortOrderItem,
 	isOrderRule,
-} from '../models/EventMessage';
-import RootStore from './RootStore';
-import { IndexedDB, IndexedDbStores, indexedDbLimits, DbData } from '../api/indexedDb';
-import { OrderRule, RULES_ORDER_ID } from '../modules/messages/stores/MessageDisplayRulesStore';
-import notificationsStore from './NotificationsStore';
-import { MessageBodyField, MessageBodyFields } from '../modules/messages/models/MessageBody';
-import { isQuotaExceededError } from '../helpers/fetch';
+} from '../../../models/EventMessage';
+import { IndexedDB, IndexedDbStores, indexedDbLimits, DbData } from '../../../api/indexedDb';
+import { OrderRule, RULES_ORDER_ID } from './MessageDisplayRulesStore';
+import notificationsStore from '../../../stores/NotificationsStore';
+import { MessageBodyField, MessageBodyFields } from '../models/MessageBody';
+import { isQuotaExceededError } from '../../../helpers/fetch';
 
 class MessageBodySortOrderStore {
-	constructor(private rootStore: RootStore, private indexedDb: IndexedDB) {
+	private static instance: MessageBodySortOrderStore;
+
+	private constructor(private indexedDb: IndexedDB) {
 		this.init();
 		reaction(() => this.rulesOrder, this.saveRulesOrder);
+	}
+
+	static getInstance(indexedDb: IndexedDB) {
+		if (!this.instance) {
+			this.instance = new MessageBodySortOrderStore(indexedDb);
+		}
+
+		return this.instance;
 	}
 
 	@observable
@@ -129,7 +138,7 @@ class MessageBodySortOrderStore {
 			await this.indexedDb.addDbStoreItem(IndexedDbStores.MESSAGE_BODY_SORT_ORDER, toJS(rule));
 		} catch (error) {
 			if (isQuotaExceededError(error)) {
-				this.rootStore.handleQuotaExceededError(rule);
+				// this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
@@ -147,7 +156,7 @@ class MessageBodySortOrderStore {
 			await this.indexedDb.updateDbStoreItem(IndexedDbStores.MESSAGE_BODY_SORT_ORDER, toJS(rule));
 		} catch (error) {
 			if (isQuotaExceededError(error)) {
-				this.rootStore.handleQuotaExceededError(rule);
+				// this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
 					notificationType: 'genericError',

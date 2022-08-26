@@ -19,6 +19,8 @@ import MessagesFilter from 'models/filter/MessagesFilter';
 import EventsFilter from 'models/filter/EventsFilter';
 import { EntityType } from 'models/EventAction';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
+import { ViewMode } from 'components/ViewModeProvider';
+import useViewMode from 'hooks/useViewMode';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
 import { FilterRows } from './FilterRows';
@@ -49,6 +51,8 @@ const FilterConfig = <T extends MessagesFilter | EventsFilter>(props: Props<T>) 
 		isEmbedded,
 	} = props;
 
+	const viewMode = useViewMode();
+
 	function onSubmitClick() {
 		onSubmit();
 		setShowFilter(false);
@@ -75,7 +79,7 @@ const FilterConfig = <T extends MessagesFilter | EventsFilter>(props: Props<T>) 
 					<FilterRows config={config} />
 				</div>
 				<div className='filter-controls'>
-					{filter && setFilter && (
+					{viewMode !== ViewMode.EmbeddedMessages && filter && setFilter && (
 						<FiltersHistory
 							type={type}
 							filter={{

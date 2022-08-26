@@ -24,6 +24,5 @@ export * from './useSelectListener';
 export * from './useWorkspacesStore';
 export * from './useTabsStore';
 export * from './useWorkspaceStore';
-export * from './useMessageBodySortStore';
 export * from './useFiltersHistoryStore';
 export * from './useBookmarksStore';

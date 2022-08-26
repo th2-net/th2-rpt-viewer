@@ -16,8 +16,8 @@
 
 import { useEffect, useState } from 'react';
 import EventBodyCard from 'modules/events/components/event-card/EventBodyCard';
-import { EventAction } from '../../models/EventAction';
-import SplashScreen from '../SplashScreen';
+import { EventAction } from '../../../models/EventAction';
+import SplashScreen from '../../../components/SplashScreen';
 import EmbeddedEventHeader from './EmbeddedEventHeader';
 
 function EmbeddedEvent({ eventId }: { eventId: string }) {

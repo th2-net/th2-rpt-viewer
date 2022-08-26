@@ -14,19 +14,26 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { forwardRef } from 'react';
 import { Panel } from 'models/Panel';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { useActivePanel } from 'hooks/useActivePanel';
-import MessagesWindowHeader from './MessagesWindowHeader';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
+import useViewMode from 'hooks/useViewMode';
+import MessagesPanelHeader from './MessagesPanelHeader';
 import MessagesCardList from './message-card-list/MessagesCardList';
 import AttachedMessagesSelection from './AttachedMessagesSelection';
 
-const MessagesWindow = () => {
-	const { ref: panelRef } = useActivePanel(Panel.Messages);
+export const MessagesPanelBase = forwardRef<HTMLDivElement, MessagesPanelProps>((props, ref) => {
+	const viewMode = useViewMode();
+
+	const rootClassname = createStyleSelector('window', 'messages-panel', viewMode);
 
 	return (
-		<div className='window' ref={panelRef}>
+		<div className={rootClassname} ref={ref}>
 			<div className='window__controls'>
-				<MessagesWindowHeader />
+				<MessagesPanelHeader {...props} />
 			</div>
 			<div className='window__body'>
 				<AttachedMessagesSelection />
@@ -34,6 +41,19 @@ const MessagesWindow = () => {
 			</div>
 		</div>
 	);
+});
+
+MessagesPanelBase.displayName = 'MessagesPanelBase';
+
+interface MessagesPanelProps {
+	saveMessagesFilter?: (filter: MessagesFilter) => void;
+	messagesFilterHistory?: FiltersHistoryType<MessagesFilter>[];
+}
+
+const MessagesPanel = (props: MessagesPanelProps) => {
+	const { ref: panelRef } = useActivePanel(Panel.Messages);
+
+	return <MessagesPanelBase ref={panelRef} {...props} />;
 };
 
-export default MessagesWindow;
+export default MessagesPanel;

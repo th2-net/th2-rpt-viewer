@@ -15,40 +15,32 @@
  ***************************************************************************** */
 
 import { useMemo } from 'react';
-import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
-import { useSessionsHistoryStore } from './useSessionsStore';
-import { useFiltersHistoryStore } from '../../../hooks/useFiltersHistoryStore';
+import { useMessagesStore } from './useMessagesStore';
 import { ConfigAutocompleteLists } from '../../../hooks/useFilterConfig';
+import { useFilterStore } from './useFilterStore';
 import { notEmpty } from '../../../helpers/object';
 import { uniq } from '../../../helpers/array';
-import { MessagesFilterInfo } from '../../../api/sse';
 
 export function useSessionAutocomplete() {
-	const sessionsStore = useSessionsHistoryStore();
-	const filterConfigStore = useFilterConfigStore();
+	const messagesStore = useMessagesStore();
 
 	return useMemo(
-		() =>
-			uniq([
-				...sessionsStore.sessions.map(s => s.session),
-				...filterConfigStore.messageSessions.filter(
-					session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
-				),
-			]),
-		[filterConfigStore.messageSessions, sessionsStore.sessions],
+		() => uniq([...messagesStore.sessionsHistory, ...messagesStore.messageSessions]),
+		[messagesStore.messageSessions],
 	);
 }
 
-export function useMessageFiltersAutocomplete(filterInfo: MessagesFilterInfo[]) {
-	const { messagesHistory } = useFiltersHistoryStore();
+export function useMessageFiltersAutocomplete() {
+	const messagesStore = useMessagesStore();
+	const filterStore = useFilterStore();
 
 	return useMemo(
 		() =>
-			filterInfo.reduce(
+			filterStore.filterInfo.reduce(
 				(acc, filter) => ({
 					...acc,
 					[filter.name]: uniq(
-						messagesHistory
+						messagesStore.filtersHistory
 							.map(item => item.filters[filter.name]?.values)
 							.filter(notEmpty)
 							.flat(),
@@ -56,6 +48,6 @@ export function useMessageFiltersAutocomplete(filterInfo: MessagesFilterInfo[]) 
 				}),
 				{} as ConfigAutocompleteLists,
 			),
-		[messagesHistory, filterInfo],
+		[messagesStore.filtersHistory, filterStore.filterInfo],
 	);
 }

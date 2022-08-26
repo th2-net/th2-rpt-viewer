@@ -15,11 +15,20 @@
  ***************************************************************************** */
 
 import EmbeddedMessage from 'modules/messages/embedded/EmbeddedMessage';
-import EmbeddedEvent from './EmbeddedEvent';
-import '../../styles/embedded.scss';
+import EmbeddedMessages from 'modules/messages/embedded/EmbeddedMessages';
+import EmbeddedEvent from 'modules/events/embedded/EmbeddedEvent';
+import useViewMode from 'hooks/useViewMode';
+import { ViewMode } from 'components/ViewModeProvider';
+import 'styles/embedded.scss';
 
 function EmbeddedApp() {
 	const searchParams = new URLSearchParams(window.location.search);
+	const viewMode = useViewMode();
+
+	if (viewMode === ViewMode.EmbeddedMessages) {
+		return <EmbeddedMessages />;
+	}
+
 	const eventId = searchParams.get('eventId');
 	const messageId = searchParams.get('messageId');
 

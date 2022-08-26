@@ -15,29 +15,34 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
 import { useMessagesDataStore } from '../hooks/useMessagesDataStore';
 import MessagesFilterPanel from './filter/MessagesFilterPanel';
 import MessagesUpdateButton from './MessagesUpdateButton';
 import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
 import 'styles/messages.scss';
 
-function MessagesWindowHeader() {
+interface Props {
+	saveMessagesFilter?: (filter: MessagesFilter) => void;
+	messagesFilterHistory?: FiltersHistoryType<MessagesFilter>[];
+}
+
+function MessagesPanelHeader(props: Props) {
 	const { updateStore } = useMessagesDataStore();
 
 	return (
-		<>
-			<div className='messages-window-header'>
-				<MessagesUpdateButton
-					isShow={updateStore.canActivate}
-					isLoading={updateStore.isActive}
-					subscribeOnChanges={updateStore.subscribeOnChanges}
-					stopSubscription={updateStore.stopSubscription}
-				/>
-				<MessagesFilterPanel />
-				<MessagesViewConfigurator />
-			</div>
-		</>
+		<div className='messages-window-header'>
+			<MessagesUpdateButton
+				isShow={updateStore.canActivate}
+				isLoading={updateStore.isActive}
+				subscribeOnChanges={updateStore.subscribeOnChanges}
+				stopSubscription={updateStore.stopSubscription}
+			/>
+			<MessagesFilterPanel {...props} />
+			<MessagesViewConfigurator />
+		</div>
 	);
 }
 
-export default observer(MessagesWindowHeader);
+export default observer(MessagesPanelHeader);
