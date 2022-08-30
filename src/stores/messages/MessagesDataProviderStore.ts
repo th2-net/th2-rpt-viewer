@@ -198,16 +198,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			message = prevMessages[0] || nextMessages[nextMessages.length - 1];
 			if (message) this.messagesStore.selectedMessageId = new String(message.messageId);
 		}
-
-		if (this.messagesStore.filterStore.isSoftFilter && message) {
-			const {
-				resultCountLimit,
-				searchDirection,
-				...filterParams
-			} = this.messagesStore.filterStore.filterParams;
-			const isMatch = await this.api.messages.matchMessage(message.messageId, filterParams);
-			this.isSoftFiltered.set(message.messageId, isMatch);
-		}
 	};
 
 	@action
