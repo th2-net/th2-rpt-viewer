@@ -46,7 +46,19 @@ export type SimpleValueField = {
 	simpleValue: string;
 };
 
-export type MessageBodyField = ListValueField | MessageValueField | SimpleValueField;
+export type NullValueField = {
+	nullValue: 'NULL_VALUE';
+};
+
+export type MessageBodyField =
+	| ListValueField
+	| MessageValueField
+	| SimpleValueField
+	| NullValueField;
+
+export function isNullValue(field: MessageBodyField): field is NullValueField {
+	return field != null && 'nullValue' in field && field.nullValue === 'NULL_VALUE';
+}
 
 export function isSimpleValue(field: MessageBodyField): field is SimpleValueField {
 	return field != null && typeof (field as SimpleValueField).simpleValue === 'string';
