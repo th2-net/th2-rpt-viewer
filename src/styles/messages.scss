@@ -474,6 +474,9 @@
 	&__field-simple-value {
 		font-weight: 600;
 		color: $activeTextColor;
+		&.null {
+			color: $alternativeTextColor;
+		}
 	}
 
 	&__raw {

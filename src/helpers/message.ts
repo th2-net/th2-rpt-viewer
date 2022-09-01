@@ -24,6 +24,7 @@ import {
 } from '../models/MessageBody';
 import { timestampToNumber } from './date';
 import { SavedMessageViewType } from '../stores/messages/SavedMessageViewType';
+import { isNullValue } from '../models/MessageBody';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
@@ -57,6 +58,7 @@ export function normalizeFields(fields: MessageBodyFields) {
 }
 
 export function normalizeField(field: MessageBodyField): string | object {
+	if (isNullValue(field)) return field.nullValue;
 	if (isSimpleValue(field)) return field.simpleValue;
 	if (isMessageValue(field)) {
 		return Object.entries(field.messageValue.fields || {}).reduce(
