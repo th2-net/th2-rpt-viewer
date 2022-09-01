@@ -179,7 +179,7 @@ function MessageBodyCardField(props: FieldProps) {
 					onMouseEnter={highlight}
 					onMouseLeave={removeHighlight}
 					className='mc-body__field-simple-value null'>
-					{null}
+					null
 				</span>
 			) : isSimpleValue(field) ? (
 				<span
