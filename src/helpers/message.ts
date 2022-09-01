@@ -17,6 +17,7 @@
 import { ActionType } from '../models/EventAction';
 import { EventMessage, MessageViewTypeConfig, MessageViewType } from '../models/EventMessage';
 import {
+	isNullValue,
 	isMessageValue,
 	isSimpleValue,
 	MessageBodyField,
@@ -24,7 +25,6 @@ import {
 } from '../models/MessageBody';
 import { timestampToNumber } from './date';
 import { SavedMessageViewType } from '../stores/messages/SavedMessageViewType';
-import { isNullValue } from '../models/MessageBody';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
