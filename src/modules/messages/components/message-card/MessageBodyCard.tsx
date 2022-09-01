@@ -24,6 +24,7 @@ import MessageBody, {
 	isListValue,
 	MessageBodyFields,
 	isMessageValue,
+	isNullValue,
 } from '../../models/MessageBody';
 
 const BEAUTIFIED_PAD_VALUE = 15;
@@ -171,7 +172,14 @@ function MessageBodyCardField(props: FieldProps) {
 				className='mc-body__field-label'>
 				{label ? `${label}: ` : ''}
 			</span>
-			{isSimpleValue(field) ? (
+			{isNullValue(field) ? (
+				<span
+					onMouseEnter={highlight}
+					onMouseLeave={removeHighlight}
+					className='mc-body__field-simple-value null'>
+					null
+				</span>
+			) : isSimpleValue(field) ? (
 				<span
 					onMouseEnter={highlight}
 					onMouseLeave={removeHighlight}
