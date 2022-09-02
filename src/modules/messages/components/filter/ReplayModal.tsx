@@ -80,7 +80,7 @@ function ReplayModal() {
 		};
 	}, [isCopied]);
 
-	const { config, setFilter } = useFilterConfig({
+	const { config, setFilter, filter } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
 		filter: filterStore.filter,
 		order: filterOrder,
@@ -150,14 +150,14 @@ function ReplayModal() {
 		].join('');
 
 		const params = getMessagesSSEParamsFromFilter(
-			filterStore.filter,
+			filter,
 			streams,
 			startTimestamp,
 			endTimestamp,
 			SearchDirection.Next,
 		).toString();
 		return `${link}?${params}`;
-	}, [streams, startTimestamp, endTimestamp, currentStream]);
+	}, [filter, streams, startTimestamp, endTimestamp, currentStream]);
 
 	function toggleReplayModal() {
 		if (!isOpen) {
