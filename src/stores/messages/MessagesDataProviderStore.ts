@@ -198,10 +198,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			message = prevMessages[0] || nextMessages[nextMessages.length - 1];
 			if (message) this.messagesStore.selectedMessageId = new String(message.id);
 		}
-
-		if (this.messagesStore.filterStore.isSoftFilter && message) {
-			this.isSoftFiltered.set(message.id, true);
-		}
 	};
 
 	@action
