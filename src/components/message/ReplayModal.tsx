@@ -78,7 +78,7 @@ function ReplayModal() {
 		};
 	}, [isCopied]);
 
-	const { config, setFilter } = useFilterConfig({
+	const { config, setFilter, filter } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
 		filter: filterStore.sseMessagesFilter,
 		order: filterOrder,
@@ -139,14 +139,14 @@ function ReplayModal() {
 		].join('');
 
 		const params = getMessagesSSEParamsFromFilter(
-			filterStore.sseMessagesFilter,
+			filter,
 			streams,
 			startTimestamp,
 			endTimestamp,
 			'next',
 		).toString();
 		return `${link}?${params}`;
-	}, [streams, startTimestamp, endTimestamp, currentStream]);
+	}, [filter, streams, startTimestamp, endTimestamp, currentStream]);
 
 	function toggleReplayModal() {
 		if (!isOpen) {
