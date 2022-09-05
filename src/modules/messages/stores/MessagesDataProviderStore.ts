@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import moment from 'moment';
 import { action, reaction, observable, computed, runInAction } from 'mobx';
 import { sortByTimestamp, timestampToNumber } from 'helpers/date';
 import { SearchDirection } from 'models/SearchDirection';
@@ -128,6 +129,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		const messageId = this.messagesStore.selectedMessageId?.valueOf();
 		let message: EventMessage | null = null;
 		let messageIds: DirectionalStreamInfo | undefined;
+
+		if (!messageId && !queryParams.startTimestamp) {
+			queryParams.startTimestamp = moment.utc().subtract(5, 'minutes').valueOf();
+		}
 
 		try {
 			this.messageAC = new AbortController();
