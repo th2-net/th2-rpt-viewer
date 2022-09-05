@@ -192,10 +192,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				...prevMessages,
 			]
 				.filter(
-					message =>
+					item =>
 						!(
 							this.messagesStore.filterStore.filterParams['attachedEventIds-negative'] &&
-							this.messagesStore.attachedMessagesIds.includes(message.messageId)
+							this.messagesStore.attachedMessagesIds.includes(item.messageId)
 						),
 				)
 				.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
