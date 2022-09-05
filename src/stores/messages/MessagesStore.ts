@@ -115,6 +115,11 @@ export default class MessagesStore {
 	}
 
 	@computed
+	public get attachedMessagesIds() {
+		return this.workspaceStore.attachedMessages.map(attachedMessage => attachedMessage.messageId);
+	}
+
+	@computed
 	public get isLoadingAttachedMessages() {
 		return this.workspaceStore.isLoadingAttachedMessages;
 	}
