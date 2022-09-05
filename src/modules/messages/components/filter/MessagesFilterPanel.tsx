@@ -133,7 +133,7 @@ const MessagesFilterPanel = () => {
 				setFilter={setFilter as any}
 				type='message'
 			/>
-			{viewMode !== ViewMode.Full && (
+			{viewMode === ViewMode.Full && (
 				<>
 					<ReplayModal />
 					<FilterWarning />
