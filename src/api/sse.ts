@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import MessagesFilter from 'models/filter/MessagesFilter';
+import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
 import EventsFilter from 'models/filter/EventsFilter';
 import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
@@ -113,6 +113,8 @@ export interface MessagesSSEParams extends BaseSSEParams {
 	'body-conjunct'?: boolean;
 	'body-strict'?: boolean;
 	messageId?: string[];
+	resumeFromId?: string;
+	metadataOnly?: boolean;
 }
 
 export interface SSEParamsEvents {
@@ -139,7 +141,7 @@ export type SSEParams = EventSSEParams | MessagesSSEParams;
 
 type ParamsFromFilter = Record<string, string | string[] | boolean>;
 
-function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
+export function getEventsSSEParams(filter: EventsFilter): EventSSEParams {
 	const filters = getObjectKeys(filter).filter(filterName =>
 		filterName === 'status'
 			? filter[filterName].values !== 'any'
@@ -171,14 +173,12 @@ function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
 	);
 }
 
-export function getMessagesSSEParamsFromFilter(
+export function getMessagesSSEParams(
 	filter: MessagesFilter | null,
-	streams: string[],
-	startTimestamp: number | null,
-	endTimestamp: number | null,
-	searchDirection: SearchDirection,
-	resultCountLimit?: number,
-): URLSearchParams {
+	params: MessagesParams,
+	searchDirection = SearchDirection.Previous,
+	resultCountLimit = 15,
+): MessagesSSEParams {
 	const filtersToAdd: Array<keyof MessagesFilter> = !filter
 		? []
 		: Object.entries(filter)
@@ -205,9 +205,11 @@ export function getMessagesSSEParamsFromFilter(
 		filter && filter[filterName].strict ? [`${filterName}-strict`, filter[filterName].strict] : [],
 	);
 
+	const { streams, startTimestamp: timestampFrom, endTimestamp: timestampTo } = params;
+
 	const queryParams: MessagesSSEParams = {
-		startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
-		endTimestamp: endTimestamp ? new Date(endTimestamp).toISOString() : endTimestamp,
+		startTimestamp: timestampFrom ? new Date(timestampFrom).toISOString() : timestampFrom,
+		endTimestamp: timestampTo ? new Date(timestampTo).toISOString() : timestampTo,
 		stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
 		searchDirection,
 		resultCountLimit,
@@ -220,7 +222,7 @@ export function getMessagesSSEParamsFromFilter(
 		]),
 	};
 
-	return createURLSearchParams({ ...queryParams });
+	return queryParams;
 }
 
 const sseApi: SSESchema = {
@@ -238,7 +240,7 @@ const sseApi: SSESchema = {
 		return new EventSource(`backend/search/sse/${type}s/?${params}`);
 	},
 	getEventsTreeSource: (timeRange, filter, sseParams) => {
-		const paramFromFilter = filter ? getEventsSSEParamsFromFilter(filter) : {};
+		const paramFromFilter = filter ? getEventsSSEParams(filter) : {};
 		const params = createURLSearchParams({
 			startTimestamp: new Date(timeRange[0]).toISOString(),
 			endTimestamp: new Date(timeRange[1]).toISOString(),

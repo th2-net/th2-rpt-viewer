@@ -25,7 +25,7 @@ export default interface MessagesFilter {
 }
 
 export interface MessagesParams {
-	timestampFrom: null | number;
-	timestampTo: null | number;
+	startTimestamp: number | null;
+	endTimestamp: number | null;
 	streams: Array<string>;
 }

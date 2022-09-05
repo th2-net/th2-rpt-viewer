@@ -18,12 +18,13 @@ import { action, computed, IReactionDisposer, observable, reaction, toJS } from 
 import moment from 'moment';
 import { IFilterConfigStore } from 'models/Stores';
 import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
-import { MessagesFilterInfo, MessagesSSEParams } from 'api/sse';
+import { getMessagesSSEParams, MessagesFilterInfo, MessagesSSEParams } from 'api/sse';
+import { SearchDirection } from 'models/SearchDirection';
 
 function getDefaultMessagesParams(): MessagesParams {
 	return {
-		timestampFrom: null,
-		timestampTo: moment.utc().valueOf(),
+		startTimestamp: moment.utc().valueOf(),
+		endTimestamp: null,
 		streams: [],
 	};
 }
@@ -67,55 +68,7 @@ export default class MessagesFilterStore {
 
 	@computed
 	public get filterParams(): MessagesSSEParams {
-		const sseFilters = this.filter;
-
-		const filtersToAdd: Array<keyof MessagesFilter> = !sseFilters
-			? []
-			: Object.entries(sseFilters)
-					.filter(([_, filter]) => filter.values.length > 0)
-					.map(([filterName]) => filterName as keyof MessagesFilter);
-
-		const filterValues = filtersToAdd
-			.map(filterName =>
-				sseFilters ? [`${filterName}-values`, sseFilters[filterName].values] : [],
-			)
-			.filter(Boolean);
-
-		const filterInclusion = filtersToAdd.map(filterName =>
-			sseFilters && sseFilters[filterName].negative
-				? [`${filterName}-negative`, sseFilters[filterName].negative]
-				: [],
-		);
-
-		const filterConjunct = filtersToAdd.map(filterName =>
-			sseFilters && sseFilters[filterName].conjunct
-				? [`${filterName}-conjunct`, sseFilters[filterName].conjunct]
-				: [],
-		);
-
-		const filterStrict = filtersToAdd.map(filterName =>
-			sseFilters && sseFilters[filterName].strict
-				? [`${filterName}-strict`, sseFilters[filterName].strict]
-				: [],
-		);
-
-		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
-		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
-
-		const queryParams: MessagesSSEParams = {
-			startTimestamp: this.params.timestampTo || startTimestamp,
-			stream: this.params.streams,
-			searchDirection: 'previous',
-			resultCountLimit: 15,
-			filters: filtersToAdd,
-			...Object.fromEntries(
-				[...filterValues, ...filterInclusion, ...filterConjunct, ...filterStrict].filter(
-					filtersArr => filtersArr.length,
-				),
-			),
-		};
-
-		return queryParams;
+		return getMessagesSSEParams(this.filter, this.params, SearchDirection.Previous, 15);
 	}
 
 	@computed
@@ -149,8 +102,8 @@ export default class MessagesFilterStore {
 		this.isSoftFilter = false;
 		this.params = {
 			...defaultMessagesFilter,
-			timestampFrom: this.params.timestampFrom,
-			timestampTo: this.params.timestampTo,
+			startTimestamp: this.params.startTimestamp,
+			endTimestamp: this.params.endTimestamp,
 			...initialParams,
 		};
 	};
@@ -160,8 +113,8 @@ export default class MessagesFilterStore {
 			const defaultMessagesFilter = getDefaultMessagesParams();
 			const {
 				streams = defaultMessagesFilter.streams,
-				timestampFrom = defaultMessagesFilter.timestampFrom,
-				timestampTo = defaultMessagesFilter.timestampTo,
+				startTimestamp = defaultMessagesFilter.startTimestamp,
+				endTimestamp = defaultMessagesFilter.endTimestamp,
 				sse = {},
 			} = initialState;
 
@@ -172,8 +125,8 @@ export default class MessagesFilterStore {
 			this.setMessagesFilter(
 				{
 					streams,
-					timestampFrom,
-					timestampTo,
+					startTimestamp,
+					endTimestamp,
 				},
 				Object.keys(appliedSSEFilter).length > 0 ? appliedSSEFilter : null,
 			);

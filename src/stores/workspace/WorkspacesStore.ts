@@ -97,8 +97,8 @@ export default class WorkspacesStore {
 			messages: {
 				sse: filters,
 				streams: requestInfo?.state.stream || [],
-				timestampFrom: null,
-				timestampTo: timestamp,
+				startTimestamp: timestamp,
+				endTimestamp: null,
 				targetMessage,
 			},
 			interval: SEARCH_INTERVAL,

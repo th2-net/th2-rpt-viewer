@@ -32,6 +32,7 @@ import { SearchDirection } from 'models/SearchDirection';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
 import { useSessionsHistoryStore } from 'hooks/useSessionsStore';
 import { createBemElement } from 'helpers/styleCreators';
+import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
 import {
 	TIME_INPUT_MASK,
 	DATE_TIME_INPUT_MASK,
@@ -76,7 +77,6 @@ const SearchPanelForm = () => {
 		updateForm,
 		searchForm: form,
 		formType,
-		messageSessions,
 		filters,
 		startSearch,
 		pauseSearch,
@@ -87,6 +87,8 @@ const SearchPanelForm = () => {
 		resetSearchProgressState,
 		clearFilters,
 	} = useSearchStore();
+
+	const filterConfigStore = useFilterConfigStore();
 
 	const disabled = isHistorySearch || isSearching;
 
@@ -117,18 +119,18 @@ const SearchPanelForm = () => {
 	const sessionsAutocomplete: string[] = React.useMemo(
 		() => [
 			...sessionsStore.sessions.map(s => s.session),
-			...messageSessions.filter(
+			...filterConfigStore.messageSessions.filter(
 				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
 			),
 		],
-		[messageSessions, sessionsStore.sessions],
+		[filterConfigStore.messageSessions, sessionsStore.sessions],
 	);
 
 	const areSessionInvalid: boolean = React.useMemo(
 		() =>
 			form.stream.length === 0 ||
-			form.stream.some(stream => !messageSessions.includes(stream.trim())),
-		[form.stream, messageSessions],
+			form.stream.some(stream => !filterConfigStore.messageSessions.includes(stream.trim())),
+		[form.stream, filterConfigStore.messageSessions],
 	);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {

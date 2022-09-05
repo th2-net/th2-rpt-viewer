@@ -193,8 +193,8 @@ export default class MessagesStore implements IMessagesStore {
 			this.hintMessages = [];
 
 			this.filterStore.resetMessagesFilter({
-				timestampFrom: null,
-				timestampTo: timestampToNumber(message.timestamp),
+				startTimestamp: timestampToNumber(message.timestamp),
+				endTimestamp: null,
 				streams: [...new Set([...streams, message.sessionId])],
 			});
 		}
@@ -267,8 +267,8 @@ export default class MessagesStore implements IMessagesStore {
 
 		this.filterStore.resetMessagesFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
-			timestampTo: timestampToNumber(targetMessage.timestamp),
-			timestampFrom: null,
+			endTimestamp: null,
+			startTimestamp: timestampToNumber(targetMessage.timestamp),
 		});
 
 		this.hintMessages = [];
@@ -332,7 +332,8 @@ export default class MessagesStore implements IMessagesStore {
 					streams: [
 						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
 					],
-					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
+					startTimestamp: timestampToNumber(mostRecentMessage.timestamp),
+					endTimestamp: null,
 				};
 			}
 		}

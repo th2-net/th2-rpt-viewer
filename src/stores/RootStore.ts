@@ -93,7 +93,8 @@ export default class RootStore {
 				{
 					events: { range: timeRange, selectedEventId: eventId || undefined },
 					messages: {
-						timestampTo: timestamp ? parseInt(timestamp) : null,
+						startTimestamp: timestamp ? parseInt(timestamp) : null,
+						endTimestamp: null,
 					},
 					timeRange,
 					layout: messageId ? [0, 0, 100, 0] : defaultPanelsLayout,

@@ -16,15 +16,16 @@
 
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import { MessagesStoreURLState } from '../../stores/MessagesStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 
 const ReportViewerLink = observer(() => {
 	const messagesStore = useMessagesStore();
 
 	const reportURL = useMemo(() => {
-		const messagesStoreState = {
-			timestampFrom: messagesStore.filterStore.params.timestampFrom,
-			timestampTo: messagesStore.filterStore.params.timestampTo,
+		const messagesStoreState: MessagesStoreURLState = {
+			startTimestamp: messagesStore.filterStore.params.startTimestamp,
+			endTimestamp: messagesStore.filterStore.params.endTimestamp,
 			streams: messagesStore.filterStore.params.streams,
 			sse: messagesStore.filterStore.filter,
 			isSoftFilter: false,

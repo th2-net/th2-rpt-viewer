@@ -68,7 +68,7 @@ const messageHttpApi: MessageApiSchema = {
 		}
 
 		const params = createURLSearchParams({
-			stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
+			stream: streams,
 			startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
 			messageId,
 		});

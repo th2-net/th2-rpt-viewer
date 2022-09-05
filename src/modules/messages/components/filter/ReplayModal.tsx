@@ -27,9 +27,10 @@ import {
 	DateTimeMask,
 	TimeInputType,
 } from 'models/filter/FilterInputs';
-import { getMessagesSSEParamsFromFilter, MessageFilterKeys } from 'api/sse';
+import { getMessagesSSEParams, MessageFilterKeys } from 'api/sse';
 import { useOutsideClickListener } from 'hooks/index';
 import { copyTextToClipboard } from 'helpers/copyHandler';
+import { createURLSearchParams } from 'helpers/url';
 import { ModalPortal } from 'components/util/Portal';
 import { useFilterConfig } from 'hooks/useFilterConfig';
 import { FilterRows } from 'components/filter/FilterRows';
@@ -149,19 +150,18 @@ function ReplayModal() {
 			'backend/search/sse/messages/',
 		].join('');
 
-		const params = getMessagesSSEParamsFromFilter(
+		const params = getMessagesSSEParams(
 			filter,
-			streams,
-			startTimestamp,
-			endTimestamp,
+			{ streams, startTimestamp, endTimestamp },
 			SearchDirection.Next,
-		).toString();
-		return `${link}?${params}`;
+		);
+		return `${link}?${createURLSearchParams({ ...params })}`;
 	}, [filter, streams, startTimestamp, endTimestamp, currentStream]);
 
 	function toggleReplayModal() {
 		if (!isOpen) {
-			const { timestampTo, timestampFrom } = messagesStore.filterStore.params;
+			const { endTimestamp: timestampTo, startTimestamp: timestampFrom } =
+				messagesStore.filterStore.params;
 
 			setStreams(messagesStore.filterStore.params.streams.slice());
 			setCurrentStream('');

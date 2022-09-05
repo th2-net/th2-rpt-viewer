@@ -120,9 +120,9 @@ export default class WorkspaceStore {
 	public getWorkspaceState = (): WorkspacesUrlState => {
 		const eventStoreState = toJS(this.eventsStore.urlState);
 
-		const messagesStoreState = {
-			timestampFrom: this.messagesStore.filterStore.params.timestampFrom,
-			timestampTo: this.messagesStore.filterStore.params.timestampTo,
+		const messagesStoreState: MessagesStoreURLState = {
+			startTimestamp: this.messagesStore.filterStore.params.startTimestamp,
+			endTimestamp: this.messagesStore.filterStore.params.endTimestamp,
 			streams: this.messagesStore.filterStore.params.streams,
 			isSoftFilter: this.messagesStore.filterStore.isSoftFilter,
 			sse: this.messagesStore.filterStore.filter,

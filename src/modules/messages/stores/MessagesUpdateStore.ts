@@ -37,7 +37,8 @@ export default class MessagesUpdateStore {
 		this.isActive = true;
 		this.messagesDataStore.resetState();
 		this.messagesStore.selectedMessageId = null;
-		this.messagesStore.filterStore.params.timestampTo = Date.now();
+		this.messagesStore.filterStore.params.startTimestamp = Date.now();
+		this.messagesStore.filterStore.params.endTimestamp = null;
 
 		this.messagesDataStore.loadMessages({
 			onClose: async messages => {

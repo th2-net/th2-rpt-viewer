@@ -37,9 +37,11 @@ import { getItemAt } from 'helpers/array';
 import ApiSchema from 'api/ApiSchema';
 import {
 	EventsFiltersInfo,
+	getEventsSSEParams,
+	getMessagesSSEParams,
 	MessageIdsEvent,
 	MessagesFilterInfo,
-	SSEFilterInfo,
+	MessagesSSEParams,
 	SSEHeartbeat,
 	SSEParams,
 } from 'api/sse';
@@ -53,7 +55,7 @@ import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from 'he
 import { EventAction } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
 import { isSearchHistoryEntity } from '../helpers';
-import { FilterState, SearchPanelType } from '../models/Search';
+import { SearchPanelType } from '../models/Search';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -473,71 +475,38 @@ export class SearchStore implements ISearchStore {
 			});
 		}
 
-		function getFilter<T extends keyof FilterState>(name: T) {
-			return filterParams![name];
-		}
-
-		const {
-			startTimestamp: _startTimestamp,
-			searchDirection,
-			resultCountLimit,
-			timeLimits,
-			parentEvent,
-			stream,
-		} = this.searchForm;
-
-		const filtersToAdd = !this.filters
-			? []
-			: (this.filters.info as EventsFiltersInfo[])
-					.filter((info: SSEFilterInfo) => getFilter(info.name as any).values.length !== 0)
-					.filter(
-						(info: SSEFilterInfo) =>
-							info.name !== 'status' || getFilter(info.name as any).values !== 'any',
-					)
-					.map((info: SSEFilterInfo) => info.name);
-
-		const filterValues: [string, string | string[]][] = filtersToAdd.map((filter: any) => [
-			`${filter}-${filter === 'status' ? 'value' : 'values'}`,
-			getFilter(filter).values,
-		]);
-
-		const filterInclusion = filtersToAdd.map((filter: any) =>
-			getFilter(filter).negative ? [`${filter}-negative`, getFilter(filter).negative] : [],
-		);
-
-		const filterConjunct = filtersToAdd.map((filter: any) =>
-			getFilter(filter).conjunct ? [`${filter}-conjunct`, getFilter(filter).conjunct] : [],
-		);
-
-		const filterStrict = filtersToAdd.map((filter: any) =>
-			getFilter(filter).strict ? [`${filter}-strict`, getFilter(filter).strict] : [],
-		);
+		const { startTimestamp, searchDirection, resultCountLimit, timeLimits, parentEvent, stream } =
+			this.searchForm;
 
 		const startDirectionalSearch = (direction: SSESearchDirection) => {
 			const endTimestamp = timeLimits[direction];
-			const params = {
-				startTimestamp: _startTimestamp ? new Date(_startTimestamp).toISOString() : _startTimestamp,
-				searchDirection: direction,
-				resultCountLimit,
-				endTimestamp: endTimestamp ? new Date(endTimestamp).toISOString() : endTimestamp,
-				filters: filtersToAdd,
-				metadataOnly: false,
-				...Object.fromEntries([
-					...filterValues,
-					...filterInclusion,
-					...filterConjunct,
-					...filterStrict,
-				]),
-			};
+			const params =
+				this.formType === 'event'
+					? getEventsSSEParams(filterParams as EventsFilter)
+					: getMessagesSSEParams(
+							filterParams as MessagesFilter,
+							{
+								streams: stream,
+								startTimestamp,
+								endTimestamp,
+							},
+							direction,
+							resultCountLimit,
+					  );
 
 			if (isPaused || loadMore) {
 				if (this.formType === 'message') {
 					const messageIdEvent = this.resumeFromMessageIds[direction]?.messageIds;
 					if (messageIdEvent) {
-						params.messageId = Object.values(messageIdEvent).map(messageId => messageId.lastId);
+						(params as MessagesSSEParams).messageId = Object.values(messageIdEvent).map(
+							messageId => messageId.lastId,
+						) as string[];
 					}
 				} else {
-					params.resumeFromId = this.searchProgressState[direction].lastEventId;
+					const resumeFromId = this.searchProgressState[direction].lastEventId;
+					if (resumeFromId) {
+						params.resumeFromId = resumeFromId;
+					}
 				}
 			}
 
@@ -548,12 +517,7 @@ export class SearchStore implements ISearchStore {
 			}
 
 			const queryParams: SSEParams =
-				this.formType === 'event'
-					? { ...params, parentEvent }
-					: {
-							...params,
-							stream: stream.flatMap(s => [`${s}:first`, `${s}:second`]),
-					  };
+				this.formType === 'event' ? { ...params, parentEvent, metadataOnly: false } : params;
 
 			const searchChannel = this.api.sse.getEventSource({
 				type: this.formType,
