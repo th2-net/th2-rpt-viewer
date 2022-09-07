@@ -143,11 +143,19 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		if (this.messagesStore.selectedMessageId) {
 			try {
-				this.messageAC = new AbortController();
-				message = await this.api.messages.getMessage(
-					this.messagesStore.selectedMessageId.valueOf(),
-					this.messageAC.signal,
-				);
+				if (
+					await this.api.messages.matchMessage(
+						this.messagesStore.selectedMessageId.valueOf(),
+						this.messagesStore.filterStore.filterParams,
+					)
+				) {
+					this.messageAC = new AbortController();
+
+					message = await this.api.messages.getMessage(
+						this.messagesStore.selectedMessageId.valueOf(),
+						this.messageAC.signal,
+					);
+				}
 			} catch (error) {
 				if (!isAbortError(error)) {
 					this.isError = true;
@@ -185,15 +193,14 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			}),
 		]);
 
-		const messages = [
-			...nextMessages.filter(val => val.messageId !== message?.messageId),
-			...[message].filter(isEventMessage),
-			...prevMessages,
-		]
-			.filter(val => !this.isMessageExcluded(val))
-			.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
-
-		this.messages = messages;
+		runInAction(() => {
+			const messages = [
+				...nextMessages.filter(val => val.messageId !== message?.messageId),
+				...[message].filter(isEventMessage),
+				...prevMessages,
+			].sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
+			this.messages = messages;
+		});
 
 		if (!this.messagesStore.selectedMessageId) {
 			message = prevMessages[0] || nextMessages[nextMessages.length - 1];
@@ -269,9 +276,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length) {
-			let newMessagesList = [...this.messages, ...messages].filter(
-				val => !this.isMessageExcluded(val),
-			);
+			let newMessagesList = [...this.messages, ...messages];
 
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(-this.messagesLimit);
@@ -320,10 +325,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			this.startIndex -= nextMessages.length;
 
 			let newMessagesList = prevMessages.length
-				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)].filter(
-						val => !this.isMessageExcluded(val),
-				  )
-				: [...nextMessages, ...this.messages].filter(val => !this.isMessageExcluded(val));
+				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
+				: [...nextMessages, ...this.messages];
 
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
@@ -502,23 +505,5 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				this.isMatchingMessages.set(messageId, false);
 			});
 		}
-	};
-
-	@action
-	private isMessageExcluded = (message: EventMessage) => {
-		return (
-			(this.messagesStore.filterStore.filterParams['bodyBinary-negative'] &&
-				this.messagesStore.filterStore.filterParams['bodyBinary-values']?.includes(
-					message.bodyBase64 as string,
-				)) ||
-			(this.messagesStore.filterStore.filterParams['body-negative'] &&
-				this.messagesStore.filterStore.filterParams['body-values']?.includes(
-					JSON.stringify(message.body),
-				)) ||
-			(this.messagesStore.filterStore.filterParams['attachedEventIds-negative'] &&
-				this.messagesStore.attachedMessagesIds.includes(message.messageId)) ||
-			(this.messagesStore.filterStore.filterParams['type-negative'] &&
-				this.messagesStore.filterStore.filterParams['type-values']?.includes(message.messageType))
-		);
 	};
 }
