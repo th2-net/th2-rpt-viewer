@@ -185,22 +185,15 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			}),
 		]);
 
-		runInAction(() => {
-			const messages = [
-				...nextMessages.filter(val => val.messageId !== message?.messageId),
-				...[message].filter(isEventMessage),
-				...prevMessages,
-			]
-				.filter(
-					item =>
-						!(
-							this.messagesStore.filterStore.filterParams['attachedEventIds-negative'] &&
-							this.messagesStore.attachedMessagesIds.includes(item.messageId)
-						),
-				)
-				.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
-			this.messages = messages;
-		});
+		const messages = [
+			...nextMessages.filter(val => val.messageId !== message?.messageId),
+			...[message].filter(isEventMessage),
+			...prevMessages,
+		]
+			.filter(val => !this.isMessageExcluded(val))
+			.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
+
+		this.messages = messages;
 
 		if (!this.messagesStore.selectedMessageId) {
 			message = prevMessages[0] || nextMessages[nextMessages.length - 1];
@@ -276,7 +269,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length) {
-			let newMessagesList = [...this.messages, ...messages];
+			let newMessagesList = [...this.messages, ...messages].filter(
+				val => !this.isMessageExcluded(val),
+			);
 
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(-this.messagesLimit);
@@ -325,8 +320,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			this.startIndex -= nextMessages.length;
 
 			let newMessagesList = prevMessages.length
-				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
-				: [...nextMessages, ...this.messages];
+				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)].filter(
+						val => !this.isMessageExcluded(val),
+				  )
+				: [...nextMessages, ...this.messages].filter(val => !this.isMessageExcluded(val));
 
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
@@ -505,5 +502,23 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				this.isMatchingMessages.set(messageId, false);
 			});
 		}
+	};
+
+	@action
+	private isMessageExcluded = (message: EventMessage) => {
+		return (
+			(this.messagesStore.filterStore.filterParams['bodyBinary-negative'] &&
+				this.messagesStore.filterStore.filterParams['bodyBinary-values']?.includes(
+					message.bodyBase64 as string,
+				)) ||
+			(this.messagesStore.filterStore.filterParams['body-negative'] &&
+				this.messagesStore.filterStore.filterParams['body-values']?.includes(
+					JSON.stringify(message.body),
+				)) ||
+			(this.messagesStore.filterStore.filterParams['attachedEventIds-negative'] &&
+				this.messagesStore.attachedMessagesIds.includes(message.messageId)) ||
+			(this.messagesStore.filterStore.filterParams['type-negative'] &&
+				this.messagesStore.filterStore.filterParams['type-values']?.includes(message.messageType))
+		);
 	};
 }

@@ -88,6 +88,8 @@ export interface MessagesSSEParams extends BaseSSEParams {
 	'body-values'?: string[];
 	'body-negative'?: boolean;
 	'body-conjunct'?: boolean;
+	'bodyBinary-negative'?: boolean;
+	'bodyBinary-values'?: string[];
 	messageId?: string[];
 }
 
