@@ -23,6 +23,7 @@ import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { Chip } from '../../../Chip';
 import Checkbox from '../../../util/Checkbox';
 import CardDisplayType from '../../../../util/CardDisplayType';
+import { getSubsequence } from '../../../../helpers/message';
 
 export interface MessageInfoProps {
 	message: EventMessage;
@@ -91,6 +92,9 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	const timestampClassName =
 		onTimestampMouseEnter || onTimestampMouseLeave ? 'mc-header__timestamp' : '';
 
+	const parsedMessage = message.parsedMessages && message.parsedMessages[0];
+	const subsequence = parsedMessage && getSubsequence(parsedMessage);
+
 	return (
 		<div className={headerClass}>
 			{isExport && isExported !== undefined && addMessageToExport && (
@@ -118,9 +122,10 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 			</Chip>
 			{displayType === CardDisplayType.FULL && <Chip>{message.id}</Chip>}
 
-			{displayType === CardDisplayType.FULL && message.parsedMessages && !isDisplayRuleRaw && (
-				<Chip>{message.parsedMessages[0].message.metadata.id.subsequence[0]}</Chip>
-			)}
+			{typeof subsequence === 'number' &&
+				displayType === CardDisplayType.FULL &&
+				message.parsedMessages &&
+				!isDisplayRuleRaw && <Chip>{subsequence}</Chip>}
 			{displayType === CardDisplayType.FULL && message.parsedMessages && (
 				<Chip title={`Name: ${message.parsedMessages[0].message.metadata.messageType}`}>
 					{message.parsedMessages[0].message.metadata.messageType}

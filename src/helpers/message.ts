@@ -15,7 +15,12 @@
  ***************************************************************************** */
 
 import { ActionType } from '../models/EventAction';
-import { EventMessage, MessageViewTypeConfig, MessageViewType } from '../models/EventMessage';
+import {
+	EventMessage,
+	MessageViewTypeConfig,
+	MessageViewType,
+	ParsedMessage,
+} from '../models/EventMessage';
 import {
 	isMessageValue,
 	isNullValue,
@@ -103,4 +108,9 @@ export function defineViewTypeConfig(
 	id: string,
 ) {
 	return viewTypeConfig.get(id) as MessageViewTypeConfig;
+}
+
+export function getSubsequence(parsedMessage: ParsedMessage): null | number {
+	const subsequence = parsedMessage.message.metadata.id.subsequence;
+	return subsequence ? subsequence[0] : null;
 }

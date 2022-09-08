@@ -107,6 +107,7 @@ const MessageCardBase = React.memo(
 			isHighlighted,
 			messageCardToolsConfig,
 			messageViewTypeRendererProps,
+			displayHeader: true,
 		};
 
 		const indicatorClass = createBemBlock(
@@ -125,12 +126,8 @@ const MessageCardBase = React.memo(
 						{!isDisplayRuleRaw ? (
 							<>
 								{message.parsedMessages
-									?.filter(parsedMessage =>
-										isExpanded
-											? parsedMessage
-											: parsedMessage.message.metadata.id.subsequence[0] === 1,
-									)
-									.map(parsedMessage => (
+									?.slice(0, isExpanded ? undefined : 1)
+									.map((parsedMessage, index) => (
 										<ParsedMessageComponent
 											{...parsedMessageProps}
 											key={parsedMessage.id}
@@ -139,6 +136,7 @@ const MessageCardBase = React.memo(
 											setViewType={
 												defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType
 											}
+											displayHeader={index > 0}
 										/>
 									))}
 								{(!message.parsedMessages || isExpanded) && (

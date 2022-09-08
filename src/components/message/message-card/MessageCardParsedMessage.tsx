@@ -30,6 +30,7 @@ export interface ParsedMessageProps {
 	isHighlighted?: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
+	displayHeader: boolean;
 }
 
 interface OwnProps {
@@ -48,14 +49,14 @@ export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & Ow
 		setViewType,
 		messageCardToolsConfig,
 		messageViewTypeRendererProps,
+		displayHeader,
 	} = props;
 
 	const parsedMessageClass = createBemBlock('parsed-message', isHighlighted ? 'highlighted' : null);
 
 	return (
 		<div className='parsed-message-wrapper'>
-			{((!isDisplayRuleRaw && parsedMessage.message.metadata.id.subsequence[0] > 1) ||
-				isDisplayRuleRaw) && (
+			{((!isDisplayRuleRaw && displayHeader) || isDisplayRuleRaw) && (
 				<ParsedMessageHeader
 					messageCardToolsConfig={messageCardToolsConfig}
 					parsedMessage={parsedMessage}
