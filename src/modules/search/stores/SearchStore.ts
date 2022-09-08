@@ -138,12 +138,6 @@ export class SearchStore implements ISearchStore {
 	) {
 		this.getSearchHistory();
 
-		const sessionsSub = reaction(
-			() => this.filterConfigStore.messageSessions,
-			this.setMessagesSessions,
-			{ fireImmediately: true },
-		);
-
 		const messageFilterSub = reaction(
 			() => this.filterConfigStore.messagesFilterInfo,
 			this.initMessagesFilter,
@@ -175,7 +169,7 @@ export class SearchStore implements ISearchStore {
 			},
 		);
 
-		this.subscriptions = [sessionsSub, messageFilterSub, eventsFilterFilterSub, currentSearchSub];
+		this.subscriptions = [messageFilterSub, eventsFilterFilterSub, currentSearchSub];
 	}
 
 	@observable searchChannel: {
@@ -189,8 +183,6 @@ export class SearchStore implements ISearchStore {
 	@observable eventsFilter: EventsFilter | null = null;
 
 	@observable messagesFilter: MessagesFilter | null = null;
-
-	@observable messageSessions: string[] = this.filterConfigStore.messageSessions.slice();
 
 	@observable searchForm: SearchPanelFormState = getDefaultFormState();
 
@@ -716,11 +708,6 @@ export class SearchStore implements ISearchStore {
 			previous: null,
 			next: null,
 		};
-	};
-
-	@action
-	private setMessagesSessions = (sessions: string[]) => {
-		this.messageSessions = sessions.slice();
 	};
 
 	private getSearchHistory = async () => {
