@@ -23,6 +23,7 @@ import { useEventsStore } from '../hooks/useEventsStore';
 import useEventsDataStore from '../hooks/useEventsDataStore';
 import EventsSearchPanel from './search/EventsSearchPanel';
 import { EventsIntervalInput } from './EventsIntervalInput';
+import { SearchDirection } from '../../../models/SearchDirection';
 
 function EventsPanelHeader() {
 	const eventsStore = useEventsStore();
@@ -64,13 +65,13 @@ function EventsPanelHeader() {
 					<div className='event-window-header__nav'>
 						<button
 							className='actions-list__nav'
-							onClick={() => eventsStore.changeEventsRange(-eventsStore.filterStore.interval)}>
+							onClick={() => eventsStore.changeToClosestEvent(SearchDirection.Previous)}>
 							<span className='down' />
 							<span className='label'>Older</span>
 						</button>
 						<button
 							className='actions-list__nav'
-							onClick={() => eventsStore.changeEventsRange(eventsStore.filterStore.interval)}>
+							onClick={() => eventsStore.changeToClosestEvent(SearchDirection.Next)}>
 							<span className='up' />
 							<span className='label'>Newer</span>
 						</button>

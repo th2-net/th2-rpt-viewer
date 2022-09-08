@@ -482,7 +482,12 @@ export class SearchStore implements ISearchStore {
 			const endTimestamp = timeLimits[direction];
 			const params =
 				this.formType === 'event'
-					? getEventsSSEParams(filterParams as EventsFilter)
+					? getEventsSSEParams(
+							filterParams as EventsFilter,
+							startTimestamp || moment().utc().valueOf(),
+							direction,
+							resultCountLimit,
+					  )
 					: getMessagesSSEParams(
 							filterParams as MessagesFilter,
 							{
