@@ -52,11 +52,7 @@ export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) 
 			</Chip>
 			{!isRawMessage && (
 				<>
-					{typeof subsequence === 'number' && (
-						<Chip title={`Session: ${parsedMessage?.message.metadata.id.sequence}`}>
-							{subsequence}
-						</Chip>
-					)}
+					{typeof subsequence === 'number' && <Chip>{subsequence}</Chip>}
 					<Chip
 						className='mc-header__value'
 						title={
