@@ -150,11 +150,12 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 					)
 				) {
 					this.messageAC = new AbortController();
-
 					message = await this.api.messages.getMessage(
 						this.messagesStore.selectedMessageId.valueOf(),
 						this.messageAC.signal,
 					);
+				} else {
+					this.messagesStore.selectedMessageId = null;
 				}
 			} catch (error) {
 				if (!isAbortError(error)) {
