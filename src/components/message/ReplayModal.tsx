@@ -32,6 +32,7 @@ import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { ModalPortal } from '../util/Portal';
 import { useFilterConfig } from '../../hooks/useFilterConfig';
 import { FilterRows } from '../filter/FilerRows';
+import MessagesFilter from '../../models/filter/MessagesFilter';
 
 const filterOrder: MessageFilterKeys[] = [
 	'attachedEventIds',
@@ -78,7 +79,7 @@ function ReplayModal() {
 		};
 	}, [isCopied]);
 
-	const { config, setFilter, filter } = useFilterConfig({
+	const { config, setFilter, filter, currentValues } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
 		filter: filterStore.sseMessagesFilter,
 		order: filterOrder,
@@ -138,15 +139,32 @@ function ReplayModal() {
 			'backend/search/sse/messages/',
 		].join('');
 
+		let currentFilter = filter;
+
+		if (currentFilter) {
+			currentFilter = Object.entries(currentFilter).reduce((acc, filterItem) => {
+				const [filterString, filterValue] = filterItem;
+				const currentValue = currentValues[filterString as keyof MessagesFilter];
+
+				return {
+					...acc,
+					[filterString]: {
+						...filterValue,
+						values: [...filterValue.values, currentValue].filter(Boolean),
+					},
+				};
+			}, {} as MessagesFilter);
+		}
+
 		const params = getMessagesSSEParamsFromFilter(
-			filter,
-			streams,
+			currentFilter,
+			[...streams, currentStream].filter(Boolean),
 			startTimestamp,
 			endTimestamp,
 			'next',
 		).toString();
 		return `${link}?${params}`;
-	}, [filter, streams, startTimestamp, endTimestamp, currentStream]);
+	}, [filter, streams, startTimestamp, endTimestamp, currentStream, currentValues]);
 
 	function toggleReplayModal() {
 		if (!isOpen) {

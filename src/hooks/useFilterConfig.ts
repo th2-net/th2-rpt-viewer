@@ -226,7 +226,8 @@ export function useFilterConfig<T extends Filter>({
 			config,
 			setFilter,
 			filter: filterState,
+			currentValues,
 		}),
-		[config, setFilter, filterState],
+		[config, setFilter, filterState, currentValues],
 	);
 }
