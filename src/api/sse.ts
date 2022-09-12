@@ -141,12 +141,13 @@ export type SSEParams = EventSSEParams | MessagesSSEParams;
 
 type ParamsFromFilter = Record<string, string | string[] | boolean>;
 
-export function getEventsSSEParams(filter: EventsFilter): EventSSEParams {
+export function getParamsFromFilter(filter: EventsFilter): EventSSEParams {
 	const filters = getObjectKeys(filter).filter(filterName =>
 		filterName === 'status'
 			? filter[filterName].values !== 'any'
 			: filter[filterName].values.length > 0,
 	);
+
 	return filters.reduce(
 		(params, filterName) => {
 			const currentFilter = filter[filterName];
@@ -169,8 +170,26 @@ export function getEventsSSEParams(filter: EventsFilter): EventSSEParams {
 				...currentFilterParams,
 			};
 		},
-		{ filters },
+		{
+			filters,
+		},
 	);
+}
+
+export function getEventsSSEParams(
+	filter: EventsFilter,
+	startTimestamp: number,
+	searchDirection: SearchDirection.Next | SearchDirection.Previous = SearchDirection.Previous,
+	resultCountLimit = 15,
+): EventSSEParams {
+	const filters = getParamsFromFilter(filter);
+
+	return {
+		...filters,
+		startTimestamp,
+		searchDirection,
+		resultCountLimit,
+	};
 }
 
 export function getMessagesSSEParams(
@@ -240,7 +259,7 @@ const sseApi: SSESchema = {
 		return new EventSource(`backend/search/sse/${type}s/?${params}`);
 	},
 	getEventsTreeSource: (timeRange, filter, sseParams) => {
-		const paramFromFilter = filter ? getEventsSSEParams(filter) : {};
+		const paramFromFilter = filter ? getParamsFromFilter(filter) : {};
 		const params = createURLSearchParams({
 			startTimestamp: new Date(timeRange[0]).toISOString(),
 			endTimestamp: new Date(timeRange[1]).toISOString(),
