@@ -31,6 +31,7 @@ import { calculateTimeRange } from '../helpers/calculateTimeRange';
 import { TimeRange } from '../../../models/Timestamp';
 import EventsDataStore from './EventsDataStore';
 import { SearchDirection } from '../../../models/SearchDirection';
+import { getEventsSSEParams } from '../../../api/sse';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -476,15 +477,15 @@ export default class EventsStore implements IEventsStore {
 	) => {
 		if (this.searchChannel) this.searchChannel.close();
 
-		const queryParams = {
-			startTimestamp:
-				searchDirection === SearchDirection.Previous
-					? this.filterStore.timestampFrom
-					: this.filterStore.timestampTo,
+		const queryParams = getEventsSSEParams(
+			this.filterStore.filter,
+			searchDirection === SearchDirection.Previous
+				? this.filterStore.timestampFrom
+				: this.filterStore.timestampTo,
 			searchDirection,
-			resultCountLimit: 1,
-			metadataOnly: false,
-		};
+			1,
+		);
+
 		const searchChannel = this.api.sse.getEventSource({
 			type: 'event',
 			queryParams,
