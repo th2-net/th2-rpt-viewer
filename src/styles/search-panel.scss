@@ -717,6 +717,7 @@
 		padding: 2px 0;
 		display: flex;
 		justify-content: space-between;
+		align-items: center;
 	}
 	&__arrow {
 		height: 24px;
@@ -728,10 +729,20 @@
 		background-repeat: no-repeat;
 		background-size: 100%;
 		background-position: center;
+
+		&.disable {
+			background-image: url(../../resources/icons/graph-arrow-left-disabled.svg);
+		}
+
 		&.next {
 			transform: rotate(180deg);
 		}
 	}
+	&__counter {
+		font-size: 12px;
+		height: fit-content;
+	}
+
 	.history-point {
 		display: flex;
 		justify-content: space-between;

@@ -340,7 +340,10 @@ export default class EventsDataStore {
 				}
 
 				if (parentId !== null) {
-					const siblings = this.parentChildrensMap.get(parentId) || [];
+					const siblings =
+						(parentChildrenMapUpdate.has(parentId)
+							? parentChildrenMapUpdate.get(parentId)
+							: this.parentChildrensMap.get(parentId)) || [];
 
 					if (!siblings.includes(event.eventId)) {
 						siblings.push(event.eventId);
