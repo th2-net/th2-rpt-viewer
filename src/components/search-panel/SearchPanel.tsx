@@ -60,9 +60,10 @@ const SearchPanel = () => {
 							searchStore.deleteHistoryItem(searchStore.currentSearch);
 						}
 					}}
-					showToggler={searchStore.searchHistory.length > 1}
 					next={searchStore.nextSearch}
 					prev={searchStore.prevSearch}
+					currentIndex={searchStore.currentIndex}
+					searchHistoryLength={searchStore.searchHistory.length}
 					disableNext={
 						searchStore.isSearching ||
 						searchStore.currentIndex === searchStore.searchHistory.length - 1
