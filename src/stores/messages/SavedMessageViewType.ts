@@ -66,7 +66,7 @@ export class SavedMessageViewType {
 
 	@action
 	private getViewTypes = () => {
-		this.viewTypes.set(this.message.id, this.displayRule);
+		this.viewTypes.set(this.message.id, getRawViewType(this.displayRule));
 		if (this.message.parsedMessages) {
 			this.message.parsedMessages.forEach(parsedMessage => {
 				if (this.isDisplayRuleRaw) {
