@@ -210,6 +210,14 @@ class FiltersHistoryStore {
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newItem);
 		this.filterHistory = [...this.filterHistory, newItem];
 	};
+
+	@action
+	public deleteHistoryItem = async (oldItem: FiltersHistoryType<FilterState>) => {
+		this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, oldItem.timestamp);
+		this.filterHistory = this.filterHistory.filter(
+			historyItem => historyItem.timestamp !== oldItem.timestamp,
+		);
+	};
 }
 
 export default FiltersHistoryStore;
