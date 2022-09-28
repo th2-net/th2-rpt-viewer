@@ -48,7 +48,14 @@ export const registerFetchInterceptor = () =>
 						header,
 						resource: url,
 						responseCode: status,
-						responseBody: text,
+						responseBody: text.includes('unable to find')
+							? `${text.slice(
+									0,
+									text.indexOf('is not a valid id'),
+							  )}'. This is an invalid id or the ${
+									url.includes('event') ? 'event' : 'message'
+							  } is missing from the database`
+							: text,
 						notificationType: 'responseError',
 						id: nanoid(),
 					});
