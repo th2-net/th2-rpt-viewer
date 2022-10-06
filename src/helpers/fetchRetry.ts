@@ -2,7 +2,7 @@ import fetchRetry from 'fetch-retry';
 import { nanoid } from 'nanoid';
 import notificationsStore from '../stores/NotificationsStore';
 
-export default function (input: RequestInfo) {
+export default function (input: RequestInfo, init: RequestInit = {}) {
 	return fetchRetry(fetch)(input, {
 		retries: 3,
 		retryOn: async (attempt, error, response) => {
@@ -24,5 +24,6 @@ export default function (input: RequestInfo) {
 			}
 			return retry;
 		},
+		...init,
 	});
 }
