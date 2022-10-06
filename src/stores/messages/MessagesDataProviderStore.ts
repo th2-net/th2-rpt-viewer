@@ -200,6 +200,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				...[message].filter(isEventMessage),
 				...prevMessages,
 			].sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
+			console.log({ messages });
 			this.messages = messages;
 		});
 
@@ -305,22 +306,19 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
 
+		// eslint-disable-next-line no-param-reassign
+		messages = messages.filter(
+			msg => msg.messageId !== this.messagesStore.selectedMessageId?.valueOf(),
+		);
+
 		const prevMessages =
 			this.messages.length > 0
 				? messages.filter(
 						message =>
-							timestampToNumber(message.timestamp) <
-								timestampToNumber(this.messages[0].timestamp) ||
-							message.messageId === this.messages[0].messageId,
+							timestampToNumber(message.timestamp) < timestampToNumber(this.messages[0].timestamp),
 				  )
 				: [];
-		const firstNextMessage = prevMessages[0];
-
 		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
-
-		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
-			prevMessages.shift();
-		}
 
 		if (prevMessages.length > 0 || nextMessages.length > 0) {
 			this.startIndex -= nextMessages.length;
