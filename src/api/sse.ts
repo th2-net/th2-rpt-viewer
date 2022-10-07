@@ -19,6 +19,7 @@ import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../models/filter/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
 import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
+import fetch from '../helpers/fetchRetry';
 
 interface BaseSSEParams {
 	startTimestamp?: number;

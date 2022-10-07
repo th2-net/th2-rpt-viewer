@@ -648,7 +648,17 @@ export class SearchStore {
 	};
 
 	onError = (searchDirection: SSESearchDirection, ev: Event) => {
-		notificationsStore.handleSSEError(ev);
+		if (ev instanceof MessageEvent) {
+			notificationsStore.handleSSEError(ev);
+		} else {
+			const errorId = nanoid();
+			notificationsStore.addMessage({
+				id: errorId,
+				notificationType: 'genericError',
+				header: `Something went wrong while loading ${this.formType}s`,
+				type: 'error',
+			});
+		}
 
 		this.stopSearch(searchDirection);
 	};
