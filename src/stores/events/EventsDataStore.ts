@@ -42,7 +42,7 @@ interface FetchEventTreeOptions {
 }
 
 export default class EventsDataStore {
-	private CHILDREN_COUNT_LIMIT = 50;
+	private CHILDREN_COUNT_LIMIT = 1000;
 
 	constructor(
 		private eventStore: EventsStore,
