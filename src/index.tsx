@@ -21,11 +21,8 @@ import 'core-js/stable';
 import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
 import ErrorBoundary from './components/util/ErrorBoundary';
-import { registerFetchInterceptor } from './helpers/fetch-intercept';
 import { ViewMode, ViewModeProvider } from './contexts/viewModeContext';
 import './styles/root.scss';
-
-registerFetchInterceptor();
 
 const searchParams = new URLSearchParams(window.location.search);
 

@@ -148,11 +148,6 @@ export default class EventsStore {
 		return rootNodes.flatMap(eventNode => this.getFlatExpandedList(eventNode));
 	}
 
-	@computed
-	public get isSelectedEventLoading() {
-		return this.selectedNode !== null && this.selectedEvent === null;
-	}
-
 	// we need this property for correct virtualized tree render -
 	// to get event key by index in tree and list length calculation.
 	@computed

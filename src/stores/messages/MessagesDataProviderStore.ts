@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, reaction, observable, computed, runInAction } from 'mobx';
+import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isAbortError } from '../../helpers/fetch';
@@ -220,7 +221,24 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	@action
 	private onLoadingError = (event: Event) => {
-		notificationsStore.handleSSEError(event);
+		if (event instanceof MessageEvent) {
+			notificationsStore.handleSSEError(event);
+		} else {
+			const errorId = nanoid();
+			notificationsStore.addMessage({
+				id: errorId,
+				notificationType: 'genericError',
+				header: 'Something went wrong while loading messages',
+				type: 'error',
+				action: {
+					label: 'Refetch messages',
+					callback: () => {
+						notificationsStore.deleteMessage(errorId);
+						this.loadMessages();
+					},
+				},
+			});
+		}
 		this.stopMessagesLoading();
 		this.resetState(true);
 		this.updateStore.stopSubscription();

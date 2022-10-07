@@ -246,7 +246,28 @@ export default class EventsDataStore {
 
 	@action
 	private onEventTreeFetchError = (e: Event) => {
-		notificationsStore.handleSSEError(e);
+		if (e instanceof MessageEvent) {
+			notificationsStore.handleSSEError(e);
+		} else {
+			const errorId = nanoid();
+			notificationsStore.addMessage({
+				id: errorId,
+				notificationType: 'genericError',
+				header: 'Something went wrong while loading events',
+				type: 'error',
+				action: {
+					label: 'Refetch events',
+					callback: () => {
+						notificationsStore.deleteMessage(errorId);
+						this.fetchEventTree({
+							filter: this.filterStore.filter,
+							timeRange: this.filterStore.range,
+							targetEventId: this.eventStore.selectedNode?.eventId,
+						});
+					},
+				},
+			});
+		}
 		this.resetEventsTreeState({ isError: true });
 	};
 
