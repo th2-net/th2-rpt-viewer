@@ -165,14 +165,21 @@ export default class EventsDataStore {
 	private parentEventsQueue = new PQueue({ concurrency: 20 });
 
 	private addToQueue = () => {
-		[...this.parentsToLoad.values()]
-			.filter(parentId => {
-				const event = this.eventsCache.get(parentId);
-				return !event || (event.parentId !== null && !this.eventsCache.has(event.parentId));
-			})
-			.forEach(parentId => {
-				this.parentEventsQueue.add(() => this.loadParentNodes(parentId));
-			});
+		const parentsToLoad: string[] = [];
+
+		[...this.parentsToLoad.values()].forEach(parentId => {
+			const event = this.eventsCache.get(parentId);
+			const toLoad = !event || (event.parentId !== null && !this.eventsCache.has(event.parentId));
+			if (!toLoad) {
+				this.loadingParentEvents.delete(parentId);
+			} else {
+				parentsToLoad.push(parentId);
+			}
+		});
+
+		parentsToLoad.forEach(parentId => {
+			this.parentEventsQueue.add(() => this.loadParentNodes(parentId));
+		});
 		this.parentsToLoad.clear();
 	};
 

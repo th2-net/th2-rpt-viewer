@@ -307,9 +307,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.lastNextChannelResponseTimestamp = null;
 
 		// eslint-disable-next-line no-param-reassign
-		messages = messages.filter(
-			msg => msg.messageId !== this.messagesStore.selectedMessageId?.valueOf(),
-		);
+		messages = messages.filter(msg => msg.messageId !== this.messages[0]?.messageId);
 
 		const prevMessages =
 			this.messages.length > 0
