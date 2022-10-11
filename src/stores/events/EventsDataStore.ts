@@ -63,21 +63,15 @@ export default class EventsDataStore {
 		private filterStore: EventsFilterStore,
 		private api: ApiSchema,
 	) {
-		reaction(
-			() => this.targetNodePath,
-			() => {
-				console.log('this.preloadSelectedPathChildren');
+		reaction(() => this.targetNodePath, this.preloadSelectedPathChildren, {
+			equals: (pathA: string[], pathB: string[]) => {
+				return (
+					Boolean(pathA && pathB) &&
+					pathA.length === pathB.length &&
+					pathA.every((id, index) => id === pathB[index])
+				);
 			},
-			{
-				equals: (pathA: string[], pathB: string[]) => {
-					return (
-						Boolean(pathA && pathB) &&
-						pathA.length === pathB.length &&
-						pathA.every((id, index) => id === pathB[index])
-					);
-				},
-			},
-		);
+		});
 	}
 
 	@observable.ref
