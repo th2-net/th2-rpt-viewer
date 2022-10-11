@@ -1,11 +1,13 @@
 import fetchRetry from 'fetch-retry';
 import { nanoid } from 'nanoid';
 import notificationsStore from '../stores/NotificationsStore';
+import { isAbortError } from './fetch';
 
 export default function (input: RequestInfo, init: RequestInit = {}) {
 	return fetchRetry(fetch)(input, {
 		retries: 3,
 		retryOn: async (attempt, error, response) => {
+			if (isAbortError(error)) return false;
 			const retry = attempt < 2 ? error !== null : false;
 
 			if (!retry) {
