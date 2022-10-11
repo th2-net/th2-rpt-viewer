@@ -474,7 +474,7 @@ export default class EventsDataStore {
 	};
 
 	@action
-	private loadChildren = (parentId: string, resumeFromId?: string) => {
+	public loadChildren = (parentId: string, resumeFromId?: string) => {
 		if (this.childrenLoaders[parentId]) {
 			this.childrenLoaders[parentId].loader.stop();
 			delete this.childrenLoaders[parentId];
@@ -520,8 +520,6 @@ export default class EventsDataStore {
 		// eslint-disable-next-line no-param-reassign
 		events = events.filter(event => !childList.includes(event.eventId));
 
-		console.log({ events });
-
 		events.forEach(event => this.childrenAreUnknown.set(event.eventId, true));
 
 		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
@@ -545,7 +543,6 @@ export default class EventsDataStore {
 			parentId,
 			this.childrenLoaders[parentId]?.loader.eventsFetched === this.CHILDREN_CHUNK_SIZE,
 		);
-		console.log(this.childrenLoaders[parentId]?.loader.eventsFetched);
 		this.onEventChildrenChunkLoaded(events, parentId);
 		this.isLoadingChildren.set(parentId, false);
 		delete this.childrenLoaders[parentId];

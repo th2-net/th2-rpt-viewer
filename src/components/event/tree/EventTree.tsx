@@ -39,7 +39,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
 		if (eventsDataStore.childrenAreUnknown.get(eventTreeNode.eventId) && !children) {
 			eventsDataStore.childrenAreUnknown.set(eventTreeNode.eventId, false);
-			eventsDataStore.loadNextChildren(eventTreeNode.eventId);
+			eventsDataStore.loadChildren(eventTreeNode.eventId);
 		}
 	}, []);
 
