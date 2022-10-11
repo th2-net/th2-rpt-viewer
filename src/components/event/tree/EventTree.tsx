@@ -39,7 +39,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
 		if (eventsDataStore.childrenAreUnknown.get(eventTreeNode.eventId) && !children) {
 			eventsDataStore.childrenAreUnknown.set(eventTreeNode.eventId, false);
-			eventsDataStore.loadChildren(eventTreeNode.eventId);
+			eventsDataStore.loadNextChildren(eventTreeNode.eventId);
 		}
 	}, []);
 
@@ -69,19 +69,16 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	]);
 
 	const showLoadButton = computed(() => {
-		let isLastChild = false;
-		let parentHasMoreChilds = false;
+		if (eventTreeNode.parentId) {
+			const childrenData = eventsDataStore.childrenData.get(eventTreeNode.parentId);
 
-		if (eventTreeNode.parentId !== null) {
-			const siblings = eventsStore.getChildrenNodes(eventTreeNode.parentId);
-
-			isLastChild =
-				siblings.length > 0 && siblings[siblings.length - 1].eventId === eventTreeNode.eventId;
-			parentHasMoreChilds =
-				eventsDataStore.hasUnloadedChildren.get(eventTreeNode.parentId) === true;
+			return (
+				childrenData &&
+				childrenData.lastChild === eventTreeNode.eventId &&
+				eventsDataStore.hasMoreChildren.get(eventTreeNode.parentId)
+			);
 		}
-
-		return isLastChild && parentHasMoreChilds;
+		return false;
 	}).get();
 
 	const isSelected = computed(() =>
@@ -100,8 +97,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	function loadMoreSiblings() {
 		if (eventTreeNode.parentId) {
-			eventsDataStore.isLoadingChildren.set(eventTreeNode.parentId, true);
-			eventsDataStore.loadChildren(eventTreeNode.parentId);
+			eventsDataStore.loadNextChildren(eventTreeNode.parentId);
 		}
 	}
 

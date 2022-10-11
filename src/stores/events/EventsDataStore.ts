@@ -41,23 +41,43 @@ interface FetchEventTreeOptions {
 	targetEventId?: string;
 }
 
+interface ChildrenData {
+	lastChild: string | null;
+	count: number;
+	chunk: number;
+}
+
+function getDefaultChildrenData(): ChildrenData {
+	return {
+		lastChild: null,
+		count: 0,
+		chunk: 1,
+	};
+}
+
 export default class EventsDataStore {
-	private CHILDREN_COUNT_LIMIT = 50;
+	private readonly CHILDREN_CHUNK_SIZE = 50;
 
 	constructor(
 		private eventStore: EventsStore,
 		private filterStore: EventsFilterStore,
 		private api: ApiSchema,
 	) {
-		reaction(() => this.targetNodePath, this.preloadSelectedPathChildren, {
-			equals: (pathA: string[], pathB: string[]) => {
-				return (
-					Boolean(pathA && pathB) &&
-					pathA.length === pathB.length &&
-					pathA.every((id, index) => id === pathB[index])
-				);
+		reaction(
+			() => this.targetNodePath,
+			() => {
+				console.log('this.preloadSelectedPathChildren');
 			},
-		});
+			{
+				equals: (pathA: string[], pathB: string[]) => {
+					return (
+						Boolean(pathA && pathB) &&
+						pathA.length === pathB.length &&
+						pathA.every((id, index) => id === pathB[index])
+					);
+				},
+			},
+		);
 	}
 
 	@observable.ref
@@ -68,6 +88,9 @@ export default class EventsDataStore {
 
 	@observable
 	public parentChildrensMap: Map<string, string[]> = new Map();
+
+	@observable
+	public childrenData: Map<string, ChildrenData> = new Map();
 
 	@observable
 	public loadingParentEvents: Map<string, boolean> = new Map();
@@ -82,7 +105,7 @@ export default class EventsDataStore {
 	public isError = false;
 
 	@observable
-	public hasUnloadedChildren: Map<string, boolean> = new Map();
+	public hasMoreChildren: Map<string, boolean> = new Map();
 
 	@observable
 	public rootEventIds: string[] = [];
@@ -136,8 +159,7 @@ export default class EventsDataStore {
 					filter,
 					sseParams: {
 						searchDirection: 'next',
-						// load 1 more to see if there are more children
-						limitForParent: this.CHILDREN_COUNT_LIMIT + 1,
+						limitForParent: this.CHILDREN_CHUNK_SIZE,
 					},
 				},
 				{
@@ -208,21 +230,22 @@ export default class EventsDataStore {
 
 		Object.keys(eventsByParentId).forEach(parentId => {
 			const cachedEventChildren = this.parentChildrensMap.get(parentId) || [];
-			if (cachedEventChildren.length < this.CHILDREN_COUNT_LIMIT) {
-				const fetchedEventChildren = eventsByParentId[parentId]
-					.map(event => event.eventId)
-					.filter(eventId => !cachedEventChildren.includes(eventId));
+			const fetchedChildren = eventsByParentId[parentId];
+			const childrenData = this.childrenData.get(parentId) || getDefaultChildrenData();
 
-				let childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
+			childrenData.count += fetchedChildren.length;
+			childrenData.lastChild = fetchedChildren[fetchedChildren.length - 1].eventId;
 
-				if (childrenUpdate.length > this.CHILDREN_COUNT_LIMIT) {
-					childrenUpdate = childrenUpdate.slice(0, this.CHILDREN_COUNT_LIMIT);
-					this.hasUnloadedChildren.set(parentId, true);
-				}
-				updatedParentChildrenMapEntries.set(parentId, childrenUpdate);
-			} else {
-				this.hasUnloadedChildren.set(parentId, true);
-			}
+			const fetchedEventChildren = fetchedChildren
+				.map(event => event.eventId)
+				.filter(eventId => !cachedEventChildren.includes(eventId));
+
+			const childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
+
+			this.hasMoreChildren.set(parentId, childrenData.count === this.CHILDREN_CHUNK_SIZE);
+			this.childrenData.set(parentId, childrenData);
+
+			updatedParentChildrenMapEntries.set(parentId, childrenUpdate);
 
 			if (!this.eventsCache.get(parentId) && !this.loadingParentEvents.has(parentId)) {
 				this.parentsToLoad.add(parentId);
@@ -438,7 +461,6 @@ export default class EventsDataStore {
 	private childrenLoaders: {
 		[parentId: string]: {
 			loader: EventsSSEChannel;
-			initialCount: number;
 		};
 	} = {};
 
@@ -446,66 +468,65 @@ export default class EventsDataStore {
 	public childrenAreUnknown: Map<string, boolean> = new Map();
 
 	@action
-	public loadChildren = (parentId: string) => {
+	public loadNextChildren = (parentId: string) => {
+		const childrenData = this.childrenData.get(parentId);
+		const resumeFromId = childrenData?.lastChild;
+
+		this.isLoadingChildren.set(parentId, true);
+
+		if (resumeFromId) {
+			this.loadChildren(parentId, resumeFromId);
+		}
+	};
+
+	@action
+	private loadChildren = (parentId: string, resumeFromId?: string) => {
 		if (this.childrenLoaders[parentId]) {
 			this.childrenLoaders[parentId].loader.stop();
 			delete this.childrenLoaders[parentId];
 		}
 
-		const parentNode = this.eventsCache.get(parentId);
-
-		if (parentNode) {
-			const eventsChildren = this.eventStore.getChildrenNodes(parentId);
-
-			const lastChild = getItemAt(eventsChildren, eventsChildren.length - 1);
-
-			const loader = new EventsSSEChannel(
-				{
-					timeRange: [this.filterStore.timestampFrom, this.filterStore.timestampTo],
-					filter: this.filterStore.filter,
-					sseParams: {
-						parentEvent: parentId,
-						resumeFromId: lastChild?.eventId,
-						// load 1 more to see if there are more children
-						resultCountLimit: this.CHILDREN_COUNT_LIMIT + 1,
-						searchDirection: 'next',
-					},
+		const loader = new EventsSSEChannel(
+			{
+				timeRange: [this.filterStore.timestampFrom, this.filterStore.timestampTo],
+				filter: this.filterStore.filter,
+				sseParams: {
+					parentEvent: parentId,
+					resumeFromId,
+					resultCountLimit: this.CHILDREN_CHUNK_SIZE,
+					searchDirection: 'next',
 				},
-				{
-					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
-					onError: this.onEventTreeFetchError,
-					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
-				},
-				{
-					chunkSize: this.CHILDREN_COUNT_LIMIT + 1,
-				},
-			);
+			},
+			{
+				onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
+				onError: this.onEventTreeFetchError,
+				onClose: events => this.onEventChildrenLoadEnd(events, parentId),
+			},
+			{
+				chunkSize: this.CHILDREN_CHUNK_SIZE,
+			},
+		);
 
-			this.childrenLoaders[parentId] = {
-				loader,
-				initialCount: eventsChildren.length,
-			};
+		this.childrenLoaders[parentId] = {
+			loader,
+		};
 
-			this.childrenLoaders[parentId].loader.subscribe();
-		}
+		this.childrenLoaders[parentId].loader.subscribe();
 	};
 
 	@action
 	private onEventChildrenChunkLoaded = (events: EventTreeNode[], parentId: string) => {
 		if (events.length === 0) return;
 
+		const childrenData = this.childrenData.get(parentId) || getDefaultChildrenData();
+		childrenData.lastChild = events[events.length - 1]?.eventId;
+		this.childrenData.set(parentId, childrenData);
+
 		const childList = this.parentChildrensMap.get(parentId) || [];
 		// eslint-disable-next-line no-param-reassign
 		events = events.filter(event => !childList.includes(event.eventId));
 
-		const initialCount = this.childrenLoaders[parentId].initialCount;
-		const expectedChildrenCountLoaded =
-			(Math.floor(initialCount / this.CHILDREN_COUNT_LIMIT) + 1) * this.CHILDREN_COUNT_LIMIT;
-
-		if (childList.length + events.length > expectedChildrenCountLoaded) {
-			// eslint-disable-next-line no-param-reassign
-			events = events.slice(0, expectedChildrenCountLoaded - childList.length);
-		}
+		console.log({ events });
 
 		events.forEach(event => this.childrenAreUnknown.set(event.eventId, true));
 
@@ -520,26 +541,18 @@ export default class EventsDataStore {
 
 	@action
 	private onEventChildrenLoadEnd = (events: EventTreeNode[], parentId: string) => {
-		if (events.length === 0) {
-			this.hasUnloadedChildren.set(parentId, false);
-		} else {
-			const childList = this.parentChildrensMap.get(parentId) || [];
-			// eslint-disable-next-line no-param-reassign
-			events = events.filter(event => !childList.includes(event.eventId));
-			const initialCount = this.childrenLoaders[parentId].initialCount;
-			const expectedChildrenCountLoaded =
-				(Math.floor(initialCount / this.CHILDREN_COUNT_LIMIT) + 1) * this.CHILDREN_COUNT_LIMIT;
-
-			if (childList.length + events.length > expectedChildrenCountLoaded) {
-				this.hasUnloadedChildren.set(parentId, true);
-				// eslint-disable-next-line no-param-reassign
-				events = events.slice(0, expectedChildrenCountLoaded - childList.length);
-			} else {
-				this.hasUnloadedChildren.set(parentId, false);
-			}
-
-			this.onEventChildrenChunkLoaded(events, parentId);
-		}
+		const childList = this.parentChildrensMap.get(parentId) || [];
+		const childrenData = this.childrenData.get(parentId) || getDefaultChildrenData();
+		childrenData.lastChild = events[events.length - 1]?.eventId;
+		this.childrenData.set(parentId, childrenData);
+		// eslint-disable-next-line no-param-reassign
+		events = events.filter(event => !childList.includes(event.eventId));
+		this.hasMoreChildren.set(
+			parentId,
+			this.childrenLoaders[parentId]?.loader.eventsFetched === this.CHILDREN_CHUNK_SIZE,
+		);
+		console.log(this.childrenLoaders[parentId]?.loader.eventsFetched);
+		this.onEventChildrenChunkLoaded(events, parentId);
 		this.isLoadingChildren.set(parentId, false);
 		delete this.childrenLoaders[parentId];
 	};
@@ -676,12 +689,13 @@ export default class EventsDataStore {
 		this.parentChildrensMap.clear();
 		this.loadingParentEvents.clear();
 		this.isLoadingChildren.clear();
-		this.hasUnloadedChildren.clear();
+		this.hasMoreChildren.clear();
 		this.eventStore.isExpandedMap.clear();
 		this.targetNode = null;
 		this.targetNodeParents = [];
 		this.isPreloadingTargetEventsChildren.clear();
 		this.parentsToLoad.clear();
+		this.childrenData.clear();
 	};
 
 	private isPreloadingTargetEventsChildren: Map<string, boolean> = new Map();
@@ -691,7 +705,7 @@ export default class EventsDataStore {
 			selectedPath
 				.filter(eventId => {
 					const loadedChildren = this.parentChildrensMap.get(eventId);
-					return !loadedChildren || loadedChildren.length < this.CHILDREN_COUNT_LIMIT;
+					return !loadedChildren || loadedChildren.length < this.CHILDREN_CHUNK_SIZE;
 				})
 				.forEach(eventId => {
 					if (!this.isPreloadingTargetEventsChildren.get(eventId)) {
