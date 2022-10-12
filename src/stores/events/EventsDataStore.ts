@@ -43,15 +43,13 @@ interface FetchEventTreeOptions {
 
 interface ChildrenData {
 	lastChild: string | null;
-	count: number;
-	chunk: number;
+	firstChunkCount: number;
 }
 
 function getDefaultChildrenData(): ChildrenData {
 	return {
 		lastChild: null,
-		count: 0,
-		chunk: 1,
+		firstChunkCount: 0,
 	};
 }
 
@@ -227,7 +225,7 @@ export default class EventsDataStore {
 			const fetchedChildren = eventsByParentId[parentId];
 			const childrenData = this.childrenData.get(parentId) || getDefaultChildrenData();
 
-			childrenData.count += fetchedChildren.length;
+			childrenData.firstChunkCount += fetchedChildren.length;
 			childrenData.lastChild = fetchedChildren[fetchedChildren.length - 1].eventId;
 
 			const fetchedEventChildren = fetchedChildren
@@ -236,7 +234,7 @@ export default class EventsDataStore {
 
 			const childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
 
-			this.hasMoreChildren.set(parentId, childrenData.count === this.CHILDREN_CHUNK_SIZE);
+			this.hasMoreChildren.set(parentId, childrenData.firstChunkCount === this.CHILDREN_CHUNK_SIZE);
 			this.childrenData.set(parentId, childrenData);
 
 			updatedParentChildrenMapEntries.set(parentId, childrenUpdate);
