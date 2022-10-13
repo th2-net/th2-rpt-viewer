@@ -41,7 +41,7 @@ export interface UrlError extends BaseNotification {
 export interface GenericError extends BaseNotification {
 	notificationType: 'genericError';
 	header: string;
-	description: string;
+	description?: string;
 	action?: {
 		label: string;
 		callback: () => void;
@@ -77,7 +77,7 @@ export class NotificationsStore {
 	public handleSSEError = (event: Event) => {
 		if (event instanceof MessageEvent) {
 			const errorData = JSON.parse(event.data);
-			notificationsStore.addMessage({
+			this.addMessage({
 				type: 'error',
 				header: errorData.exceptionName,
 				resource: event.target instanceof EventSource ? event.target.url : event.origin,
@@ -85,6 +85,37 @@ export class NotificationsStore {
 				responseCode: null,
 				notificationType: 'responseError',
 				id: nanoid(),
+			});
+		}
+	};
+
+	@action
+	public handleRequestError = (response: Response) => {
+		if (!response.ok) {
+			const { url, status, statusText } = response;
+			let header: string;
+			switch (status) {
+				case 404:
+					header = "Storage doesn't contain the requested data.";
+					break;
+				case 503:
+				case 502:
+					header = 'rpt-data-provider is unavailable. Try again later.';
+					break;
+				default:
+					header = statusText;
+					break;
+			}
+			response.text().then(text => {
+				this.addMessage({
+					type: 'error',
+					header,
+					resource: url,
+					responseCode: status,
+					responseBody: text,
+					notificationType: 'responseError',
+					id: nanoid(),
+				});
 			});
 		}
 	};

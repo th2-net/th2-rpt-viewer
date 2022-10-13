@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, reaction, observable, computed, runInAction } from 'mobx';
+import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isAbortError } from '../../helpers/fetch';
@@ -220,7 +221,24 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	@action
 	private onLoadingError = (event: Event) => {
-		notificationsStore.handleSSEError(event);
+		if (event instanceof MessageEvent) {
+			notificationsStore.handleSSEError(event);
+		} else {
+			const errorId = nanoid();
+			notificationsStore.addMessage({
+				id: errorId,
+				notificationType: 'genericError',
+				header: 'Something went wrong while loading messages',
+				type: 'error',
+				action: {
+					label: 'Refetch messages',
+					callback: () => {
+						notificationsStore.deleteMessage(errorId);
+						this.loadMessages();
+					},
+				},
+			});
+		}
 		this.stopMessagesLoading();
 		this.resetState(true);
 		this.updateStore.stopSubscription();
@@ -305,22 +323,19 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
 
+		// eslint-disable-next-line no-param-reassign
+		messages = messages.filter(
+			msg => msg.messageId !== this.messagesStore.selectedMessageId?.valueOf(),
+		);
+
 		const prevMessages =
 			this.messages.length > 0
 				? messages.filter(
 						message =>
-							timestampToNumber(message.timestamp) <
-								timestampToNumber(this.messages[0].timestamp) ||
-							message.messageId === this.messages[0].messageId,
+							timestampToNumber(message.timestamp) < timestampToNumber(this.messages[0].timestamp),
 				  )
 				: [];
-		const firstNextMessage = prevMessages[0];
-
 		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
-
-		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
-			prevMessages.shift();
-		}
 
 		if (prevMessages.length > 0 || nextMessages.length > 0) {
 			this.startIndex -= nextMessages.length;

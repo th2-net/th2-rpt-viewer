@@ -19,6 +19,7 @@ import { EventAction } from '../../models/EventAction';
 import EventBodyCard from '../event/EventBodyCard';
 import SplashScreen from '../SplashScreen';
 import EmbeddedEventHeader from './EmbeddedEventHeader';
+import fetch from '../../helpers/fetchRetry';
 
 function EmbeddedEvent({ eventId }: { eventId: string }) {
 	const [event, setEvent] = useState<EventAction | null>(null);
