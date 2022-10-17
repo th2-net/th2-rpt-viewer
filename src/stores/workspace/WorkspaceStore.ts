@@ -183,8 +183,11 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onTimestampSelect = (timestamp: number) => {
+	public onTimestampSelect = (timestamp: number, isTimestampApplied?: boolean) => {
 		this.graphStore.setTimestamp(timestamp);
+		if (isTimestampApplied) {
+			this.eventsStore.onRangeChange(timestamp);
+		}
 	};
 
 	@action
