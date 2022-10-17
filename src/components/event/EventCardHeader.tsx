@@ -152,7 +152,7 @@ function EventCardHeader(props: Props) {
 					<Chip
 						text={childrenCount
 							.toString()
-							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}
+							.concat(eventStore.eventDataStore.hasMoreChildren.get(event.eventId) ? '+' : '')}
 					/>
 				)}
 			<div className='event-header-card__details'>
