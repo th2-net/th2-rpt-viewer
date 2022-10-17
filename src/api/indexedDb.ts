@@ -34,7 +34,13 @@ export enum IndexedDbStores {
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTERS_HISTORY = 'filters-history',
 	SESSIONS_HISTORY = 'sessions-history',
+	SETTINGS = 'settings',
 }
+
+export type Settings = {
+	timestamp: 0;
+	interval: number;
+};
 
 type indexedDbStoresKeyPaths = {
 	[k in IndexedDbStores]: string;
@@ -49,7 +55,8 @@ export type DbData =
 	| OrderRule
 	| MessageSortOrderItem
 	| FiltersHistoryType<FilterState>
-	| Session;
+	| Session
+	| Settings;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -108,6 +115,13 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
+	[IndexedDbStores.SETTINGS]: {
+		key: string;
+		value: Settings;
+		indexes: {
+			timestamp: number;
+		};
+	};
 }
 
 export const indexedDbLimits = {
@@ -129,6 +143,7 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
 	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
+	[IndexedDbStores.SETTINGS]: 'timestamp',
 };
 
 const dbVersion = 3;
