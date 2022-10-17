@@ -588,11 +588,11 @@
 		background: transparent;
 		color: $workspaceLinkGetterColor;
 		font: 11px 'Open sans', sans-serif;
-		
+
 		&:disabled {
 			color: grey;
 			border-color: grey;
-			opacity: .5;
+			opacity: 0.5;
 		}
 	}
 }
@@ -664,14 +664,6 @@
 	&.bordered {
 		border: 1px solid $timestampInputBorderColor;
 		padding: 5px 9px;
-	}
-
-	&__loader {
-		@include spinner(3px, 24px);
-		position: absolute;
-		top: 43%;
-		left: 48%;
-		margin: 4px auto;
 	}
 
 	p {
@@ -752,18 +744,18 @@
 
 .graph-button {
 	cursor: pointer;
-    padding: 3px 6px;
-    outline: none;
-    border: 1px solid $workspaceLinkGetterColor;
-    border-radius: 4px;
-    background: transparent;
-    color: $workspaceLinkGetterColor;
-    font: 11px 'Open sans', sans-serif;
+	padding: 3px 6px;
+	outline: none;
+	border: 1px solid $workspaceLinkGetterColor;
+	border-radius: 4px;
+	background: transparent;
+	color: $workspaceLinkGetterColor;
+	font: 11px 'Open sans', sans-serif;
 	text-transform: capitalize;
-    
-    &:disabled {
-        color: grey;
-        border-color: grey;
-        opacity: .5;
-    }
+
+	&:disabled {
+		color: grey;
+		border-color: grey;
+		opacity: 0.5;
+	}
 }
