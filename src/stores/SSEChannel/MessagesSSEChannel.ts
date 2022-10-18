@@ -58,7 +58,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	@action
 	protected onClose = () => {
-		const isEndReached = this.fetchedEventsCount === 0;
+		const isEndReached = this.fetchedCount === 0;
 
 		if (this.fetchedChunkSubscription == null || this.eventListeners.onClose) {
 			const chunk = this.getNextChunk();
