@@ -88,7 +88,7 @@ export default class EventsStore {
 
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
 
-		reaction(() => this.graphStore.interval, this.onIntervalChange);
+		reaction(() => this.graphStore.eventInterval, this.onIntervalChange);
 	}
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
@@ -286,7 +286,7 @@ export default class EventsStore {
 
 		const timeRange = calculateTimeRange(
 			timestampToNumber(savedEventNode.startTimestamp),
-			this.graphStore.interval,
+			this.graphStore.eventInterval,
 		);
 
 		this.eventDataStore.fetchEventTree({
@@ -298,7 +298,7 @@ export default class EventsStore {
 
 	@action
 	public onRangeChange = (timestampFrom: number) => {
-		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.interval);
+		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.eventInterval);
 
 		this.eventDataStore.fetchEventTree({
 			timeRange,
@@ -387,7 +387,10 @@ export default class EventsStore {
 			try {
 				const event = await this.api.events.getEvent(defaultState);
 				this.filterStore.setRange(
-					getRangeFromTimestamp(timestampToNumber(event.startTimestamp), this.graphStore.interval),
+					getRangeFromTimestamp(
+						timestampToNumber(event.startTimestamp),
+						this.graphStore.eventInterval,
+					),
 				);
 				initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
 				this.goToEvent(event);
@@ -531,7 +534,7 @@ export default class EventsStore {
 			.valueOf();
 		const timestampTo = moment
 			.utc(timestampFrom)
-			.add(this.graphStore.interval, 'minutes')
+			.add(this.graphStore.eventInterval, 'minutes')
 			.valueOf();
 
 		this.eventDataStore.fetchEventTree({

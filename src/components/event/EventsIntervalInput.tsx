@@ -26,11 +26,11 @@ export function EventsIntervalInput() {
 
 	const submitIntervalDebounced = useRef(
 		debounce((i: number) => {
-			graphStore.setInterval(i);
+			graphStore.setEventInterval(i);
 		}, 500),
 	);
 
-	const [interval, setEventsInterval] = React.useState(() => graphStore.interval.toString());
+	const [interval, setEventsInterval] = React.useState(() => graphStore.eventInterval.toString());
 
 	React.useEffect(() => setEventsInterval(graphStore.interval.toString()), [graphStore.interval]);
 
@@ -50,7 +50,7 @@ export function EventsIntervalInput() {
 			submitIntervalDebounced.current.cancel();
 			const parsedInterval = parseInt(interval);
 			if (parsedInterval) {
-				graphStore.setInterval(parsedInterval);
+				graphStore.setEventInterval(parsedInterval);
 				inputRef.current?.blur();
 			}
 		}
