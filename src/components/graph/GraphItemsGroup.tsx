@@ -93,7 +93,7 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 	const dotsClassName = createBemElement('graph-item-group', 'dots', menuAnchor ? 'active' : null);
 
 	return (
-		<div className='graph-item-group' ref={groupRef} style={{ left: group.left }}>
+		<div className='graph-item-group' ref={groupRef} style={{ bottom: 24, left: group.left }}>
 			<div className={dotsClassName} onClick={handleClick}>
 				{groupHeader.map((itemType, index) => (
 					<div className={`graph-dot-bg-${itemType}`} key={`graph-dot-bg-${itemType}-${index}`}>
