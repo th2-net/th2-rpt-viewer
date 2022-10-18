@@ -32,6 +32,8 @@ export function EventsIntervalInput() {
 
 	const [interval, setEventsInterval] = React.useState(() => graphStore.eventInterval.toString());
 
+	React.useEffect(() => setEventsInterval(graphStore.interval.toString()), [graphStore.interval]);
+
 	const onIntervalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const parsedInterval = parseInt(event.target.value) || '';
 		setEventsInterval(parsedInterval.toString());

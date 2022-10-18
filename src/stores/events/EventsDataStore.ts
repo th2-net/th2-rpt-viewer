@@ -167,7 +167,7 @@ export default class EventsDataStore {
 					},
 				},
 			);
-			this.parentNodesLoaderScheduler = window.setInterval(this.addToQueue, 3000);
+			this.parentNodesLoaderScheduler = window.setInterval(this.addToQueue, 1000);
 			this.eventTreeEventSource.subscribe();
 		} catch (error) {
 			this.resetEventsTreeState({ isError: true });
@@ -176,7 +176,7 @@ export default class EventsDataStore {
 
 	private parentsToLoad: Set<string> = new Set();
 
-	private parentEventsQueue = new PQueue({ concurrency: 20 });
+	private parentEventsQueue = new PQueue({ concurrency: 200 });
 
 	private addToQueue = () => {
 		const parentsToLoad: string[] = [];
