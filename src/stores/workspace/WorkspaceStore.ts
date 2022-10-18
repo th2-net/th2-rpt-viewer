@@ -213,7 +213,11 @@ export default class WorkspaceStore {
 
 	@action
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
-		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
+		this.setAttachedMessagesIds(
+			selectedEvent && !selectedEvent.eventName.match(/checkpoint/i)
+				? selectedEvent.attachedMessageIds
+				: [],
+		);
 	};
 
 	stopAttachedMessagesLoading = () => {
