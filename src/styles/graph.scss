@@ -498,6 +498,14 @@
 	z-index: 5;
 }
 
+.graph-resizer {
+	top: 10px;
+	position: absolute;
+	right: 175px;
+	display: flex;
+	gap: 5px;
+}
+
 .graph-search {
 	position: absolute;
 	z-index: 16;

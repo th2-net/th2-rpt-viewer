@@ -134,7 +134,7 @@ export default class RootStore {
 					events: eventStoreState,
 					messages: messagesStoreState,
 					timeRange: activeWorkspace.graphStore.range,
-					interval: activeWorkspace.graphStore.interval,
+					interval: activeWorkspace.graphStore.eventInterval,
 					layout: activeWorkspace.viewStore.panelsLayout,
 				}),
 			];
