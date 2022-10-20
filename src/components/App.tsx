@@ -27,7 +27,6 @@ import Graph from './graph/Graph';
 import WorkspaceLinkGetter from './WorkspaceLinkGetter';
 import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
 import '../styles/root.scss';
-import { GraphResizer } from './graph/GraphResizer';
 
 const AppRootBase = () => {
 	return (
@@ -39,7 +38,6 @@ const AppRootBase = () => {
 				<Graph />
 				<WorkspaceLinkGetter />
 				<MessagesViewConfigurator />
-				<GraphResizer />
 				<div className='app__workspaces'>
 					<WorkspacesLayout />
 				</div>
