@@ -34,7 +34,13 @@ export enum IndexedDbStores {
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTERS_HISTORY = 'filters-history',
 	SESSIONS_HISTORY = 'sessions-history',
+	SETTINGS = 'settings',
 }
+
+export type Settings = {
+	timestamp: 0;
+	interval: number;
+};
 
 type indexedDbStoresKeyPaths = {
 	[k in IndexedDbStores]: string;
@@ -49,7 +55,8 @@ export type DbData =
 	| OrderRule
 	| MessageSortOrderItem
 	| FiltersHistoryType<FilterState>
-	| Session;
+	| Session
+	| Settings;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -108,6 +115,13 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
+	[IndexedDbStores.SETTINGS]: {
+		key: string;
+		value: Settings;
+		indexes: {
+			timestamp: number;
+		};
+	};
 }
 
 export const indexedDbLimits = {
@@ -129,9 +143,10 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
 	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
+	[IndexedDbStores.SETTINGS]: 'timestamp',
 };
 
-const dbVersion = 3;
+const dbVersion = 4;
 
 export class IndexedDB {
 	@observable
@@ -144,9 +159,12 @@ export class IndexedDB {
 	private async initDb() {
 		this.db = await openDB<TH2DB>(this.env, dbVersion, {
 			upgrade: async db => {
+				console.log('hmmmm');
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 					const name = storeName as IndexedDbStores;
+					console.log(name);
 					if (!db.objectStoreNames.contains(name)) {
+						console.log(name);
 						const store = db.createObjectStore(name, { keyPath });
 						store.createIndex('timestamp', 'timestamp');
 					}

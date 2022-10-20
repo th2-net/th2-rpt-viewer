@@ -29,6 +29,7 @@ import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import '../../styles/graph.scss';
 import GraphLastEventsButton from './GraphLastEventsButton';
+import { GraphResizer } from './GraphResizer';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -70,11 +71,11 @@ function Graph({ activeWorkspace }: GraphProps) {
 		(timestamp: number, index: number) => {
 			return activeWorkspace.graphStore.getChunkByTimestamp(
 				moment(timestamp)
-					.subtract(-index * activeWorkspace.graphStore.interval, 'minutes')
+					.subtract(-index * activeWorkspace.graphStore.graphInterval, 'minutes')
 					.valueOf(),
 			);
 		},
-		[activeWorkspace, activeWorkspace.graphStore.interval],
+		[activeWorkspace, activeWorkspace.graphStore.graphInterval],
 	);
 
 	const panelsRange: Array<PanelRange> = React.useMemo(() => {
@@ -105,7 +106,7 @@ function Graph({ activeWorkspace }: GraphProps) {
 						<GraphChunk
 							key={`${chunk.from}-${chunk.to}`}
 							tickSize={activeWorkspace.graphStore.tickSize}
-							interval={activeWorkspace.graphStore.interval}
+							interval={activeWorkspace.graphStore.graphInterval}
 							chunk={chunk}
 							chunkWidth={chunkWidth}
 							getChunkData={activeWorkspace.graphStore.getChunkData}
@@ -127,7 +128,7 @@ function Graph({ activeWorkspace }: GraphProps) {
 				settings={settings}
 				panelsRange={panelsRange}
 				setRange={activeWorkspace.graphStore.setRange}
-				interval={activeWorkspace.graphStore.interval}
+				interval={activeWorkspace.graphStore.graphInterval}
 				timestamp={activeWorkspace.graphStore.timestamp}
 				range={activeWorkspace.graphStore.range}
 			/>
@@ -167,10 +168,11 @@ const GraphRoot = () => {
 					<GraphLastEventsButton
 						onTimestampSubmit={activeWorkspace.onTimestampSelect}
 						setRange={activeWorkspace.eventsStore.onRangeChange}
-						interval={activeWorkspace.graphStore.interval}
+						interval={activeWorkspace.graphStore.eventInterval}
 					/>
 				)}
 				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
+				{isWorkspaceStore(activeWorkspace) && <GraphResizer />}
 			</div>
 		</PointerTimestampProvider>
 	);

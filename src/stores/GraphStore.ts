@@ -32,23 +32,27 @@ export class GraphStore {
 		this.range = timeRange || this.range;
 		this.setTimestampFromRange(this.range);
 
-		this.interval = defaultInterval || 15;
+		this.eventInterval = defaultInterval || 15;
+		this.graphInterval = 15;
 
 		reaction(
-			() => this.interval,
+			() => this.graphInterval,
 			interval => this.createChunks(interval, this.timestamp.valueOf()),
 		);
 
 		reaction(
-			() => this.timestamp,
-			() => this.createChunks(this.interval, this.timestamp.valueOf()),
+			() => this.graphInterval,
+			() => this.createChunks(this.graphInterval, this.timestamp.valueOf()),
 		);
 
-		this.createChunks(this.interval, this.timestamp.valueOf());
+		this.createChunks(this.graphInterval, this.timestamp.valueOf());
 	}
 
 	@observable
-	public interval = 15;
+	public eventInterval = 15;
+
+	@observable
+	public graphInterval = 15;
 
 	@observable
 	public chunks: Chunk[] = [];
@@ -57,14 +61,14 @@ export class GraphStore {
 	public timestamp: Number = new Number(
 		moment
 			.utc()
-			.subtract(this.interval / 2, 'minutes')
+			.subtract(this.eventInterval / 2, 'minutes')
 			.valueOf(),
 	);
 
 	@observable
 	public range: TimeRange = calculateTimeRange(
 		moment.utc(this.timestamp.valueOf()).valueOf(),
-		this.interval,
+		this.eventInterval,
 	);
 
 	@observable
@@ -72,8 +76,8 @@ export class GraphStore {
 
 	@computed
 	public get tickSize() {
-		if (this.interval <= 15) return 1;
-		return Math.floor(this.interval / 10);
+		if (this.graphInterval <= 15) return 1;
+		return Math.floor(this.graphInterval / 10);
 	}
 
 	@action
@@ -82,8 +86,13 @@ export class GraphStore {
 	};
 
 	@action
-	public setInterval = (interval: number) => {
-		this.interval = interval;
+	public setEventInterval = (interval: number) => {
+		this.eventInterval = interval;
+	};
+
+	@action
+	public setGraphInterval = (interval: number) => {
+		this.graphInterval = interval;
 	};
 
 	@action
@@ -96,8 +105,8 @@ export class GraphStore {
 		let chunk: Chunk | undefined = this.chunks.find(c => timestamp >= c.from && timestamp <= c.to);
 		if (chunk) return chunk;
 
-		const centralChunkStart = this.getChunkTimestampFrom(timestamp, this.interval);
-		chunk = observable(this.createChunk(centralChunkStart, this.interval));
+		const centralChunkStart = this.getChunkTimestampFrom(timestamp, this.graphInterval);
+		chunk = observable(this.createChunk(centralChunkStart, this.graphInterval));
 		this.chunks.push(chunk);
 
 		return chunk;

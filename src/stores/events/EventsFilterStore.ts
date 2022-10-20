@@ -67,7 +67,7 @@ export default class EventsFilterStore {
 		initialState?: EventsFilterStoreInitialState,
 	) {
 		if (initialState) {
-			const defaultRange = getDefaultTimeRange(this.graphStore.interval);
+			const defaultRange = getDefaultTimeRange(this.graphStore.eventInterval);
 
 			const { range = defaultRange, filter } = initialState;
 
@@ -90,7 +90,7 @@ export default class EventsFilterStore {
 	}
 
 	@observable
-	public range: TimeRange = getDefaultTimeRange(this.graphStore.interval);
+	public range: TimeRange = getDefaultTimeRange(this.graphStore.eventInterval);
 
 	@observable
 	public isOpen = false;

@@ -130,7 +130,10 @@ export default class MessagesStore {
 			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
 		}
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
-		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
+		return [
+			timestampTo - this.graphStore.eventInterval * 1000,
+			timestampTo + this.graphStore.eventInterval * 1000,
+		];
 	}
 
 	@action

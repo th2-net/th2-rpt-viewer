@@ -37,6 +37,7 @@ import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
 import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
+import { IndexedDbStores, Settings } from '../../api/indexedDb';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -108,10 +109,30 @@ export default class WorkspaceStore {
 			this.messagesStore,
 		);
 
+		this.api.indexedDb.getStoreValues<Settings>(IndexedDbStores.SETTINGS).then(settings => {
+			if (settings.length > 0) this.graphStore.setEventInterval(settings[0].interval);
+		});
+
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
+
+		reaction(() => this.graphStore.eventInterval, this.saveInterval);
 	}
+
+	private saveInterval = (interval: number) => {
+		this.api.indexedDb
+			.updateDbStoreItem<Settings>(IndexedDbStores.SETTINGS, {
+				timestamp: 0,
+				interval,
+			})
+			.catch(() => {
+				this.api.indexedDb.addDbStoreItem<Settings>(IndexedDbStores.SETTINGS, {
+					timestamp: 0,
+					interval,
+				});
+			});
+	};
 
 	@observable
 	public attachedMessagesIds: Array<string> = [];
