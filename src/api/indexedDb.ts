@@ -146,7 +146,7 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.SETTINGS]: 'timestamp',
 };
 
-const dbVersion = 3;
+const dbVersion = 4;
 
 export class IndexedDB {
 	@observable
@@ -159,9 +159,12 @@ export class IndexedDB {
 	private async initDb() {
 		this.db = await openDB<TH2DB>(this.env, dbVersion, {
 			upgrade: async db => {
+				console.log('hmmmm');
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 					const name = storeName as IndexedDbStores;
+					console.log(name);
 					if (!db.objectStoreNames.contains(name)) {
+						console.log(name);
 						const store = db.createObjectStore(name, { keyPath });
 						store.createIndex('timestamp', 'timestamp');
 					}
