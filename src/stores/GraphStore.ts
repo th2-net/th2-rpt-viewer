@@ -33,7 +33,7 @@ export class GraphStore {
 		this.setTimestampFromRange(this.range);
 
 		this.eventInterval = defaultInterval || 15;
-		this.graphInterval = this.eventInterval;
+		this.graphInterval = 15;
 
 		reaction(
 			() => this.graphInterval,
