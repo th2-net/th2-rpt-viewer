@@ -399,7 +399,7 @@
 
 	&__panel-marker {
 		min-width: 20px;
-		height: 5px;
+		height: 8px;
 		position: absolute;
 		z-index: 14;
 		border-radius: 2px;
@@ -414,7 +414,7 @@
 	}
 
 	.time-picker {
-		height: 6px;
+		height: 12px;
 		width: 100%;
 		position: absolute;
 		bottom: 0;
@@ -496,6 +496,14 @@
 	left: 14px;
 	top: 12px;
 	z-index: 5;
+}
+
+.graph-resizer {
+	top: 10px;
+	position: absolute;
+	right: 175px;
+	display: flex;
+	gap: 5px;
 }
 
 .graph-search {

@@ -110,14 +110,14 @@ export default class WorkspaceStore {
 		);
 
 		this.api.indexedDb.getStoreValues<Settings>(IndexedDbStores.SETTINGS).then(settings => {
-			if (settings.length > 0) this.graphStore.setInterval(settings[0].interval);
+			if (settings.length > 0) this.graphStore.setEventInterval(settings[0].interval);
 		});
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
 
-		reaction(() => this.graphStore.interval, this.saveInterval);
+		reaction(() => this.graphStore.eventInterval, this.saveInterval);
 	}
 
 	private saveInterval = (interval: number) => {
