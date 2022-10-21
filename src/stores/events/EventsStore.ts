@@ -386,7 +386,7 @@ export default class EventsStore {
 		if (typeof defaultState === 'string') {
 			try {
 				const event = await this.api.events.getEvent(defaultState);
-				this.filterStore.setRange(
+				this.filterStore.setEventsRange(
 					getRangeFromTimestamp(
 						timestampToNumber(event.startTimestamp),
 						this.graphStore.eventInterval,
@@ -415,8 +415,8 @@ export default class EventsStore {
 
 	private onIntervalChange = (interval: number) => {
 		const intervalMs = interval * 60 * 1000;
-		let timestampFrom = this.filterStore.timestampFrom;
-		let timestampTo = this.filterStore.timestampFrom + intervalMs;
+		let timestampFrom = this.graphStore.timestamp.valueOf() - intervalMs / 2;
+		let timestampTo = this.graphStore.timestamp.valueOf() + intervalMs / 2;
 		const now = moment.utc().valueOf();
 		if (timestampTo > now) {
 			timestampTo = now;

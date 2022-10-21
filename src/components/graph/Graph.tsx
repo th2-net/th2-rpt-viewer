@@ -29,6 +29,7 @@ import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import '../../styles/graph.scss';
 import GraphLastEventsButton from './GraphLastEventsButton';
+import { GraphResizer } from './GraphResizer';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -171,6 +172,7 @@ const GraphRoot = () => {
 					/>
 				)}
 				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
+				{isWorkspaceStore(activeWorkspace) && <GraphResizer />}
 			</div>
 		</PointerTimestampProvider>
 	);
