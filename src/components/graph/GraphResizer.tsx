@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { useActiveWorkspace } from '../../hooks';
+import { observer } from 'mobx-react-lite';
+import { useActiveWorkspace, useWorkspaces } from '../../hooks';
 import { isWorkspaceStore } from '../../helpers/workspace';
 
-export const GraphResizer = () => {
+export const GraphResizer = observer(() => {
 	const activeWorkspace = useActiveWorkspace();
+	const workspacesStore = useWorkspaces();
 
 	const changeInterval = (interval: number) => {
 		if (isWorkspaceStore(activeWorkspace)) activeWorkspace.graphStore.setGraphInterval(interval);
@@ -14,7 +16,11 @@ export const GraphResizer = () => {
 		(isWorkspaceStore(activeWorkspace) && activeWorkspace.graphStore.graphInterval) || 15,
 	);
 
-	return isWorkspaceStore(activeWorkspace) ? (
+	if (!isWorkspaceStore(workspacesStore.activeWorkspace)) {
+		return null;
+	}
+
+	return (
 		<div className='graph-resizer'>
 			<button
 				className='graph-button'
@@ -35,7 +41,5 @@ export const GraphResizer = () => {
 				X10
 			</button>
 		</div>
-	) : (
-		<div />
 	);
-};
+});
