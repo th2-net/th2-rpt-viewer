@@ -122,7 +122,7 @@ export default class EventsFilterStore {
 	}
 
 	@action
-	public setRange = (range: TimeRange) => {
+	public setEventsRange = (range: TimeRange) => {
 		this.range = range;
 	};
 
@@ -151,11 +151,6 @@ export default class EventsFilterStore {
 		} else {
 			this.filter = getDefaultEventsFiltersState(filterInfo);
 		}
-	};
-
-	@action
-	public setEventsRange = (range: TimeRange) => {
-		this.range = range;
 	};
 
 	public dispose = () => {
