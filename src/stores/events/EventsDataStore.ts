@@ -133,8 +133,7 @@ export default class EventsDataStore {
 
 		this.eventStore.selectedNode = null;
 		this.eventStore.selectedEvent = null;
-
-		this.filterStore.setRange(timeRange);
+		this.filterStore.setEventsRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
 
 		if (targetEventId) {
