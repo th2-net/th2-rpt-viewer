@@ -237,6 +237,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 						this.loadMessages();
 					},
 				},
+				description: `${event.type} errRRor`,
 			});
 		}
 		this.stopMessagesLoading();

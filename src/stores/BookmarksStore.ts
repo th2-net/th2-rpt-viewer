@@ -188,11 +188,15 @@ export class BookmarksStore {
 			if (error.name === 'QuotaExceededError') {
 				this.workspacesStore.onQuotaExceededError(bookmark);
 			} else {
+				let description = `${error}`;
+				if (error instanceof Error) {
+					description = error.message;
+				}
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save bookmark ${getItemName(bookmark.item)}`,
-					description: '',
+					description,
 					id: nanoid(),
 				});
 			}

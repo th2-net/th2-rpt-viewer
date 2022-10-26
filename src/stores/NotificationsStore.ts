@@ -17,11 +17,17 @@
 import { action, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { AppearanceTypes } from 'react-toast-notifications';
+import { copyTextToClipboard } from '../helpers/copyHandler';
 
 interface BaseNotification {
 	type: AppearanceTypes;
 	notificationType: 'responseError' | 'urlError' | 'genericError' | 'success';
 	id: string;
+	action?: {
+		label: string;
+		callback: () => void;
+	};
+	description: string;
 }
 
 export interface ResponseError extends BaseNotification {
@@ -37,20 +43,15 @@ export interface UrlError extends BaseNotification {
 	link: string | null | undefined;
 	error: Error;
 }
-
+// get rid of details, add functionality to copy description. move description to parent class.
+// add icon Copy details.
 export interface GenericError extends BaseNotification {
 	notificationType: 'genericError';
 	header: string;
-	description?: string;
-	action?: {
-		label: string;
-		callback: () => void;
-	};
 }
 
 export interface SuccessNotification extends BaseNotification {
 	notificationType: 'success';
-	description: string;
 }
 
 export type Notification = ResponseError | UrlError | GenericError | SuccessNotification;
@@ -61,7 +62,19 @@ export class NotificationsStore {
 
 	@action
 	public addMessage = (error: Notification) => {
-		this.errors = [...this.errors, error];
+		console.log(error);
+		const errorWithAction = error.action
+			? error
+			: {
+					...error,
+					action: {
+						label: 'Copy details',
+						callback: () => {
+							copyTextToClipboard(error.description);
+						},
+					},
+			  };
+		this.errors = [...this.errors, errorWithAction];
 	};
 
 	@action
@@ -85,6 +98,7 @@ export class NotificationsStore {
 				responseCode: null,
 				notificationType: 'responseError',
 				id: nanoid(),
+				description: `${errorData.exceptionCause}`,
 			});
 		}
 	};
@@ -92,6 +106,7 @@ export class NotificationsStore {
 	@action
 	public handleRequestError = (response: Response) => {
 		if (!response.ok) {
+			console.log('handling requestError');
 			const { url, status, statusText } = response;
 			let header: string;
 			switch (status) {
@@ -115,6 +130,7 @@ export class NotificationsStore {
 					responseBody: text,
 					notificationType: 'responseError',
 					id: nanoid(),
+					description: text,
 				});
 			});
 		}

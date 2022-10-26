@@ -19,7 +19,6 @@ import { GenericError } from '../../stores/NotificationsStore';
 
 export default function GenericErrorToast(props: GenericError) {
 	const { description, header, action } = props;
-
 	return (
 		<div className='toast-content'>
 			<div className='toast-content__top'>

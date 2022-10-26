@@ -199,6 +199,7 @@ export default class RootStore {
 				link: window.location.href,
 				error,
 				id: nanoid(),
+				description: `${error}`,
 			});
 			return null;
 		}
@@ -238,7 +239,7 @@ export default class RootStore {
 				notificationType: 'genericError',
 				type: 'success',
 				header: 'Data has been removed',
-				description: '',
+				description: `${errorId} error`,
 				id: nanoid(),
 			});
 		} catch (error) {

@@ -657,6 +657,7 @@ export class SearchStore {
 				notificationType: 'genericError',
 				header: `Something went wrong while loading ${this.formType}s`,
 				type: 'error',
+				description: `${ev.type} error`,
 			});
 		}
 
@@ -862,11 +863,15 @@ export class SearchStore {
 			if (error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR) {
 				this.workspacesStore.onQuotaExceededError(search);
 			} else {
+				let description = `${error}`;
+				if (error instanceof Error) {
+					description = error.message;
+				}
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save current search result`,
-					description: '',
+					description,
 					id: nanoid(),
 				});
 			}

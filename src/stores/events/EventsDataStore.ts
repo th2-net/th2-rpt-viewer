@@ -267,7 +267,7 @@ export default class EventsDataStore {
 			notificationsStore.addMessage({
 				id: errorId,
 				notificationType: 'genericError',
-				header: 'Something went wrong while loading events',
+				header: 'Something',
 				type: 'error',
 				action: {
 					label: 'Refetch events',
@@ -280,6 +280,7 @@ export default class EventsDataStore {
 						});
 					},
 				},
+				description: `${e.type} occured. Try to refetch events.`,
 			});
 		}
 		this.resetEventsTreeState({ isError: true });
@@ -341,10 +342,14 @@ export default class EventsDataStore {
 		} catch (error) {
 			console.error(error);
 			if (!isAbortError(error)) {
+				let description = `${error}`;
+				if (error instanceof Error) {
+					description = error.message;
+				}
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					header: `Error occured while fetching event ${currentParentId}`,
-					description: 'Something went wrong',
+					description,
 					id: nanoid(),
 					type: 'error',
 				});

@@ -182,11 +182,15 @@ class MessageDisplayRulesStore {
 			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
+				let description = `${error}`;
+				if (error instanceof Error) {
+					description = error.message;
+				}
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save rule ${rule.session}`,
-					description: '',
+					description,
 					id: nanoid(),
 				});
 			}
@@ -200,13 +204,17 @@ class MessageDisplayRulesStore {
 			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
+				let description = `${error}`;
+				if (error instanceof Error) {
+					description = error.message;
+				}
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					type: 'error',
 					header: isMessageDisplayRule(rule)
 						? `Failed to update rule ${rule.session}`
 						: 'Failed to update rules order',
-					description: '',
+					description,
 					id: nanoid(),
 				});
 			}

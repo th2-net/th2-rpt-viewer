@@ -13,13 +13,13 @@ export default function (input: RequestInfo, init: RequestInit = {}) {
 			if (!retry) {
 				if (response) {
 					notificationsStore.handleRequestError(response);
-				} else {
+				} else if (error) {
 					const url = typeof input === 'string' ? input : input.url;
 					notificationsStore.addMessage({
 						id: nanoid(),
 						notificationType: 'genericError',
 						header: 'Something went wrong while loading data',
-						description: url,
+						description: `${error.message} ${url}`,
 						type: 'error',
 					});
 				}
