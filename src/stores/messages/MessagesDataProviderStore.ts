@@ -29,7 +29,6 @@ import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
 import { isEventMessage } from '../../helpers/event';
 import { timestampToNumber } from '../../helpers/date';
-import { getArrayOfUniques } from '../../helpers/array';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
@@ -284,12 +283,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@action
-	public onPrevChannelResponse = (messages: EventMessage[], isAutoUpdate?: boolean) => {
+	public onPrevChannelResponse = (messages: EventMessage[]) => {
 		this.lastPreviousChannelResponseTimestamp = null;
-
-		if (isAutoUpdate && messages.length > 0) {
-			this.messages = [];
-		}
 
 		const firstPrevMessage = messages[0];
 

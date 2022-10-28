@@ -54,9 +54,6 @@ export default class MessagesUpdateStore {
 		this.messagesDataStore.loadMessages({
 			onClose: async () => {
 				if (this.isActive) {
-					if (this.isFirstUpdate) {
-						this.loadNextMessages;
-					}
 					this.timer = setTimeout(this.loadNextMessages, 5000);
 				}
 			},
@@ -76,14 +73,13 @@ export default class MessagesUpdateStore {
 
 		if (this.nextMessages.length > 0 || this.isFirstUpdate) {
 			const prevMessages = await this.messagesDataStore.getPreviousMessages();
-			this.messagesDataStore.onPrevChannelResponse(prevMessages, !this.isFirstUpdate);
-			this.messagesDataStore.onNextChannelResponse(this.nextMessages);
+
+			this.messagesDataStore.onNextChannelResponse(this.nextMessages, true);
+			this.messagesDataStore.onPrevChannelResponse(prevMessages);
 
 			if (this.isFirstUpdate) {
 				this.isFirstUpdate = false;
 			}
-		} else {
-			this.messagesDataStore.onNextChannelResponse(this.nextMessages, this.isFirstUpdate);
 		}
 	};
 }

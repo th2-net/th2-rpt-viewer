@@ -115,6 +115,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					searchChannelNext &&
 					!searchChannelNext.isLoading &&
 					!isHorizontal &&
+					!updateStore.isActive &&
 					((wheelScrollDirection === undefined &&
 						scroller.parentElement?.className === 'messages-list') ||
 						wheelScrollDirection === 'next')
