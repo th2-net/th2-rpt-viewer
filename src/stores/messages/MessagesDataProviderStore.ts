@@ -29,6 +29,7 @@ import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
 import { isEventMessage } from '../../helpers/event';
 import { timestampToNumber } from '../../helpers/date';
+import { getArrayOfUniques } from '../../helpers/array';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
@@ -283,8 +284,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@action
-	public onPrevChannelResponse = (messages: EventMessage[]) => {
+	public onPrevChannelResponse = (messages: EventMessage[], isAutoUpdate?: boolean) => {
 		this.lastPreviousChannelResponseTimestamp = null;
+
+		if (isAutoUpdate && messages.length > 0) {
+			this.messages = [];
+		}
+
 		const firstPrevMessage = messages[0];
 
 		if (
@@ -320,8 +326,12 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@action
-	public onNextChannelResponse = (messages: EventMessage[]) => {
+	public onNextChannelResponse = (messages: EventMessage[], isAutoUpdate?: boolean) => {
 		this.lastNextChannelResponseTimestamp = null;
+
+		if (isAutoUpdate && messages.length > 0) {
+			this.messages = [];
+		}
 
 		// eslint-disable-next-line no-param-reassign
 		messages = messages.filter(
@@ -340,9 +350,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		if (prevMessages.length > 0 || nextMessages.length > 0) {
 			this.startIndex -= nextMessages.length;
 
-			let newMessagesList = prevMessages.length
-				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
-				: [...nextMessages, ...this.messages];
+			let newMessagesList =
+				prevMessages.length && !isAutoUpdate
+					? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
+					: [...nextMessages, ...this.messages];
 
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);

@@ -153,9 +153,12 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private _onMessageIdsEvent = (e: Event) => {
 		const messagesIdsEvent: MessageIdsEvent =
 			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-		this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(Boolean) as string[];
-		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
-			this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
+		if (!Object.values(messagesIdsEvent.messageIds).some(messageId => messageId?.includes('-1'))) {
+			this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(Boolean) as string[];
+
+			if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
+				this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
+			}
 		}
 	};
 

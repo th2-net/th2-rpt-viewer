@@ -76,7 +76,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		if (updateStore.isActive && virtuoso.current) {
 			virtuoso.current.scrollToIndex(0);
 		}
-	}, [updateStore.isActive]);
+	}, [updateStore.isActive, updateStore.nextMessages.length]);
 
 	React.useEffect(() => {
 		if (!searchChannelNext?.isLoading) setLoadedChunks(loadedChunks => [true, loadedChunks[1]]);
@@ -114,7 +114,6 @@ const MessagesVirtualizedList = (props: Props) => {
 					isStartReached &&
 					searchChannelNext &&
 					!searchChannelNext.isLoading &&
-					!searchChannelNext.isEndReached &&
 					!isHorizontal &&
 					((wheelScrollDirection === undefined &&
 						scroller.parentElement?.className === 'messages-list') ||
@@ -147,6 +146,11 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const onWheel: React.WheelEventHandler<'div'> = event => {
 		event.persist();
+
+		if (updateStore.isActive) {
+			updateStore.isActive = false;
+		}
+
 		debouncedScrollHandler(event, Boolean(event.deltaX), event.deltaY < 0 ? 'next' : 'previous');
 	};
 

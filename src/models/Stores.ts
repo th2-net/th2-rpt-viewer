@@ -24,11 +24,12 @@ export interface MessagesDataStore {
 		nextChannelListeners?: Partial<MessageSSEEventListeners>,
 		prevChannelListeners?: Partial<MessageSSEEventListeners>,
 	) => Promise<void>;
-	onNextChannelResponse: (messages: EventMessage[]) => void;
-	onPrevChannelResponse: (messages: EventMessage[]) => void;
+	onNextChannelResponse: (messages: EventMessage[], isAutoUpdate?: boolean) => void;
+	onPrevChannelResponse: (messages: EventMessage[], isAutoUpdate?: boolean) => void;
 	resetState: () => void;
 	getFilterParams: () => MessagesSSEParams;
 	getNextMessages: () => Promise<EventMessage[]>;
+	getPreviousMessages: () => Promise<EventMessage[]>;
 }
 
 export interface MessageIdsStore {

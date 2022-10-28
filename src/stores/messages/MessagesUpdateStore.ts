@@ -18,6 +18,7 @@ import { action, computed, observable } from 'mobx';
 import MessagesStore from './MessagesStore';
 import EmbeddedMessagesStore from '../../components/embedded/embedded-stores/EmbeddedMessagesStore';
 import { MessagesDataStore } from '../../models/Stores';
+import { EventMessage } from '../../models/EventMessage';
 
 export default class MessagesUpdateStore {
 	constructor(
@@ -30,24 +31,32 @@ export default class MessagesUpdateStore {
 	@observable
 	public isActive = false;
 
+	@observable
+	public isFirstUpdate = true;
+
+	@observable
+	public nextMessages: EventMessage[] = [];
+
 	@computed
 	public get canActivate() {
 		return this.messagesStore.filterStore.filter.streams.length > 0;
 	}
 
 	@action
-	public subscribeOnChanges = () => {
+	public subscribeOnChanges = async () => {
 		if (!this.canActivate) return;
 		this.isActive = true;
+		this.isFirstUpdate = true;
 		this.messagesDataStore.resetState();
 		this.messagesStore.selectedMessageId = null;
 		this.messagesStore.filterStore.filter.timestampTo = Date.now();
 
 		this.messagesDataStore.loadMessages({
-			onClose: async messages => {
-				this.messagesDataStore.onNextChannelResponse(messages);
-
+			onClose: async () => {
 				if (this.isActive) {
+					if (this.isFirstUpdate) {
+						this.loadNextMessages;
+					}
 					this.timer = setTimeout(this.loadNextMessages, 5000);
 				}
 			},
@@ -63,7 +72,18 @@ export default class MessagesUpdateStore {
 	};
 
 	private loadNextMessages = async () => {
-		const nextMessages = await this.messagesDataStore.getNextMessages();
-		this.messagesDataStore.onNextChannelResponse(nextMessages);
+		this.nextMessages = await this.messagesDataStore.getNextMessages();
+
+		if (this.nextMessages.length > 0 || this.isFirstUpdate) {
+			const prevMessages = await this.messagesDataStore.getPreviousMessages();
+			this.messagesDataStore.onPrevChannelResponse(prevMessages, !this.isFirstUpdate);
+			this.messagesDataStore.onNextChannelResponse(this.nextMessages);
+
+			if (this.isFirstUpdate) {
+				this.isFirstUpdate = false;
+			}
+		} else {
+			this.messagesDataStore.onNextChannelResponse(this.nextMessages, this.isFirstUpdate);
+		}
 	};
 }
