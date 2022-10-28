@@ -159,7 +159,7 @@ export default class MessagesStore {
 		}
 
 		this.exportStore.disableExport();
-		this.sessionsStore.saveSessions(filter.streams);
+		this.sessionsStore.saveSessions(filter.streams.slice(0, this.filterStore.SESSIONS_LIMIT));
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.highlightedMessageId = null;
@@ -233,13 +233,17 @@ export default class MessagesStore {
 			if (mostRecentMessage) {
 				const streams = this.filterStore.filter.streams;
 				this.selectedMessageId = new String(mostRecentMessage.messageId);
-				this.filterStore.filter = {
-					...this.filterStore.filter,
-					streams: [
-						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
-					],
-					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
-				};
+				this.filterStore.setMessagesFilter(
+					{
+						...this.filterStore.filter,
+						streams: [
+							...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
+						],
+						timestampTo: timestampToNumber(mostRecentMessage.timestamp),
+					},
+					this.filterStore.sseMessagesFilter,
+					this.filterStore.isSoftFilter,
+				);
 			}
 		}
 	};
@@ -250,11 +254,15 @@ export default class MessagesStore {
 		this.highlightedMessageId = null;
 		this.hintMessages = [];
 
-		this.filterStore.filter = {
-			...this.filterStore.filter,
-			timestampFrom: null,
-			timestampTo: timestamp,
-		};
+		this.filterStore.setMessagesFilter(
+			{
+				...this.filterStore.filter,
+				timestampFrom: null,
+				timestampTo: timestamp,
+			},
+			this.filterStore.sseMessagesFilter,
+			this.filterStore.isSoftFilter,
+		);
 
 		if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
 			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, reaction, observable, computed, runInAction } from 'mobx';
+import { action, reaction, observable, computed, runInAction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
