@@ -651,13 +651,15 @@ export class SearchStore {
 		if (ev instanceof MessageEvent) {
 			notificationsStore.handleSSEError(ev);
 		} else {
+			const evSource = toJS(ev).currentTarget as EventSource;
+			const description = evSource ? `${ev.type} at ${evSource.url}` : `${ev.type}`;
 			const errorId = nanoid();
 			notificationsStore.addMessage({
 				id: errorId,
 				notificationType: 'genericError',
-				header: `Something went wrong while loading ${this.formType}s`,
+				header: `EventSource error - check the console.`,
 				type: 'error',
-				description: `${ev.type} error`,
+				description,
 			});
 		}
 

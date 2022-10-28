@@ -193,13 +193,17 @@ export default class RootStore {
 				},
 			];
 		} catch (error) {
+			let description = `${error}`;
+			if (error instanceof Error) {
+				description = error.message;
+			}
 			this.notificationsStore.addMessage({
 				notificationType: 'urlError',
 				type: 'error',
 				link: window.location.href,
 				error,
 				id: nanoid(),
-				description: `${error}`,
+				description,
 			});
 			return null;
 		}
@@ -239,7 +243,7 @@ export default class RootStore {
 				notificationType: 'genericError',
 				type: 'success',
 				header: 'Data has been removed',
-				description: `${errorId} error`,
+				description: `Data has been removed`,
 				id: nanoid(),
 			});
 		} catch (error) {

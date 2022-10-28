@@ -17,7 +17,6 @@
 import { action, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { AppearanceTypes } from 'react-toast-notifications';
-import { copyTextToClipboard } from '../helpers/copyHandler';
 
 interface BaseNotification {
 	type: AppearanceTypes;
@@ -62,16 +61,14 @@ export class NotificationsStore {
 
 	@action
 	public addMessage = (error: Notification) => {
-		console.log(error);
 		const errorWithAction = error.action
 			? error
 			: {
 					...error,
 					action: {
 						label: 'Copy details',
-						callback: () => {
-							copyTextToClipboard(error.description);
-						},
+						// eslint-disable-next-line @typescript-eslint/no-empty-function
+						callback: () => {},
 					},
 			  };
 		this.errors = [...this.errors, errorWithAction];
@@ -130,7 +127,7 @@ export class NotificationsStore {
 					responseBody: text,
 					notificationType: 'responseError',
 					id: nanoid(),
-					description: text,
+					description: `${status}: ${text}`,
 				});
 			});
 		}

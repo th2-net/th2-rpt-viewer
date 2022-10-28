@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, reaction, observable, computed, runInAction } from 'mobx';
+import { action, reaction, observable, computed, runInAction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
@@ -224,6 +224,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		if (event instanceof MessageEvent) {
 			notificationsStore.handleSSEError(event);
 		} else {
+			const evSource = toJS(event).currentTarget as EventSource;
+			const description = evSource ? `${event.type} at ${evSource.url}` : `${event.type}`;
 			const errorId = nanoid();
 			notificationsStore.addMessage({
 				id: errorId,
@@ -237,7 +239,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 						this.loadMessages();
 					},
 				},
-				description: `${event.type} errRRor`,
+				description,
 			});
 		}
 		this.stopMessagesLoading();

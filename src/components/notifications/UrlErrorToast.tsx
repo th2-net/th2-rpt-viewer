@@ -20,12 +20,12 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 import { UrlError } from '../../stores/NotificationsStore';
 
 export default function UrlErrorToast(props: UrlError) {
-	const { link, error } = props;
+	const { link, error, description } = props;
 	const [copied, setCopied] = useState(false);
 	const copyDetailsText = createStyleSelector('toast-action__text', copied ? 'copied' : null);
 
 	const copy = () => {
-		const value = JSON.stringify({ link, error: error.message }, null, ' ');
+		const value = JSON.stringify({ link, error: error.message } || description, null, ' ');
 		copyTextToClipboard(value);
 		setCopied(true);
 	};

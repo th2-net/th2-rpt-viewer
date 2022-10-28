@@ -18,8 +18,8 @@ export default function (input: RequestInfo, init: RequestInit = {}) {
 					notificationsStore.addMessage({
 						id: nanoid(),
 						notificationType: 'genericError',
-						header: 'Something went wrong while loading data',
-						description: `${error.message} ${url}`,
+						header: `${error.message} at ${url}`,
+						description: `${error.message} at ${url}`,
 						type: 'error',
 					});
 				}
