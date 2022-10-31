@@ -179,19 +179,18 @@ export default class WorkspaceStore {
 				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
 			);
 			const newStreams = messages
-				.map(message => message.messageId.substring(0, message.messageId.indexOf(':')))
+				.map(message => message.sessionId)
 				.filter(
 					(stream, index, self) =>
 						index === self.findIndex(str => str === stream) &&
-						!this.messagesStore.filterStore.filter.streams.find(str => str === stream),
+						!this.messagesStore.filterStore.filter.streams.includes(stream),
 				);
 
 			messages
-				.map(message => message.messageId.substring(0, message.messageId.indexOf(':')))
+				.map(message => message.sessionId)
 				.filter(
 					(stream, index, self) =>
-						index === self.findIndex(str => str === stream) &&
-						!newStreams.find(str => str === stream),
+						index === self.findIndex(str => str === stream) && !newStreams.includes(stream),
 				)
 				.forEach(stream =>
 					notificationsStore.addMessage({
