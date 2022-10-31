@@ -40,18 +40,14 @@ export default function GenericErrorToast(props: GenericError) {
 			<div className='toast-content__bottom'>
 				{action &&
 					((action.label === 'Copy details' && (
-						<div className='toast-content__bottom'>
-							<button className='toast-action' disabled={copied} onClick={copy}>
-								{!copied && <span className='toast-action__copy-icon' />}
-								<span className={copyDetailsText}>{copied ? 'Copied' : ' Copy details'}</span>
-							</button>
-						</div>
+						<button className='toast-action' disabled={copied} onClick={copy}>
+							{!copied && <span className='toast-action__copy-icon' />}
+							<span className={copyDetailsText}>{copied ? 'Copied' : ' Copy details'}</span>
+						</button>
 					)) || (
-						<div className='toast-content__bottom'>
-							<button className='toast-action' onClick={action.callback}>
-								<span className='toast-action__text'>{action.label}</span>
-							</button>
-						</div>
+						<button className='toast-action' onClick={action.callback}>
+							<span className='toast-action__text'>{action.label}</span>
+						</button>
 					))}
 			</div>
 		</div>
