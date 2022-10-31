@@ -193,17 +193,13 @@ export default class RootStore {
 				},
 			];
 		} catch (error) {
-			let description = `${error}`;
-			if (error instanceof Error) {
-				description = error.message;
-			}
 			this.notificationsStore.addMessage({
 				notificationType: 'urlError',
 				type: 'error',
 				link: window.location.href,
 				error,
 				id: nanoid(),
-				description,
+				description: error instanceof Error ? error.message : `${error}`,
 			});
 			return null;
 		}

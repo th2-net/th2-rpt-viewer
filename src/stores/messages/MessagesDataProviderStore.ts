@@ -225,7 +225,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			notificationsStore.handleSSEError(event);
 		} else {
 			const evSource = toJS(event).currentTarget as EventSource;
-			const description = evSource ? `${event.type} at ${evSource.url}` : `${event.type}`;
 			const errorId = nanoid();
 			notificationsStore.addMessage({
 				id: errorId,
@@ -239,7 +238,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 						this.loadMessages();
 					},
 				},
-				description,
+				description: evSource ? `${event.type} at ${evSource.url}` : `${event.type}`,
 			});
 		}
 		this.stopMessagesLoading();

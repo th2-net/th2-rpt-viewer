@@ -267,7 +267,7 @@ export default class EventsDataStore {
 			notificationsStore.addMessage({
 				id: errorId,
 				notificationType: 'genericError',
-				header: 'Something',
+				header: 'Something went wrong while loading events',
 				type: 'error',
 				action: {
 					label: 'Refetch events',
@@ -342,14 +342,10 @@ export default class EventsDataStore {
 		} catch (error) {
 			console.error(error);
 			if (!isAbortError(error)) {
-				let description = `${error}`;
-				if (error instanceof Error) {
-					description = error.message;
-				}
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					header: `Error occured while fetching event ${currentParentId}`,
-					description,
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 					type: 'error',
 				});

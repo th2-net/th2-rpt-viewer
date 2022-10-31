@@ -652,14 +652,13 @@ export class SearchStore {
 			notificationsStore.handleSSEError(ev);
 		} else {
 			const evSource = toJS(ev).currentTarget as EventSource;
-			const description = evSource ? `${ev.type} at ${evSource.url}` : `${ev.type}`;
 			const errorId = nanoid();
 			notificationsStore.addMessage({
 				id: errorId,
 				notificationType: 'genericError',
 				header: `EventSource error - check the console.`,
 				type: 'error',
-				description,
+				description: evSource ? `${ev.type} at ${evSource.url}` : `${ev.type}`,
 			});
 		}
 
@@ -865,15 +864,11 @@ export class SearchStore {
 			if (error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR) {
 				this.workspacesStore.onQuotaExceededError(search);
 			} else {
-				let description = `${error}`;
-				if (error instanceof Error) {
-					description = error.message;
-				}
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save current search result`,
-					description,
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 				});
 			}

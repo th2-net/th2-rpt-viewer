@@ -42,8 +42,6 @@ export interface UrlError extends BaseNotification {
 	link: string | null | undefined;
 	error: Error;
 }
-// get rid of details, add functionality to copy description. move description to parent class.
-// add icon Copy details.
 export interface GenericError extends BaseNotification {
 	notificationType: 'genericError';
 	header: string;
@@ -61,17 +59,19 @@ export class NotificationsStore {
 
 	@action
 	public addMessage = (error: Notification) => {
-		const errorWithAction = error.action
-			? error
-			: {
-					...error,
-					action: {
-						label: 'Copy details',
-						// eslint-disable-next-line @typescript-eslint/no-empty-function
-						callback: () => {},
-					},
-			  };
-		this.errors = [...this.errors, errorWithAction];
+		this.errors = [
+			...this.errors,
+			error.action
+				? error
+				: {
+						...error,
+						action: {
+							label: 'Copy details',
+							// eslint-disable-next-line @typescript-eslint/no-empty-function
+							callback: () => {},
+						},
+				  },
+		];
 	};
 
 	@action
@@ -103,7 +103,6 @@ export class NotificationsStore {
 	@action
 	public handleRequestError = (response: Response) => {
 		if (!response.ok) {
-			console.log('handling requestError');
 			const { url, status, statusText } = response;
 			let header: string;
 			switch (status) {
