@@ -43,7 +43,7 @@ export default class MessagesUpdateStore {
 	}
 
 	@action
-	public subscribeOnChanges = async () => {
+	public subscribeOnChanges = () => {
 		if (!this.canActivate) return;
 		this.isActive = true;
 		this.isFirstUpdate = true;
