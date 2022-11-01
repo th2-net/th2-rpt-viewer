@@ -237,7 +237,7 @@ export default class MessagesStore {
 					{
 						...this.filterStore.filter,
 						streams: [
-							...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
+							...new Set([...attachedMessages.map(({ sessionId }) => sessionId), ...streams]),
 						],
 						timestampTo: timestampToNumber(mostRecentMessage.timestamp),
 					},

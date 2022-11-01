@@ -39,6 +39,7 @@ import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 import { IndexedDbStores, Settings } from '../../api/indexedDb';
 import notificationsStore from '../NotificationsStore';
+import { getArrayOfUniques } from '../../helpers/array';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -178,10 +179,10 @@ export default class WorkspaceStore {
 			const messages = await Promise.all(
 				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
 			);
-			const newStreams = [
+			const newStreams = getArrayOfUniques([
 				...messages.map(message => message.sessionId),
 				...this.messagesStore.filterStore.filter.streams,
-			].filter((stream, index, self) => index === self.findIndex(str => str === stream));
+			]);
 
 			messages
 				.map(message => message.sessionId)
