@@ -178,19 +178,17 @@ export default class WorkspaceStore {
 			const messages = await Promise.all(
 				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
 			);
-			const newStreams = messages
-				.map(message => message.sessionId)
-				.filter(
-					(stream, index, self) =>
-						index === self.findIndex(str => str === stream) &&
-						!this.messagesStore.filterStore.filter.streams.includes(stream),
-				);
+			const newStreams = [
+				...messages.map(message => message.sessionId),
+				...this.messagesStore.filterStore.filter.streams,
+			].filter((stream, index, self) => index === self.findIndex(str => str === stream));
 
 			messages
 				.map(message => message.sessionId)
 				.filter(
 					(stream, index, self) =>
-						index === self.findIndex(str => str === stream) && !newStreams.includes(stream),
+						index === self.findIndex(str => str === stream) &&
+						!newStreams.slice(0, this.messagesStore.filterStore.SESSIONS_LIMIT).includes(stream),
 				)
 				.forEach(stream =>
 					notificationsStore.addMessage({
@@ -203,22 +201,10 @@ export default class WorkspaceStore {
 					}),
 				);
 
-			const messagesFiltered = messages.filter(
-				message =>
-					this.messagesStore.filterStore.filter.streams.find(
-						stream => stream === message.messageId.substring(0, message.messageId.indexOf(':')),
-					) ||
-					(this.messagesStore.filterStore.SESSIONS_LIMIT >
-						this.messagesStore.filterStore.filter.streams.length &&
-						newStreams
-							.slice(
-								0,
-								this.messagesStore.filterStore.SESSIONS_LIMIT -
-									this.messagesStore.filterStore.filter.streams.length,
-							)
-							.find(
-								stream => stream === message.messageId.substring(0, message.messageId.indexOf(':')),
-							)),
+			const messagesFiltered = messages.filter(message =>
+				newStreams
+					.slice(0, this.messagesStore.filterStore.SESSIONS_LIMIT)
+					.includes(message.sessionId),
 			);
 
 			this.attachedMessages = sortMessagesByTimestamp(
