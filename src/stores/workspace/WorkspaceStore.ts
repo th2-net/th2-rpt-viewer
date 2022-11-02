@@ -76,15 +76,12 @@ export default class WorkspaceStore {
 		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
+		interval: number,
 	) {
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
-		this.graphStore = new GraphStore(
-			this.selectedStore,
-			initialState.timeRange,
-			initialState.interval,
-		);
+		this.graphStore = new GraphStore(this.selectedStore, initialState.timeRange, interval);
 		this.eventsStore = new EventsStore(
 			this,
 			this.graphStore,
@@ -108,10 +105,6 @@ export default class WorkspaceStore {
 			this.messageDisplayRulesStore,
 			this.messagesStore,
 		);
-
-		this.api.indexedDb.getStoreValues<Settings>(IndexedDbStores.SETTINGS).then(settings => {
-			if (settings.length > 0) this.graphStore.setEventInterval(settings[0].interval);
-		});
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 

@@ -24,6 +24,7 @@ import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { Session } from '../stores/messages/SessionsStore';
 import { EventBookmark, MessageBookmark } from '../models/Bookmarks';
+import notificationsStore from '../stores/NotificationsStore';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -197,12 +198,28 @@ export class IndexedDB {
 	};
 
 	public updateDbStoreItem = async <T extends DbData>(storeName: IndexedDbStores, data: T) => {
-		const db = await this.getDb();
-		const tx = await db.transaction(storeName, 'readwrite');
-		const store = await tx.objectStore(storeName);
+		try {
+			const db = await this.getDb();
+			const tx = await db.transaction(storeName, 'readwrite');
+			const store = await tx.objectStore(storeName);
 
-		await store.put(data);
-		await tx.done;
+			await store.put(data);
+			await tx.done;
+		} catch (error) {
+			notificationsStore.addMessage({
+				id: 'error id',
+				notificationType: 'genericError',
+				header: 'Unable to store data to IndexedDB',
+				type: 'error',
+				action: {
+					label: 'Clear IndexedDB',
+					callback: () => {
+						notificationsStore.deleteMessage('error id');
+						this.resetDatabse();
+					},
+				},
+			});
+		}
 	};
 
 	public getStoreValues = async <T extends DbData>(
@@ -274,5 +291,12 @@ export class IndexedDB {
 		if (store.clear) {
 			store.clear();
 		}
+	};
+
+	private resetDatabse = async () => {
+		this.db?.close();
+		const requestDelete = indexedDB.deleteDatabase(this.env);
+
+		requestDelete.addEventListener('success', () => this.initDb());
 	};
 }
