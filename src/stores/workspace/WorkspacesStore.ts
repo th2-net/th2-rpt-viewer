@@ -78,13 +78,9 @@ export default class WorkspacesStore {
 				this.addWorkspace(await this.createWorkspace(workspaceState)),
 			);
 		} else {
-			[1].forEach(async () => {
-				this.addWorkspace(
-					await this.createWorkspace({
-						layout: [100, 0],
-					}),
-				);
-			});
+			this.createWorkspace({
+				layout: [100, 0],
+			}).then(workspace => this.addWorkspace(workspace));
 		}
 	}
 

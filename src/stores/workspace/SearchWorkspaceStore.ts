@@ -65,7 +65,7 @@ export default class SearchWorkspaceStore {
 			},
 		});
 
-		newWorkspace.then(newWorkspace => this.workspacesStore.addWorkspace(newWorkspace));
+		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
 	};
 
 	@action
@@ -111,7 +111,7 @@ export default class SearchWorkspaceStore {
 		}
 
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
-		[1].forEach(async () => this.workspacesStore.addWorkspace(await newWorkspace));
+		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
 	};
 
 	@action
@@ -131,6 +131,6 @@ export default class SearchWorkspaceStore {
 		}
 
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
-		[1].forEach(async () => this.workspacesStore.addWorkspace(await newWorkspace));
+		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
 	};
 }
