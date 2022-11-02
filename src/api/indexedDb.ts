@@ -16,6 +16,7 @@
 
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
+import { nanoid } from 'nanoid';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
@@ -25,8 +26,6 @@ import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { Session } from '../stores/messages/SessionsStore';
 import { EventBookmark, MessageBookmark } from '../models/Bookmarks';
 import notificationsStore from '../stores/NotificationsStore';
-
-import { nanoid } from 'nanoid';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
