@@ -221,6 +221,7 @@ export class IndexedDB {
 						this.resetDatabse();
 					},
 				},
+				description: 'Unable to store data to IndexedDB',
 			});
 		}
 	};
