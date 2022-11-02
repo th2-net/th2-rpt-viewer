@@ -26,6 +26,8 @@ import { Session } from '../stores/messages/SessionsStore';
 import { EventBookmark, MessageBookmark } from '../models/Bookmarks';
 import notificationsStore from '../stores/NotificationsStore';
 
+import { nanoid } from 'nanoid';
+
 export enum IndexedDbStores {
 	EVENTS = 'events',
 	MESSAGES = 'messages',
@@ -206,15 +208,16 @@ export class IndexedDB {
 			await store.put(data);
 			await tx.done;
 		} catch (error) {
+			const id = nanoid();
 			notificationsStore.addMessage({
-				id: 'error id',
+				id,
 				notificationType: 'genericError',
 				header: 'Unable to store data to IndexedDB',
 				type: 'error',
 				action: {
 					label: 'Clear IndexedDB',
 					callback: () => {
-						notificationsStore.deleteMessage('error id');
+						notificationsStore.deleteMessage(id);
 						this.resetDatabse();
 					},
 				},
