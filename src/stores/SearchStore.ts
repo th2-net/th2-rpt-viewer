@@ -651,12 +651,14 @@ export class SearchStore {
 		if (ev instanceof MessageEvent) {
 			notificationsStore.handleSSEError(ev);
 		} else {
+			const evSource = toJS(ev).currentTarget as EventSource;
 			const errorId = nanoid();
 			notificationsStore.addMessage({
 				id: errorId,
 				notificationType: 'genericError',
-				header: `Something went wrong while loading ${this.formType}s`,
+				header: `EventSource error - check the console.`,
 				type: 'error',
+				description: evSource ? `${ev.type} at ${evSource.url}` : `${ev.type}`,
 			});
 		}
 
@@ -866,7 +868,7 @@ export class SearchStore {
 					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save current search result`,
-					description: '',
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 				});
 			}

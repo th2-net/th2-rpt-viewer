@@ -38,6 +38,8 @@ import { isAbortError } from '../../helpers/fetch';
 import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 import { IndexedDbStores, Settings } from '../../api/indexedDb';
+import notificationsStore from '../NotificationsStore';
+import { getArrayOfUniques } from '../../helpers/array';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -170,8 +172,37 @@ export default class WorkspaceStore {
 			const messages = await Promise.all(
 				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
 			);
+			const newStreams = getArrayOfUniques([
+				...messages.map(message => message.sessionId),
+				...this.messagesStore.filterStore.filter.streams,
+			]);
+
+			messages
+				.map(message => message.sessionId)
+				.filter(
+					(stream, index, self) =>
+						index === self.findIndex(str => str === stream) &&
+						!newStreams.slice(0, this.messagesStore.filterStore.SESSIONS_LIMIT).includes(stream),
+				)
+				.forEach(stream =>
+					notificationsStore.addMessage({
+						notificationType: 'genericError',
+						type: 'error',
+						header: `Sessions limit of ${this.messagesStore.filterStore.SESSIONS_LIMIT} reached.`,
+						description: `Session ${stream} not included in current sessions. 
+						Attached messages from this session not included in workspace.`,
+						id: nanoid(),
+					}),
+				);
+
+			const messagesFiltered = messages.filter(message =>
+				newStreams
+					.slice(0, this.messagesStore.filterStore.SESSIONS_LIMIT)
+					.includes(message.sessionId),
+			);
+
 			this.attachedMessages = sortMessagesByTimestamp(
-				[...cachedMessages, ...messages].filter(Boolean),
+				[...cachedMessages, ...messagesFiltered].filter(Boolean),
 			);
 		} catch (error) {
 			if (!isAbortError(error)) {
