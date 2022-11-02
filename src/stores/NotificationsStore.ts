@@ -22,6 +22,11 @@ interface BaseNotification {
 	type: AppearanceTypes;
 	notificationType: 'responseError' | 'urlError' | 'genericError' | 'success';
 	id: string;
+	action?: {
+		label: string;
+		callback: () => void;
+	};
+	description: string;
 }
 
 export interface ResponseError extends BaseNotification {
@@ -37,20 +42,13 @@ export interface UrlError extends BaseNotification {
 	link: string | null | undefined;
 	error: Error;
 }
-
 export interface GenericError extends BaseNotification {
 	notificationType: 'genericError';
 	header: string;
-	description?: string;
-	action?: {
-		label: string;
-		callback: () => void;
-	};
 }
 
 export interface SuccessNotification extends BaseNotification {
 	notificationType: 'success';
-	description: string;
 }
 
 export type Notification = ResponseError | UrlError | GenericError | SuccessNotification;
@@ -61,7 +59,19 @@ export class NotificationsStore {
 
 	@action
 	public addMessage = (error: Notification) => {
-		this.errors = [...this.errors, error];
+		this.errors = [
+			...this.errors,
+			error.action
+				? error
+				: {
+						...error,
+						action: {
+							label: 'Copy details',
+							// eslint-disable-next-line @typescript-eslint/no-empty-function
+							callback: () => {},
+						},
+				  },
+		];
 	};
 
 	@action
@@ -85,6 +95,7 @@ export class NotificationsStore {
 				responseCode: null,
 				notificationType: 'responseError',
 				id: nanoid(),
+				description: `${errorData.exceptionCause}`,
 			});
 		}
 	};
@@ -115,6 +126,7 @@ export class NotificationsStore {
 					responseBody: text,
 					notificationType: 'responseError',
 					id: nanoid(),
+					description: `${status}: ${text}`,
 				});
 			});
 		}

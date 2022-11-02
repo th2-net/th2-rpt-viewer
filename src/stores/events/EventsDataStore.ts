@@ -280,6 +280,7 @@ export default class EventsDataStore {
 						});
 					},
 				},
+				description: `${e.type} occured. Try to refetch events.`,
 			});
 		}
 		this.resetEventsTreeState({ isError: true });
@@ -344,7 +345,7 @@ export default class EventsDataStore {
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					header: `Error occured while fetching event ${currentParentId}`,
-					description: 'Something went wrong',
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 					type: 'error',
 				});
