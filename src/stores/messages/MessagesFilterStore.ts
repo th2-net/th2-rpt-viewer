@@ -16,11 +16,13 @@
 
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import moment from 'moment';
+import { nanoid } from 'nanoid';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { SearchStore } from '../SearchStore';
 import { getDefaultMessagesFiltersState } from '../../helpers/search';
 import { MessagesFilterInfo, MessagesSSEParams } from '../../api/sse';
+import notificationsStore from '../NotificationsStore';
 
 function getDefaultMessagesFilter(): MessagesFilter {
 	return {
@@ -118,6 +120,8 @@ export default class MessagesFilterStore {
 		return Object.values(this.sseMessagesFilter).some(filter => filter.values.length > 0);
 	}
 
+	public SESSIONS_LIMIT = 5;
+
 	@action
 	public setMessagesFilter(
 		filter: MessagesFilter,
@@ -126,7 +130,19 @@ export default class MessagesFilterStore {
 	) {
 		this.isSoftFilter = isSoftFilterApplied;
 		this.sseMessagesFilter = sseFilters;
-		this.filter = filter;
+		filter.streams.slice(this.SESSIONS_LIMIT).forEach(session =>
+			notificationsStore.addMessage({
+				notificationType: 'genericError',
+				type: 'error',
+				header: `Sessions limit of ${this.SESSIONS_LIMIT} reached.`,
+				description: `Session ${session} not included in current sessions.`,
+				id: nanoid(),
+			}),
+		);
+		this.filter = {
+			...filter,
+			streams: filter.streams.slice(0, this.SESSIONS_LIMIT),
+		};
 	}
 
 	@action
