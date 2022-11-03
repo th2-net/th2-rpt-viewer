@@ -30,11 +30,15 @@ export function EventsIntervalInput() {
 		}, 500),
 	);
 
-	const [interval, setEventsInterval] = React.useState(() => graphStore.eventInterval.toString());
+	const [interval, setEventsInterval] = React.useState(() =>
+		graphStore.eventInterval ? graphStore.eventInterval.toString() : '',
+	);
 
-	React.useEffect(() => setEventsInterval(graphStore.eventInterval.toString()), [
-		graphStore.eventInterval,
-	]);
+	React.useEffect(() => {
+		if (graphStore.eventInterval) {
+			setEventsInterval(graphStore.eventInterval.toString());
+		}
+	}, [graphStore.eventInterval]);
 
 	const onIntervalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const parsedInterval = parseInt(event.target.value) || '';
