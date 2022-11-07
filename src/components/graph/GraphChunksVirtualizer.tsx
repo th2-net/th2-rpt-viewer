@@ -17,7 +17,7 @@
 import React from 'react';
 import moment from 'moment';
 import { motion, useMotionValue } from 'framer-motion';
-import { useDebouncedCallback } from '../../hooks';
+import { useDebouncedCallback, usePrevious } from '../../hooks';
 import { isDivElement } from '../../helpers/dom';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
@@ -109,6 +109,8 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const [anchorTimestamp, setAnchorTimestamp] = React.useState(
 		new Number(getChunkTimestampFrom(timestamp.valueOf(), interval)),
 	);
+
+	const previousAnchorTimestamp = usePrevious(anchorTimestamp);
 
 	const [chunks, setChunks] = React.useState<Array<[Chunk, number]>>([]);
 
@@ -259,6 +261,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 	const getTimeRange = useDebouncedCallback(() => {
 		if (!viewportElementRef.current || !rangeElementRef.current) return;
+		if (previousAnchorTimestamp?.valueOf() !== anchorTimestamp.valueOf()) return;
 
 		const rangeBlockRect = rangeElementRef.current.getBoundingClientRect();
 		const divsInInterval = Array.from(viewportElementRef.current.children)
