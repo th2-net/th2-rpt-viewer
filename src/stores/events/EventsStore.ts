@@ -470,16 +470,6 @@ export default class EventsStore {
 		];
 	};
 
-	private getNodesPath(path: string[], nodes: EventTreeNode[]): EventTreeNode[] {
-		if (path.length === 0 || nodes.length === 0) {
-			return [];
-		}
-		const [currentId, ...rest] = path;
-		const targetNode = nodes.find(n => n.eventId === currentId);
-		const childList = targetNode ? this.getChildrenNodes(targetNode.eventId) : [];
-		return targetNode ? [targetNode, ...this.getNodesPath(rest, childList)] : [];
-	}
-
 	private onHoveredEventChange = (hoveredEvent: EventTreeNode | null) => {
 		if (hoveredEvent !== null) {
 			this.graphStore.setTimestamp(timestampToNumber(hoveredEvent.startTimestamp));
