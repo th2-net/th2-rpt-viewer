@@ -45,7 +45,15 @@ function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
 		: null;
 }
 
-const priority = ['attachedMessageId', 'type', 'body', 'name', 'status', 'text'];
+const priority: EventSSEFilters[] = [
+	'attachedMessageId',
+	'parentId',
+	'type',
+	'body',
+	'name',
+	'status',
+	'text',
+];
 
 function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
