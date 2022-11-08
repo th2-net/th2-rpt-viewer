@@ -59,6 +59,7 @@ export type EventFilterState = {
 	name: MultipleStringFilter;
 	status: SwitcherFilter;
 	text: MultipleStringFilter;
+	parentId: MultipleStringFilter;
 };
 
 export type MessageFilterState = {
