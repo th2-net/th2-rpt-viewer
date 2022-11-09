@@ -23,7 +23,7 @@ import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Counter } from '../util/Counter';
 import SearchableContent from '../search/SearchableContent';
-import { useWorkspaceEventStore, useTabsStore, useBookmarksStore } from '../../hooks';
+import { useWorkspaceEventStore, useBookmarksStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
@@ -58,8 +58,7 @@ function EventCardHeader(props: Props) {
 
 	const bookmarksStore = useBookmarksStore();
 	const eventStore = useWorkspaceEventStore();
-	const { setActiveWorkspace } = useTabsStore();
-	const { stopSearch, setFormType, updateForm } = useSearchStore();
+	const { filterEventsByParent } = useSearchStore();
 
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
@@ -97,13 +96,7 @@ function EventCardHeader(props: Props) {
 
 	function onSearchClicked(e: React.MouseEvent) {
 		e.stopPropagation();
-		stopSearch();
-		setFormType('event');
-		updateForm({
-			parentEvent: eventId,
-			startTimestamp: timestampToNumber(startTimestamp),
-		});
-		setActiveWorkspace(0);
+		filterEventsByParent(eventId, timestampToNumber(startTimestamp));
 	}
 
 	function onMouseEnter() {
@@ -151,7 +144,7 @@ function EventCardHeader(props: Props) {
 					<Counter
 						text={childrenCount
 							.toString()
-							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}
+							.concat(eventStore.eventDataStore.hasMoreChildren.get(event.eventId) ? '+' : '')}
 					/>
 				)}
 			<div className='event-header-card__details'>

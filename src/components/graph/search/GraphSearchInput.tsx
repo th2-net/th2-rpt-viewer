@@ -184,13 +184,17 @@ function GraphSearchInput(props: Props) {
 	const prevHoveredTimestamp = usePrevious(hoveredTimestamp);
 
 	React.useEffect(() => {
+		if (
+			prevHoveredTimestamp === null &&
+			hoveredTimestamp !== null &&
+			restoreTimestampTimer.current == null
+		) {
+			savedInputConfig.current = inputConfig;
+		}
+
 		if (hoveredTimestamp && restoreTimestampTimer.current) {
 			clearTimeout(restoreTimestampTimer.current);
 			restoreTimestampTimer.current = null;
-		}
-
-		if (prevHoveredTimestamp === null && hoveredTimestamp !== null) {
-			savedInputConfig.current = inputConfig;
 		}
 
 		if (hoveredTimestamp) {
@@ -214,6 +218,7 @@ function GraphSearchInput(props: Props) {
 					if (savedInputConfig.current.timestamp) {
 						submitTimestamp(savedInputConfig.current.timestamp);
 					}
+					restoreTimestampTimer.current = null;
 				}
 			}, 800);
 		}

@@ -16,6 +16,7 @@
 
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
+import { nanoid } from 'nanoid';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
@@ -24,6 +25,7 @@ import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { Session } from '../stores/messages/SessionsStore';
 import { EventBookmark, MessageBookmark } from '../models/Bookmarks';
 import { FilterState } from '../models/search/Search';
+import notificationsStore from '../stores/NotificationsStore';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -34,7 +36,13 @@ export enum IndexedDbStores {
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTERS_HISTORY = 'filters-history',
 	SESSIONS_HISTORY = 'sessions-history',
+	SETTINGS = 'settings',
 }
+
+export type Settings = {
+	timestamp: 0;
+	interval: number;
+};
 
 type indexedDbStoresKeyPaths = {
 	[k in IndexedDbStores]: string;
@@ -49,7 +57,8 @@ export type DbData =
 	| OrderRule
 	| MessageSortOrderItem
 	| FiltersHistoryType<FilterState>
-	| Session;
+	| Session
+	| Settings;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -108,6 +117,13 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
+	[IndexedDbStores.SETTINGS]: {
+		key: string;
+		value: Settings;
+		indexes: {
+			timestamp: number;
+		};
+	};
 }
 
 export const indexedDbLimits = {
@@ -129,9 +145,10 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
 	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
+	[IndexedDbStores.SETTINGS]: 'timestamp',
 };
 
-const dbVersion = 3;
+const dbVersion = 4;
 
 export class IndexedDB {
 	@observable
@@ -182,12 +199,30 @@ export class IndexedDB {
 	};
 
 	public updateDbStoreItem = async <T extends DbData>(storeName: IndexedDbStores, data: T) => {
-		const db = await this.getDb();
-		const tx = await db.transaction(storeName, 'readwrite');
-		const store = await tx.objectStore(storeName);
+		try {
+			const db = await this.getDb();
+			const tx = await db.transaction(storeName, 'readwrite');
+			const store = await tx.objectStore(storeName);
 
-		await store.put(data);
-		await tx.done;
+			await store.put(data);
+			await tx.done;
+		} catch (error) {
+			const id = nanoid();
+			notificationsStore.addMessage({
+				id,
+				notificationType: 'genericError',
+				header: 'Unable to store data to IndexedDB',
+				type: 'error',
+				action: {
+					label: 'Clear IndexedDB',
+					callback: () => {
+						notificationsStore.deleteMessage(id);
+						this.resetDatabse();
+					},
+				},
+				description: 'Unable to store data to IndexedDB',
+			});
+		}
 	};
 
 	public getStoreValues = async <T extends DbData>(
@@ -259,5 +294,12 @@ export class IndexedDB {
 		if (store.clear) {
 			store.clear();
 		}
+	};
+
+	private resetDatabse = async () => {
+		this.db?.close();
+		const requestDelete = indexedDB.deleteDatabase(this.env);
+
+		requestDelete.addEventListener('success', () => this.initDb());
 	};
 }

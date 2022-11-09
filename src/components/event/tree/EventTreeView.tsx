@@ -29,20 +29,24 @@ function EventTreeView() {
 	const viewStore = useEventWindowViewStore();
 	const eventsDataStore = useEventsDataStore();
 
+	const isError =
+		eventsDataStore.isError ||
+		(eventsStore.selectedNode &&
+			!eventsStore.selectedEvent &&
+			!eventsDataStore.isLoadingSelectedEvent);
+
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
 				<EventList />
 			</SplitViewPane>
 			<SplitViewPane>
-				{eventsStore.selectedNode === null &&
-					!eventsDataStore.isLoadingSelectedEvent &&
-					(!eventsDataStore.isError ? (
-						<Empty description='Select event' />
-					) : (
-						<Empty description='Error occured while loading event' />
-					))}
-				{eventsStore.selectedNode && (
+				{isError ? (
+					<Empty description='Error occured while loading event' />
+				) : !eventsStore.selectedNode ? (
+					<Empty description='Select event' />
+				) : null}
+				{!isError && eventsStore.selectedNode && (
 					<EventDetailInfoCard
 						node={eventsStore.selectedNode}
 						event={eventsStore.selectedEvent}

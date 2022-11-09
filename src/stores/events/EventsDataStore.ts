@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, IReactionDisposer, observable, reaction, runInAction, when } from 'mobx';
+import PQueue from 'p-queue/dist';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import {
@@ -39,8 +40,21 @@ interface FetchEventTreeOptions {
 	filter: EventsFilter | null;
 	targetEventId?: string;
 }
+
+interface ChildrenData {
+	lastChild: string | null;
+	firstChunkCount: number;
+}
+
+function getDefaultChildrenData(): ChildrenData {
+	return {
+		lastChild: null,
+		firstChunkCount: 0,
+	};
+}
+
 export default class EventsDataStore {
-	private CHILDREN_COUNT_LIMIT = 50;
+	private readonly CHILDREN_CHUNK_SIZE = 50;
 
 	constructor(
 		private eventStore: EventsStore,
@@ -68,6 +82,9 @@ export default class EventsDataStore {
 	public parentChildrensMap: Map<string, string[]> = new Map();
 
 	@observable
+	public childrenData: Map<string, ChildrenData> = new Map();
+
+	@observable
 	public loadingParentEvents: Map<string, boolean> = new Map();
 
 	@observable
@@ -80,7 +97,7 @@ export default class EventsDataStore {
 	public isError = false;
 
 	@observable
-	public hasUnloadedChildren: Map<string, boolean> = new Map();
+	public hasMoreChildren: Map<string, boolean> = new Map();
 
 	@observable
 	public rootEventIds: string[] = [];
@@ -116,8 +133,7 @@ export default class EventsDataStore {
 
 		this.eventStore.selectedNode = null;
 		this.eventStore.selectedEvent = null;
-
-		this.filterStore.setRange(timeRange);
+		this.filterStore.setEventsRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
 
 		if (targetEventId) {
@@ -134,20 +150,50 @@ export default class EventsDataStore {
 					filter,
 					sseParams: {
 						searchDirection: 'next',
-						// load 1 more to see if there are more children
-						limitForParent: this.CHILDREN_COUNT_LIMIT + 1,
+						limitForParent: this.CHILDREN_CHUNK_SIZE,
 					},
 				},
 				{
 					onResponse: this.handleIncomingEventTreeNodes,
 					onError: this.onEventTreeFetchError,
+					onClose: events => {
+						this.handleIncomingEventTreeNodes(events);
+						if (this.parentNodesLoaderScheduler !== null) {
+							window.clearInterval(this.parentNodesLoaderScheduler);
+						}
+						this.parentNodesLoaderScheduler = null;
+						this.addToQueue();
+					},
 				},
 			);
-
+			this.parentNodesLoaderScheduler = window.setInterval(this.addToQueue, 1000);
 			this.eventTreeEventSource.subscribe();
 		} catch (error) {
 			this.resetEventsTreeState({ isError: true });
 		}
+	};
+
+	private parentsToLoad: Set<string> = new Set();
+
+	private parentEventsQueue = new PQueue({ concurrency: 200 });
+
+	private addToQueue = () => {
+		const parentsToLoad: string[] = [];
+
+		[...this.parentsToLoad.values()].forEach(parentId => {
+			const event = this.eventsCache.get(parentId);
+			const toLoad = !event || (event.parentId !== null && !this.eventsCache.has(event.parentId));
+			if (!toLoad) {
+				this.loadingParentEvents.delete(parentId);
+			} else {
+				parentsToLoad.push(parentId);
+			}
+		});
+
+		parentsToLoad.forEach(parentId => {
+			this.parentEventsQueue.add(() => this.loadParentNodes(parentId));
+		});
+		this.parentsToLoad.clear();
 	};
 
 	@action
@@ -175,23 +221,25 @@ export default class EventsDataStore {
 
 		Object.keys(eventsByParentId).forEach(parentId => {
 			const cachedEventChildren = this.parentChildrensMap.get(parentId) || [];
-			if (cachedEventChildren.length < this.CHILDREN_COUNT_LIMIT) {
-				const fetchedEventChildren = eventsByParentId[parentId]
-					.map(event => event.eventId)
-					.filter(eventId => !cachedEventChildren.includes(eventId));
+			const fetchedChildren = eventsByParentId[parentId];
+			const childrenData = this.childrenData.get(parentId) || getDefaultChildrenData();
 
-				let childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
+			childrenData.firstChunkCount += fetchedChildren.length;
+			childrenData.lastChild = fetchedChildren[fetchedChildren.length - 1].eventId;
 
-				if (childrenUpdate.length > this.CHILDREN_COUNT_LIMIT) {
-					childrenUpdate = childrenUpdate.slice(0, this.CHILDREN_COUNT_LIMIT);
-					this.hasUnloadedChildren.set(parentId, true);
-				}
-				updatedParentChildrenMapEntries.set(parentId, childrenUpdate);
-			} else {
-				this.hasUnloadedChildren.set(parentId, true);
-			}
+			const fetchedEventChildren = fetchedChildren
+				.map(event => event.eventId)
+				.filter(eventId => !cachedEventChildren.includes(eventId));
+
+			const childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
+
+			this.hasMoreChildren.set(parentId, childrenData.firstChunkCount === this.CHILDREN_CHUNK_SIZE);
+			this.childrenData.set(parentId, childrenData);
+
+			updatedParentChildrenMapEntries.set(parentId, childrenUpdate);
+
 			if (!this.eventsCache.get(parentId) && !this.loadingParentEvents.has(parentId)) {
-				this.loadParentNodes(parentId);
+				this.parentsToLoad.add(parentId);
 				this.loadingParentEvents.set(parentId, true);
 			}
 		});
@@ -212,11 +260,35 @@ export default class EventsDataStore {
 
 	@action
 	private onEventTreeFetchError = (e: Event) => {
-		notificationsStore.handleSSEError(e);
+		if (e instanceof MessageEvent) {
+			notificationsStore.handleSSEError(e);
+		} else {
+			const errorId = nanoid();
+			notificationsStore.addMessage({
+				id: errorId,
+				notificationType: 'genericError',
+				header: 'Something went wrong while loading events',
+				type: 'error',
+				action: {
+					label: 'Refetch events',
+					callback: () => {
+						notificationsStore.deleteMessage(errorId);
+						this.fetchEventTree({
+							filter: this.filterStore.filter,
+							timeRange: this.filterStore.range,
+							targetEventId: this.eventStore.selectedNode?.eventId,
+						});
+					},
+				},
+				description: `${e.type} occured. Try to refetch events.`,
+			});
+		}
 		this.resetEventsTreeState({ isError: true });
 	};
 
 	private parentNodesLoaderAC: AbortController | null = null;
+
+	private parentNodesLoaderScheduler: number | null = null;
 
 	private loadedParentNodes: EventTreeNode[][] = [];
 
@@ -250,18 +322,22 @@ export default class EventsDataStore {
 
 			while (typeof currentParentId === 'string') {
 				this.loadingParentEvents.set(currentParentId, true);
-				// eslint-disable-next-line no-await-in-loop
-				currentParentEvent = await this.api.events.getEvent(
-					currentParentId,
-					this.parentNodesLoaderAC.signal,
-					{ probe: true },
-				);
-
-				if (!currentParentEvent) break;
-
-				const parentNode = convertEventActionToEventTreeNode(currentParentEvent);
-				parentNodes.unshift(parentNode);
-				currentParentId = parentNode.parentId;
+				let parentNode = this.eventsCache.get(currentParentId);
+				if (parentNode) {
+					parentNodes.unshift(parentNode);
+					currentParentId = parentNode.parentId;
+				} else {
+					// eslint-disable-next-line no-await-in-loop
+					currentParentEvent = await this.api.events.getEvent(
+						currentParentId,
+						this.parentNodesLoaderAC.signal,
+						{ probe: true },
+					);
+					if (!currentParentEvent) break;
+					parentNode = convertEventActionToEventTreeNode(currentParentEvent);
+					parentNodes.unshift(parentNode);
+					currentParentId = parentNode.parentId;
+				}
 			}
 		} catch (error) {
 			console.error(error);
@@ -269,7 +345,7 @@ export default class EventsDataStore {
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					header: `Error occured while fetching event ${currentParentId}`,
-					description: 'Something went wrong',
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 					type: 'error',
 				});
@@ -377,7 +453,6 @@ export default class EventsDataStore {
 	private childrenLoaders: {
 		[parentId: string]: {
 			loader: EventsSSEChannel;
-			initialCount: number;
 		};
 	} = {};
 
@@ -385,66 +460,63 @@ export default class EventsDataStore {
 	public childrenAreUnknown: Map<string, boolean> = new Map();
 
 	@action
-	public loadChildren = (parentId: string) => {
+	public loadNextChildren = (parentId: string) => {
+		const childrenData = this.childrenData.get(parentId);
+		const resumeFromId = childrenData?.lastChild;
+
+		this.isLoadingChildren.set(parentId, true);
+
+		if (resumeFromId) {
+			this.loadChildren(parentId, resumeFromId);
+		}
+	};
+
+	@action
+	public loadChildren = (parentId: string, resumeFromId?: string) => {
 		if (this.childrenLoaders[parentId]) {
 			this.childrenLoaders[parentId].loader.stop();
 			delete this.childrenLoaders[parentId];
 		}
 
-		const parentNode = this.eventsCache.get(parentId);
-
-		if (parentNode) {
-			const eventsChildren = this.eventStore.getChildrenNodes(parentId);
-
-			const lastChild = getItemAt(eventsChildren, eventsChildren.length - 1);
-
-			const loader = new EventsSSEChannel(
-				{
-					timeRange: [this.filterStore.timestampFrom, this.filterStore.timestampTo],
-					filter: this.filterStore.filter,
-					sseParams: {
-						parentEvent: parentId,
-						resumeFromId: lastChild?.eventId,
-						// load 1 more to see if there are more children
-						resultCountLimit: this.CHILDREN_COUNT_LIMIT + 1,
-						searchDirection: 'next',
-					},
+		const loader = new EventsSSEChannel(
+			{
+				timeRange: [this.filterStore.timestampFrom, this.filterStore.timestampTo],
+				filter: this.filterStore.filter,
+				sseParams: {
+					parentEvent: parentId,
+					resumeFromId,
+					resultCountLimit: this.CHILDREN_CHUNK_SIZE,
+					searchDirection: 'next',
 				},
-				{
-					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
-					onError: this.onEventTreeFetchError,
-					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
-				},
-				{
-					chunkSize: this.CHILDREN_COUNT_LIMIT + 1,
-				},
-			);
+			},
+			{
+				onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
+				onError: this.onEventTreeFetchError,
+				onClose: events => this.onEventChildrenLoadEnd(events, parentId),
+			},
+			{
+				chunkSize: this.CHILDREN_CHUNK_SIZE,
+			},
+		);
 
-			this.childrenLoaders[parentId] = {
-				loader,
-				initialCount: eventsChildren.length,
-			};
+		this.childrenLoaders[parentId] = {
+			loader,
+		};
 
-			this.childrenLoaders[parentId].loader.subscribe();
-		}
+		this.childrenLoaders[parentId].loader.subscribe();
 	};
 
 	@action
 	private onEventChildrenChunkLoaded = (events: EventTreeNode[], parentId: string) => {
 		if (events.length === 0) return;
 
+		const childrenData = this.childrenData.get(parentId) || getDefaultChildrenData();
+		childrenData.lastChild = events[events.length - 1]?.eventId;
+		this.childrenData.set(parentId, childrenData);
+
 		const childList = this.parentChildrensMap.get(parentId) || [];
 		// eslint-disable-next-line no-param-reassign
 		events = events.filter(event => !childList.includes(event.eventId));
-
-		const initialCount = this.childrenLoaders[parentId].initialCount;
-		const expectedChildrenCountLoaded =
-			(Math.floor(initialCount / this.CHILDREN_COUNT_LIMIT) + 1) * this.CHILDREN_COUNT_LIMIT;
-
-		if (childList.length + events.length > expectedChildrenCountLoaded) {
-			// eslint-disable-next-line no-param-reassign
-			events = events.slice(0, expectedChildrenCountLoaded - childList.length);
-		}
 
 		events.forEach(event => this.childrenAreUnknown.set(event.eventId, true));
 
@@ -459,26 +531,17 @@ export default class EventsDataStore {
 
 	@action
 	private onEventChildrenLoadEnd = (events: EventTreeNode[], parentId: string) => {
-		if (events.length === 0) {
-			this.hasUnloadedChildren.set(parentId, false);
-		} else {
-			const childList = this.parentChildrensMap.get(parentId) || [];
-			// eslint-disable-next-line no-param-reassign
-			events = events.filter(event => !childList.includes(event.eventId));
-			const initialCount = this.childrenLoaders[parentId].initialCount;
-			const expectedChildrenCountLoaded =
-				(Math.floor(initialCount / this.CHILDREN_COUNT_LIMIT) + 1) * this.CHILDREN_COUNT_LIMIT;
-
-			if (childList.length + events.length > expectedChildrenCountLoaded) {
-				this.hasUnloadedChildren.set(parentId, true);
-				// eslint-disable-next-line no-param-reassign
-				events = events.slice(0, expectedChildrenCountLoaded - childList.length);
-			} else {
-				this.hasUnloadedChildren.set(parentId, false);
-			}
-
-			this.onEventChildrenChunkLoaded(events, parentId);
-		}
+		const childList = this.parentChildrensMap.get(parentId) || [];
+		const childrenData = this.childrenData.get(parentId) || getDefaultChildrenData();
+		childrenData.lastChild = events[events.length - 1]?.eventId;
+		this.childrenData.set(parentId, childrenData);
+		// eslint-disable-next-line no-param-reassign
+		events = events.filter(event => !childList.includes(event.eventId));
+		this.hasMoreChildren.set(
+			parentId,
+			this.childrenLoaders[parentId]?.loader.eventsFetched === this.CHILDREN_CHUNK_SIZE,
+		);
+		this.onEventChildrenChunkLoaded(events, parentId);
 		this.isLoadingChildren.set(parentId, false);
 		delete this.childrenLoaders[parentId];
 	};
@@ -587,11 +650,18 @@ export default class EventsDataStore {
 			this.parentNodesUpdateScheduler = null;
 		}
 
+		if (this.parentNodesLoaderScheduler) {
+			window.clearInterval(this.parentNodesLoaderScheduler);
+			this.parentNodesLoaderScheduler = null;
+		}
+
 		this.targetEventAC?.abort();
 
 		if (this.targetEventLoadSubscription) {
 			this.targetEventLoadSubscription();
 		}
+
+		this.parentEventsQueue.clear();
 	};
 
 	@action
@@ -608,11 +678,13 @@ export default class EventsDataStore {
 		this.parentChildrensMap.clear();
 		this.loadingParentEvents.clear();
 		this.isLoadingChildren.clear();
-		this.hasUnloadedChildren.clear();
+		this.hasMoreChildren.clear();
 		this.eventStore.isExpandedMap.clear();
 		this.targetNode = null;
 		this.targetNodeParents = [];
 		this.isPreloadingTargetEventsChildren.clear();
+		this.parentsToLoad.clear();
+		this.childrenData.clear();
 	};
 
 	private isPreloadingTargetEventsChildren: Map<string, boolean> = new Map();
@@ -622,7 +694,7 @@ export default class EventsDataStore {
 			selectedPath
 				.filter(eventId => {
 					const loadedChildren = this.parentChildrensMap.get(eventId);
-					return !loadedChildren || loadedChildren.length < this.CHILDREN_COUNT_LIMIT;
+					return !loadedChildren || loadedChildren.length < this.CHILDREN_CHUNK_SIZE;
 				})
 				.forEach(eventId => {
 					if (!this.isPreloadingTargetEventsChildren.get(eventId)) {

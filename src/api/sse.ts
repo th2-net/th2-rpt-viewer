@@ -19,6 +19,7 @@ import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../models/filter/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
 import MessagesFilter from '../models/filter/MessagesFilter';
+import fetch from '../helpers/fetchRetry';
 
 interface BaseSSEParams {
 	startTimestamp?: number;
@@ -48,7 +49,9 @@ export type EventFilterKeys =
 	| 'name'
 	| 'body'
 	| 'status'
-	| 'event_generic';
+	| 'event_generic'
+	| 'text'
+	| 'parentId';
 
 export type MessageFilterKeys =
 	| 'attachedEventIds'

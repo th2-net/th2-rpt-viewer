@@ -149,7 +149,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 		} else {
 			setPanels([]);
 		}
-	}, [panelsRange, chunks, timestamp, interval]);
+	}, [panelsRange, chunks, timestamp, interval, anchorTimestamp]);
 
 	React.useEffect(() => {
 		center.current = timestamp.valueOf();
@@ -360,7 +360,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 								animate='visible'
 								style={{
 									left: panel.left,
-									bottom: index * 6,
+									bottom: index * 12,
 									width: panel.width,
 									x: panelsX[index],
 								}}

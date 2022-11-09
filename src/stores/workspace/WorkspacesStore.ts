@@ -24,7 +24,7 @@ import { isWorkspaceStore } from '../../helpers/workspace';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
-import { DbData } from '../../api/indexedDb';
+import { DbData, IndexedDbStores, Settings } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import MessagesFilter from '../../models/filter/MessagesFilter';
@@ -74,15 +74,13 @@ export default class WorkspacesStore {
 	@action
 	private init(initialState: WorkspacesUrlState | null) {
 		if (initialState !== null) {
-			initialState.forEach(workspaceState =>
-				this.addWorkspace(this.createWorkspace(workspaceState)),
+			initialState.forEach(async workspaceState =>
+				this.addWorkspace(await this.createWorkspace(workspaceState)),
 			);
 		} else {
-			this.addWorkspace(
-				this.createWorkspace({
-					layout: [100, 0],
-				}),
-			);
+			this.createWorkspace({
+				layout: [100, 0],
+			}).then(workspace => this.addWorkspace(workspace));
 		}
 	}
 
@@ -101,7 +99,11 @@ export default class WorkspacesStore {
 		activeWorkspace.graphStore.setTimestampFromRange(activeWorkspace.graphStore.range);
 	};
 
-	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
+	public createWorkspace = async (workspaceInitialState: WorkspaceInitialState = {}) => {
+		const settings = await this.api.indexedDb.getStoreValues<Settings>(IndexedDbStores.SETTINGS);
+
+		const interval = settings.length > 0 ? settings[0].interval : 15;
+
 		return new WorkspaceStore(
 			this,
 			this.selectedStore,
@@ -110,6 +112,7 @@ export default class WorkspacesStore {
 			this.rootStore.messageDisplayRulesStore,
 			this.api,
 			workspaceInitialState,
+			interval,
 		);
 	};
 

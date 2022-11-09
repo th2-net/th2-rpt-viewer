@@ -23,6 +23,7 @@ import MessageExpandButton from '../message/MessageExpandButton';
 import useElementSize from '../../hooks/useElementSize';
 import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../util/CardDisplayType';
 import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
+import fetch from '../../helpers/fetchRetry';
 import { getViewTypesConfig } from '../../helpers/message';
 
 const viewStore = new EmbeddedMessagesViewTypeStore();

@@ -28,11 +28,14 @@ import FiltersHistory from '../filters-history/FiltersHistory';
 const filterOrder: EventFilterKeys[] = [
 	'status',
 	'attachedMessageId',
+	'parentId',
 	'type',
 	'body',
 	'name',
 	'event_generic',
+	'text',
 ];
+
 const classNames = {
 	'string[]': {
 		className: '',

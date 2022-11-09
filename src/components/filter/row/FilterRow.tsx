@@ -23,7 +23,6 @@ import DatetimeFilterRow from './DateTimeFilterRow';
 import TogglerRow from './TogglerRow';
 import ActionRow from './ActionRow';
 import SwitcherRow from './SwitcherRow';
-import EventResolverRow from './EventResolverRow';
 
 interface Props {
 	rowConfig: FitlerRowItem | ActionFilterRow;
@@ -45,8 +44,6 @@ export default function FilterRow({ rowConfig }: Props) {
 			return <ActionRow config={rowConfig} />;
 		case 'switcher':
 			return <SwitcherRow config={rowConfig} />;
-		case 'event-resolver':
-			return <EventResolverRow config={rowConfig} />;
 		default:
 			return null;
 	}

@@ -190,7 +190,7 @@ export class BookmarksStore {
 					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save bookmark ${getItemName(bookmark.item)}`,
-					description: '',
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 				});
 			}
