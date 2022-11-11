@@ -22,6 +22,7 @@ import { isDivElement } from '../../helpers/dom';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import { usePointerTimestampUpdate } from '../../contexts/pointerTimestampContext';
+import { useDidUpdate } from '../../hooks/useDidUpdate';
 import '../../styles/graph.scss';
 
 const setInitialState = (settings: Settings): State => {
@@ -101,7 +102,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const prevItemsRef = React.useRef<HTMLDivElement>(null);
 	const nextItemsRef = React.useRef<HTMLDivElement>(null);
 
-	const [state] = React.useState<State>(setInitialState(settings));
+	const [state, setSettings] = React.useState<State>(setInitialState(settings));
 
 	const center = React.useRef<number | null>(timestamp.valueOf());
 
@@ -180,8 +181,28 @@ const GraphChunksVirtualizer = (props: Props) => {
 		};
 	}, []);
 
-	React.useEffect(() => {
+	useDidUpdate(() => {
+		if (center.current) {
+			getCurrentChunks(state.initialPosition, anchorTimestamp.valueOf());
+			const anchor = new Number(getChunkTimestampFrom(center.current, interval));
+			const centralChunkStart = anchor.valueOf();
+			const chunkCenter = moment.utc(centralChunkStart).add(interval / 2, 'minutes');
+			const offset =
+				(chunkCenter.valueOf() - center.current) * (chunkWidth / (interval * 60 * 1000));
+			if (viewportElementRef.current) {
+				viewportElementRef.current.scrollLeft = state.initialPosition - offset;
+			}
+		}
+	}, [state]);
+
+	useDidUpdate(() => {
+		if (!center.current && innerRange.current) {
+			const timerange = innerRange.current;
+			const centerTS = timerange[0] + (timerange[1] - timerange[0]) / 2;
+			center.current = centerTS;
+		}
 		getTimeRange();
+		setSettings(setInitialState({ ...settings, itemWidth: chunkWidth }));
 	}, [chunkWidth]);
 
 	const handleMouseDown = (event: MouseEvent) => {
@@ -217,13 +238,17 @@ const GraphChunksVirtualizer = (props: Props) => {
 		viewportElementRef.current.scrollLeft = scrollLeft.current - (x - startX.current) * 2;
 	};
 
-	const getCurrentChunks = (_scrollLeft: number, anchorTs = anchorTimestamp.valueOf()) => {
+	const getCurrentChunks = (
+		_scrollLeft: number,
+		anchorTs = anchorTimestamp.valueOf(),
+		listSettings = state,
+	) => {
 		const {
 			totalWidth,
 			toleranceWidth,
 			bufferedItems,
 			settings: { itemWidth, minIndex },
-		} = state;
+		} = listSettings;
 
 		const index = minIndex + Math.floor((_scrollLeft - toleranceWidth) / itemWidth);
 		const chunksIndexes = getIndexes(index, bufferedItems);
