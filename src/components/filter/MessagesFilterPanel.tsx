@@ -190,13 +190,15 @@ const MessagesFilterPanel = () => {
 				stopLoading={messagesDataStore.stopMessagesLoading}
 				isLoading={isMessageListLoading}
 			/>
-			<MessageExport
-				isExport={messagesStore.exportStore.isExport}
-				enableExport={messagesStore.exportStore.enableExport}
-				disableExport={messagesStore.exportStore.disableExport}
-				endExport={messagesStore.exportStore.endExport}
-				exportAmount={messagesStore.exportStore.exportMessages.length}
-			/>
+			{messagesDataStore.messages.length > 0 && (
+				<MessageExport
+					isExport={messagesStore.exportStore.isExport}
+					enableExport={messagesStore.exportStore.enableExport}
+					disableExport={messagesStore.exportStore.disableExport}
+					endExport={messagesStore.exportStore.endExport}
+					exportAmount={messagesStore.exportStore.exportMessages.length}
+				/>
+			)}
 		</>
 	);
 };
