@@ -15,10 +15,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, when } from 'mobx';
+import { action, toJS, when } from 'mobx';
+import moment from 'moment';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
+import { getArrayOfUniques } from '../../helpers/array';
 import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
@@ -63,6 +65,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		if (this.fetchedChunkSubscription == null || this.eventListeners.onClose) {
 			const chunk = this.getNextChunk();
 			(this.eventListeners.onClose || this.eventListeners.onResponse)(chunk);
+			console.log('onClose');
 			this.resetSSEState({ isEndReached });
 		} else {
 			this.isEndReached = isEndReached;
@@ -102,8 +105,10 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 						this.getFetchedChunk(),
 				  ])
 				: this.getFetchedChunk());
+			console.log(messagesChunk.map(val => toJS(val)));
 			return messagesChunk;
 		} catch (error) {
+			console.log(error);
 			if (error !== 'WHEN_CANCELLED') {
 				console.log(error);
 			}
@@ -112,6 +117,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	};
 
 	private initConnection = (resumeMessageIds?: string[]): void => {
+		console.log('initConnection');
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
@@ -153,12 +159,29 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private _onMessageIdsEvent = (e: Event) => {
 		const messagesIdsEvent: MessageIdsEvent =
 			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-		if (!Object.values(messagesIdsEvent.messageIds).some(messageId => messageId?.includes('-1'))) {
-			this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(Boolean) as string[];
-
-			if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
-				this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
-			}
+		const streams = getArrayOfUniques(
+			this.messageIds
+				.filter(id => id.slice(id.lastIndexOf(':') + 1) === '-1')
+				.map(id => id.slice(0, id.indexOf(':'))),
+		);
+		if (streams.length > 0) {
+			api.messages
+				.getResumptionMessageIds({
+					streams,
+					startTimestamp: moment().utc().valueOf(),
+				})
+				.then(streamInfo => {
+					this.messageIds = [
+						...this.messageIds.filter(id => !streams.find(stream => id.includes(stream))),
+						...(this.queryParams.searchDirection === 'next'
+							? streamInfo.next.map(info => info.lastElement)
+							: streamInfo.previous.map(info => info.lastElement)),
+					];
+				});
+		}
+		this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(Boolean) as string[];
+		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
+			this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
 		}
 	};
 

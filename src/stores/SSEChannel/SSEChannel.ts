@@ -92,6 +92,7 @@ export default abstract class SSEChannel<T> implements ISSEChannel {
 	protected onSSEResponse = (ev: Event) => {
 		const data = JSON.parse((ev as MessageEvent).data);
 		if (this.typeGuard(data)) {
+			console.log('onSSEResponse');
 			this.fetchedCount += 1;
 			this.accumulatedData.push(data);
 		}
@@ -113,7 +114,7 @@ export default abstract class SSEChannel<T> implements ISSEChannel {
 	): void => {
 		const { isLoading = false, isError = false, isEndReached = false } = initialState;
 		this.clearSchedulersAndTimeouts();
-
+		console.log('resetSSEState');
 		this.accumulatedData = [];
 		this.isLoading = isLoading;
 		this.isError = isError;
