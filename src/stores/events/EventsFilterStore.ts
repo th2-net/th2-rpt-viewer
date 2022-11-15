@@ -93,6 +93,11 @@ export default class EventsFilterStore {
 	@observable
 	public range: TimeRange = getDefaultTimeRange(this.graphStore.eventInterval);
 
+	@computed
+	public get interval() {
+		return this.graphStore.eventInterval;
+	}
+
 	@observable
 	public isOpen = false;
 

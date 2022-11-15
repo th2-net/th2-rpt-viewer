@@ -19,11 +19,12 @@ import { observer } from 'mobx-react-lite';
 import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 import EventsSearchPanel from './search/EventsSearchPanel';
-import { EventListNavUp, EventListNavDown } from './EventListNavigation';
+import { EventListArrowNav } from './EventListNavigation';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { isEventsStore } from '../../helpers/stores';
 import { EventsIntervalInput } from './EventsIntervalInput';
 import EventsFilterPanel from '../filter/EventsFilterPanel';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 function EventWindowHeader() {
 	const eventsStore = useWorkspaceEventStore();
@@ -63,8 +64,8 @@ function EventWindowHeader() {
 				)}
 				{!eventDataStore.isLoading && (
 					<div className='event-window-header__nav'>
-						<EventListNavUp />
-						<EventListNavDown />
+						<EventListArrowNav direction={SearchDirection.Previous} />
+						<EventListArrowNav direction={SearchDirection.Next} />
 					</div>
 				)}
 			</div>

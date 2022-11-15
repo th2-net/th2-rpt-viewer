@@ -24,7 +24,7 @@ import EventsSearchStore from './EventsSearchStore';
 import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
-import { calculateTimeRange } from '../../helpers/graph';
+import { calculateTimeRange, getRangeCenter } from '../../helpers/graph';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
@@ -515,19 +515,12 @@ export default class EventsStore {
 		});
 	};
 
-	public changeEventsRange = (minutesOffset: number) => {
-		const timestampFrom = moment
-			.utc(this.filterStore.timestampFrom)
-			.add(minutesOffset, 'minutes')
-			.valueOf();
-		const timestampTo = moment
-			.utc(timestampFrom)
-			.add(this.graphStore.eventInterval, 'minutes')
-			.valueOf();
-
+	public changeEventsRange = (timerange: TimeRange) => {
 		this.eventDataStore.fetchEventTree({
-			timeRange: [timestampFrom, timestampTo],
+			timeRange: timerange,
 			filter: this.filterStore.filter,
 		});
+
+		this.graphStore.setTimestamp(getRangeCenter(timerange));
 	};
 }

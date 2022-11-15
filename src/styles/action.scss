@@ -423,10 +423,10 @@
 		.label {
 			display: none;
 		}
-		.up {
+		.newer {
 			@include icon(url(../../resources/icons/arr4-up.svg), 16px, 24px);
 		}
-		.down {
+		.older {
 			@include icon(url(../../resources/icons/arr4-down.svg), 16px, 24px);
 		}
 	}
