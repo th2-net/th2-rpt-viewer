@@ -261,11 +261,11 @@ const sseApi: SSESchema = {
 		});
 		return new EventSource(`backend/search/sse/${type}s/?${params}`);
 	},
-	getEventsTreeSource: (timeRange, filter, sseParams) => {
+	getEventsTreeSource: ({ startTimestamp, endTimestamp, filter, sseParams }) => {
 		const paramFromFilter = filter ? getParamsFromFilter(filter) : {};
 		const params = createURLSearchParams({
-			startTimestamp: new Date(timeRange[0]).toISOString(),
-			endTimestamp: new Date(timeRange[1]).toISOString(),
+			startTimestamp: new Date(startTimestamp).toISOString(),
+			endTimestamp: endTimestamp && new Date(endTimestamp).toISOString(),
 			...paramFromFilter,
 			...sseParams,
 		});

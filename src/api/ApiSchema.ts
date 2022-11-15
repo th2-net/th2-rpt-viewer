@@ -17,7 +17,6 @@
 import EventsFilter from 'models/filter/EventsFilter';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import { TimeRange } from '../models/Timestamp';
 import {
 	SSEParamsEvents,
 	EventsFiltersInfo,
@@ -70,11 +69,12 @@ export interface MessageApiSchema {
 
 export interface SSESchema {
 	getEventSource: (config: EventSourceConfig) => EventSource;
-	getEventsTreeSource: (
-		timeRange: TimeRange,
-		filter: EventsFilter | null,
-		sseParams: SSEParamsEvents,
-	) => EventSource;
+	getEventsTreeSource: (params: {
+		startTimestamp: number;
+		endTimestamp?: number;
+		filter: EventsFilter | null;
+		sseParams: SSEParamsEvents;
+	}) => EventSource;
 	getFilters: <T>(filterType: 'events' | 'messages') => Promise<T[]>;
 	getEventFilters: () => Promise<EventFilterKeys[]>;
 	getMessagesFilters: () => Promise<MessageFilterKeys[]>;

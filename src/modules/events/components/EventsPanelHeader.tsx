@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { useActivePanel, useWorkspaceStore } from 'hooks/index';
 import { createBemElement } from 'helpers/styleCreators';
 import { isEventsStore } from 'helpers/stores';
+import { EventListArrowNav } from './EventListNavigation';
 import EventsFilterPanel from './filter/EventsFilterPanel';
 import { useEventsStore } from '../hooks/useEventsStore';
 import useEventsDataStore from '../hooks/useEventsDataStore';
@@ -61,18 +62,8 @@ function EventsPanelHeader() {
 				)}
 				{!eventDataStore.isLoading && (
 					<div className='event-window-header__nav'>
-						<button
-							className='actions-list__nav'
-							onClick={() => eventsStore.changeToClosestEvent(SearchDirection.Previous)}>
-							<span className='down' />
-							<span className='label'>Older</span>
-						</button>
-						<button
-							className='actions-list__nav'
-							onClick={() => eventsStore.changeToClosestEvent(SearchDirection.Next)}>
-							<span className='up' />
-							<span className='label'>Newer</span>
-						</button>
+						<EventListArrowNav direction={SearchDirection.Previous} />
+						<EventListArrowNav direction={SearchDirection.Next} />
 					</div>
 				)}
 			</div>

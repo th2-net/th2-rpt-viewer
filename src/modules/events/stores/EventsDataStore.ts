@@ -16,8 +16,10 @@
 
 import { action, computed, IReactionDisposer, observable, reaction, when } from 'mobx';
 import PQueue from 'p-queue';
+import moment from 'moment';
 import { nanoid } from 'nanoid';
 import EventsFilter from 'models/filter/EventsFilter';
+import { SearchDirection } from 'models/SearchDirection';
 import ApiSchema from '../../../api/ApiSchema';
 import {
 	convertEventActionToEventTreeNode,
@@ -142,10 +144,11 @@ export default class EventsDataStore {
 			this.eventTreeEventSource?.stop();
 			this.eventTreeEventSource = new EventsSSEChannel(
 				{
-					timeRange,
+					startTimestamp: timeRange[0],
+					endTimestamp: timeRange[1],
 					filter,
 					sseParams: {
-						searchDirection: 'next',
+						searchDirection: SearchDirection.Next,
 						limitForParent: this.CHILDREN_CHUNK_SIZE,
 					},
 				},
@@ -476,7 +479,8 @@ export default class EventsDataStore {
 
 		const loader = new EventsSSEChannel(
 			{
-				timeRange: [this.filterStore.timestampFrom, this.filterStore.timestampTo],
+				startTimestamp: this.filterStore.timestampFrom,
+				endTimestamp: this.filterStore.timestampTo,
 				filter: this.filterStore.filter,
 				sseParams: {
 					parentEvent: parentId,
@@ -673,5 +677,49 @@ export default class EventsDataStore {
 					}
 				});
 		}
+	};
+
+	public findClosestEvent = (searchDirection: SearchDirection.Previous | SearchDirection.Next) => {
+		this.resetEventsTreeState({ isLoading: true });
+		const offset = searchDirection === SearchDirection.Next ? 1 : -1;
+
+		this.eventTreeEventSource = new EventsSSEChannel(
+			{
+				startTimestamp:
+					searchDirection === SearchDirection.Previous
+						? this.filterStore.timestampFrom
+						: this.filterStore.timestampTo,
+				filter: this.filterStore.filter,
+				sseParams: {
+					searchDirection,
+					resultCountLimit: 1,
+				},
+			},
+			{
+				onResponse: events => {
+					const closestEvent = events[0];
+					if (closestEvent) {
+						const startTimestamp = moment
+							.utc(timestampToNumber(closestEvent.startTimestamp))
+							.add(1 * offset * -1, 'second')
+							.valueOf();
+						const endTimestamp = moment
+							.utc(startTimestamp)
+							.add(this.filterStore.interval * offset, 'minutes')
+							.valueOf();
+						const timeRange: TimeRange = [startTimestamp, endTimestamp];
+						if (searchDirection === SearchDirection.Previous) {
+							timeRange.reverse();
+						}
+						this.fetchEventTree({
+							timeRange,
+							filter: this.filterStore.filter,
+						});
+					}
+				},
+				onError: this.onEventTreeFetchError,
+			},
+		);
+		this.eventTreeEventSource.subscribe();
 	};
 }

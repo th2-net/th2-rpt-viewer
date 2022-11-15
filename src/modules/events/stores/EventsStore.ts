@@ -30,8 +30,6 @@ import { getRangeFromTimestamp, timestampToNumber } from '../../../helpers/date'
 import { calculateTimeRange } from '../helpers/calculateTimeRange';
 import { TimeRange } from '../../../models/Timestamp';
 import EventsDataStore from './EventsDataStore';
-import { SearchDirection } from '../../../models/SearchDirection';
-import { getParamsFromFilter } from '../../../api/sse';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -470,73 +468,12 @@ export default class EventsStore implements IEventsStore {
 		});
 	};
 
-	@observable searchChannel: EventSource | null = null;
-
-	public changeToClosestEvent = (
-		searchDirection: SearchDirection.Previous | SearchDirection.Next,
-	) => {
-		if (this.searchChannel) this.searchChannel.close();
-
-		const queryParams = {
-			...(this.filterStore.filter && getParamsFromFilter(this.filterStore.filter)),
-			startTimestamp:
-				searchDirection === SearchDirection.Previous
-					? this.filterStore.timestampFrom
-					: this.filterStore.timestampTo,
-			searchDirection,
-			resultCountLimit: 1,
-			metadataOnly: false,
-		};
-
-		const searchChannel = this.api.sse.getEventSource({
-			type: 'event',
-			queryParams,
-		});
-		this.searchChannel = searchChannel;
-		searchChannel.addEventListener('event', this.changeEvent.bind(this, searchDirection));
-	};
-
-	public changeEvent = (direction: SearchDirection, event: MessageEvent) => {
-		const data = (event as MessageEvent).data;
-		const parsedEvent: EventTreeNode = JSON.parse(data);
-		const timeRange: TimeRange =
-			direction === SearchDirection.Next
-				? [
-						moment.utc(parsedEvent.startTimestamp).valueOf(),
-						moment
-							.utc(parsedEvent.startTimestamp)
-							.add(this.filterStore.interval, 'minutes')
-							.valueOf(),
-				  ]
-				: [
-						moment
-							.utc(parsedEvent.startTimestamp)
-							.add(-this.filterStore.interval, 'minutes')
-							.valueOf(),
-						moment.utc(parsedEvent.startTimestamp).valueOf(),
-				  ];
+	public changeEventsRange = (timerange: TimeRange) => {
 		this.eventDataStore.fetchEventTree({
-			timeRange,
-			filter: this.filterStore.filter,
-		});
-		if (this.searchChannel) this.searchChannel.close();
-	};
-
-	public changeEventsRange = (minutesOffset: number) => {
-		const timestampFrom = moment
-			.utc(this.filterStore.timestampFrom)
-			.add(minutesOffset, 'minutes')
-			.valueOf();
-		const timestampTo = moment
-			.utc(timestampFrom)
-			.add(this.filterStore.interval, 'minutes')
-			.valueOf();
-
-		this.eventDataStore.fetchEventTree({
-			timeRange: [timestampFrom, timestampTo],
+			timeRange: timerange,
 			filter: this.filterStore.filter,
 		});
 
-		this.filterStore.setRange([timestampFrom, timestampTo]);
+		this.filterStore.setRange(timerange);
 	};
 }

@@ -21,13 +21,13 @@ import api from '../../api';
 import { SSEParamsEvents } from '../../api/sse';
 import { isEventNode } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
-import { TimeRange } from '../../models/Timestamp';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
 export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 	constructor(
 		protected searchParams: {
-			timeRange: TimeRange;
+			startTimestamp: number;
+			endTimestamp?: number;
 			filter: EventsFilter | null;
 			sseParams: SSEParamsEvents;
 		},
@@ -48,11 +48,7 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 		});
 		this.clearFetchedChunkSubscription();
 
-		this.channel = api.sse.getEventsTreeSource(
-			this.searchParams.timeRange,
-			this.searchParams.filter,
-			this.searchParams.sseParams,
-		);
+		this.channel = api.sse.getEventsTreeSource(this.searchParams);
 
 		this.channel.addEventListener('event', this.onSSEResponse);
 		this.channel.addEventListener('close', this.onClose);

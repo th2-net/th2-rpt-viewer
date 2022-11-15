@@ -184,13 +184,16 @@ export default class EventsSearchStore {
 
 		this.isLoadingSearchResults = true;
 
+		const [startTimestamp, endTimestamp] = this.eventsStore.filterStore.range;
+
 		this.channel = new EventsSSEChannel(
 			{
 				filter: this.getSearchFilter(searchTokens),
 				sseParams: {
 					searchDirection: 'next',
 				},
-				timeRange: this.eventsStore.filterStore.range,
+				startTimestamp,
+				endTimestamp,
 			},
 			{
 				onError: this.onSearchError,
