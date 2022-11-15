@@ -189,6 +189,9 @@ export class GraphStore {
 	@action
 	public setTimestampFromRange = (range: TimeRange) => {
 		this.timestamp = new Number(range[0] + (range[1] - range[0]) / 2);
+		// sync range with timestamp
+		const winRange = this.range[1] - this.range[0];
+		this.range = [this.timestamp.valueOf() - winRange / 2, this.timestamp.valueOf() + winRange / 2];
 	};
 
 	@action

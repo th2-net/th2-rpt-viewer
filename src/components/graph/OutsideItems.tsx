@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
@@ -67,19 +67,10 @@ const OutsideItems = (props: OverlayPanelProps) => {
 				.filter(panelRange => panelRange.range != null && panelRange.range[1] > to)
 				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
 		};
-		console.log(
-			'panelsRange.filter(panelRange => panelRange.range != null && panelRange.range[1] > to)',
-		);
-		console.log(
-			panelsRange.filter(panelRange => panelRange.range != null && panelRange.range[1] > to),
-		);
-		console.log('CHECK IF THIS IS CORRECT:    outsidePan');
-		console.log(outsidePan);
 		return outsidePan;
 	}, [from, to, panelsRange]);
 
 	const onOutsidePanelClick = (panelKey: string) => {
-		console.log('onOutsidePanelClick');
 		const panel = panelsRange.find(p => p.type === panelKey);
 		if (panel) {
 			onPanelRangeSelect(panel.range);
@@ -98,46 +89,31 @@ const OutsideItems = (props: OverlayPanelProps) => {
 		const panelTypes = Object.keys(outsidePanels[direction]);
 		const panels = panelsRange.filter(p => panelTypes.includes(p.type));
 		if (direction === 'left') {
-			// the one we meet on our way to the left, is panelsSorted[0]
+			// find the closest on the left-hand-side
 			const panelsSorted = panels.sort((p1, p2) => p2.range[0] - p1.range[0]);
 			const panel = panelsSorted[0];
 			if (panel) {
 				const windowRange = to - from;
 				// check whether we should center it
 				if (from - panel.range[0] < windowRange && panel.range[1] - panel.range[0] < to - from) {
-					console.log('main branch ;left; executed');
 					onPanelRangeSelect(panel.range);
 				} else {
-					console.log('else branch ;left; executed');
 					onPanelRangeSelect([from - windowRange, to - windowRange]);
 				}
 			}
 		} else {
 			const panelsSorted = panels.sort((p1, p2) => p1.range[1] - p2.range[1]);
 			const panel = panelsSorted[0];
-			// check whether we should center it
-			// i think the first check is unnecessary, we prolly checked for it previously
-
 			if (panel) {
 				const windowRange = to - from;
-				console.log('*******************');
-				console.log(windowRange);
-				console.log(to, from);
-				console.log('*******************');
 				if (panel.range[1] - to < windowRange && panel.range[1] - panel.range[0] < to - from) {
-					console.log('main branch ;right; executed');
 					onPanelRangeSelect(panel.range);
 				} else {
-					console.log('else branch ;right; executed');
 					onPanelRangeSelect([from + windowRange, to + windowRange]);
 				}
 			}
 		}
 	};
-
-	useEffect(() => {
-		console.log(from, to, outsidePanels);
-	});
 
 	return (
 		<>

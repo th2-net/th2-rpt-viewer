@@ -526,10 +526,10 @@ export default class EventsStore {
 			.utc(timestampFrom)
 			.add(this.graphStore.eventInterval, 'minutes')
 			.valueOf();
-
 		this.eventDataStore.fetchEventTree({
 			timeRange: [timestampFrom, timestampTo],
 			filter: this.filterStore.filter,
 		});
+		return [timestampFrom, timestampTo];
 	};
 }

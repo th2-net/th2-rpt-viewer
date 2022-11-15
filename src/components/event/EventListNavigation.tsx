@@ -25,7 +25,10 @@ export const EventListNavDown = observer(() => {
 	return (
 		<button
 			className='actions-list__nav'
-			onClick={() => eventsStore.changeEventsRange(-graphStore.eventInterval)}>
+			onClick={() => {
+				const [from, to] = eventsStore.changeEventsRange(-15);
+				graphStore.setTimestampFromRange([from, to]);
+			}}>
 			<span className='down'></span>
 			<span className='label'>Older</span>
 		</button>
@@ -39,7 +42,10 @@ export const EventListNavUp = observer(() => {
 	return (
 		<button
 			className='actions-list__nav'
-			onClick={() => eventsStore.changeEventsRange(graphStore.eventInterval)}>
+			onClick={() => {
+				const [from, to] = eventsStore.changeEventsRange(graphStore.eventInterval);
+				graphStore.setTimestampFromRange([from, to]);
+			}}>
 			<span className='up'></span>
 			<span className='label'>Newer</span>
 		</button>
