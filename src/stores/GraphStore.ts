@@ -18,7 +18,7 @@ import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEventNode } from '../helpers/event';
-import { calculateTimeRange } from '../helpers/graph';
+import { calculateTimeRange, getRangeCenter } from '../helpers/graph';
 import { Chunk, GraphItem, GraphItemType } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { SelectedStore } from './SelectedStore';
@@ -188,7 +188,7 @@ export class GraphStore {
 
 	@action
 	public setTimestampFromRange = (range: TimeRange) => {
-		this.timestamp = new Number(range[0] + (range[1] - range[0]) / 2);
+		this.timestamp = new Number(getRangeCenter(range));
 	};
 
 	@action

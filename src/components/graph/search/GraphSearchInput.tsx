@@ -23,6 +23,7 @@ import { GraphSearchMode } from './GraphSearch';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
 import { TimeRange } from '../../../models/Timestamp';
 import { usePrevious } from '../../../hooks';
+import { getRangeCenter } from '../../../helpers/graph';
 
 const TIME_MASK = DateTimeMask.TIME_MASK;
 export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
@@ -136,8 +137,7 @@ function GraphSearchInput(props: Props) {
 
 	React.useEffect(() => {
 		if (windowRange) {
-			const [from, to] = windowRange;
-			const centerTimestamp = from + (to - from) / 2;
+			const centerTimestamp = getRangeCenter(windowRange);
 
 			setInputConfig({
 				isValidDate: true,

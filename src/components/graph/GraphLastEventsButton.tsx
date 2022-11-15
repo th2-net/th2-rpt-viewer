@@ -14,30 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import moment from 'moment';
 import React from 'react';
 
 type GraphLastEventsButtonProps = {
-	onTimestampSubmit: (timestamp: number) => void;
-	setRange: (timestamp: number) => void;
-	interval: number;
+	findLastEvents: () => void;
 };
 
-const GraphLastEventsButton = ({
-	onTimestampSubmit,
-	setRange,
-	interval,
-}: GraphLastEventsButtonProps) => {
-	const showLastEvents = () => {
-		const currectTime = moment().utc();
-
-		const timeOffset = (interval / 2) * 1000 * 60;
-		onTimestampSubmit(currectTime.valueOf() - timeOffset);
-		setRange(currectTime.valueOf() - timeOffset);
-	};
-
+const GraphLastEventsButton = ({ findLastEvents }: GraphLastEventsButtonProps) => {
 	return (
-		<button onClick={showLastEvents} className='graph-last-events-button graph-button'>
+		<button onClick={findLastEvents} className='graph-last-events-button graph-button'>
 			Show last events
 		</button>
 	);

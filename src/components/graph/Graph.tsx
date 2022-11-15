@@ -176,9 +176,7 @@ const GraphRoot = () => {
 				/>
 				{isWorkspaceStore(activeWorkspace) && (
 					<GraphLastEventsButton
-						onTimestampSubmit={activeWorkspace.onTimestampSelect}
-						setRange={activeWorkspace.eventsStore.onRangeChange}
-						interval={activeWorkspace.graphStore.eventInterval}
+						findLastEvents={activeWorkspace.eventsStore.eventDataStore.findLastEvents}
 					/>
 				)}
 				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}

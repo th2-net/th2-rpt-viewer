@@ -14,34 +14,41 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useGraphDataStore, useWorkspaceEventStore } from '../../hooks';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
-export const EventListNavDown = observer(() => {
+interface Props {
+	direction: SearchDirection.Next | SearchDirection.Previous;
+}
+
+export const EventListArrowNav = observer((props: Props) => {
 	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 
-	return (
-		<button
-			className='actions-list__nav'
-			onClick={() => eventsStore.changeEventsRange(-graphStore.eventInterval)}>
-			<span className='down'></span>
-			<span className='label'>Older</span>
-		</button>
-	);
-});
+	const label = props.direction === SearchDirection.Next ? 'Newer' : 'Older';
 
-export const EventListNavUp = observer(() => {
-	const graphStore = useGraphDataStore();
-	const eventsStore = useWorkspaceEventStore();
+	const getNextEvents = () => {
+		const offset = props.direction === SearchDirection.Next ? 1 : -1;
+
+		const timestampFrom = moment
+			.utc(eventsStore.filterStore.timestampFrom)
+			.add(graphStore.eventInterval * offset, 'minutes')
+			.valueOf();
+		const timestampTo = moment
+			.utc(timestampFrom)
+			.add(graphStore.eventInterval, 'minutes')
+			.valueOf();
+
+		eventsStore.changeEventsRange([timestampFrom, timestampTo]);
+	};
 
 	return (
-		<button
-			className='actions-list__nav'
-			onClick={() => eventsStore.changeEventsRange(graphStore.eventInterval)}>
-			<span className='up'></span>
-			<span className='label'>Newer</span>
+		<button className='actions-list__nav' onClick={getNextEvents}>
+			<span className={label.toLowerCase()}></span>
+			<span className='label'>{label}</span>
 		</button>
 	);
 });

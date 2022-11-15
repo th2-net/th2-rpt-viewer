@@ -16,6 +16,7 @@
 
 import { action, computed, IReactionDisposer, observable, reaction, runInAction, when } from 'mobx';
 import PQueue from 'p-queue/dist';
+import moment from 'moment';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import {
@@ -34,6 +35,7 @@ import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
 import { getItemAt } from '../../helpers/array';
 import { timestampToNumber } from '../../helpers/date';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
@@ -149,7 +151,7 @@ export default class EventsDataStore {
 					timeRange,
 					filter,
 					sseParams: {
-						searchDirection: 'next',
+						searchDirection: SearchDirection.Next,
 						limitForParent: this.CHILDREN_CHUNK_SIZE,
 					},
 				},
@@ -703,5 +705,37 @@ export default class EventsDataStore {
 					}
 				});
 		}
+	};
+
+	public findLastEvents = () => {
+		this.resetEventsTreeState({ isLoading: true });
+
+		this.eventTreeEventSource = new EventsSSEChannel(
+			{
+				timeRange: [Date.now(), new Date(0).valueOf()],
+				filter: this.filterStore.filter,
+				sseParams: {
+					searchDirection: SearchDirection.Previous,
+					resultCountLimit: 1,
+				},
+			},
+			{
+				onResponse: events => {
+					const lastEvent = events[0];
+					if (lastEvent) {
+						const endTimestamp = moment
+							.utc(timestampToNumber(lastEvent.startTimestamp))
+							.add(1, 'second')
+							.valueOf();
+						this.eventStore.changeEventsRange([
+							moment.utc(endTimestamp).subtract(this.filterStore.interval, 'minutes').valueOf(),
+							endTimestamp,
+						]);
+					}
+				},
+				onError: this.onEventTreeFetchError,
+			},
+		);
+		this.eventTreeEventSource.subscribe();
 	};
 }
