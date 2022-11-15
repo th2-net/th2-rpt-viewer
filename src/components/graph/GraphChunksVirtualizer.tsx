@@ -24,6 +24,7 @@ import { TimeRange } from '../../models/Timestamp';
 import { usePointerTimestampUpdate } from '../../contexts/pointerTimestampContext';
 import { useDidUpdate } from '../../hooks/useDidUpdate';
 import '../../styles/graph.scss';
+import { getRangeCenter } from '../../helpers/graph';
 
 const setInitialState = (settings: Settings): State => {
 	const { itemWidth, amount, tolerance, minIndex, maxIndex, startIndex } = settings;
@@ -197,8 +198,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 	useDidUpdate(() => {
 		if (!center.current && innerRange.current) {
-			const timerange = innerRange.current;
-			const centerTS = timerange[0] + (timerange[1] - timerange[0]) / 2;
+			const centerTS = getRangeCenter(innerRange.current);
 			center.current = centerTS;
 		}
 		getTimeRange();

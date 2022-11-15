@@ -100,12 +100,16 @@ export function getGraphTimeTicks(timeRange: TimeRange, interval: number, tickSi
 }
 
 export function filterUniqueGraphItems(items: GraphItem[]) {
+	function getGraphItemId(item: GraphItem) {
+		if (isEventMessage(item)) return item.messageId;
+		return item.eventId;
+	}
+
 	return items.filter((item, index, self) => {
 		return index === self.findIndex(selfItem => getGraphItemId(item) === getGraphItemId(selfItem));
 	});
 }
 
-function getGraphItemId(item: GraphItem) {
-	if (isEventMessage(item)) return item.messageId;
-	return item.eventId;
+export function getRangeCenter(timerange: TimeRange) {
+	return Math.round(timerange[0] + (timerange[1] - timerange[0]) / 2);
 }
