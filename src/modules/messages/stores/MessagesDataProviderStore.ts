@@ -15,7 +15,8 @@
  ***************************************************************************** */
 
 import moment from 'moment';
-import { action, reaction, observable, computed, runInAction } from 'mobx';
+import { nanoid } from 'nanoid';
+import { action, reaction, observable, computed, runInAction, toJS } from 'mobx';
 import { sortByTimestamp, timestampToNumber } from 'helpers/date';
 import { SearchDirection } from 'models/SearchDirection';
 import { MessageSSEEventListeners, MessagesSSEChannel } from 'stores/SSEChannel/MessagesSSEChannel';
@@ -134,6 +135,27 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			queryParams.startTimestamp = moment.utc().subtract(5, 'minutes').valueOf();
 		}
 
+		if (messageId) {
+			try {
+				if (
+					await this.api.messages.matchMessage(
+						messageId,
+						this.messagesStore.filterStore.filterParams,
+					)
+				) {
+					this.messageAC = new AbortController();
+					message = await this.api.messages.getMessage(messageId, this.messageAC.signal);
+				} else {
+					this.messagesStore.selectedMessageId = null;
+				}
+			} catch (error) {
+				if (!isAbortError(error)) {
+					this.isError = true;
+					return;
+				}
+			}
+		}
+
 		try {
 			this.messageAC = new AbortController();
 			[message, messageIds] = await Promise.all([
@@ -191,7 +213,26 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	@action
 	private onLoadingError = (event: Event) => {
-		notificationsStore.handleSSEError(event);
+		if (event instanceof MessageEvent) {
+			notificationsStore.handleSSEError(event);
+		} else {
+			const evSource = toJS(event).currentTarget as EventSource;
+			const errorId = nanoid();
+			notificationsStore.addMessage({
+				id: errorId,
+				notificationType: 'genericError',
+				header: 'Something went wrong while loading messages',
+				type: 'error',
+				action: {
+					label: 'Refetch messages',
+					callback: () => {
+						notificationsStore.deleteMessage(errorId);
+						this.loadMessages();
+					},
+				},
+				description: evSource ? `${event.type} at ${evSource.url}` : `${event.type}`,
+			});
+		}
 		this.stopMessagesLoading();
 		this.resetState(true);
 		this.updateStore.stopSubscription();
@@ -277,21 +318,17 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
 
+		// eslint-disable-next-line no-param-reassign
+		messages = messages.filter(msg => msg.id !== this.messagesStore.selectedMessageId?.valueOf());
+
 		const prevMessages =
 			this.messages.length > 0
 				? messages.filter(
 						message =>
-							timestampToNumber(message.timestamp) <
-								timestampToNumber(this.messages[0].timestamp) || message.id === this.messages[0].id,
+							timestampToNumber(message.timestamp) < timestampToNumber(this.messages[0].timestamp),
 				  )
 				: [];
-		const firstNextMessage = prevMessages[0];
-
 		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
-
-		if (firstNextMessage && firstNextMessage.id === this.messages[0]?.id) {
-			prevMessages.shift();
-		}
 
 		if (prevMessages.length > 0 || nextMessages.length > 0) {
 			this.startIndex -= nextMessages.length;

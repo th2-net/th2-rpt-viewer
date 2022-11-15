@@ -20,6 +20,7 @@ import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import { getObjectKeys } from '../helpers/object';
 import { SearchDirection } from '../models/SearchDirection';
+import fetch from '../helpers/fetchRetry';
 
 interface BaseSSEParams {
 	startTimestamp?: number;
@@ -49,7 +50,9 @@ export type EventFilterKeys =
 	| 'name'
 	| 'body'
 	| 'status'
-	| 'event_generic';
+	| 'event_generic'
+	| 'text'
+	| 'parentId';
 
 export type MessageFilterKeys =
 	| 'attachedEventIds'

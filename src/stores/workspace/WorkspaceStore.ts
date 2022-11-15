@@ -169,7 +169,7 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onSearchResultItemSelect = (
+	public onSearchResultItemSelect = async (
 		resultItem: EventTreeNode | EventAction | EventMessage,
 		isNewWorkspace?: boolean,
 	) => {
@@ -188,7 +188,7 @@ export default class WorkspaceStore {
 				);
 			}
 
-			const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+			const newWorkspace = await this.workspacesStore.createWorkspace(initialWorkspaceState);
 			this.workspacesStore.addWorkspace(newWorkspace);
 		} else {
 			this.onSavedItemSelect(resultItem);
@@ -198,10 +198,10 @@ export default class WorkspaceStore {
 	public onFilterByParentEvent = (parentEvent: EventTreeNode) => {
 		this.searchStore.stopSearch();
 		this.searchStore.setFormType('event');
-		this.searchStore.updateForm({
-			parentEvent: parentEvent.eventId,
-			startTimestamp: timestampToNumber(parentEvent.startTimestamp),
-		});
+		this.searchStore.filterEventsByParent(
+			parentEvent.eventId,
+			timestampToNumber(parentEvent.startTimestamp),
+		);
 
 		this.viewStore.setActivePanel(Panel.Search);
 		if (!this.viewStore.isExpanded(Panel.Search)) {

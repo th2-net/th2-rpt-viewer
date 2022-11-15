@@ -53,6 +53,13 @@
 		border-radius: 16px 16px 0 0;
 	}
 
+	.message-card {
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+		width: 100%;
+	}
+
 	& > div:last-child {
 		border-radius: 0 0 16px 16px;
 	}
@@ -347,6 +354,7 @@
 		display: flex;
 		align-items: center;
 		overflow: hidden;
+		gap: 10px;
 
 		&:hover .message-card-tools__ellipsis {
 			visibility: visible;
@@ -394,6 +402,8 @@
 		flex-direction: row;
 		gap: 5px;
 		z-index: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	&__key,
@@ -429,6 +439,8 @@
 	&__icon {
 		width: 15px;
 		height: 15px;
+		min-width: 15px;
+		min-height: 15px;
 		vertical-align: middle;
 	}
 
@@ -439,26 +451,21 @@
 		border: 1px solid transparent;
 		text-align: center;
 		white-space: nowrap;
+		flex-shrink: 0;
 
 		&:hover {
 			color: $timestampTextColor;
 			border: 1px solid $timestampTextColor;
 		}
 	}
-}
 
-.mc-body,
-.mc-header__info {
-	.checkbox {
-		display: inline;
-		vertical-align: middle;
-		&__control {
-			background-color: #fff;
-			width: 12px;
-			height: 12px;
-			margin: 0 7px 0 0;
-			user-select: initial;
-		}
+	&__sessionid {
+		position: relative;
+		color: #fff;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		gap: 5px;
 	}
 }
 
@@ -544,7 +551,7 @@
 	}
 
 	&:hover .message-card-tools__ellipsis {
-		display: block;
+		visibility: visible;
 	}
 	&:hover .message-card-tools {
 		border-radius: 20px;
@@ -838,7 +845,7 @@
 	justify-content: space-between;
 	align-items: center;
 	gap: 10px;
-	
+
 	&__realtime-button {
 		@include clickable;
 

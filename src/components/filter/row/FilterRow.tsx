@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import EventResolverRow from 'modules/events/components/filter/EventResolverRow';
 import { ActionFilterRow, FitlerRowItem } from 'models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
 import MultipleStringFilterRow from './MultipleStringFIlterRow';
@@ -44,8 +43,6 @@ export default function FilterRow({ rowConfig }: Props) {
 			return <ActionRow config={rowConfig} />;
 		case 'switcher':
 			return <SwitcherRow config={rowConfig} />;
-		case 'event-resolver':
-			return <EventResolverRow config={rowConfig} />;
 		default:
 			return null;
 	}

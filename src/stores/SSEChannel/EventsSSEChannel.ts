@@ -37,6 +37,10 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 		super(isEventNode, eventListeners, options);
 	}
 
+	get eventsFetched() {
+		return this.fetchedCount;
+	}
+
 	public subscribe(): void {
 		this.closeChannel();
 		this.resetSSEState({
@@ -71,7 +75,7 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 				this.eventListeners.onResponse(chunk);
 			}
 			this.resetSSEState({
-				isEndReached: this.fetchedEventsCount !== this.chunkSize,
+				isEndReached: this.fetchedCount !== this.chunkSize,
 			});
 		}
 

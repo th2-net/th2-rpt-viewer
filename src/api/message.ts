@@ -17,6 +17,7 @@
 import { MessageApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import { MessagesSSEParams } from './sse';
+import fetch from '../helpers/fetchRetry';
 
 export type MatchMessageParams = Omit<
 	MessagesSSEParams,

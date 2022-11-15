@@ -17,6 +17,7 @@
 import { EventApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import { EventAction } from '../models/EventAction';
+import fetch from '../helpers/fetchRetry';
 
 const eventHttpApi: EventApiSchema = {
 	getEvent: async (id, signal?, queryParams = {}) => {

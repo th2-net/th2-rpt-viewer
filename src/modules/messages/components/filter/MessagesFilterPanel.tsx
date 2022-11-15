@@ -81,7 +81,7 @@ const MessagesFilterPanel = () => {
 		}
 
 		if (sessions.length) {
-			messagesStore.saveSessions(sessions);
+			messagesStore.saveSessions(sessions.slice(0, filterStore.SESSIONS_LIMIT));
 		}
 	}, [filter, filterStore, sessions]);
 

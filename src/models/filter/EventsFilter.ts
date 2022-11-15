@@ -23,4 +23,6 @@ export default interface EventsFilter {
 	name: MultipleStringFilter;
 	status: SwitcherFilter;
 	event_generic: MultipleStringFilter;
+	text: MultipleStringFilter;
+	parentId: MultipleStringFilter;
 }

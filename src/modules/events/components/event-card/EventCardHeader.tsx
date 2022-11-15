@@ -225,7 +225,7 @@ const EventCardHeader = (props: EventCardHeaderBaseProps) => {
 	}
 
 	const hasChildrenToLoad = computed(() =>
-		eventsDataStore.hasUnloadedChildren.get(event.eventId),
+		eventsDataStore.hasMoreChildren.get(event.eventId),
 	).get();
 
 	const isBookmarked = computed(

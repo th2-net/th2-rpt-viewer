@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventMessage, MessageViewType } from 'models/EventMessage';
+import { EventMessage, MessageViewType, ParsedMessage } from 'models/EventMessage';
 import {
 	isMessageValue,
 	isNullValue,
@@ -92,4 +92,9 @@ export function splitOnReadableParts(targetString: string): PartOfString[] {
 		});
 		return arr;
 	}, [] as PartOfString[]);
+}
+
+export function getSubsequence(parsedMessage: ParsedMessage): null | number {
+	const subsequence = parsedMessage.message.metadata.id.subsequence;
+	return subsequence ? subsequence[0] : null;
 }

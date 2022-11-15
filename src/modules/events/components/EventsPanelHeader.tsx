@@ -22,7 +22,6 @@ import EventsFilterPanel from './filter/EventsFilterPanel';
 import { useEventsStore } from '../hooks/useEventsStore';
 import useEventsDataStore from '../hooks/useEventsDataStore';
 import EventsSearchPanel from './search/EventsSearchPanel';
-import { EventsIntervalInput } from './EventsIntervalInput';
 import { SearchDirection } from '../../../models/SearchDirection';
 
 function EventsPanelHeader() {
@@ -52,7 +51,6 @@ function EventsPanelHeader() {
 						className={flattenButtonClassName}>
 						Flat view
 					</div>
-					<EventsIntervalInput />
 				</div>
 				{eventDataStore.isLoading && (
 					<div className='event-window-header__loader'>

@@ -17,14 +17,16 @@
 import { action, computed, observable, reaction, runInAction } from 'mobx';
 import { IFilterConfigStore, IMessagesStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
+import { nanoid } from 'nanoid';
 import { EventMessage } from 'models/EventMessage';
 import { EventTreeNode } from 'models/EventAction';
-import { isAbortError } from 'helpers/fetch';
 import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
 import { sortMessagesByTimestamp, isEventMessage } from 'helpers/message';
-import { getItemAt } from 'helpers/array';
+import { getItemAt, uniq } from 'helpers/array';
 import { timestampToNumber } from 'helpers/date';
+import { isAbortError } from 'helpers/fetch';
 import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
+import notificationsStore from 'stores/NotificationsStore';
 import MessageBodySortOrderStore from './MessageBodySortStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
@@ -274,15 +276,43 @@ export default class MessagesStore implements IMessagesStore {
 		this.hintMessages = [];
 	};
 
-	@observable
-	public attachedMessages: Array<EventMessage> = [];
+	@action
+	public onAttachedMessagesChange = async (attachedMessages: EventMessage[]) => {
+		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(
+			attachedMessages,
+		);
+
+		if (!shouldShowFilterHintBeforeRefetchingMessages) {
+			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
+			if (mostRecentMessage) {
+				const streams = this.filterStore.params.streams;
+				this.selectedMessageId = new String(mostRecentMessage.id);
+				this.filterStore.setMessagesFilter({
+					...this.filterStore.params,
+					streams: [
+						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
+					],
+					startTimestamp: timestampToNumber(mostRecentMessage.timestamp),
+				});
+			}
+		}
+	};
+
+	// Unsubcribe from reactions
+	public dispose = () => {
+		this.filterStore.dispose();
+		this.dataStore.stopMessagesLoading();
+		this.dataStore.resetState();
+	};
 
 	@observable
 	public isLoadingAttachedMessages = false;
 
+	@observable
+	public attachedMessages: Array<EventMessage> = [];
+
 	private attachedMessagesAC: AbortController | null = null;
 
-	@action
 	public onSelectedEventChange = async (eventTreeNode: EventTreeNode | null) => {
 		if (!eventTreeNode) {
 			this.isLoadingAttachedMessages = false;
@@ -299,12 +329,46 @@ export default class MessagesStore implements IMessagesStore {
 				eventTreeNode.eventId,
 				this.attachedMessagesAC.signal,
 			);
-			const attachedMessages = await Promise.all(
-				event.attachedMessageIds.map(id =>
-					this.api.messages.getMessage(id, this.attachedMessagesAC?.signal),
-				),
+			const attachedMessagesIds = event.attachedMessageIds;
+			const cachedMessages = this.attachedMessages.filter(message =>
+				attachedMessagesIds.includes(message.id),
 			);
-			this.attachedMessages = sortMessagesByTimestamp(attachedMessages);
+			const messagesToLoad = attachedMessagesIds.filter(
+				messageId => cachedMessages.findIndex(message => message.id === messageId) === -1,
+			);
+			const messages = await Promise.all(
+				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
+			);
+			const newStreams = uniq([
+				...messages.map(message => message.sessionId),
+				...this.filterStore.params.streams,
+			]);
+
+			messages
+				.map(message => message.sessionId)
+				.filter(
+					(stream, index, self) =>
+						index === self.findIndex(str => str === stream) &&
+						!newStreams.slice(0, this.filterStore.SESSIONS_LIMIT).includes(stream),
+				)
+				.forEach(stream =>
+					notificationsStore.addMessage({
+						notificationType: 'genericError',
+						type: 'error',
+						header: `Sessions limit of ${this.filterStore.SESSIONS_LIMIT} reached.`,
+						description: `Session ${stream} not included in current sessions. 
+						 Attached messages from this session not included in workspace.`,
+						id: nanoid(),
+					}),
+				);
+
+			const messagesFiltered = messages.filter(message =>
+				newStreams.slice(0, this.filterStore.SESSIONS_LIMIT).includes(message.sessionId),
+			);
+
+			this.attachedMessages = sortMessagesByTimestamp(
+				[...cachedMessages, ...messagesFiltered].filter(Boolean),
+			);
 		} catch (error) {
 			if (!isAbortError(error)) {
 				console.error('Error while loading attached messages', error);
@@ -314,35 +378,5 @@ export default class MessagesStore implements IMessagesStore {
 			this.attachedMessagesAC = null;
 			this.isLoadingAttachedMessages = false;
 		}
-	};
-
-	@action
-	public onAttachedMessagesChange = async (attachedMessages: EventMessage[]) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(
-			attachedMessages,
-		);
-
-		if (!shouldShowFilterHintBeforeRefetchingMessages) {
-			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
-			if (mostRecentMessage) {
-				const streams = this.filterStore.params.streams;
-				this.selectedMessageId = new String(mostRecentMessage.id);
-				this.filterStore.params = {
-					...this.filterStore.params,
-					streams: [
-						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
-					],
-					startTimestamp: timestampToNumber(mostRecentMessage.timestamp),
-					endTimestamp: null,
-				};
-			}
-		}
-	};
-
-	// Unsubcribe from reactions
-	public dispose = () => {
-		this.filterStore.dispose();
-		this.dataStore.stopMessagesLoading();
-		this.dataStore.resetState();
 	};
 }

@@ -56,7 +56,7 @@ export default abstract class SSEChannel<T> implements ISSEChannel {
 
 	private updateSchedulerIntervalMs = 1000;
 
-	protected fetchedEventsCount = 0;
+	protected fetchedCount = 0;
 
 	@observable
 	public isError = false;
@@ -91,7 +91,7 @@ export default abstract class SSEChannel<T> implements ISSEChannel {
 	protected onSSEResponse = (ev: Event) => {
 		const data = JSON.parse((ev as MessageEvent).data);
 		if (this.typeGuard(data)) {
-			this.fetchedEventsCount += 1;
+			this.fetchedCount += 1;
 			this.accumulatedData.push(data);
 		}
 	};
@@ -117,7 +117,7 @@ export default abstract class SSEChannel<T> implements ISSEChannel {
 		this.isLoading = isLoading;
 		this.isError = isError;
 		this.isEndReached = isEndReached;
-		this.fetchedEventsCount = 0;
+		this.fetchedCount = 0;
 	};
 
 	protected initUpdateScheduler = (): void => {

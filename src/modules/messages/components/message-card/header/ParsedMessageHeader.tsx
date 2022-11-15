@@ -18,6 +18,7 @@ import { memo } from 'react';
 import { ParsedMessage, MessageViewType } from 'models/EventMessage';
 import { createBemElement } from 'helpers/styleCreators';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
+import { getSubsequence } from '../../../helpers/message';
 import { Chip } from '../../Chip';
 
 export interface ParsedMessageHeaderProps {
@@ -34,6 +35,8 @@ export const ParsedMessageHeader = memo((props: ParsedMessageHeaderProps) => {
 
 	const headerClass = createBemElement('mc-header', 'info', isHighlighted ? 'highlighted' : null);
 
+	const subsequence = parsedMessage && getSubsequence(parsedMessage);
+
 	return (
 		<div className={headerClass}>
 			<Chip>
@@ -41,7 +44,7 @@ export const ParsedMessageHeader = memo((props: ParsedMessageHeaderProps) => {
 			</Chip>
 			{parsedMessage && (
 				<>
-					<Chip>{parsedMessage.message.metadata.id.subsequence[0]}</Chip>
+					{typeof subsequence === 'number' && <Chip>{subsequence}</Chip>}
 					<Chip
 						className='mc-header__value'
 						title={`Name: ${parsedMessage.message.metadata.messageType}`}>

@@ -42,11 +42,11 @@ function EventTreeView() {
 				<EventList />
 			</SplitViewPane>
 			<SplitViewPane>
-				{event ? (
+				{eventsStore.selectedNode ? (
 					<EventDetailInfoCard
 						isBookmarked={isBookmarked}
 						onBookmarkClick={bookmarksStore.toggleEventPin}
-						node={event}
+						node={eventsStore.selectedNode}
 					/>
 				) : (
 					<Empty description='Select event' />

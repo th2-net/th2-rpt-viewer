@@ -60,6 +60,7 @@ export interface ISearchStore {
 	pauseSearch: () => void;
 	isSearching: boolean;
 	startSearch: (loadMore?: boolean) => void;
+	filterEventsByParent: (parentId: string, parentTimestamp: number) => void;
 }
 
 export interface IMessagesStore {

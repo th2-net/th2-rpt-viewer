@@ -75,16 +75,43 @@ export default class WorkspacesStore {
 	}
 
 	@action
+	private init(initialState: WorkspacesUrlState | null) {
+		if (initialState !== null) {
+			initialState.forEach(async workspaceState =>
+				this.addWorkspace(await this.createWorkspace(workspaceState)),
+			);
+		} else {
+			this.createWorkspace({
+				layout: [0, 100, 0, 0],
+			}).then(workspace => this.addWorkspace(workspace));
+		}
+	}
+
+	@action
 	public deleteWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.splice(this.workspaces.indexOf(workspace), 1);
 	};
 
 	@action
-	public addWorkspace = (workspace = this.createWorkspace()) => {
+	public addWorkspace = async (workspace?: WorkspaceStore) => {
 		if (this.isFull) return;
+		if (!workspace) {
+			// eslint-disable-next-line no-param-reassign
+			workspace = await this.createWorkspace();
+		}
 		this.workspaces.push(workspace);
 		this.tabsStore.setActiveWorkspace(this.workspaces.length - 1);
 	};
+
+	public createWorkspace = async (workspaceInitialState: WorkspaceInitialState = {}) =>
+		new WorkspaceStore(
+			this,
+			this.rootStore.sessionsStore,
+			this.filterConfigStore,
+			this.bookmarksStore,
+			this.api,
+			workspaceInitialState,
+		);
 
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,
@@ -124,16 +151,6 @@ export default class WorkspacesStore {
 		};
 	};
 
-	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) =>
-		new WorkspaceStore(
-			this,
-			this.rootStore.sessionsStore,
-			this.filterConfigStore,
-			this.bookmarksStore,
-			this.api,
-			workspaceInitialState,
-		);
-
 	public closeWorkspace = (tab: number | WorkspaceStore) => {
 		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
 
@@ -157,18 +174,4 @@ export default class WorkspacesStore {
 	public onQuotaExceededError = (unsavedData?: DbData) => {
 		this.rootStore.handleQuotaExceededError(unsavedData);
 	};
-
-	private init(initialState: WorkspacesUrlState | null) {
-		if (initialState !== null) {
-			initialState.forEach(workspaceState =>
-				this.addWorkspace(this.createWorkspace(workspaceState)),
-			);
-		} else {
-			this.addWorkspace(
-				this.createWorkspace({
-					layout: [0, 100, 0, 0],
-				}),
-			);
-		}
-	}
 }

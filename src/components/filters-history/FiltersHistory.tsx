@@ -43,7 +43,8 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
 
-	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
+	const { eventsHistory, messagesHistory, toggleFilterPin, deleteHistoryItem } =
+		useFiltersHistoryStore();
 	const { eventFilterInfo, messagesFilterInfo } = useFilterConfigStore();
 
 	const toShow: (FiltersHistoryType<EventsFilter> | FiltersHistoryType<MessagesFilter>)[] = useMemo(
@@ -57,7 +58,7 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 				if (historyRef.current && buttonRef.current) {
 					const { left, bottom } = buttonRef.current.getBoundingClientRect();
 					historyRef.current.style.left = `${left}px`;
-					historyRef.current.style.top = `${bottom}px`;
+					historyRef.current.style.top = `${bottom - 45 - historyRef.current.clientHeight}px`;
 				}
 			}, 2);
 		}
@@ -111,6 +112,7 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 									messagesFilterInfo={messagesFilterInfo}
 									closeHistory={closeHistory}
 									toggleFilterPin={onFilterPin}
+									deleteHistoryItem={deleteHistoryItem}
 								/>
 								{toShow.length - 1 > index && <hr />}
 							</React.Fragment>

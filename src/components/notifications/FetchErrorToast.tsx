@@ -23,15 +23,20 @@ interface FetchErrorProps {
 	resource: string;
 	responseCode: number | null;
 	responseBody: string;
+	description: string;
 }
 
 export default function FetchErrorToast(props: FetchErrorProps) {
-	const { resource, responseBody, responseCode, header } = props;
+	const { resource, responseBody, responseCode, header, description } = props;
 	const [copied, setCopied] = useState(false);
 	const copyDetailsText = createStyleSelector('toast-action__text', copied ? 'copied' : null);
 
 	const copy = () => {
-		const value = JSON.stringify({ resource, responseBody, responseCode }, null, ' ');
+		const value = JSON.stringify(
+			{ resource, responseBody, responseCode } || description,
+			null,
+			' ',
+		);
 		copyTextToClipboard(value);
 		setCopied(true);
 	};

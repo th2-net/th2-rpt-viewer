@@ -168,12 +168,13 @@
 }
 
 .toast-action {
-	margin: 4px 0 0;
+	margin: 8px 0 0;
 	display: flex;
 	background-color: transparent;
 	color: #fff;
 	cursor: pointer;
-	border: none;
+	border: 1px solid;
+	border-radius: 4px;
 
 	&__copy-icon {
 		margin: 0 4px 0 0;

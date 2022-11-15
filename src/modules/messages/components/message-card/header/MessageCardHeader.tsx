@@ -16,13 +16,14 @@
 
 import * as React from 'react';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
-import { createStyleSelector, createBemBlock } from 'helpers/styleCreators';
+import { createBemBlock } from 'helpers/styleCreators';
 import { formatTime, timestampToNumber } from 'helpers/date';
 import CardDisplayType from 'models/util/CardDisplayType';
 import Checkbox from 'components/util/Checkbox';
-import { getHashCode } from '../../../helpers/stringHash';
+import { getSubsequence } from '../../../helpers/message';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { Chip } from '../../Chip';
+import { Session } from './Session';
 
 export interface MessageInfoProps {
 	message: EventMessage;
@@ -55,33 +56,14 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	} = props;
 	const { timestamp, sessionId, direction } = message;
 
-	const sessionBackgroundStyle: React.CSSProperties = {
-		position: 'absolute',
-		top: 0,
-		left: 0,
-		width: '100%',
-		height: '100%',
-		zIndex: 0,
-		borderRadius: 20,
-		backgroundColor: '#666',
-		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${React.useMemo(
-			() => calculateHueValue(sessionId),
-			[sessionId],
-		)}deg)`,
-	};
-
 	const headerClass = createBemBlock('mc-header__info', isHighlighted ? 'highlighted' : null);
-
-	const sessionClass = createStyleSelector(
-		'mc-header__icon mc-header__direction-icon',
-		direction?.toLowerCase(),
-	);
 
 	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
 	const parsedMessage = message.parsedMessages ? message.parsedMessages[0] : undefined;
+	const subsequence = parsedMessage && getSubsequence(parsedMessage);
 
 	return (
 		<div className={headerClass}>
@@ -96,18 +78,15 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 			{displayType === CardDisplayType.FULL && (
 				<Chip title={`Timestamp: ${formattedTimestamp}`}>{timestamp && formattedTimestamp}</Chip>
 			)}
-			<Chip title={`Session: ${sessionId}`} className='mc-header__sessionId'>
-				<div style={sessionBackgroundStyle} />
-				<span className={sessionClass} />
-				<span className='mc-header__session-id'>{sessionId}</span>
-			</Chip>
+			<Session sessionId={sessionId} direction={direction} />
 			{displayType === CardDisplayType.FULL && <Chip>{message.id}</Chip>}
-			{displayType === CardDisplayType.FULL && parsedMessage && (
-				<Chip>{parsedMessage.message.metadata.id.subsequence[0]}</Chip>
-			)}
-			{displayType === CardDisplayType.FULL && parsedMessage && (
-				<Chip title={`Name: ${parsedMessage.message.metadata.messageType}`}>
-					{parsedMessage.message.metadata.messageType}
+
+			{typeof subsequence === 'number' &&
+				displayType === CardDisplayType.FULL &&
+				message.parsedMessages && <Chip>{subsequence}</Chip>}
+			{displayType === CardDisplayType.FULL && message.parsedMessages && (
+				<Chip title={`Name: ${message.parsedMessages[0].message.metadata.messageType}`}>
+					{message.parsedMessages[0].message.metadata.messageType}
 				</Chip>
 			)}
 			<div className='message-card-tools__wrapper'>
@@ -124,11 +103,3 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 });
 
 MessageCardHeader.displayName = 'MessageCardHeader';
-
-const HUE_SEGMENTS_COUNT = 36;
-
-function calculateHueValue(session: string): number {
-	const hashCode = getHashCode(session);
-
-	return (hashCode % HUE_SEGMENTS_COUNT) * (360 / HUE_SEGMENTS_COUNT);
-}

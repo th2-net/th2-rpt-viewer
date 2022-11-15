@@ -101,7 +101,7 @@ const WorkspacesLayout = () => {
 	};
 
 	function addWorkspace() {
-		workspacesStore.addWorkspace();
+		workspacesStore.createWorkspace().then(workspace => workspacesStore.addWorkspace(workspace));
 	}
 
 	return (

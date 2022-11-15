@@ -16,6 +16,7 @@
 
 import { useEffect, useState } from 'react';
 import EventBodyCard from 'modules/events/components/event-card/EventBodyCard';
+import fetch from 'helpers/fetchRetry';
 import { EventAction } from '../../../models/EventAction';
 import SplashScreen from '../../../components/SplashScreen';
 import EmbeddedEventHeader from './EmbeddedEventHeader';

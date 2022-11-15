@@ -151,16 +151,7 @@ const SearchPanelForm = () => {
 		disabled: false,
 	};
 
-	const eventsFormTypeConfig: FitlerRowItem = {
-		label: 'Parent Event',
-		value: form.parentEvent,
-		setValue: getFormStateUpdater('parentEvent'),
-		type: 'event-resolver',
-		id: 'parent-event',
-		placeholder: 'matches events by the specified parent event id',
-	};
-
-	const messagesFormTypeConfig: FitlerRowItem = {
+	const sessionsConfig: FitlerRowItem = {
 		type: 'multiple-strings',
 		id: 'stream',
 		label: 'Session',
@@ -173,9 +164,6 @@ const SearchPanelForm = () => {
 		required: true,
 		validateBubbles: true,
 	};
-
-	const currentConfig: FitlerRowItem =
-		formType === 'event' ? eventsFormTypeConfig : messagesFormTypeConfig;
 
 	const startTimestampInput: DateInputProps = {
 		inputConfig: {
@@ -283,7 +271,7 @@ const SearchPanelForm = () => {
 							<SearchResultCountLimit {...resultCountLimitConfig} />
 						</div>
 					</div>
-					<FilterRow rowConfig={currentConfig} />
+					{formType === 'message' ? <FilterRow rowConfig={sessionsConfig} /> : null}
 				</div>
 				<div className='filter'>
 					<FilterRows config={config} />

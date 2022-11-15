@@ -46,7 +46,7 @@ import {
 	SSEParams,
 } from 'api/sse';
 import { DbData, IndexedDbStores } from 'api/indexedDb';
-import { getItemId, isEventAction, isEventNode } from 'helpers/event';
+import { getItemId, isEventAction, isEventNode, isEvent } from 'helpers/event';
 import { isEventMessage } from 'helpers/message';
 import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { getTimestampAsNumber } from 'helpers/date';
@@ -67,7 +67,6 @@ export type SearchPanelFormState = {
 	};
 	resultCountLimit: number;
 	searchDirection: SearchDirection | null;
-	parentEvent: string;
 	stream: string[];
 };
 
@@ -121,7 +120,6 @@ function getDefaultFormState(): SearchPanelFormState {
 			previous: null,
 			next: null,
 		},
-		parentEvent: '',
 		stream: [],
 	};
 }
@@ -362,6 +360,17 @@ export class SearchStore implements ISearchStore {
 		this.resetSearchProgressState();
 	};
 
+	@action filterEventsByParent = (parentId: string, parentTimestamp: number) => {
+		if (this.eventsFilter) {
+			this.setFormType('event');
+			this.stopSearch();
+			this.eventsFilter.parentId.values = [parentId];
+			this.searchForm.startTimestamp = parentTimestamp;
+			this.resetSearchProgressState();
+			this.workspacesStore.tabsStore.setActiveWorkspace(0);
+		}
+	};
+
 	@action setEventsFilter = (patch: Partial<EventsFilter>) => {
 		if (this.eventsFilter) {
 			this.eventsFilter = {
@@ -467,7 +476,7 @@ export class SearchStore implements ISearchStore {
 			});
 		}
 
-		const { startTimestamp, searchDirection, resultCountLimit, timeLimits, parentEvent, stream } =
+		const { startTimestamp, searchDirection, resultCountLimit, timeLimits, stream } =
 			this.searchForm;
 
 		const startDirectionalSearch = (direction: SSESearchDirection) => {
@@ -514,7 +523,9 @@ export class SearchStore implements ISearchStore {
 			}
 
 			const queryParams: SSEParams =
-				this.formType === 'event' ? { ...params, parentEvent, metadataOnly: false } : params;
+				this.formType === 'event'
+					? { ...params }
+					: { ...params, stream: stream.flatMap(s => [`${s}:first`, `${s}:second`]) };
 
 			const searchChannel = this.api.sse.getEventSource({
 				type: this.formType,
@@ -588,7 +599,19 @@ export class SearchStore implements ISearchStore {
 	};
 
 	onError = (searchDirection: SSESearchDirection, ev: Event) => {
-		notificationsStore.handleSSEError(ev);
+		if (ev instanceof MessageEvent) {
+			notificationsStore.handleSSEError(ev);
+		} else {
+			const evSource = toJS(ev).currentTarget as EventSource;
+			const errorId = nanoid();
+			notificationsStore.addMessage({
+				id: errorId,
+				notificationType: 'genericError',
+				header: `EventSource error - check the console.`,
+				type: 'error',
+				description: evSource ? `${ev.type} at ${evSource.url}` : `${ev.type}`,
+			});
+		}
 
 		this.stopSearch(searchDirection);
 	};
@@ -641,7 +664,7 @@ export class SearchStore implements ISearchStore {
 					? getTimestampAsNumber(parsedEvent)
 					: parsedEvent.timestamp;
 
-			if (isEventAction(parsedEvent) || isEventMessage(parsedEvent)) {
+			if (isEvent(parsedEvent) || isEventMessage(parsedEvent)) {
 				const resultGroupKey = Math.floor(
 					eventTimestamp / 1000 / (SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
 				).toString();
@@ -747,7 +770,7 @@ export class SearchStore implements ISearchStore {
 					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save current search result`,
-					description: '',
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 				});
 			}

@@ -21,6 +21,7 @@ import { nanoid } from 'nanoid';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import EventsFilter from 'models/filter/EventsFilter';
 import { capitalize } from 'helpers/stringUtils';
+import { FilterState } from 'models/search/Search';
 import { ActionType } from 'models/EventAction';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import {
@@ -74,7 +75,7 @@ class FiltersHistoryStore {
 	@observable
 	private initialized = false;
 
-	@observable.ref
+	@observable
 	public filterHistory: FiltersHistoryType<EventsFilter | MessagesFilter>[] = [];
 
 	@computed
@@ -211,6 +212,14 @@ class FiltersHistoryStore {
 	private addHistoryItem = async (newItem: FiltersHistoryType<MessagesFilter | EventsFilter>) => {
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newItem);
 		this.filterHistory = [...this.filterHistory, newItem];
+	};
+
+	@action
+	public deleteHistoryItem = async (oldItem: FiltersHistoryType<FilterState>) => {
+		this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, oldItem.timestamp);
+		this.filterHistory = this.filterHistory.filter(
+			historyItem => historyItem.timestamp !== oldItem.timestamp,
+		);
 	};
 }
 

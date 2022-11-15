@@ -82,7 +82,7 @@ export default class EventsFilterStore {
 					  }
 					: defaultEventFilter,
 			);
-			this.setEventsRange(range);
+			this.setRange(range);
 		}
 
 		this.setTimestampFromRange(this.range);
@@ -191,11 +191,6 @@ export default class EventsFilterStore {
 		} else {
 			this.filter = toJS(filterConfig);
 		}
-	};
-
-	@action
-	public setEventsRange = (range: TimeRange) => {
-		this.range = range;
 	};
 
 	public dispose = () => {

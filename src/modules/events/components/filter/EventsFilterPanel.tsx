@@ -29,11 +29,14 @@ import { useEventFiltersAutocomplete } from '../../hooks/useEventAutocomplete';
 const filterOrder: EventFilterKeys[] = [
 	'status',
 	'attachedMessageId',
+	'parentId',
 	'type',
 	'body',
 	'name',
 	'event_generic',
+	'text',
 ];
+
 const classNames = {
 	'string[]': {
 		className: '',

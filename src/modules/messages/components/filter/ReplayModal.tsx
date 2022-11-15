@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { motion } from 'framer-motion';
 import moment from 'moment';
 import { TIME_INPUT_MASK, DATE_TIME_INPUT_MASK } from 'models/util/filterInputs';
-import { SearchDirection } from 'models/SearchDirection';
 import {
 	FilterRowConfig,
 	FilterRowMultipleStringsConfig,
@@ -27,13 +26,13 @@ import {
 	DateTimeMask,
 	TimeInputType,
 } from 'models/filter/FilterInputs';
-import { getMessagesSSEParams, MessageFilterKeys } from 'api/sse';
+import { FilterKeys, getMessagesSSEParams, MessageFilterKeys } from 'api/sse';
 import { useOutsideClickListener } from 'hooks/index';
 import { copyTextToClipboard } from 'helpers/copyHandler';
-import { createURLSearchParams } from 'helpers/url';
 import { ModalPortal } from 'components/util/Portal';
 import { useFilterConfig } from 'hooks/useFilterConfig';
 import { FilterRows } from 'components/filter/FilterRows';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 
 const filterOrder: MessageFilterKeys[] = [
@@ -81,7 +80,7 @@ function ReplayModal() {
 		};
 	}, [isCopied]);
 
-	const { config, setFilter, filter } = useFilterConfig({
+	const { config, setFilter, filter, currentValues } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
 		filter: filterStore.filter,
 		order: filterOrder,
@@ -150,13 +149,30 @@ function ReplayModal() {
 			'backend/search/sse/messages/',
 		].join('');
 
-		const params = getMessagesSSEParams(
-			filter,
-			{ streams, startTimestamp, endTimestamp },
-			SearchDirection.Next,
-		);
-		return `${link}?${createURLSearchParams({ ...params })}`;
-	}, [filter, streams, startTimestamp, endTimestamp, currentStream]);
+		let currentFilter = filter;
+
+		if (currentFilter) {
+			currentFilter = Object.entries(currentFilter).reduce((acc, filterItem) => {
+				const [filterString, filterValue] = filterItem;
+				const currentValue = currentValues[filterString as FilterKeys];
+
+				return {
+					...acc,
+					[filterString]: {
+						...filterValue,
+						values: [...filterValue.values, currentValue].filter(Boolean),
+					},
+				};
+			}, {} as MessagesFilter);
+		}
+
+		const params = getMessagesSSEParams(currentFilter, {
+			endTimestamp,
+			startTimestamp,
+			streams: [...streams, currentStream].filter(Boolean),
+		}).toString();
+		return `${link}?${params}`;
+	}, [filter, streams, startTimestamp, endTimestamp, currentStream, currentValues]);
 
 	function toggleReplayModal() {
 		if (!isOpen) {

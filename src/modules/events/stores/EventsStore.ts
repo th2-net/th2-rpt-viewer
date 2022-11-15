@@ -376,8 +376,8 @@ export default class EventsStore implements IEventsStore {
 
 	private onIntervalChange = (interval: number) => {
 		const intervalMs = interval * 60 * 1000;
-		let timestampFrom = this.filterStore.timestampFrom;
-		let timestampTo = this.filterStore.timestampFrom + intervalMs;
+		let timestampFrom = this.filterStore.timestamp.valueOf() - intervalMs / 2;
+		let timestampTo = this.filterStore.timestamp.valueOf() + intervalMs / 2;
 		const now = moment.utc().valueOf();
 		if (timestampTo > now) {
 			timestampTo = now;
@@ -536,5 +536,7 @@ export default class EventsStore implements IEventsStore {
 			timeRange: [timestampFrom, timestampTo],
 			filter: this.filterStore.filter,
 		});
+
+		this.filterStore.setRange([timestampFrom, timestampTo]);
 	};
 }

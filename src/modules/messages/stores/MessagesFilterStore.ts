@@ -15,11 +15,13 @@
  ***************************************************************************** */
 
 import { action, computed, IReactionDisposer, observable, reaction, toJS } from 'mobx';
+import { nanoid } from 'nanoid';
 import moment from 'moment';
 import { IFilterConfigStore } from 'models/Stores';
 import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
 import { getMessagesSSEParams, MessagesFilterInfo, MessagesSSEParams } from 'api/sse';
 import { SearchDirection } from 'models/SearchDirection';
+import notificationsStore from 'stores/NotificationsStore';
 
 function getDefaultMessagesParams(): MessagesParams {
 	return {
@@ -38,6 +40,8 @@ export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
 	private sseFilterInfoSubscription: IReactionDisposer;
+
+	public SESSIONS_LIMIT = 5;
 
 	constructor(
 		private filtersStore: IFilterConfigStore,
@@ -92,6 +96,15 @@ export default class MessagesFilterStore {
 	public setMessagesFilter(params: MessagesParams, filter: MessagesFilter | null = null) {
 		this.params = params;
 		this.filter = filter;
+		params.streams.slice(this.SESSIONS_LIMIT).forEach(session =>
+			notificationsStore.addMessage({
+				notificationType: 'genericError',
+				type: 'error',
+				header: `Sessions limit of ${this.SESSIONS_LIMIT} reached.`,
+				description: `Session ${session} not included in current sessions.`,
+				id: nanoid(),
+			}),
+		);
 	}
 
 	@action
