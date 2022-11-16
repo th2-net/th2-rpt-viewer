@@ -115,7 +115,6 @@ function MultipleStringFilterRowBase({ config }: MultipleStringFilterRowProps) {
 							key={index}
 							selectNext={() => focusBubbleOrInput(index + 1)}
 							selectPrev={() => focusBubbleOrInput(index - 1)}
-							size='small'
 							removeIconType='white'
 							submitKeyCodes={[KeyCodes.TAB]}
 							className='filter__bubble'

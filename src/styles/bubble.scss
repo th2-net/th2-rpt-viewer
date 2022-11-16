@@ -28,7 +28,7 @@
 	height: $filterBubbleHeight;
 	max-width: calc(100% - 10px);
 	color: #ffffff;
-	background-color: #5eba6e;
+	background-color: #71A2FF;
 
 	transition: right 0.15s ease-in-out;
 
@@ -97,13 +97,13 @@
 	}
 
 	&.small {
-		font-size: 13px;
+		font-size: 11px;
 		height: 20px;
 	}
 
 	&.medium {
-		font-size: 15px;
-		height: 30px;
+		font-size: 12px;
+		height: 24px;
 	}
 
 	&.large {

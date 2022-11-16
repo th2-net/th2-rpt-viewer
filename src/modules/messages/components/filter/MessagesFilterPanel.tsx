@@ -32,9 +32,6 @@ import { useMessagesFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { useFilterStore } from '../../hooks/useFilterStore';
 import SessionFilter from './SessionFilterRow';
 import FilterWarning from './FilterWarning';
-import ReplayModal from './ReplayModal';
-import MessageExport from '../MessageExport';
-import ReportViewerLink from './ReportViewerLink';
 
 const filterOrder: MessageFilterKeys[] = [
 	'attachedEventIds',
@@ -117,12 +114,6 @@ const MessagesFilterPanel = () => {
 
 	return (
 		<>
-			<FilterButton
-				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
-				setShowFilter={setShowFilter}
-				showFilter={showFilter}
-				isLoading={secondaryLoadingStatus}
-			/>
 			<FilterConfig
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
@@ -133,12 +124,7 @@ const MessagesFilterPanel = () => {
 				setFilter={setFilter as any}
 				type='message'
 			/>
-			{viewMode === ViewMode.Full && (
-				<>
-					<ReplayModal />
-					<FilterWarning />
-				</>
-			)}
+			{viewMode === ViewMode.Full && <FilterWarning />}
 			<SessionFilter
 				sessions={sessions}
 				setSessions={setSessions}
@@ -146,14 +132,12 @@ const MessagesFilterPanel = () => {
 				stopLoading={messagesDataStore.stopMessagesLoading}
 				isLoading={isMessageListLoading}
 			/>
-			<MessageExport
-				isExporting={messagesStore.exportStore.isExport}
-				enableExport={messagesStore.exportStore.enableExport}
-				disableExport={messagesStore.exportStore.disableExport}
-				endExport={messagesStore.exportStore.endExport}
-				exportedCount={messagesStore.exportStore.exportMessages.length}
+			<FilterButton
+				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
+				setShowFilter={setShowFilter}
+				showFilter={showFilter}
+				isLoading={secondaryLoadingStatus}
 			/>
-			{viewMode === ViewMode.EmbeddedMessages && <ReportViewerLink />}
 		</>
 	);
 };

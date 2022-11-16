@@ -86,6 +86,7 @@ export type FilterRowBaseConfig = {
 	placeholder?: string;
 	isInvalid?: boolean;
 	required?: boolean;
+	hint?: string;
 };
 
 export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
@@ -100,7 +101,6 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	setValue: (nextValue: string) => void;
 	labelClassName?: string;
 	autocompleteList?: string[];
-	hint?: string;
 };
 
 export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
@@ -111,7 +111,6 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	setCurrentValue: (currentValue: string) => void;
 	autocompleteList?: string[];
 	validateBubbles?: boolean;
-	hint?: string;
 	labelClassName?: string;
 };
 

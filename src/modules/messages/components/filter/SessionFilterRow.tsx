@@ -71,18 +71,18 @@ const MessagesFilterSessionFilter = ({
 		[sessions, setSessions, currentStream, setCurrentStream, sessionsAutocomplete],
 	);
 	return (
-		<>
+		<div className='sessions-row'>
 			<FilterRow rowConfig={config} />
 			<button
 				onClick={isLoading ? stopLoading : submitChanges}
-				className='messages-window-header__filter-submit-btn'>
+				className='sessions-row__submit-button'>
 				{isLoading ? (
-					<i className='messages-window-header__filter-submit-stop-icon' />
+					<i className='sessions-row__stop-icon' />
 				) : (
-					<i className='messages-window-header__filter-submit-start-icon' />
+					<i className='sessions-row__start-icon' />
 				)}
 			</button>
-		</>
+		</div>
 	);
 };
 

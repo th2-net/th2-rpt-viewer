@@ -822,6 +822,42 @@
 	animation: highlight 1s infinite ease-in-out;
 }
 
+.sessions-row {
+	display: flex;
+	flex-grow: 1;
+
+	& > div:first-child {
+		border-radius: 4px 0 0 4px;
+	}
+
+	&__submit-button {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		padding: 12px;
+		gap: 10px;
+		width: 50px;
+		height: 40px;
+		background: #4E8AFF;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		border-radius: 0px 4px 4px 0px;
+		border: none;
+		outline: none;
+	}
+
+	&-start-icon {
+		@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
+
+		display: inline-block;
+	}
+
+	&-stop-icon {
+		@include icon(url('../../resources/icons/cross-icon-big.svg'), 16px, 16px);
+
+		display: inline-block;
+	}
+}
+
 .messages-panel.embeddedmessages {
 	padding: 0;
 
@@ -847,22 +883,8 @@
 	gap: 10px;
 
 	&__realtime-button {
-		@include clickable;
-
-		border: none;
-		border-radius: 6px;
-		background-color: transparent;
-		width: 28px;
-		height: 28px;
-		display: flex;
-		justify-content: center;
-		padding: 0;
-		align-items: center;
-		cursor: pointer;
-		outline: none;
-
 		&-icon {
-			@include icon(url(../../resources/icons/update.svg), 16px, 16px);
+			@include icon(url(../../resources/icons/realtime.svg), 24px, 24px);
 
 			display: inline-block;
 		}
@@ -887,10 +909,9 @@
 
 		.filter-row {
 			&__input {
-				border: 1px solid rgb(94, 94, 94);
-				&.invalid {
-					border: 1px solid $toastErrorBackground;
-				}
+				border: 1px solid #FBFBFB;
+				border-right: none;
+				border-radius: 4px 0 0 4px;
 			}
 
 			&__label {
@@ -906,31 +927,6 @@
 
 		.filter-content {
 			margin: 0;
-		}
-	}
-
-	&__filter-submit {
-		&-btn {
-			@include clickable;
-
-			flex-shrink: 0;
-			background-color: transparent;
-			border: none;
-			cursor: pointer;
-			padding: 4px;
-			outline: none;
-		}
-
-		&-start-icon {
-			@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
-
-			display: inline-block;
-		}
-
-		&-stop-icon {
-			@include icon(url('../../resources/icons/cross-icon-big.svg'), 16px, 16px);
-
-			display: inline-block;
 		}
 	}
 
@@ -1016,24 +1012,9 @@
 		}
 	}
 
-	&__configurator-button {
-		@include clickable;
-		border: none;
-		border-radius: 6px;
-		background-color: transparent;
-		width: 28px;
-		height: 28px;
-		display: flex;
-		justify-content: center;
-		padding: 0;
-		align-items: center;
-		cursor: pointer;
-		outline: none;
-
-		&-icon {
-			@include icon(url(../../resources/icons/settings.svg), 15px, 15px);
-			display: inline-block;
-		}
+	&__settings-icon {
+		@include icon(url(../../resources/icons/settings.svg), 24px, 24px);
+		display: inline-block;
 	}
 
 	.report-viewer-link {

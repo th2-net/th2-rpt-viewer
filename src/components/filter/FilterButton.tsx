@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 import React from 'react';
+import { IconButton } from 'components/IconButton';
 import { createBemElement } from '../../helpers/styleCreators';
 import '../../styles/filter.scss';
 
@@ -26,21 +27,15 @@ interface Props {
 }
 
 const FilterButton = (props: Props) => {
-	const { isFilterApplied, showFilter, setShowFilter, isDisabled = false, isLoading } = props;
+	const { isFilterApplied, showFilter, setShowFilter, isDisabled = false } = props;
 
-	const filterButtonRef = React.useRef<HTMLDivElement>(null);
+	const filterButtonRef = React.useRef<HTMLButtonElement>(null);
 
 	function onClick() {
 		if (!isDisabled) {
 			setShowFilter(!showFilter);
 		}
 	}
-
-	const filterTitleClass = createBemElement(
-		'filter',
-		'title',
-		!showFilter && isFilterApplied ? 'applied' : null,
-	);
 
 	const filterIconClass = createBemElement(
 		'filter',
@@ -56,13 +51,9 @@ const FilterButton = (props: Props) => {
 	);
 
 	return (
-		<div className={filterButtonClass} ref={filterButtonRef} onClick={onClick}>
-			<div className={filterIconClass} />
-			<div className={filterTitleClass}>{showFilter ? 'Hide Filter' : 'Show Filter'}</div>
-			{typeof isLoading === 'boolean'
-				? isLoading && <div style={{ marginLeft: 5 }} className='filter__loading' />
-				: null}
-		</div>
+		<IconButton className={filterButtonClass} ref={filterButtonRef} onClick={onClick}>
+			<i className={filterIconClass} />
+		</IconButton>
 	);
 };
 

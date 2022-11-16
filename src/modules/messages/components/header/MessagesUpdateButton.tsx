@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { IconButton } from 'components/IconButton';
 import { createBemElement } from 'helpers/styleCreators';
 
 type MessagesUpdateButtonProps = {
@@ -36,9 +37,9 @@ const MessagesUpdateButton = ({
 	const toggleSubscribe = isLoading ? stopSubscription : subscribeOnChanges;
 
 	return (
-		<button onClick={toggleSubscribe} className={updateButtonClass}>
+		<IconButton className={updateButtonClass} onClick={toggleSubscribe}>
 			<i className='messages-window-header__realtime-button-icon' />
-		</button>
+		</IconButton>
 	);
 };
 

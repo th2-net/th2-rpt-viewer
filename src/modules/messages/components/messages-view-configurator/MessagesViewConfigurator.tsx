@@ -17,6 +17,7 @@
 import { useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
+import { IconButton } from 'components/IconButton';
 import { useMessagesFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { ModalPortal } from '../../../../components/util/Portal';
 import RulesList from './RulesList';
@@ -59,12 +60,9 @@ const MessageViewConfigurator = () => {
 
 	return (
 		<>
-			<button
-				ref={buttonRef}
-				className='messages-window-header__configurator-button'
-				onClick={() => setIsOpen(open => !open)}>
-				<i className='messages-window-header__configurator-button-icon' />
-			</button>
+			<IconButton ref={buttonRef} onClick={() => setIsOpen(open => !open)}>
+				<i className='messages-window-header__settings-icon' />
+			</IconButton>
 			<ModalPortal
 				isOpen={isOpen}
 				ref={modalRef}

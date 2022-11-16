@@ -133,12 +133,12 @@
 	}
 
 	&__messages-icon {
-		@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
+		@include icon(url(../../resources/icons/workspace-messages.svg), 18px, 18px);
 		margin-bottom: 3px;
 	}
 
 	&__messages-icon-white {
-		@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
+		@include icon(url(../../resources/icons/workspace-messages-white.svg), 18px, 18px);
 	}
 
 	&__events-icon {
@@ -202,7 +202,7 @@
 	height: 100%;
 	overflow: hidden;
 	background-color: #fff;
-	padding: 10px 5px 0 5px;
+	padding: 16px 16px 0 16px;
 
 	&__breadcrumbs {
 		padding: 0 5px;
@@ -237,7 +237,8 @@
 	border-top-right-radius: 5px;
 	justify-content: flex-start;
 	min-width: 15px;
-
+	color: #fff;
+	
 	&__sidebar {
 		cursor: pointer;
 		text-orientation: mixed;
@@ -248,7 +249,7 @@
 		flex-shrink: 0;
 		overflow: hidden;
 	}
-
+	
 	&__title {
 		margin-left: 3px;
 		font-weight: 600;
@@ -263,7 +264,7 @@
 		margin: 10px auto;
 		border-radius: 10px;
 	}
-
+	
 	&__wrapper {
 		flex-grow: 1;
 		flex-shrink: 1;
@@ -271,20 +272,20 @@
 		flex-direction: column;
 		overflow: hidden;
 	}
-
+	
 	&__header {
+		height: 40px;
 		flex-shrink: 0;
 		padding: 5px 10px;
 		display: flex;
 		align-items: center;
 		font-style: normal;
 		font-weight: bold;
-		font-size: 14px;
-		line-height: 15px;
 		color: #fff;
-		border-radius: 5px;
+		border-radius: 24px 24px 0 0;
 		transition: background-color 0.15s;
 		cursor: pointer;
+		font-size: 20px;
 	}
 
 	&__header-icon {

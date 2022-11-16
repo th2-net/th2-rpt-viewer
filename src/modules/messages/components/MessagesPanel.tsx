@@ -21,7 +21,7 @@ import { useActivePanel } from 'hooks/useActivePanel';
 import { createStyleSelector } from 'helpers/styleCreators';
 import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
 import useViewMode from 'hooks/useViewMode';
-import MessagesPanelHeader from './MessagesPanelHeader';
+import MessagesPanelHeader from './header/MessagesPanelHeader';
 import MessagesCardList from './message-card-list/MessagesCardList';
 import AttachedMessagesSelection from './AttachedMessagesSelection';
 

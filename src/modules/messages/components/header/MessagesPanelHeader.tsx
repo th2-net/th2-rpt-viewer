@@ -17,10 +17,16 @@
 import { observer } from 'mobx-react-lite';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
-import { useMessagesDataStore } from '../hooks/useMessagesDataStore';
-import MessagesFilterPanel from './filter/MessagesFilterPanel';
+import { ViewMode } from 'components/ViewModeProvider';
+import useViewMode from 'hooks/useViewMode';
+import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
+import MessageExport from './MessageExport';
+import MessagesFilterPanel from '../filter/MessagesFilterPanel';
+import { useMessagesStore } from '../../hooks/useMessagesStore';
 import MessagesUpdateButton from './MessagesUpdateButton';
-import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
+import MessagesViewConfigurator from '../messages-view-configurator/MessagesViewConfigurator';
+import ReportViewerLink from './ReportViewerLink';
+import ReplayModal from './ReplayModal';
 import 'styles/messages.scss';
 
 interface Props {
@@ -30,6 +36,8 @@ interface Props {
 
 function MessagesPanelHeader(props: Props) {
 	const { updateStore } = useMessagesDataStore();
+	const messagesStore = useMessagesStore();
+	const viewMode = useViewMode();
 
 	return (
 		<div className='messages-window-header'>
@@ -42,6 +50,15 @@ function MessagesPanelHeader(props: Props) {
 			)}
 			<MessagesFilterPanel {...props} />
 			<MessagesViewConfigurator />
+			{viewMode === ViewMode.Full && <ReplayModal />}
+			<MessageExport
+				isExporting={messagesStore.exportStore.isExport}
+				enableExport={messagesStore.exportStore.enableExport}
+				disableExport={messagesStore.exportStore.disableExport}
+				endExport={messagesStore.exportStore.endExport}
+				exportedCount={messagesStore.exportStore.exportMessages.length}
+			/>
+			{viewMode === ViewMode.EmbeddedMessages && <ReportViewerLink />}
 		</div>
 	);
 }
