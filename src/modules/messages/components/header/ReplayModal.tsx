@@ -32,6 +32,7 @@ import { copyTextToClipboard } from 'helpers/copyHandler';
 import { ModalPortal } from 'components/util/Portal';
 import { useFilterConfig } from 'hooks/useFilterConfig';
 import { FilterRows } from 'components/filter/FilterRows';
+import { IconButton } from 'components/buttons/IconButton';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 
@@ -146,7 +147,7 @@ function ReplayModal() {
 		const link = [
 			window.location.origin,
 			window.location.pathname,
-			'http://de-th2-qa:30000/th2-groups/backend/search/sse/messages/',
+			'backend/search/sse/messages/',
 		].join('');
 
 		let currentFilter = filter;
@@ -199,9 +200,9 @@ function ReplayModal() {
 
 	return (
 		<>
-			<span className='replay__toggle-button' onClick={toggleReplayModal}>
-				Replay
-			</span>
+			<IconButton className='replay__toggle-button' onClick={toggleReplayModal}>
+				<span>Replay</span>
+			</IconButton>
 			<ModalPortal isOpen={isOpen}>
 				<motion.div className='replay__drag-area' ref={refConstrains} />
 				<motion.div

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 import React from 'react';
-import { IconButton } from 'components/IconButton';
+import { IconButton } from 'components/buttons/IconButton';
 import { createBemElement } from '../../helpers/styleCreators';
 import '../../styles/filter.scss';
 

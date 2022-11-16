@@ -17,7 +17,7 @@
 import { useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
-import { IconButton } from 'components/IconButton';
+import { IconButton } from 'components/buttons/IconButton';
 import { useMessagesFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { ModalPortal } from '../../../../components/util/Portal';
 import RulesList from './RulesList';

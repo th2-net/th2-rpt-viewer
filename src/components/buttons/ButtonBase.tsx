@@ -15,15 +15,15 @@
  ***************************************************************************** */
 
 import React from 'react';
-import '../styles/buttons.scss';
+import '../../styles/buttons.scss';
 
 type Props = React.HTMLProps<HTMLButtonElement>;
 
-export const IconButton = React.forwardRef<HTMLButtonElement, Props>(
+export const ButtonBase = React.forwardRef<HTMLButtonElement, Props>(
 	(props: React.HTMLProps<HTMLButtonElement>, ref) => {
 		const { className, type, ...restProps } = props;
-		return <button ref={ref} className={`icon-button ${className}`} {...restProps}></button>;
+		return <button ref={ref} className={`button-base ${className}`} {...restProps}></button>;
 	},
 );
 
-IconButton.displayName = 'IconButton';
+ButtonBase.displayName = 'IconButton';

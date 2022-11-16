@@ -17,6 +17,7 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MessageViewType } from 'models/EventMessage';
+import { ButtonBase } from 'components/buttons/ButtonBase';
 
 interface Props {
 	isExporting: boolean;
@@ -48,25 +49,30 @@ const MessageExport = (props: Props) => {
 		setIsOpen(false);
 	};
 
-	if (!isExporting) {
-		return (
-			<button className='messages-window-header__export-btn' onClick={enableExport}>
-				<i className='messages-window-header__export-enable' />
-			</button>
-		);
+	function onExport() {
+		if (!isExporting) {
+			enableExport();
+			return;
+		}
+		if (isExporting && exportAmount === 0) {
+			closeExport();
+			return;
+		}
+		setIsOpen(true);
 	}
 
 	return (
 		<>
-			<span className='messages-window-header__export-counter'>{exportAmount}</span>
-			<div className='messages-window-header__export'>
-				<button className='messages-window-header__export-btn' onClick={() => setIsOpen(!isOpen)}>
-					<i className='messages-window-header__export-end' />
-				</button>
+			<ButtonBase className='messages-export__button' onClick={onExport}>
+				<span className='messages-export__icon'></span>
+				Export
+				<span className='messages-export__counter'>{exportAmount}</span>
+			</ButtonBase>
+			<div className='messages-export__export'>
 				<AnimatePresence>
 					{isOpen && (
 						<motion.div
-							className='messages-window-header__export-controls'
+							className='messages-export__tools-list'
 							style={{ transformOrigin: 'top' }}
 							initial={{ opacity: 0, scale: 0.5 }}
 							animate={{ opacity: 1, scale: 1 }}
@@ -75,18 +81,15 @@ const MessageExport = (props: Props) => {
 							{viewTypes.map(type => (
 								<button
 									key={type}
-									className='messages-window-header__export-tool'
+									className='messages-export__tool'
 									title={`Export to ${type}`}
 									onClick={() => exportMessages(type)}>
-									<i className={`messages-window-header__export-${type.toLowerCase()}`} />
+									<i className={`messages-export ${type.toLowerCase()}`} />
 								</button>
 							))}
 						</motion.div>
 					)}
 				</AnimatePresence>
-				<button className='messages-window-header__export-btn' onClick={closeExport}>
-					<i className='messages-window-header__export-disable' />
-				</button>
 			</div>
 		</>
 	);

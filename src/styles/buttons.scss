@@ -16,7 +16,7 @@
 
 @import './common/vars';
 
-.icon-button {
+.button-base {
 	@include surface();
 
 	background-color: #fbfbfb;
@@ -24,8 +24,7 @@
 	border-radius: 4px;
 	display: flex;
 	align-items: center;
-	width: 40px;
-	height: 40px;
+
 	border: none;
 	flex-shrink: 0;
 	outline: none;
@@ -35,4 +34,9 @@
 	&:hover:not([disabled]) {
 		cursor: pointer;
 	}
+}
+
+.icon-button {
+	width: 40px;
+	height: 40px;
 }
