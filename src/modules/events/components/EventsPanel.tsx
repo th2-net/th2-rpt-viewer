@@ -14,44 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useActivePanel } from 'hooks/index';
-import { EventTreeNode } from 'models/EventAction';
 import { Panel } from 'models/Panel';
-import { useEventsStore } from '../hooks/useEventsStore';
 import { useEventWindowViewStore } from '../hooks/useEventWindowViewStore';
 import EventTreeView from './tree/EventTreeView';
 import FlatEventView from './flat-event-list/FlatEventView';
-import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
 import EventsPanelHeader from './EventsPanelHeader';
 import 'styles/events.scss';
 
 function EventsPanel() {
 	const eventWindowViewStore = useEventWindowViewStore();
-	const eventsStore = useEventsStore();
 
 	const { ref: panelRef } = useActivePanel(Panel.Events);
 
-	const onBreadcrumbItemClick = useCallback(
-		(node: EventTreeNode | null) => {
-			if (node) {
-				eventsStore.scrollToEvent(node.eventId);
-			}
-			eventsStore.selectNode(node);
-		},
-		[eventsStore],
-	);
-
 	return (
 		<div className='window' ref={panelRef}>
-			<div className='window__breadcrumbs'>
-				<EventBreadcrumbs
-					isLoadingSelectedPath={eventsStore.isLoadingTargetNode}
-					path={eventsStore.selectedPath}
-					onSelect={onBreadcrumbItemClick}
-				/>
-			</div>
 			<EventsPanelHeader />
 			<div className='window__body'>
 				{eventWindowViewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}

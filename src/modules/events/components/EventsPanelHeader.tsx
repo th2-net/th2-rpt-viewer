@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useActivePanel, useWorkspaceStore } from 'hooks/index';
 import { createBemElement } from 'helpers/styleCreators';
@@ -24,6 +25,8 @@ import { useEventsStore } from '../hooks/useEventsStore';
 import useEventsDataStore from '../hooks/useEventsDataStore';
 import EventsSearchPanel from './search/EventsSearchPanel';
 import { SearchDirection } from '../../../models/SearchDirection';
+import { EventTreeNode } from '../models/Event';
+import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
 
 function EventsPanelHeader() {
 	const eventsStore = useEventsStore();
@@ -38,8 +41,25 @@ function EventsPanelHeader() {
 		eventsStore.viewStore.flattenedListView ? 'active' : null,
 	);
 
+	const onBreadcrumbItemClick = useCallback(
+		(node: EventTreeNode | null) => {
+			if (node) {
+				eventsStore.scrollToEvent(node.eventId);
+			}
+			eventsStore.selectNode(node);
+		},
+		[eventsStore],
+	);
+
 	return (
 		<div className='window__controls'>
+			<div className='window__breadcrumbs'>
+				<EventBreadcrumbs
+					isLoadingSelectedPath={eventsStore.isLoadingTargetNode}
+					path={eventsStore.selectedPath}
+					onSelect={onBreadcrumbItemClick}
+				/>
+			</div>
 			<div className='event-window-header'>
 				<div className='event-window-header__group'>
 					<EventsSearchPanel

@@ -649,6 +649,7 @@
 	height: 100%;
 	width: 100%;
 	word-wrap: break-word;
+	padding: 16px;
 
 	&__items {
 		height: 100%;
@@ -657,7 +658,7 @@
 	}
 
 	&__item {
-		padding: 2px 5px;
+		padding: 4px 0;
 		border-radius: 16px;
 		border: 2px solid transparent;
 
