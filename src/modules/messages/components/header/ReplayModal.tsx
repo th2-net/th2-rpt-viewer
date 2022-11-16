@@ -32,7 +32,7 @@ import { copyTextToClipboard } from 'helpers/copyHandler';
 import { ModalPortal } from 'components/util/Portal';
 import { useFilterConfig } from 'hooks/useFilterConfig';
 import { FilterRows } from 'components/filter/FilterRows';
-import { IconButton } from 'components/buttons/IconButton';
+import { ButtonBase } from 'components/buttons/ButtonBase';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 
@@ -200,9 +200,9 @@ function ReplayModal() {
 
 	return (
 		<>
-			<IconButton className='replay__toggle-button' onClick={toggleReplayModal}>
+			<ButtonBase className='replay__toggle-button' onClick={toggleReplayModal}>
 				<span>Replay</span>
-			</IconButton>
+			</ButtonBase>
 			<ModalPortal isOpen={isOpen}>
 				<motion.div className='replay__drag-area' ref={refConstrains} />
 				<motion.div
