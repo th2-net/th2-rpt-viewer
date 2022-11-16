@@ -34,9 +34,9 @@ export const MessagesPanelBase = forwardRef<HTMLDivElement, MessagesPanelProps>(
 		<div className={rootClassname} ref={ref}>
 			<div className='window__controls'>
 				<MessagesPanelHeader {...props} />
+				<AttachedMessagesSelection />
 			</div>
 			<div className='window__body'>
-				<AttachedMessagesSelection />
 				<MessagesCardList />
 			</div>
 		</div>

@@ -16,6 +16,7 @@
 
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Chip } from 'components/Chip';
 import { useMessagesStore } from '../hooks/useMessagesStore';
 
 type Offset = -1 | 1;
@@ -44,24 +45,23 @@ const AttachedMessagesSelection = () => {
 	}
 
 	return (
-		<div className='messages-list__attached-messages'>
+		<div className='attached-messages'>
 			<button
-				className='messages-list__attached-messages-btn'
+				className='attached-messages__button previous'
 				onClick={() => selectAttachedMessage(-1)}>
-				<div className='messages-list__attached-messages-btn-previous' />
-				<span className='messages-list__attached-messages-text'>Show previous</span>
+				<i />
+				<span>Show previous</span>
 			</button>
-			<span className='messages-list__attached-messages-text-counter'>
-				<span className='messages-list__attached-messages-text-counter-current'>
-					{messageIndex + 1}{' '}
-				</span>
-				| {messagesStore.attachedMessages.length}
+			<Chip>
+				<div className='mc-header__message-icon' />
+				<div className='mc-header__attached-icon' />
+			</Chip>
+			<span className='attached-messages__counter'>
+				<span>{messageIndex + 1} </span>| {messagesStore.attachedMessages.length}
 			</span>
-			<button
-				className='messages-list__attached-messages-btn'
-				onClick={() => selectAttachedMessage(1)}>
-				<span className='messages-list__attached-messages-text'>Show next</span>
-				<div className='messages-list__attached-messages-btn-next' />
+			<button className='attached-messages__button next' onClick={() => selectAttachedMessage(1)}>
+				<span>Show next</span>
+				<i />
 			</button>
 		</div>
 	);

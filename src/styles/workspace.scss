@@ -201,8 +201,7 @@
 	min-width: 350px;
 	height: 100%;
 	overflow: hidden;
-	background-color: #fff;
-	padding: 16px 16px 0 16px;
+	background-color: #F1F1F1;
 
 	&__breadcrumbs {
 		padding: 0 5px;
@@ -214,13 +213,15 @@
 		width: 100%;
 		display: flex;
 		flex-direction: column;
+		gap: 16px;
 		align-items: center;
 		white-space: nowrap;
+		padding: 16px;
+		background-color: #fff;
 	}
 
 	&__body {
 		flex-grow: 1;
-		padding-top: 5px;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
@@ -237,7 +238,6 @@
 	border-top-right-radius: 5px;
 	justify-content: flex-start;
 	min-width: 15px;
-	color: #fff;
 	
 	&__sidebar {
 		cursor: pointer;

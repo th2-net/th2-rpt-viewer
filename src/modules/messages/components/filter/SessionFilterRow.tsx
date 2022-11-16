@@ -76,11 +76,7 @@ const MessagesFilterSessionFilter = ({
 			<button
 				onClick={isLoading ? stopLoading : submitChanges}
 				className='sessions-row__submit-button'>
-				{isLoading ? (
-					<i className='sessions-row__stop-icon' />
-				) : (
-					<i className='sessions-row__start-icon' />
-				)}
+				<span>{isLoading ? 'Stop' : 'Search'}</span>
 			</button>
 		</div>
 	);
