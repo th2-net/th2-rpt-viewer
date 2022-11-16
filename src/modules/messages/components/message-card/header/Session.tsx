@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { Chip } from '../../Chip';
-import { createStyleSelector } from '../../../../../helpers/styleCreators';
+import { Chip } from 'components/Chip';
+import { createStyleSelector } from 'helpers/styleCreators';
 
 /* eslint-disable no-bitwise */
 export function getHashCode(str: string): number {

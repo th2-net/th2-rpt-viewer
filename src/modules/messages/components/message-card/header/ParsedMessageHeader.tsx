@@ -17,9 +17,9 @@
 import { memo } from 'react';
 import { ParsedMessage, MessageViewType } from 'models/EventMessage';
 import { createBemElement } from 'helpers/styleCreators';
+import { Chip } from 'components/Chip';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { getSubsequence } from '../../../helpers/message';
-import { Chip } from '../../Chip';
 
 export interface ParsedMessageHeaderProps {
 	parsedMessage?: ParsedMessage;

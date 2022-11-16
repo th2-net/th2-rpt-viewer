@@ -20,9 +20,9 @@ import { createBemBlock } from 'helpers/styleCreators';
 import { formatTime, timestampToNumber } from 'helpers/date';
 import CardDisplayType from 'models/util/CardDisplayType';
 import Checkbox from 'components/util/Checkbox';
+import { Chip } from 'components/Chip';
 import { getSubsequence } from '../../../helpers/message';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
-import { Chip } from '../../Chip';
 import { Session } from './Session';
 
 export interface MessageInfoProps {
