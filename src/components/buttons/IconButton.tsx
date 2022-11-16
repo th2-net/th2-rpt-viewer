@@ -22,7 +22,7 @@ type Props = React.HTMLProps<HTMLButtonElement>;
 export const IconButton = React.forwardRef<HTMLButtonElement, Props>(
 	(props: React.HTMLProps<HTMLButtonElement>, ref) => {
 		const { className, type, ...restProps } = props;
-		return <button ref={ref} className={`icon-button ${className}`} {...restProps}></button>;
+		return <button ref={ref} className={`button-base icon-button ${className}`} {...restProps} />;
 	},
 );
 
