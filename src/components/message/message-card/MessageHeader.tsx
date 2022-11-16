@@ -54,9 +54,11 @@ export const MessageHeader = React.memo((props: MessageInfoProps) => {
 			<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
 				{sessionId}
 			</span>
-			<span className='mc-header__value'>{messageId}</span>
+			<span className='mc-header__value' title={`ID: ${messageId}`}>
+				{messageId}
+			</span>
 			<span className={sessionClass} style={sessionArrowStyle}></span>
-			<span className='mc-header__value messageType' title={messageType && `Name: ${messageType}`}>
+			<span className='mc-header__value messageType' title={messageType && `Type: ${messageType}`}>
 				{messageType}
 			</span>
 		</div>
