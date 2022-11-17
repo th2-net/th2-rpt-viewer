@@ -66,7 +66,7 @@ const MessageExport = (props: Props) => {
 			<ButtonBase className='messages-export__button' onClick={onExport}>
 				<span className='messages-export__icon'></span>
 				Export
-				<span className='messages-export__counter'>{exportAmount}</span>
+				{isExporting && <span className='messages-export__counter'>{exportAmount}</span>}
 			</ButtonBase>
 			<div className='messages-export__export'>
 				<AnimatePresence>

@@ -30,7 +30,7 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 	}, []);
 
 	async function getEvent() {
-		const res = await fetch(`backend/event/${eventId}`);
+		const res = await fetch(`http://de-th2-qa:30000/th2-groups/backend/event/${eventId}`);
 		if (res.ok) {
 			setEvent(await res.json());
 		} else {

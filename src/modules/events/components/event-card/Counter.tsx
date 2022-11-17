@@ -33,10 +33,8 @@ export function Counter(props: Props) {
 	);
 
 	return (
-		<div className={rootClass} title={title} onClick={onClick}>
-			<div className='counter__title'>
-				<p>{children}</p>
-			</div>
-		</div>
+		<p className={rootClass} title={title} onClick={onClick}>
+			<p>{children}</p>
+		</p>
 	);
 }

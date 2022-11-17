@@ -88,7 +88,6 @@
 		--status-primary-header-background-color: #{$passedHeaderColor};
 		--status-secondary-header-background-color: #{$passedHeaderSecondaryBackground};
 		--status-icon-color: #{$passedIconColor};
-		--status-icon-color-light: #{$passedIconColorLight};
 		--status-icon-color-active: #{$passedIconColorActive};
 	}
 
@@ -106,7 +105,6 @@
 		--status-secondary-header-background-color: #{$failedHeaderSecondaryBackground};
 		--status-header-border-color: #{$failedHeaderBorderColor};
 		--status-icon-color: #{$failedIconColor};
-		--status-icon-color-light: #{$failedIconColorLight};
 		--status-icon-color-active: #{$failedIconColorActive};
 	}
 }
@@ -390,17 +388,7 @@
 		width: 9px;
 		height: 9px;
 		border-radius: 50%;
-		background-color: var(--status-icon-color-light);
-
-		&.selected {
-			border-color: var(--status-icon-color);
-			background-color: var(--status-icon-color);
-		}
-
-		&.active {
-			box-shadow: 0 0 0 2px white;
-			background-color: var(--status-icon-color-active);
-		}
+		background-color: var(--status-icon-color);
 	}
 }
 

@@ -16,39 +16,6 @@
 
 @import './common/vars';
 
-.counter {
-	@include unselectable;
-	@include status-card;
-
-	border: 1px solid var(--status-secondary-border-color);
-	border-radius: 10px;
-	height: 13px;
-	flex-shrink: 0;
-	color: $counterTextColor;
-	background-color: white;
-
-	&__title {
-		font-size: 9px;
-		line-height: 11px;
-		padding: 0 5px;
-	}
-
-	&.loading {
-		@include spinner(2px, 20px, 2s, var(--status-secondary-border-color), $secondaryTextColor);
-	}
-
-	&.selected {
-		font-weight: bold;
-		color: white;
-		border-color: var(--status-primary-border-color);
-		background-color: var(--status-primary-background-color);
-	}
-
-	&.clickable {
-		cursor: pointer;
-	}
-}
-
 .chip {
 	@include ellipsis();
 	@include surface();
@@ -65,74 +32,6 @@
 		display: flex;
 		flex-direction: row;
 		gap: 5px;
-	}
-}
-
-.expand-icon {
-	@include icon(null, 15px, 15px);
-	flex-shrink: 0;
-
-	&::before {
-		content: '';
-		position: absolute;
-		width: 15px;
-		height: 15px;
-		border-radius: 3px;
-	}
-
-	&.expanded {
-		background-image: url(../../resources/icons/expand-on.svg);
-		cursor: pointer;
-
-		&:hover::before {
-			background-color: $expandIconBackgroundColor;
-		}
-	}
-
-	&.hidden {
-		background-image: url(../../resources/icons/expand-off.svg);
-		cursor: pointer;
-
-		&:hover::before {
-			background-color: $expandIconBackgroundColor;
-		}
-	}
-
-	&.loading {
-		display: flex;
-		justify-content: space-around;
-		align-items: center;
-		flex-shrink: 0;
-	}
-
-	&.disabled {
-		cursor: default;
-
-		&:hover::before {
-			display: none;
-		}
-	}
-
-	&__dot {
-		background-color: #414141;
-		width: 3px;
-		height: 3px;
-		border-radius: 1px;
-		animation-name: dot-opacity;
-		animation-duration: 1s;
-		animation-iteration-count: infinite;
-
-		&:nth-child(1) {
-			animation-delay: 0s;
-		}
-
-		&:nth-child(2) {
-			animation-delay: 330ms;
-		}
-
-		&:nth-child(3) {
-			animation-delay: 660ms;
-		}
 	}
 }
 

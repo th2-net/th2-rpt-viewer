@@ -110,7 +110,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		eventsStore.filterStore.setIsOpen(true);
 	}, []);
 
-	const nestingLevel = 20 * parents.length;
+	const nestingLevel = 48 + parents.length * 16;
 
 	const hideTimestampsForUknownEvent =
 		eventTreeNode.isUnknown &&
@@ -131,12 +131,16 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 						<div className='event-tree-timestamp__icon' />
 					</div>
 				)}
-			<div className='event-tree-card' style={{ paddingLeft: nestingLevel }}>
-				<ExpandIcon
-					status={expandIconStatus}
-					onClick={onExpandClick}
-					disabled={eventsStore.isLoadingTargetNode}
-				/>
+			<div className='event-tree-card'>
+				<div className='event-tree-card__indent' style={{ width: nestingLevel }}>
+					{expandIconStatus !== 'none' && (
+						<ExpandButton
+							status={expandIconStatus}
+							onClick={onExpandClick}
+							disabled={eventsStore.isLoadingTargetNode}
+						/>
+					)}
+				</div>
 				<EventCardHeader
 					childrenCount={childrenCount}
 					event={eventTreeNode}
@@ -182,7 +186,7 @@ interface Props {
 	disabled?: boolean;
 }
 
-function ExpandIcon(props: Props) {
+function ExpandButton(props: Props) {
 	const { status, onClick, className, style, disabled = false } = props;
 
 	const rootClass = createBemBlock(
@@ -193,21 +197,22 @@ function ExpandIcon(props: Props) {
 	);
 
 	return (
-		<div
-			className={rootClass}
-			style={style}
+		<button
+			className='button-base expand-button'
 			onClick={() => {
 				if (!disabled && onClick) {
 					onClick();
 				}
 			}}>
-			{props.status === 'loading' && (
-				<>
-					<div className='expand-icon__dot' />
-					<div className='expand-icon__dot' />
-					<div className='expand-icon__dot' />
-				</>
-			)}
-		</div>
+			<div className={rootClass} style={style}>
+				{props.status === 'loading' && (
+					<>
+						<div className='expand-icon__dot' />
+						<div className='expand-icon__dot' />
+						<div className='expand-icon__dot' />
+					</>
+				)}
+			</div>
+		</button>
 	);
 }

@@ -27,7 +27,7 @@ $failedBackgroundColor: #ffdbdb;
 $failedHeaderBorderColor: $failedTextColor;
 $failedHeaderSecondaryBackground: $failedHeaderColor;
 $failedSecondaryTextColor: #e05252;
-$failedIconColor: #ff999b;
+$failedIconColor: #FF4E4E;
 $failedIconColorLight: #ffe5e6;
 $failedIconColorActive: #bc271a;
 
@@ -41,8 +41,7 @@ $passedDelimiterHoverColor: #7db3e8;
 $passedBackgroundColor: $passedBorderColorSecondary;
 $passedHeaderSecondaryBackground: $passedBackgroundColor;
 $passedSecondaryTextColor: rgba(#1f991f, 0.5);
-$passedIconColor: #85e0a3;
-$passedIconColorLight: #d6f5e0;
+$passedIconColor: #52FF4E;
 $passedIconColorActive: #00802a;
 
 $naTextColor: $reportTitleTextColor;

@@ -21,6 +21,7 @@ import { createBemBlock } from 'helpers/styleCreators';
 import { EventTreeNode } from 'models/EventAction';
 import { useBookmarksStore, useWorkspaceStore } from 'hooks/index';
 import { getEventStatus } from 'helpers/event';
+import { Chip } from 'components/Chip';
 import { getElapsedTime } from '../../helpers/date';
 import SearchableContent from '../search/SearchableContent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -79,12 +80,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		disabled ? 'disabled' : null,
 	);
 
-	const iconClassName = createBemBlock(
-		'event-status-icon',
-		status,
-		isSelected ? 'selected' : null,
-		isActive ? 'active' : null,
-	);
+	const iconClassName = createBemBlock('event-status-icon', status);
 
 	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
@@ -119,40 +115,36 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 
 	return (
 		<div className={rootClassName} onClick={onRootClick}>
-			<div className={iconClassName} />
-			{displayType !== CardDisplayType.STATUS_ONLY && (
-				<>
-					<div className='event-header-card__title' title={eventName}>
-						<SearchableContent content={eventName} eventId={eventId} />
-					</div>
-					<span className='event-header-card__event-type' onClick={handleTypeClick}>
-						{eventType}
-					</span>
-				</>
-			)}
-			{counter && <Counter>{counter}</Counter>}
-			<div className='event-header-card__details'>
-				{displayType !== CardDisplayType.STATUS_ONLY && (
-					<>
-						{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
-						<div className='event-header-card__time-label'>
-							<span className='event-header-card__time-label-full'>
-								{formatTime(startTimestamp)}
-							</span>
-						</div>
-						{eventType && (
-							<span className='event-header-card__event-type' onClick={handleTypeClick}>
-								{eventType}
-							</span>
-						)}
-					</>
-				)}
+			<Chip className='event-header-card__icons'>
+				<div className={iconClassName} />
 				<div className='search-by-parent' onClick={onFilterClick} />
 				<div
 					className={bookmarkClassName}
 					onClick={onPinClicked}
 					title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
 				/>
+			</Chip>
+			{displayType !== CardDisplayType.STATUS_ONLY && (
+				<>
+					<div className='event-header-card__title' title={eventName}>
+						<SearchableContent content={eventName} eventId={eventId} />
+					</div>
+					<Chip onClick={handleTypeClick}>{eventType}</Chip>
+				</>
+			)}
+			{counter && <Counter>{counter}</Counter>}
+			<div className='event-header-card__details'>
+				{displayType !== CardDisplayType.STATUS_ONLY && (
+					<>
+						{elapsedTime && <Chip className='event-header-card__elapsed-time'>{elapsedTime}</Chip>}
+						<Chip>
+							<span className='event-header-card__time-label-full'>
+								{formatTime(startTimestamp)}
+							</span>
+						</Chip>
+						{eventType && <Chip onClick={handleTypeClick}>{eventType}</Chip>}
+					</>
+				)}
 			</div>
 		</div>
 	);
