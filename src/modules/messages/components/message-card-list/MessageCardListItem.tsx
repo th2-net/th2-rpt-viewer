@@ -89,7 +89,6 @@ const MessageCardListItem = observer((props: Props) => {
 	const rootClass = createBemBlock(
 		'messages-list__item',
 		isSoftFiltered ? 'soft-filtered' : null,
-		isExported ? 'exported' : null,
 		isAttached ? 'attached' : null,
 	);
 

@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { Button } from 'components/buttons/Button';
 import { createBemElement } from 'helpers/styleCreators';
 
 export type SearchSubmitConfig = {
@@ -57,10 +58,14 @@ const SearchSubmit = ({
 			{Boolean(processedObjectCount) && (
 				<div className='search-processed-objects'> {processedObjectCount} processed objects </div>
 			)}
-			<button className='search-submit-button' disabled={disabled} onClick={handleClick}>
+			<Button
+				variant='contained'
+				className='search-submit-button'
+				disabled={disabled}
+				onClick={handleClick}>
 				<i className={iconClassName} />
 				<span className='search-submit-button__label'>{buttonText}</span>
-			</button>
+			</Button>
 		</div>
 	);
 };

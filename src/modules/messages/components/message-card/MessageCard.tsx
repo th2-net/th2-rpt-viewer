@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
-import { createBemElement } from 'helpers/styleCreators';
+import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
 import { isEventMessage } from 'helpers/message';
 import CardDisplayType from 'models/util/CardDisplayType';
 import { MessageCardViewTypeRendererProps } from './MessageBody';
@@ -57,6 +57,7 @@ const MessageCard = (props: MessageCardProps) => {
 		sortOrderItems = [],
 		viewTypesMap,
 		setViewType,
+		isExported,
 	} = props;
 
 	const [expanded, setIsExpanded] = React.useState(isExpandedProp || false);
@@ -92,8 +93,10 @@ const MessageCard = (props: MessageCardProps) => {
 		return [...parsedMessages, message];
 	}, [message]);
 
+	const rootClassName = createStyleSelector('message-card', isExported ? 'exported' : null);
+
 	return (
-		<div className='message-card'>
+		<div className={rootClassName}>
 			<div className='message-card__messages'>
 				<div className={indicatorClass} />
 				<MessageCardHeader

@@ -24,7 +24,6 @@
 	gap: 18px;
 	font-size: 16px;
 	border-radius: 4px;
-	background: #fff;
 	color: $filterTextColor;
 	white-space: nowrap;
 
@@ -34,7 +33,7 @@
 
 	&-wrapper {
 		display: none;
-		background: #fff;
+		background: var(--background);
 		position: absolute;
 		z-index: 2;
 		top: 72px;
@@ -464,7 +463,7 @@
 		flex-grow: 1;
 		padding: 3px 5px;
 		margin: 0 10px;
-		background-color: #f1f1f1;
+		background-color: var(--input-background);
 		border-radius: $bubbleBorderRadius;
 		min-height: 40px;
 		font-size: 13px;
@@ -532,27 +531,6 @@
 		margin: 0 10px;
 	}
 
-	&__button {
-		display: flex;
-		align-items: center;
-		padding: 12px 24px;
-		border-radius: 12px;
-		background-color: $filterButtonSubmitColor;
-		color: $filterButtonSubmitTextColor;
-		cursor: pointer;
-		font-size: 14px;
-		font-weight: bold;
-		border: none;
-		outline: none;
-
-		&.close {
-			border: 1px solid $filterButtonCloseTextColor;
-			background: $filterButtonCloseColor;
-			border-color: $filterButtonCloseTextColor;
-			color: $filterButtonCloseTextColor;
-		}
-	}
-
 	&__select {
 		margin: 0 10px;
 		height: $filterBubbleHeight;
@@ -563,7 +541,7 @@
 	&__label {
 		align-self: center;
 		flex-shrink: 0;
-		color: #3a3a3a;
+		color: var(--text-primary);
 		font-size: 16px;
     font-weight: bold;
 

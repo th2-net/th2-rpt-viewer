@@ -21,6 +21,7 @@ import { EntityType } from 'models/EventAction';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
 import { ViewMode } from 'components/ViewModeProvider';
 import useViewMode from 'hooks/useViewMode';
+import { Button } from 'components/buttons/Button';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
 import { FilterRows } from './FilterRows';
@@ -88,16 +89,15 @@ const FilterConfig = <T extends MessagesFilter | EventsFilter>(props: Props<T>) 
 							}}
 						/>
 					)}
-					<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
-						<div className='filter-controls__clear-icon' />
+					<Button variant='outlined' onClick={onClearAllClick}>
 						Clear All
-					</div>
-					<div className='filter-row__button close' onClick={onClose}>
+					</Button>
+					<Button variant='outlined' onClick={onClose}>
 						Close
-					</div>
-					<div className='filter-row__button submit' onClick={onSubmitClick}>
+					</Button>
+					<Button variant='contained' onClick={onSubmitClick}>
 						Filter
-					</div>
+					</Button>
 				</div>
 			</div>
 		</div>

@@ -14,41 +14,42 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import './common/vars';
+:root {
+	// text
+	--text-primary: #3a3a3a;
+	--text-secondary: #585858;
+	--text-input: #898989;
+	--text-info: #4e8aff;
 
-.tabs {
-	height: 100%;
-	width: 100%;
-	display: grid;
-	grid-template-rows: 27px 1fr;
-	overflow: hidden;
+	// events
+	--events-primary: #f26c0d;
 
-	&__wrapper {
-		width: 100%;
-		height: 100%;
-		display: flex;
-	}
+	// messages
+	--messages-primary: #19c3e5;
+	// search
+	--search-primary: #1d19e5;
 
-	&__list {
-		@include hidden-scrollbar();
-		width: 100%;
-		height: 100%;
-		display: flex;
-		column-gap: 10px;
-		overflow: auto;
-	}
+	// bookmarks
+	--bookmarks-primary: #a65cd6;
 
-	&__content {
-		padding: 0 7px;
-		position: relative;
-		border-top-right-radius: 5px;
-	}
+	// rest
+	--info-color: #4e8aff;
 
-	&__content-window {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-	}
+	--background: #fff;
+	--surface-background: #fbfbfb;
+	--panel-background: #f1f1f1;
+	--input-background: #f8f8f8;
+	--workspace-background: #fbfbfb;
+}
+
+html[data-theme='dark'] {
+	--text-primary: #e0e0e0;
+	--text-secondary: #a7a8ab;
+
+	--surface-background: #22262c;
+	--input-background: #383b41;
+
+	--background: #2d3036;
+	--panel-background: #22262c;
+	--workspace-background: #4f5156;
 }

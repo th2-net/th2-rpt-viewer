@@ -14,8 +14,6 @@
  * limitations under the License.
  ******************************************************************************/
 
-$reportTitleTextColor: #7b7b7b;
-
 $failedTextColor: #d92626;
 $failedTextColorLight: #ff6666;
 $failedBorderColor: #ffe5cc;
@@ -27,7 +25,7 @@ $failedBackgroundColor: #ffdbdb;
 $failedHeaderBorderColor: $failedTextColor;
 $failedHeaderSecondaryBackground: $failedHeaderColor;
 $failedSecondaryTextColor: #e05252;
-$failedIconColor: #FF4E4E;
+$failedIconColor: #ff4e4e;
 $failedIconColorLight: #ffe5e6;
 $failedIconColorActive: #bc271a;
 
@@ -41,12 +39,12 @@ $passedDelimiterHoverColor: #7db3e8;
 $passedBackgroundColor: $passedBorderColorSecondary;
 $passedHeaderSecondaryBackground: $passedBackgroundColor;
 $passedSecondaryTextColor: rgba(#1f991f, 0.5);
-$passedIconColor: #52FF4E;
+$passedIconColor: #52ff4e;
 $passedIconColorActive: #00802a;
 
-$naTextColor: $reportTitleTextColor;
+$naTextColor: #7b7b7b;
 
-$primaryTextColor: #4d4d4d;
+$primaryTextColor: #120e0e;
 $primaryTextColorLight: #5e5e5e;
 $secondaryTextColor: #808080;
 $secondaryLightTextColor: #999999;
@@ -54,7 +52,6 @@ $alternativeTextColor: #666666;
 $activeTextColor: #333333;
 $filteredTextColor: #ffe6cc;
 $highlightedTextColor: #99c7ff;
-$textSelectedSwitcher: #5c85d6;
 
 $defaultCardBorderColor: #666666;
 $defaultCardBackground: #e0e0e0;
@@ -84,10 +81,8 @@ $attachedMessageColor: #1919e6;
 $highlightedMessageCardBackground: rgba($attachedMessageColor, 0.1);
 $attachedMessageCardHoverBackground: rgba($attachedMessageColor, 0.1);
 $exportedMessageCardBorderColor: rgba($attachedMessageColor, 0.3);
-$exportedMessageCardBackground: #4e8aff;
 $attachedMessageCardBorderColor: #4e8aff;
 $attachedMessageCardHoverBorderColor: $attachedMessageColor;
-$attachedMessageCardIconColor: $attachedMessageColor;
 $messageCardKeyColor: #5cc2d6;
 $messageCardValueColor: #087a91;
 $messageCardRawHoverBackground: rgba(102, 102, 102, 0.15);
@@ -105,12 +100,6 @@ $filterTextColor: #3a3a3a;
 
 $filterPathColor: #000000;
 
-$bubbleDefaultBackground: #ffffff;
-
-$filterButtonEnabled: #3d994d;
-$filterButtonDisabled: #79bf80;
-$filterButtonTextColor: white;
-
 $notificationBackground: #d9d9d9;
 
 $scrollbarThumbBackground: #c4c4c4;
@@ -123,13 +112,8 @@ $spinnerInnerColor: rgba(0, 0, 0, 0.2);
 
 $counterTextColor: #333333;
 
-$linkTextColor: #1763cf;
-$linkUnderlineColor: #a8c6f0;
-
 $clickableHoverBackground: rgba(102, 102, 102, 0.15);
 
-$hintBackgroundColor: white;
-$hintBorderColor: $failedBorderColor;
 $hintShadowColor: transparentize(black, 0.5);
 $hintTextColor: black;
 
@@ -138,8 +122,6 @@ $nullValuetextColor: $naTextColor;
 $skeletonBackgroundColor: #e6e6e6;
 
 $errorMsgBackgroundColor: #e23636;
-
-$tabsBackgroundColor: #e6e6e6;
 
 $windowsLayoutBackgroundColor: #bdccdb;
 
@@ -162,8 +144,7 @@ $attentionBackgroundColor: #f07a36;
 $passedEventsColor: #00802a;
 $failedEventsColor: #e60000;
 
-$messageTickColor: #3d668f;
-$timestampTextColor: $messageTickColor;
+$timestampTextColor: #3a3a3a;
 $timestampInputBorderColor: #7a99b8;
 
 $eventCardIdColor: #595959;
@@ -176,8 +157,6 @@ $workspaceTabTextColor: #4080bf;
 $workspaceTabBackground: #d6e6f5;
 $workspaceTabActiveBackground: $workspaceTabTextColor;
 
-$expandIconBackgroundColor: rgba(0, 0, 0, 0.1);
-
 $controlButtonTextColor: #808080;
 $controlButtonTextColorHover: #595959;
 
@@ -188,14 +167,11 @@ $messageListSearchInfoTextColor: #333333;
 
 $searchPanelColor: #fff;
 $searchProgressBarColor: #9163db;
-$searchButtonColor: white;
-$searchNotFoundEventsColor: #fbd010;
-$searchInputBorderColor: #E0E0E0;
+$searchInputBorderColor: #e0e0e0;
 $searchResultBackgroundColor: #fff;
 $searchResultMessageHighlightColor: #61c2f2;
 $searchResultEventHighlightColor: $eventTextColorLight;
 
-$bookmarkIconColor: #a65cd6;
 $bookmarkPanelHeaderColor: #cca3f5;
 $bookmarkPanelCheckboxColor: #e8daf8;
 $bookmarkPanelButtonTextColor: white;
@@ -205,10 +181,4 @@ $bookmarkAttachedItemTimestampColor: #666666;
 $eventsListLoadButtonColor: #e5eaf0;
 $eventsListLoadButtonTextColor: #bc271a;
 
-$attachedMessageCardColor: #ffa64c;
 $attachedItemNameColor: #bc271a;
-$hoveredAttachedMessageCardColor: #ffeee5;
-$pinnedMessageCardColor: $bookmarkIconColor;
-$hoveredPinnedMessageCardColor: #faf4ff;
-
-$exportedMessageCardBackground: rgba(#c6f5fd, 0.2);

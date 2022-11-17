@@ -23,12 +23,12 @@
 	flex-direction: column;
 	gap: 10px;
 	height: 100%;
-	background-color: #fff;
+	background-color: var(--background);
 
 	&__fields {
 		display: flex;
-    flex-direction: column;
-    gap: 12px;
+		flex-direction: column;
+		gap: 12px;
 
 		.filter-row {
 			box-shadow: none;
@@ -39,7 +39,7 @@
 
 .search-panel-form {
 	padding: 0 8px 8px;
-	background-color: $searchPanelColor;
+	background-color: var(--background);
 	overflow: hidden;
 	display: flex;
 	width: 100%;
@@ -325,12 +325,6 @@
 
 	&.hoverable {
 		cursor: pointer;
-	}
-
-	&.hoverable:hover,
-	&.active {
-		background-color: $searchButtonColor;
-		color: $alternativeTextColor;
 	}
 
 	&.hoverable:hover &__clear,
