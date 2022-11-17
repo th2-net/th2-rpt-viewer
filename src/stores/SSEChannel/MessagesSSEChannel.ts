@@ -64,8 +64,11 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 		if (this.fetchedChunkSubscription == null || this.eventListeners.onClose) {
 			const chunk = this.getNextChunk();
-			(this.eventListeners.onClose || this.eventListeners.onResponse)(chunk);
-			console.log('onClose');
+
+			if (this.eventListeners.onClose) {
+				this.eventListeners.onClose(chunk);
+			}
+			this.eventListeners.onResponse(chunk);
 			this.resetSSEState({ isEndReached });
 		} else {
 			this.isEndReached = isEndReached;
@@ -105,10 +108,8 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 						this.getFetchedChunk(),
 				  ])
 				: this.getFetchedChunk());
-			console.log(messagesChunk.map(val => toJS(val)));
-			return messagesChunk;
+			return messagesChunk.map(val => toJS(val)).slice();
 		} catch (error) {
-			console.log(error);
 			if (error !== 'WHEN_CANCELLED') {
 				console.log(error);
 			}
@@ -117,12 +118,10 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	};
 
 	private initConnection = (resumeMessageIds?: string[]): void => {
-		console.log('initConnection');
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
 		this.messageIds = resumeMessageIds || this.messageIds;
-
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
@@ -164,6 +163,9 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 				.filter(id => id.slice(id.lastIndexOf(':') + 1) === '-1')
 				.map(id => id.slice(0, id.indexOf(':'))),
 		);
+		this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(
+			id => id && id.slice(id.lastIndexOf(':') + 1) === '-1',
+		) as string[];
 		if (streams.length > 0) {
 			api.messages
 				.getResumptionMessageIds({
@@ -179,7 +181,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 					];
 				});
 		}
-		this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(Boolean) as string[];
+
 		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
 			this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
 		}

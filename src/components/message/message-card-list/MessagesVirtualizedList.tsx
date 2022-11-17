@@ -76,7 +76,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		if (updateStore.isActive && virtuoso.current) {
 			virtuoso.current.scrollToIndex(0);
 		}
-	}, [updateStore.isActive, updateStore.nextMessages.length]);
+	}, [updateStore.isActive, messageList.length]);
 
 	React.useEffect(() => {
 		if (!searchChannelNext?.isLoading) setLoadedChunks(loadedChunks => [true, loadedChunks[1]]);

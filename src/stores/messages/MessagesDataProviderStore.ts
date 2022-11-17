@@ -329,7 +329,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		if (isAutoUpdate && messages.length > 0) {
 			this.messages = [];
 		}
-		console.log(messages.map(val => toJS(val)));
 		// eslint-disable-next-line no-param-reassign
 		messages = messages.filter(
 			msg => msg.messageId !== this.messagesStore.selectedMessageId?.valueOf(),
@@ -396,7 +395,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	@action
 	public getNextMessages = async (): Promise<EventMessage[]> => {
-		console.log('getNextMessages', !this.searchChannelNext, this.searchChannelNext.isLoading, this.noMatchingMessagesNext);
 		if (
 			!this.searchChannelNext ||
 			this.searchChannelNext.isLoading ||
@@ -405,7 +403,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			return [];
 		}
 
-		console.log('loadAndSubscribe');
 		return this.searchChannelNext.loadAndSubscribe();
 	};
 
@@ -497,7 +494,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			const idsMap = this.messages
 				.slice(0, 20)
 				.reduce((map, m) => ({ ...map, [m.messageId]: true }), {} as Record<string, boolean>);
-			console.log(idsMap);
 			this.searchChannelNext.refetch({
 				onResponse: messages =>
 					this.onNextChannelResponse(messages.filter(m => !idsMap[m.messageId])),

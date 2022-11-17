@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, toJS } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import MessagesStore from './MessagesStore';
 import EmbeddedMessagesStore from '../../components/embedded/embedded-stores/EmbeddedMessagesStore';
 import { MessagesDataStore } from '../../models/Stores';
@@ -70,17 +70,10 @@ export default class MessagesUpdateStore {
 
 	private loadNextMessages = async () => {
 		this.nextMessages = await this.messagesDataStore.getNextMessages();
-		console.log(
-			'Check loadNextMessages',
-			this.nextMessages.length,
-			this.nextMessages.map(val => toJS(val)),
-		);
 
 		if (this.nextMessages.length > 0 || this.isFirstUpdate) {
-			console.log('loadNextMessages');
 			const prevMessages = await this.messagesDataStore.getPreviousMessages();
 
-			console.log('onNextChannelResponse');
 			this.messagesDataStore.onNextChannelResponse(this.nextMessages, true);
 			this.messagesDataStore.onPrevChannelResponse(prevMessages);
 
