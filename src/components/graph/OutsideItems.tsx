@@ -87,31 +87,145 @@ const OutsideItems = (props: OverlayPanelProps) => {
 
 	const onOutsidePanelArrowClick = (direction: 'left' | 'right') => {
 		const panelTypes = Object.keys(outsidePanels[direction]);
+		// we already know that 'panels' is not empty, so previously implemented check is unnecessary
 		const panels = panelsRange.filter(p => panelTypes.includes(p.type));
+
+		const windowRange = to - from;
+		const windowCenter = from + windowRange / 2;
+
+		// the first condition is needed in case  t > 30min.
+		// then there is no point in centering while inside the event.
+		const center0 =
+			panels[0].range[1] - panels[0].range[0] < windowRange
+				? (panels[0].range[1] + panels[0].range[0]) / 2
+				: 0;
+		const center1 =
+			panels[1] && panels[1].range[1] - panels[1].range[0] < windowRange
+				? (panels[1].range[1] + panels[1].range[0]) / 2
+				: 0;
+
 		if (direction === 'left') {
-			// find the closest on the left-hand-side
-			const panelsSorted = panels.sort((p1, p2) => p2.range[0] - p1.range[0]);
-			const panel = panelsSorted[0];
-			if (panel) {
-				const windowRange = to - from;
-				// check whether we should center it
-				if (from - panel.range[0] < windowRange && panel.range[1] - panel.range[0] < to - from) {
-					onPanelRangeSelect(panel.range);
+			const isLeftCovered =
+				(panels[0].range[1] > from && panels[0].range[0] < from) ||
+				(panels[1] && panels[1].range[1] > from && panels[1].range[0] < from);
+
+			if (isLeftCovered) {
+				const centerTo = [center0, center1]
+					.filter(center => windowCenter - center > 0 && windowCenter - center < windowRange)
+					.sort((a, b) => b - a)[0];
+
+				if (centerTo) {
+					onPanelRangeSelect([centerTo - windowRange / 2, centerTo + windowRange / 2]);
 				} else {
-					onPanelRangeSelect([from - windowRange, to - windowRange]);
+					// check, whether we need to jump the full interval, or just reveal the remaining part.
+					const newLeftBorder = [panels[0].range[0], panels[1] ? panels[1].range[0] : 0]
+						.filter(leftBorder => from - leftBorder < windowRange - 5000)
+						.sort((a, b) => b - a)[0];
+					if (newLeftBorder) {
+						onPanelRangeSelect([newLeftBorder - 5000, newLeftBorder + windowRange - 5000]);
+					} else {
+						onPanelRangeSelect([from - windowRange, to - windowRange]);
+					}
+				}
+			} else {
+				// here we decide, whether we can jump to closest center without missing closest border
+				let closestBorder;
+				if (panels[1]) {
+					closestBorder =
+						panels[0].range[1] > panels[1].range[1] ? panels[0].range[1] : panels[1].range[1];
+				} else {
+					closestBorder = panels[0].range[1];
+				}
+				const closestCenter = [center0, center1].filter(a => a > 0).sort((a, b) => b - a)[0];
+
+				if (closestBorder - closestCenter < windowRange / 2) {
+					onPanelRangeSelect([closestCenter - windowRange / 2, closestCenter + windowRange / 2]);
+				} else {
+					// in this case we decide to already move from the rightmost border, so extra 5sec is ok
+					onPanelRangeSelect([closestBorder - windowRange + 5000, closestBorder + 5000]);
 				}
 			}
 		} else {
-			const panelsSorted = panels.sort((p1, p2) => p1.range[1] - p2.range[1]);
-			const panel = panelsSorted[0];
-			if (panel) {
-				const windowRange = to - from;
-				if (panel.range[1] - to < windowRange && panel.range[1] - panel.range[0] < to - from) {
-					onPanelRangeSelect(panel.range);
+			const isRightCovered =
+				(panels[0].range[1] > to && panels[0].range[0] < to) ||
+				(panels[1] && panels[1].range[1] > to && panels[1].range[0] < to);
+
+			if (isRightCovered) {
+				const centerTo = [center0, center1]
+					.filter(
+						center =>
+							center > 0 && center - windowCenter > 0 && center - windowCenter < windowRange,
+					)
+					.sort((a, b) => b - a)[0];
+
+				if (centerTo) {
+					onPanelRangeSelect([centerTo - windowRange / 2, centerTo + windowRange / 2]);
 				} else {
-					onPanelRangeSelect([from + windowRange, to + windowRange]);
+					// check, whether we need to jump the full interval, or just reveal the remaining part.
+					const newRightBorder = [panels[0].range[1], panels[1] ? panels[1].range[1] : 0]
+						.filter(rightBorder => rightBorder > 0 && rightBorder - to < windowRange - 5000)
+						.sort((a, b) => a - b)[0];
+					if (newRightBorder) {
+						onPanelRangeSelect([newRightBorder - windowRange + 5000, newRightBorder + 5000]);
+					} else {
+						onPanelRangeSelect([from + windowRange, to + windowRange]);
+					}
+				}
+			} else {
+				// here we decide, whether we can jump to closest center without missing closest border
+				let closestBorder;
+				if (panels[1]) {
+					closestBorder =
+						panels[0].range[0] > panels[1].range[0] ? panels[1].range[0] : panels[0].range[0];
+				} else {
+					closestBorder = panels[0].range[1];
+				}
+				const closestCenter = [center0, center1].filter(a => a > 0).sort((a, b) => a - b)[0];
+
+				if (closestCenter - closestBorder < windowRange / 2) {
+					onPanelRangeSelect([closestCenter - windowRange / 2, closestCenter + windowRange / 2]);
+				} else {
+					// in this case we decide to already move from the leftmost border, so extra 5sec is ok
+					onPanelRangeSelect([closestBorder - 5000, closestBorder + windowRange - 5000]);
 				}
 			}
+			// const isRightCovered =
+			// 	(panels[0].range[0] < to && panels[0].range[1] > to) ||
+			// 	(panels[1] && panels[1].range[0] < to && panels[1].range[1] > to);
+
+			// const center0 =
+			// 	panels[0].range[1] - panels[0].range[0] < windowRange
+			// 		? (panels[0].range[1] + panels[0].range[0]) / 2
+			// 		: 0;
+			// const center1 =
+			// 	panels[1] && panels[1].range[1] - panels[1].range[0] < windowRange
+			// 		? (panels[1].range[1] + panels[1].range[0]) / 2
+			// 		: 0;
+
+			// if (isRightCovered) {
+			// 	const centerTo = [center0, center1]
+			// 		.filter(center => center - windowCenter > 0 && center - windowCenter < windowRange)
+			// 		.sort((a, b) => a - b)[0];
+			// 	if (centerTo) {
+			// 		onPanelRangeSelect([centerTo - windowRange / 2, centerTo + windowRange / 2]);
+			// 	} else {
+			// 		onPanelRangeSelect([from + windowRange, to + windowRange]);
+			// 	}
+			// } else {
+			// 	const centerTo = [center0, center1].filter(a => a > 0).sort((a, b) => a - b)[0];
+			// 	// why do we need the next line?
+			// 	// i spose we stand before a question of centering the closest thing. we should probably
+			// 	// change what stands after the "-"
+			// 	if (centerTo && centerTo - windowCenter < windowRange) {
+			// 		onPanelRangeSelect([centerTo - windowRange / 2, centerTo + windowRange / 2]);
+			// 	} else if (centerTo) {
+			// 		if (centerTo === center0) {
+			// 			onPanelRangeSelect([panels[0].range[0], panels[0].range[0] + windowRange]);
+			// 		} else {
+			// 			onPanelRangeSelect([panels[1].range[0], panels[1].range[0] + windowRange]);
+			// 		}
+			// 	}
+			// }
 		}
 	};
 
