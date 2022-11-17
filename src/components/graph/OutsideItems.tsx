@@ -189,43 +189,6 @@ const OutsideItems = (props: OverlayPanelProps) => {
 					onPanelRangeSelect([closestBorder - 5000, closestBorder + windowRange - 5000]);
 				}
 			}
-			// const isRightCovered =
-			// 	(panels[0].range[0] < to && panels[0].range[1] > to) ||
-			// 	(panels[1] && panels[1].range[0] < to && panels[1].range[1] > to);
-
-			// const center0 =
-			// 	panels[0].range[1] - panels[0].range[0] < windowRange
-			// 		? (panels[0].range[1] + panels[0].range[0]) / 2
-			// 		: 0;
-			// const center1 =
-			// 	panels[1] && panels[1].range[1] - panels[1].range[0] < windowRange
-			// 		? (panels[1].range[1] + panels[1].range[0]) / 2
-			// 		: 0;
-
-			// if (isRightCovered) {
-			// 	const centerTo = [center0, center1]
-			// 		.filter(center => center - windowCenter > 0 && center - windowCenter < windowRange)
-			// 		.sort((a, b) => a - b)[0];
-			// 	if (centerTo) {
-			// 		onPanelRangeSelect([centerTo - windowRange / 2, centerTo + windowRange / 2]);
-			// 	} else {
-			// 		onPanelRangeSelect([from + windowRange, to + windowRange]);
-			// 	}
-			// } else {
-			// 	const centerTo = [center0, center1].filter(a => a > 0).sort((a, b) => a - b)[0];
-			// 	// why do we need the next line?
-			// 	// i spose we stand before a question of centering the closest thing. we should probably
-			// 	// change what stands after the "-"
-			// 	if (centerTo && centerTo - windowCenter < windowRange) {
-			// 		onPanelRangeSelect([centerTo - windowRange / 2, centerTo + windowRange / 2]);
-			// 	} else if (centerTo) {
-			// 		if (centerTo === center0) {
-			// 			onPanelRangeSelect([panels[0].range[0], panels[0].range[0] + windowRange]);
-			// 		} else {
-			// 			onPanelRangeSelect([panels[1].range[0], panels[1].range[0] + windowRange]);
-			// 		}
-			// 	}
-			// }
 		}
 	};
 
