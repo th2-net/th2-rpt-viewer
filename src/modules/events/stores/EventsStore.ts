@@ -204,47 +204,6 @@ export default class EventsStore implements IEventsStore {
 		];
 	}
 
-	@computed
-	public get selectedPathTimestamps() {
-		if (!this.selectedPath.length) return null;
-
-		const selectedPath = this.selectedPath;
-
-		const firstKnownEvent = selectedPath.filter(node => !node.isUnknown)[0];
-
-		const timestamps = {
-			startEventId: firstKnownEvent.eventId,
-			startTimestamp: firstKnownEvent.startTimestamp,
-			endEventId: firstKnownEvent.eventId,
-			endTimestamp: firstKnownEvent.startTimestamp,
-		};
-
-		const eventNodes = this.getNodesList(firstKnownEvent, []);
-
-		if (eventNodes.length > 1 && eventNodes[1]) {
-			timestamps.startTimestamp = eventNodes[1].startTimestamp;
-			timestamps.endTimestamp = timestamps.startTimestamp;
-
-			for (let i = 1; eventNodes[i]; i++) {
-				timestamps.endEventId = eventNodes[i].eventId;
-				const parents = this.getParentNodes(eventNodes[i].eventId, this.eventDataStore.eventsCache);
-				if (parents?.length === 1) {
-					const eventTimestamp = eventNodes[i].startTimestamp;
-
-					if (eventTimestamp < timestamps.startTimestamp) {
-						timestamps.startTimestamp = eventTimestamp;
-					}
-
-					if (eventTimestamp > timestamps.endTimestamp) {
-						timestamps.endTimestamp = eventTimestamp;
-					}
-				}
-			}
-		}
-
-		return timestamps;
-	}
-
 	@action
 	public toggleNode = (eventTreeNode: EventTreeNode) => {
 		const isExpanded = !this.isExpandedMap.get(eventTreeNode.eventId);

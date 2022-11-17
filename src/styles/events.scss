@@ -571,34 +571,6 @@
 	}
 }
 
-.event-tree-timestamp {
-	display: flex;
-	justify-content: flex-end;
-	padding: 3px 10px 3px 0;
-	margin-top: 3px;
-	margin-bottom: 5px;
-
-	&__value {
-		font-size: 9px;
-		line-height: 15px;
-		color: $eventTextColor;
-	}
-
-	&__icon {
-		margin-left: 10px;
-		@include icon(url(../../resources/icons/time-arrow-start.svg), 15px, 15px);
-	}
-
-	&.end & {
-		margin-top: 3px;
-		margin-bottom: 5px;
-
-		&__icon {
-			background-image: url(../../resources/icons/time-arrow-end.svg);
-		}
-	}
-}
-
 .event-breadcrumbs {
 	display: flex;
 	align-items: center;

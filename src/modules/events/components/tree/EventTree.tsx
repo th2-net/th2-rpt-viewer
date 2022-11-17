@@ -19,7 +19,6 @@ import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { EventTreeNode } from 'models/EventAction';
 import { createBemBlock } from 'helpers/styleCreators';
-import { formatTime } from 'helpers/date';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import EventCardHeader from '../event-card/EventCardHeader';
@@ -112,25 +111,8 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	const nestingLevel = 48 + parents.length * 16;
 
-	const hideTimestampsForUknownEvent =
-		eventTreeNode.isUnknown &&
-		eventsStore.selectedPathTimestamps &&
-		eventsStore.selectedPathTimestamps.startEventId ===
-			eventsStore.selectedPathTimestamps.endEventId &&
-		eventsStore.selectedPathTimestamps.startEventId === eventTreeNode.eventId;
-
 	return (
 		<>
-			{!hideTimestampsForUknownEvent &&
-				eventsStore.selectedPathTimestamps?.startEventId === eventTreeNode.eventId &&
-				eventsStore.selectedPathTimestamps.startTimestamp && (
-					<div className='event-tree-timestamp'>
-						<div className='event-tree-timestamp__value'>
-							{formatTime(eventsStore.selectedPathTimestamps.startTimestamp)}
-						</div>
-						<div className='event-tree-timestamp__icon' />
-					</div>
-				)}
 			<div className='event-tree-card'>
 				<div className='event-tree-card__indent' style={{ width: nestingLevel }}>
 					{expandIconStatus !== 'none' && (
@@ -156,16 +138,6 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					disabled={eventsStore.isLoadingTargetNode}
 				/>
 			</div>
-			{!hideTimestampsForUknownEvent &&
-				eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&
-				eventsStore.selectedPathTimestamps.endTimestamp && (
-					<div className='event-tree-timestamp end'>
-						<div className='event-tree-timestamp__value'>
-							{formatTime(eventsStore.selectedPathTimestamps.endTimestamp)}
-						</div>
-						<div className='event-tree-timestamp__icon' />
-					</div>
-				)}
 			{showLoadButton && !isLoadingSiblings && (
 				<button onClick={loadMoreSiblings} className='actions-list__load-button'>
 					Load more

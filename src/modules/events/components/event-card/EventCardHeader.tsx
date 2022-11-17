@@ -60,7 +60,6 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		disabled = false,
 		isBookmarked = false,
 		toggleEventPin,
-		onFilterByParentEvent,
 		hasChildrenToLoad = false,
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
@@ -89,10 +88,10 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		if (toggleEventPin) toggleEventPin(event);
 	}
 
-	function onFilterClick(e: React.MouseEvent) {
-		e.stopPropagation();
-		if (onFilterByParentEvent) onFilterByParentEvent(event);
-	}
+	// function onFilterClick(e: React.MouseEvent) {
+	// 	e.stopPropagation();
+	// 	if (onFilterByParentEvent) onFilterByParentEvent(event);
+	// }
 
 	function onRootClick() {
 		if (!disabled && onSelect) {
@@ -117,7 +116,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		<div className={rootClassName} onClick={onRootClick}>
 			<Chip className='event-header-card__icons'>
 				<div className={iconClassName} />
-				<div className='search-by-parent' onClick={onFilterClick} />
+				{/* <div className='search-by-parent' onClick={onFilterClick} /> */}
 				<div
 					className={bookmarkClassName}
 					onClick={onPinClicked}
