@@ -70,13 +70,15 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 			{isExport && isExported !== undefined && addMessageToExport && (
 				<Checkbox checked={isExported} onChange={() => addMessageToExport(message)} />
 			)}
-			<Chip>
+			<Chip className='mc-header__icons'>
 				<div className='mc-header__message-icon' />
 				{isBookmarked && <div className={bookmarkIconClass} />}
 				{isAttached && <div className='mc-header__attached-icon' />}
 			</Chip>
 			{displayType === CardDisplayType.FULL && (
-				<Chip title={`Timestamp: ${formattedTimestamp}`}>{timestamp && formattedTimestamp}</Chip>
+				<Chip className='mc-header__timestamp' title={`Timestamp: ${formattedTimestamp}`}>
+					{timestamp && formattedTimestamp}
+				</Chip>
 			)}
 			<Session sessionId={sessionId} direction={direction} />
 			{displayType === CardDisplayType.FULL && <Chip>{message.id}</Chip>}

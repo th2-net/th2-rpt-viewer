@@ -161,7 +161,6 @@
 
 	&__ellipsis {
 		visibility: hidden;
-		border: none;
 		flex-shrink: 0;
 		@include icon(url(../../resources/icons/ellipsis.svg), 15px, 15px);
 	}
@@ -342,6 +341,11 @@
 	justify-content: flex-end;
 	white-space: nowrap;
 
+	&__icons, &__timestamp {
+		flex-shrink: 0;
+	}
+
+
 	&__info {
 		display: inline-flex;
 		background-color: #fbfbfb;
@@ -412,7 +416,6 @@
 	}
 
 	&__key {
-		display: none;
 	}
 
 	&__key,
@@ -789,12 +792,11 @@
 		background: #4e8aff;
 		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
 		border-radius: 0px 4px 4px 0px;
-		border: none;
-		outline: none;
 		color: #fff;
 		font-size: 14px;
 		font-weight: bold;
 		cursor: pointer;
+		border: none;
 	}
 }
 
@@ -812,11 +814,10 @@
 		flex-shrink: 0;
 		padding: 0;
 		background-color: transparent;
-		border: none;
-		outline: none;
 		font-size: inherit;
 		line-height: inherit;
 		color: #898989;
+		border: none;
 	}
 
 	&__button.previous i {
@@ -889,7 +890,6 @@
 		display: flex;
 		justify-content: center;
 		background-color: transparent;
-		border: none;
 		padding: 2px 4px;
 		cursor: pointer;
 		font-size: 13px;
@@ -970,7 +970,6 @@
 
 		.filter-row {
 			&__input {
-				border-right: none;
 				border-radius: 4px 0 0 4px;
 			}
 
@@ -1000,13 +999,10 @@
 
 		padding: 4px 5px;
 		background-color: transparent;
-		border: none;
-		outline: none;
 		color: $primaryTextColor;
 		font-size: 14px;
 		line-height: 15px;
 		font-weight: bold;
-		text-decoration: none;
 	}
 }
 
@@ -1060,7 +1056,6 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		pointer-events: none;
 		opacity: 0;
 		background: rgba($color: #ade0eb, $alpha: 0.6);
 	}
@@ -1086,8 +1081,6 @@
 		font-weight: bold;
 		display: inline;
 		white-space: nowrap;
-		border: none;
-		background: none;
 		cursor: pointer;
 		position: relative;
 		padding: 0 10px;
@@ -1155,7 +1148,6 @@
 		position: absolute;
 		top: 5px;
 		right: 5px;
-		border: none;
 		background-color: transparent;
 
 		@include round-button(url(../../resources/icons/cross-icon.svg));

@@ -161,7 +161,7 @@
 	overflow-y: auto;
 	width: 100%;
 	height: 100%;
-	padding: 16px 16px 0px 0px;
+	padding: 16px 16px 16px 0px;
 
 	&__parents {
 		display: flex;
@@ -176,10 +176,7 @@
 	&__list {
 		display: flex;
 		flex-direction: column;
-
-		& > *:not(:first-child) {
-			margin-top: 5px;
-		}
+		gap: 16px;
 	}
 
 	&__message-wrapper {
@@ -214,6 +211,7 @@
 	font-size: 11px;
 	line-height: 15px;
 	overflow: hidden;
+	flex-shrink: 0;
 
 	&__status {
 		& .event-status-icon {
@@ -246,7 +244,7 @@
 	&__title {
 		flex-grow: 1;
 		flex-shrink: 1;
-		font-weight: 600;
+		font-size: 14px;
 		color: var(--status-primary-color);
 		white-space: nowrap;
 		text-overflow: ellipsis;
@@ -512,16 +510,14 @@
 	}
 
 	.expand-icon {
-		@include icon(null, 15px, 15px);
+		@include icon(null, 16px, 16px);
 		flex-shrink: 0;
-		width: 15px;
-		height: 15px;
 
 		&::before {
 			content: '';
 			position: absolute;
-			width: 15px;
-			height: 15px;
+			width: 16px;
+			height: 16px;
 			border-radius: 3px;
 		}
 

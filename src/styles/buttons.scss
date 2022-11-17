@@ -19,9 +19,6 @@
 .button-base {
 	@include surface();
 	height: 40px;
-
-	background-color: #fbfbfb;
-	box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
 	border-radius: 4px;
 	display: flex;
 	align-items: center;
