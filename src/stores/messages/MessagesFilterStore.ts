@@ -159,7 +159,7 @@ export default class MessagesFilterStore {
 		};
 	};
 
-	private init = (initialState?: MessagesFilterStoreInitialState) => {
+	public init = (initialState?: MessagesFilterStoreInitialState) => {
 		if (initialState) {
 			const defaultMessagesFilter = getDefaultMessagesFilter();
 			const {

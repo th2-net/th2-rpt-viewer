@@ -17,7 +17,6 @@
 import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import debounce from 'lodash.debounce';
 import ApiSchema from '../api/ApiSchema';
 import {
 	EventsFiltersInfo,
@@ -35,7 +34,7 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
-import { getItemId, isEventId, isEventMessage, isEventNode } from '../helpers/event';
+import { getItemId, isEventMessage, isEventNode } from '../helpers/event';
 import {
 	getDefaultEventsFiltersState,
 	getDefaultMessagesFiltersState,
@@ -61,7 +60,6 @@ export type SearchPanelFormState = {
 	};
 	resultCountLimit: number;
 	searchDirection: SearchDirection | null;
-	parentEvent: string;
 	stream: string[];
 };
 
@@ -115,7 +113,6 @@ function getDefaultFormState(): SearchPanelFormState {
 			previous: null,
 			next: null,
 		},
-		parentEvent: '',
 		stream: [],
 	};
 }
@@ -144,18 +141,6 @@ export class SearchStore {
 					} else {
 						this.messagesFilter = this.currentSearch.request.filters as MessageFilterState;
 					}
-				}
-			},
-		);
-
-		reaction(
-			() => this.searchForm.parentEvent,
-			parentEvent => {
-				if (parentEvent && !isEventId(parentEvent)) {
-					this.loadEventAutocompleteList(parentEvent);
-				} else {
-					this.resetEventAutocompleteList();
-					this.loadEventAutocompleteList.cancel();
 				}
 			},
 		);
@@ -222,10 +207,6 @@ export class SearchStore {
 		previous: null,
 		next: null,
 	};
-
-	@computed get isLoadingEventAutocompleteList() {
-		return Boolean(this.eventAutocompleteSseChannel);
-	}
 
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
@@ -398,6 +379,17 @@ export class SearchStore {
 		this.resetSearchProgressState();
 	};
 
+	@action filterEventsByParent = (parentId: string, parentTimestamp: number) => {
+		if (this.eventsFilter) {
+			this.setFormType('event');
+			this.stopSearch();
+			this.eventsFilter.parentId.values = [parentId];
+			this.searchForm.startTimestamp = parentTimestamp;
+			this.resetSearchProgressState();
+			this.workspacesStore.tabsStore.setActiveWorkspace(0);
+		}
+	};
+
 	@action setEventsFilter = (patch: Partial<EventFilterState>) => {
 		if (this.eventsFilter) {
 			this.eventsFilter = {
@@ -520,7 +512,6 @@ export class SearchStore {
 			searchDirection,
 			resultCountLimit,
 			timeLimits,
-			parentEvent,
 			stream,
 		} = this.searchForm;
 
@@ -576,7 +567,7 @@ export class SearchStore {
 			}
 
 			const queryParams: SSEParams =
-				this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
+				this.formType === 'event' ? { ...params } : { ...params, stream };
 
 			const searchChannel = this.api.sse.getEventSource({
 				type: this.formType,
@@ -651,12 +642,14 @@ export class SearchStore {
 		if (ev instanceof MessageEvent) {
 			notificationsStore.handleSSEError(ev);
 		} else {
+			const evSource = toJS(ev).currentTarget as EventSource;
 			const errorId = nanoid();
 			notificationsStore.addMessage({
 				id: errorId,
 				notificationType: 'genericError',
-				header: `Something went wrong while loading ${this.formType}s`,
+				header: `EventSource error - check the console.`,
 				type: 'error',
+				description: evSource ? `${ev.type} at ${evSource.url}` : `${ev.type}`,
 			});
 		}
 
@@ -765,40 +758,6 @@ export class SearchStore {
 		};
 	}
 
-	@action resetEventAutocompleteList = () => {
-		this.eventAutocompleteSseChannel?.close();
-		this.eventAutocompleteSseChannel = null;
-		this.eventAutocompleteList = [];
-	};
-
-	private loadEventAutocompleteList = debounce((parentEventName: string) => {
-		if (this.eventAutocompleteSseChannel) {
-			this.eventAutocompleteSseChannel.close();
-		}
-		this.resetEventAutocompleteList();
-
-		this.eventAutocompleteSseChannel = this.api.sse.getEventSource({
-			type: 'event',
-			queryParams: {
-				filters: ['name'],
-				'name-values': [parentEventName],
-				startTimestamp: moment().utc().valueOf(),
-				searchDirection: 'previous',
-				resultCountLimit: 10,
-			},
-		});
-		this.eventAutocompleteSseChannel.addEventListener('event', (ev: Event) =>
-			runInAction(() => {
-				const event: EventTreeNode = JSON.parse((ev as MessageEvent).data);
-				this.eventAutocompleteList.push(event);
-			}),
-		);
-		this.eventAutocompleteSseChannel.addEventListener('close', () => {
-			this.eventAutocompleteSseChannel?.close();
-			this.eventAutocompleteSseChannel = null;
-		});
-	}, 400);
-
 	private async loadMessageSessions() {
 		try {
 			const messageSessions = await this.api.messages.getMessageSessions();
@@ -866,7 +825,7 @@ export class SearchStore {
 					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save current search result`,
-					description: '',
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 				});
 			}

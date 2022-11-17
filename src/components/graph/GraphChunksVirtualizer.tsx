@@ -149,7 +149,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 		} else {
 			setPanels([]);
 		}
-	}, [panelsRange, chunks, timestamp, interval]);
+	}, [panelsRange, chunks, timestamp, interval, anchorTimestamp]);
 
 	React.useEffect(() => {
 		center.current = timestamp.valueOf();

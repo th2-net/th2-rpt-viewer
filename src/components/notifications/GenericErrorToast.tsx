@@ -15,24 +15,41 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { copyTextToClipboard } from '../../helpers/copyHandler';
+import { createStyleSelector } from '../../helpers/styleCreators';
 import { GenericError } from '../../stores/NotificationsStore';
 
 export default function GenericErrorToast(props: GenericError) {
 	const { description, header, action } = props;
+	const [copied, setCopied] = React.useState(false);
+	const copyDetailsText = createStyleSelector('toast-action__text', copied ? 'copied' : null);
+
+	const copy = () => {
+		copyTextToClipboard(description);
+		setCopied(true);
+	};
+
+	const shortenedDesc = description.length > 32 ? `${description.slice(0, 32)}...` : description;
 
 	return (
 		<div className='toast-content'>
 			<div className='toast-content__top'>
 				<p className='user-message'>{header}</p>
 			</div>
-			<div className='toast-content__description'>{description}</div>
-			{action && (
-				<div className='toast-content__bottom'>
-					<button className='toast-action' onClick={action.callback}>
-						<span className='toast-action__text'>{action.label}</span>
-					</button>
-				</div>
-			)}
+			<div className='toast-content__description'>{shortenedDesc}</div>
+			<div className='toast-content__bottom'>
+				{action &&
+					((action.label === 'Copy details' && (
+						<button className='toast-action' disabled={copied} onClick={copy}>
+							{!copied && <span className='toast-action__copy-icon' />}
+							<span className={copyDetailsText}>{copied ? 'Copied' : ' Copy details'}</span>
+						</button>
+					)) || (
+						<button className='toast-action' onClick={action.callback}>
+							<span className='toast-action__text'>{action.label}</span>
+						</button>
+					))}
+			</div>
 		</div>
 	);
 }

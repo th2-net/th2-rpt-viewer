@@ -178,7 +178,6 @@ export default class MessagesStore {
 				console.error(`Couldnt fetch target message ${defaultState}`);
 			}
 		} else {
-			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.messageId);
@@ -186,8 +185,8 @@ export default class MessagesStore {
 				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 				this.workspaceStore.viewStore.activePanel = this;
 			}
+			this.filterStore.init(defaultState);
 		}
-		this.dataStore.loadMessages();
 	};
 
 	@action
