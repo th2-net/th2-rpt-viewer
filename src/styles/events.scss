@@ -155,10 +155,13 @@
 
 .event-detail-info {
 	@include scrollbar;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
 	overflow-y: auto;
 	width: 100%;
 	height: 100%;
-	padding-right: 5px;
+	padding: 16px 16px 0px 0px;
 
 	&__parents {
 		display: flex;
@@ -168,10 +171,6 @@
 		& > *:not(:first-child) {
 			margin-top: 3px;
 		}
-	}
-
-	&__event-card {
-		margin-bottom: 10px;
 	}
 
 	&__list {
@@ -184,12 +183,15 @@
 	}
 
 	&__message-wrapper {
-		@include message-background;
+		@include surface();
 		overflow-x: auto;
+		padding: 6px 10px;
+		border-radius: 4px;
 	}
 
 	&__message {
 		font-size: 11px;
+		line-height: 15px;
 	}
 
 	.splash-screen {
@@ -205,11 +207,10 @@
 	@include event-status-icon($isParentHoverable: false);
 	@include bookmark-button($showOnHoverOverParent: false);
 	@include scrollbar;
+	@include surface();
 	display: flex;
-
-	padding: 2px 3px;
+	padding: 8px;
 	border-radius: 5px;
-	background-color: $workspaceBackground;
 	font-size: 11px;
 	line-height: 15px;
 	overflow: hidden;
@@ -575,8 +576,8 @@
 	display: flex;
 	align-items: center;
 	white-space: nowrap;
-	font-size: 10px;
-	line-height: 15px;
+	font-size: 12px;
+	line-height: 16px;
 	padding-bottom: 5px;
 	flex-wrap: wrap;
 
@@ -614,6 +615,8 @@
 		&.root & {
 			&-title {
 				color: $eventTextColorLight;
+				font-size: 14px;
+				line-height: 16px;
 			}
 
 			&-icon {
