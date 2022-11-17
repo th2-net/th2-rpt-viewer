@@ -52,8 +52,9 @@ export default class MessagesUpdateStore {
 		this.messagesStore.filterStore.filter.timestampTo = Date.now();
 
 		this.messagesDataStore.loadMessages({
-			onClose: async () => {
+			onClose: async chunk => {
 				if (this.isActive) {
+					this.messagesDataStore.onNextChannelResponse(chunk);
 					this.timer = setTimeout(this.loadNextMessages, 5000);
 				}
 			},
