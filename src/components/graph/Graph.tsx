@@ -22,25 +22,21 @@ import GraphChunk from './GraphChunk';
 import GraphSearch from './search/GraphSearch';
 import OutsideItems from './OutsideItems';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
-import { useActiveWorkspace, useSelectedStore, useTabsStore } from '../../hooks';
+import {
+	useActiveWorkspace,
+	useSelectedStore,
+	useTabsStore,
+	useDebouncedCallback,
+} from '../../hooks';
 import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
-import '../../styles/graph.scss';
 import GraphLastEventsButton from './GraphLastEventsButton';
 import { GraphResizer } from './GraphResizer';
+import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
-
-const settings: Settings = {
-	itemWidth: getChunkWidth(),
-	amount: 3,
-	tolerance: 1,
-	minIndex: -100,
-	maxIndex: 100,
-	startIndex: 0,
-} as const;
 
 interface GraphProps {
 	activeWorkspace: WorkspaceStore;
@@ -52,10 +48,24 @@ function Graph({ activeWorkspace }: GraphProps) {
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
+	const settings: Settings = React.useMemo(() => {
+		return {
+			itemWidth: getChunkWidth(),
+			amount: 3,
+			tolerance: 1,
+			minIndex: -100,
+			maxIndex: 100,
+			startIndex: 0,
+		};
+	}, [chunkWidth]);
+
+	const updateChunkWidth = useDebouncedCallback(() => {
+		setChunkWidth(getChunkWidth);
+	}, 250);
 
 	const resizeObserver = React.useRef(
 		new ResizeObserver(() => {
-			setChunkWidth(getChunkWidth);
+			updateChunkWidth();
 		}),
 	);
 
@@ -166,9 +176,7 @@ const GraphRoot = () => {
 				/>
 				{isWorkspaceStore(activeWorkspace) && (
 					<GraphLastEventsButton
-						onTimestampSubmit={activeWorkspace.onTimestampSelect}
-						setRange={activeWorkspace.eventsStore.onRangeChange}
-						interval={activeWorkspace.graphStore.eventInterval}
+						findLastEvents={activeWorkspace.eventsStore.eventDataStore.findLastEvents}
 					/>
 				)}
 				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
