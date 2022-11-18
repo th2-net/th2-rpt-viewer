@@ -33,7 +33,7 @@
 
 	&-wrapper {
 		display: none;
-		background: var(--background);
+		background: var(--background-primary);
 		position: absolute;
 		z-index: 2;
 		top: 72px;
@@ -463,7 +463,7 @@
 		flex-grow: 1;
 		padding: 3px 5px;
 		margin: 0 10px;
-		background-color: var(--input-background);
+		background-color: var(--text-background);
 		border-radius: $bubbleBorderRadius;
 		min-height: 40px;
 		font-size: 13px;

@@ -63,14 +63,11 @@ export const ReferenceCard = (props: Props) => {
 						)}
 						{referencedEvent &&
 							(body.length > 0 ? (
-								body.map((bodyPayloadItem, index) => (
-									<EventBodyCard
-										key={`body-${eventId}-${index}`}
-										body={bodyPayloadItem}
-										event={referencedEvent}
-										referenceHistory={[...referenceHistory, eventId]}
-									/>
-								))
+								<EventBodyCard
+									body={body}
+									event={referencedEvent}
+									referenceHistory={[...referenceHistory, eventId]}
+								/>
 							) : (
 								<ReferenceCardError> Event {eventId} has empty body</ReferenceCardError>
 							))}

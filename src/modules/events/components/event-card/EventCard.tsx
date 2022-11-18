@@ -77,15 +77,7 @@ function EventCard(props: Props) {
 					</div>
 				</div>
 			</div>
-			<div className='event-card__body'>
-				{Array.isArray(body) ? (
-					body.map((bodyPayloadItem, index) => (
-						<EventBodyCard key={`body-${eventId}-${index}`} body={bodyPayloadItem} event={event} />
-					))
-				) : (
-					<EventBodyCard key={eventId} body={body} event={event} />
-				)}
-			</div>
+			<EventBodyCard body={body} event={event} />
 		</div>
 	);
 }

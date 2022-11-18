@@ -23,7 +23,7 @@
 	flex-direction: column;
 	gap: 10px;
 	height: 100%;
-	background-color: var(--background);
+	background-color: var(--background-primary);
 
 	&__fields {
 		display: flex;
@@ -39,7 +39,7 @@
 
 .search-panel-form {
 	padding: 0 8px 8px;
-	background-color: var(--background);
+	background-color: var(--background-primary);
 	overflow: hidden;
 	display: flex;
 	width: 100%;

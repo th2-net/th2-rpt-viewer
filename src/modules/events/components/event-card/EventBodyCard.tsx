@@ -14,9 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventBodyPayload, EventBodyPayloadType } from 'modules/events/models/EventBodyPayload';
 import { EventAction } from 'models/EventAction';
 import ErrorBoundary from 'components/util/ErrorBoundary';
+import {
+	EventBodyPayload,
+	EventBodyPayloadType,
+	EventActionBody,
+} from '../../models/EventBodyPayload';
 import { getEventStatus } from '../../helpers/event';
 import { keyForVerification } from '../../helpers/keys';
 import { CustomTable } from '../tables/CustomTable';
@@ -91,15 +95,28 @@ export function EventBodyPayloadRenderer({ body, event, referenceHistory = [] }:
 	}
 }
 
-export default function EventBodyCard({ event: parentEvent, body, referenceHistory }: Props) {
+interface EventBodyCardProps {
+	body: EventActionBody;
+	event: EventAction;
+	referenceHistory?: Array<string>;
+}
+
+export default function EventBodyCard({
+	event: parentEvent,
+	body,
+	referenceHistory,
+}: EventBodyCardProps) {
 	return (
-		<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
-			<EventBodyPayloadRenderer
-				body={body}
-				event={parentEvent}
-				referenceHistory={referenceHistory}
-			/>
-		</ErrorBoundary>
+		<div className='event-card__body'>
+			{body.map((eventBodyItem, index) => (
+				<EventBodyPayloadRenderer
+					key={`${eventBodyItem.type}-${index}`}
+					body={eventBodyItem}
+					event={parentEvent}
+					referenceHistory={referenceHistory}
+				/>
+			))}
+		</div>
 	);
 }
 
@@ -109,13 +126,9 @@ function JSONBodyFallback({ body }: { body: unknown }) {
 	const content =
 		typeof body === 'object' && body !== null && Object.keys(body).length > 0 ? body : null;
 
-	if (!content) {
-		return null;
-	}
-
-	return (
+	return content ? (
 		<div className='event-body-item fallback'>
 			<pre>{JSON.stringify(content, null, 4)}</pre>
 		</div>
-	);
+	) : null;
 }

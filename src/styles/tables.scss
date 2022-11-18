@@ -80,7 +80,7 @@
 	&-row {
 		&.passed {
 			& td {
-				background-color: #E9FFE8;
+				background-color: var(--table-passed-row);
 			}
 
 			&:hover td {
@@ -90,7 +90,7 @@
 
 		&.failed {
 			& td {
-				background-color: $tableRowFailedBackgroundColor;
+				background-color: var(--table-failed-row);
 			}
 
 			&:hover td {
@@ -100,7 +100,7 @@
 
 		&.na {
 			& td {
-				background-color: #fff;
+				background-color: var(--text-background);
 			}
 		}
 
@@ -187,11 +187,11 @@
 			font-weight: bold !important;
 
 			&.passed {
-				color: #52FF4E;
+				color: var(--table-status-passed);
 			}
 
 			&.failed {
-				color: $tableStatusFailedColor;
+				color: var(--table-status-failed);
 			}
 
 			&.na {
@@ -289,12 +289,7 @@
 		margin: auto;
 
 		&.failed {
-			width: 16px;
-			height: 16px;
-			border-radius: 13px;
-			background-color: #e23636;
-			color: white;
-			margin: auto;
+			color: var(--table-status-failed);
 		}
 	}
 

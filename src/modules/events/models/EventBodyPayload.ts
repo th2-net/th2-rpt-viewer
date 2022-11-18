@@ -88,3 +88,5 @@ export interface VerificationPayloadField {
 		[field: string]: VerificationPayloadField;
 	};
 }
+
+export type EventActionBody = EventBodyPayload[];
