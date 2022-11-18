@@ -26,7 +26,7 @@ import {
 	getErrorEventTreeNode,
 	isRootEvent,
 	unknownRoot,
-} from '../../../helpers/event';
+} from '../helpers/event';
 import { EventTreeNode } from '../../../models/EventAction';
 import notificationsStore from '../../../stores/NotificationsStore';
 import EventsFilterStore from './EventsFilterStore';

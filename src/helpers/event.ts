@@ -101,37 +101,3 @@ export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
 	}
 	return item.eventName;
 }
-
-export const convertEventActionToEventTreeNode = (event: EventAction): EventTreeNode => ({
-	eventId: event.eventId,
-	eventName: event.eventName,
-	eventType: event.eventType,
-	startTimestamp: event.startTimestamp,
-	endTimestamp: event.endTimestamp,
-	successful: event.successful,
-	parentId: event.parentEventId,
-	type: ActionType.EVENT_TREE_NODE,
-});
-
-export const getErrorEventTreeNode = (eventId: string): EventTreeNode => ({
-	type: ActionType.EVENT_TREE_NODE,
-	isUnknown: true,
-	eventId,
-	eventName: eventId,
-	eventType: 'eventTreeNode',
-	parentId: 'unknown-root',
-	startTimestamp: '',
-	endTimestamp: '',
-	successful: false,
-});
-
-export const unknownRoot: EventTreeNode = {
-	type: ActionType.EVENT_TREE_NODE,
-	isUnknown: true,
-	eventId: 'unknown-root',
-	eventName: 'Unknown Events',
-	eventType: 'eventTreeNode',
-	parentId: null,
-	startTimestamp: '',
-	successful: false,
-};

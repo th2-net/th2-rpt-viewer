@@ -22,6 +22,8 @@ import { EventTreeNode } from 'models/EventAction';
 import { useBookmarksStore, useWorkspaceStore } from 'hooks/index';
 import { getEventStatus } from 'helpers/event';
 import { Chip } from 'components/Chip';
+import { StatusIcon } from 'components/icons/StatusIcon';
+import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { getElapsedTime } from '../../helpers/date';
 import SearchableContent from '../search/SearchableContent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -79,10 +81,6 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		disabled ? 'disabled' : null,
 	);
 
-	const iconClassName = createBemBlock('event-status-icon', status);
-
-	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
-
 	function onPinClicked(e: React.MouseEvent) {
 		e.stopPropagation();
 		if (toggleEventPin) toggleEventPin(event);
@@ -115,13 +113,9 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 	return (
 		<div className={rootClassName} onClick={onRootClick}>
 			<Chip className='event-header-card__icons'>
-				<div className={iconClassName} />
+				<StatusIcon status={status} />
 				{/* <div className='search-by-parent' onClick={onFilterClick} /> */}
-				<div
-					className={bookmarkClassName}
-					onClick={onPinClicked}
-					title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
-				/>
+				<BookmarkIcon isPinned={isBookmarked} onClick={onPinClicked} />
 			</Chip>
 			{displayType !== CardDisplayType.STATUS_ONLY && (
 				<>

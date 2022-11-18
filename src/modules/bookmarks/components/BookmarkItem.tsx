@@ -17,7 +17,7 @@
 import React, { memo } from 'react';
 import { formatTimestamp, getTimestampAsNumber } from 'helpers/date';
 import { isEventMessage } from 'helpers/message';
-import { getItemName } from 'helpers/event';
+import { getEventStatus, getItemName } from 'helpers/event';
 import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
 import { Bookmark } from '../models/Bookmarks';
 
@@ -44,7 +44,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 
 	const itemInfo = {
 		id: isEventMessage(item) ? item.id : item.eventId,
-		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
+		status: isEventMessage(item) ? null : getEventStatus(item).toLowerCase(),
 		title: getItemName(item),
 		timestamp: getTimestampAsNumber(item),
 		type: item.type,

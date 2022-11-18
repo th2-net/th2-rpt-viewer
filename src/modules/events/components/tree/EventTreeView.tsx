@@ -21,7 +21,7 @@ import SplitView from 'components/split-view/SplitView';
 import { useBookmarksStore } from 'hooks/useBookmarksStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
-import EventDetailInfoCard from '../event-card/EventDetailInfoCard';
+import EventDetailedCard from '../EventDetailedCard';
 import EventList from '../EventList';
 
 function EventTreeView() {
@@ -43,7 +43,7 @@ function EventTreeView() {
 			</SplitViewPane>
 			<SplitViewPane>
 				{eventsStore.selectedNode ? (
-					<EventDetailInfoCard
+					<EventDetailedCard
 						isBookmarked={isBookmarked}
 						onBookmarkClick={bookmarksStore.toggleEventPin}
 						node={eventsStore.selectedNode}

@@ -14,63 +14,74 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useReducer } from 'react';
-import { EventAction } from 'models/EventAction';
-import { createBemBlock } from 'helpers/styleCreators';
-import { EventBodyPayload } from '../models/EventBodyPayload';
+import React, { useReducer } from 'react';
+import { createBemBlock, createStyleSelector } from 'helpers/styleCreators';
+import { useEvent } from '../hooks/useEvent';
 import EventBodyCard from './event-card/EventBodyCard';
 
 interface Props {
 	eventId: string;
-	body: EventBodyPayload[];
-	referencedEvent: EventAction | null;
 	referenceHistory?: Array<string>;
 }
 
 export const ReferenceCard = (props: Props) => {
-	const { eventId, body, referencedEvent, referenceHistory = [] } = props;
+	const { eventId, referenceHistory = [] } = props;
+
+	const { event: referencedEvent, isError, isLoading } = useEvent(eventId);
+
+	const body = referencedEvent?.body || [];
 
 	const [isOpen, toggleIsOpen] = useReducer(o => !o, false);
 
 	const referenceName = `Referenced from ${eventId}`;
+	const isCycle = referencedEvent && referenceHistory.includes(eventId);
+
+	const referenceCardClassName = createStyleSelector('reference-card', isOpen ? 'open' : null);
+
+	// TODO: fix toggle button icon
 
 	return (
-		<div className='event-reference-card'>
-			<div className='event-reference-card__header'>
-				<div className='event-reference-card__title' title={referenceName}>
-					{referenceName}
+		<div className='reference-card__outline' style={{ padding: referenceHistory.length * 4 }}>
+			<div className={referenceCardClassName}>
+				<div className='reference-card__header'>
+					<div className='reference-card__title' title={referenceName}>
+						{referenceName}
+					</div>
+					<div
+						className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')}
+						onClick={toggleIsOpen}>
+						toggle
+					</div>
 				</div>
-				<div
-					className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')}
-					onClick={toggleIsOpen}
-				/>
-			</div>
-			<div className='event-reference'>
-				{isOpen &&
-					(referencedEvent ? (
-						referenceHistory.includes(eventId) ? (
-							<div className='event-reference__error'>
+				{isLoading && <div>Loading event...</div>}
+				{isOpen && (
+					<div className='reference-card__body'>
+						{isCycle && (
+							<ReferenceCardError>
 								Event {eventId} already rendered in reference chain.
-							</div>
-						) : (
-							referencedEvent &&
+							</ReferenceCardError>
+						)}
+						{referencedEvent &&
 							(body.length > 0 ? (
 								body.map((bodyPayloadItem, index) => (
 									<EventBodyCard
 										key={`body-${eventId}-${index}`}
 										body={bodyPayloadItem}
-										parentEvent={referencedEvent}
+										event={referencedEvent}
 										referenceHistory={[...referenceHistory, eventId]}
 									/>
 								))
 							) : (
-								<div className='event-reference__error'> Event {eventId} has empty body</div>
-							))
-						)
-					) : (
-						<div className='event-reference__error'>Event {eventId} does not exist</div>
-					))}
+								<ReferenceCardError> Event {eventId} has empty body</ReferenceCardError>
+							))}
+						{isError && <ReferenceCardError>Event {eventId} does not exist</ReferenceCardError>}
+					</div>
+				)}
 			</div>
 		</div>
 	);
 };
+
+function ReferenceCardError(props: React.PropsWithChildren<{}>) {
+	return <div className='reference-card__error'>{props.children}</div>;
+}

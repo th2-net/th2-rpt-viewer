@@ -164,32 +164,18 @@
 	padding: 16px 16px 16px 0px;
 	color: var(--text-secondary);
 
+	.event-card {
+		overflow: visible;
+		padding: 0;
+	}
+
 	&__parents {
 		display: flex;
 		flex-direction: column;
-		padding-bottom: 10px;
-
-		& > *:not(:first-child) {
-			margin-top: 3px;
+		gap: 8px;
+		& > div {
+			border-radius: 4px;
 		}
-	}
-
-	&__list {
-		display: flex;
-		flex-direction: column;
-		gap: 16px;
-	}
-
-	&__message-wrapper {
-		@include surface();
-		overflow-x: auto;
-		padding: 6px 10px;
-		border-radius: 4px;
-	}
-
-	&__message {
-		font-size: 11px;
-		line-height: 15px;
 	}
 
 	.splash-screen {
@@ -202,125 +188,39 @@
 
 .event-card {
 	@include status-card;
-	@include event-status-icon($isParentHoverable: false);
-	@include bookmark-button($showOnHoverOverParent: false);
 	@include scrollbar;
-	@include surface();
+
 	display: flex;
+	flex-direction: column;
+	gap: 16px;
 	padding: 8px;
-	border-radius: 5px;
+
 	font-size: 11px;
 	line-height: 15px;
-	overflow: hidden;
+	height: 100%;
+	overflow: auto;
 	flex-shrink: 0;
 
-	&__status {
-		& .event-status-icon {
-			margin: 3px 2px;
-			&:hover .event-card__status-label {
-				display: block;
-			}
-		}
-	}
-
-	&__info {
-		padding-left: 6px;
-		padding-right: 6px;
+	&__header {
+		@include surface();
+		border-radius: 8px;
+		padding: 8px;
 		flex-grow: 1;
 		flex-shrink: 1;
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
-	}
+		gap: 8px;
 
-	&__header {
-		display: flex;
-		align-items: center;
-
-		& > *:not(:first-child) {
-			margin-left: 5px;
+		& > div {
+			display: flex;
+			align-items: center;
+			width: 100%;
+			gap: 8px;
 		}
-	}
 
-	&__title {
-		flex-grow: 1;
-		flex-shrink: 1;
-		font-size: 14px;
-		color: var(--status-primary-color);
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		overflow: hidden;
-	}
-
-	&__event-type {
-		white-space: nowrap;
-		color: $eventCardIdColor;
-	}
-
-	&__time {
-		color: $activeTextColor;
-		font-weight: 600;
-	}
-
-	&__status-label {
-		display: none;
-		font-weight: 600;
-		position: absolute;
-		padding: 5px 10px;
-		border-radius: 5px;
-		background-color: var(--status-primary-color);
-		color: white;
-		white-space: nowrap;
-		left: -1px;
-		top: 17px;
-
-		&:before {
-			content: '';
-			position: absolute;
-			left: 3px;
-			top: -4px;
-			border-left: 7px solid transparent;
-			border-right: 7px solid transparent;
-			border-bottom: 7px solid var(--status-primary-color);
-		}
-	}
-
-	&__controls {
-		display: flex;
-
-		& > *:not(:first-child) {
-			margin-left: 5px;
-		}
-	}
-
-	&__body {
-		margin-top: 2px;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, min-content);
-		overflow: hidden;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 10px;
-	}
-
-	&__id {
-		@include ellipsis();
-		color: $eventCardIdColor;
-	}
-
-	&__timestamp {
-		@include ellipsis();
-		min-width: 0;
-		margin-left: 5px;
-		padding: 0 2px;
-		transition: all 0.15s;
-		border: 1px solid transparent;
-		border-radius: 4px;
-		text-align: right;
-
-		&:hover {
-			color: $timestampTextColor;
-			border: 1px solid $timestampTextColor;
+		& div:last-child {
+			justify-content: space-between;
 		}
 	}
 
@@ -328,14 +228,110 @@
 		display: flex;
 		align-items: center;
 		flex-shrink: 0;
+		border-radius: 50%;
+		padding: 5px 6px;
 	}
-}
 
-.event-body-fallback {
-	overflow-x: auto;
-	@include scrollbar;
-	@include message-background;
-	margin-top: 15px;
+	&__title {
+		flex-grow: 1;
+		flex-shrink: 1;
+		font-size: 14px;
+		line-height: 20px;
+		color: var(--status-primary-color);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+
+	&__id {
+		cursor: pointer;
+	}
+
+	&__timestamp {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	&__status-icon {
+		@include surface();
+		padding: 4px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-items: center;
+	}
+
+	&__event-type {
+		white-space: nowrap;
+		color: $eventCardIdColor;
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+
+		.event-message-card {
+			border-radius: 4px;
+			@include surface;
+			padding: 6px 10px;
+		}
+
+		.fallback {
+			@include scrollbar;
+			@include surface;
+			overflow-x: auto;
+			border-radius: 4px;
+			padding: 6px 10px;
+		}
+
+		.reference-card {
+			width: 100%;
+			overflow: hidden;
+			cursor: default;
+			border-radius: 4px;
+			color: var(--text-primary);
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+
+			&.open {
+				padding: 6px;
+				border: 1px solid var(--info-color);
+			}
+
+			&__title {
+				@include ellipsis();
+				flex-grow: 1;
+				flex-shrink: 1;
+			}
+
+			&__header {
+				@include surface;
+				font-size: 13px;
+				display: flex;
+				align-items: center;
+				padding: 5px;
+				border-radius: 4px;
+			}
+
+			&__body {
+				display: flex;
+				flex-direction: column;
+				gap: 16px;
+			}
+
+			&__error {
+				@include surface;
+				font-size: 10px;
+				border: 1px solid var(--events-failed);
+				border-radius: 5px;
+				padding: 5px;
+				color: var(--events-failed);
+			}
+		}
+	}
 }
 
 .event-window {
@@ -625,47 +621,5 @@
 		&:first-child {
 			margin-right: 5px;
 		}
-	}
-}
-
-.event-reference-card {
-	padding: 2px;
-	padding-bottom: 0px;
-	line-height: 15px;
-	width: 100%;
-	overflow: hidden;
-	cursor: default;
-
-	&__title {
-		@include ellipsis();
-		flex-grow: 1;
-		flex-shrink: 1;
-		font-weight: 600;
-		color: $tableTitleColor;
-	}
-
-	&__header {
-		font-size: 13px;
-		display: flex;
-		align-items: center;
-		background-color: $skeletonBackgroundColor;
-		padding: 5px;
-		margin: 0px 0px 1px;
-	}
-}
-
-.event-reference {
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	color: $primaryTextColor;
-
-	&__error {
-		font-size: 10px;
-		border: 1px $failedBorderColor solid;
-		border-radius: 5px;
-		padding: 5px;
-		background-color: $failedBackgroundColor;
-		color: $failedTextColor;
 	}
 }

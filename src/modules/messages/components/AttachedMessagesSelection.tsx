@@ -17,6 +17,8 @@
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Chip } from 'components/Chip';
+import { AttachedMessagesIcon } from 'components/icons/AttachedMessagesIcon';
+import { MessageIcon } from 'components/icons/MessageIcon';
 import { useMessagesStore } from '../hooks/useMessagesStore';
 
 type Offset = -1 | 1;
@@ -53,8 +55,8 @@ const AttachedMessagesSelection = () => {
 				<span>Show previous</span>
 			</button>
 			<Chip>
-				<div className='mc-header__message-icon' />
-				<div className='mc-header__attached-icon' />
+				<MessageIcon />
+				<AttachedMessagesIcon />
 			</Chip>
 			<span className='attached-messages__counter'>
 				<span>{messageIndex + 1} </span>| {messagesStore.attachedMessages.length}

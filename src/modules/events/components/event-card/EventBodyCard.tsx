@@ -17,7 +17,6 @@
 import { EventBodyPayload, EventBodyPayloadType } from 'modules/events/models/EventBodyPayload';
 import { EventAction } from 'models/EventAction';
 import ErrorBoundary from 'components/util/ErrorBoundary';
-import { useEvent } from '../../hooks/useEvent';
 import { getEventStatus } from '../../helpers/event';
 import { keyForVerification } from '../../helpers/keys';
 import { CustomTable } from '../tables/CustomTable';
@@ -28,25 +27,16 @@ import { ReferenceCard } from '../ReferenceCard';
 
 interface Props {
 	body: EventBodyPayload;
-	parentEvent: EventAction;
+	event: EventAction;
 	referenceHistory?: Array<string>;
 }
 
-export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory = [] }: Props) {
-	const { event: referencedEvent } = useEvent(
-		body.type === EventBodyPayloadType.REFERENCE ? body.eventId : '',
-	);
-	const referencedBody = referencedEvent?.body || [];
-
+export function EventBodyPayloadRenderer({ body, event, referenceHistory = [] }: Props) {
 	switch (body.type) {
 		case EventBodyPayloadType.MESSAGE: {
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
-					<div className='event-detail-info__message-wrapper'>
-						<div key='message' className='event-detail-info__message'>
-							{body.data}
-						</div>
-					</div>
+					<p className='event-message-card'>{body.data}</p>
 				</ErrorBoundary>
 			);
 		}
@@ -58,14 +48,14 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 			);
 		}
 		case EventBodyPayloadType.VERIFICATION: {
-			const key = keyForVerification(parentEvent.parentEventId, parentEvent.eventId);
+			const key = keyForVerification(event.parentEventId, event.eventId);
 
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 					<div>
 						<VerificationTable
 							payload={body}
-							status={getEventStatus(parentEvent)}
+							status={getEventStatus(event)}
 							keyPrefix={key}
 							stateKey={`${key}-nodes`}
 						/>
@@ -83,8 +73,8 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 						<ParamsTable
 							columns={columns}
 							rows={rows}
-							stateKey={`${parentEvent.eventId}-input-params-nodes`}
-							name={parentEvent.eventName}
+							stateKey={`${event.eventId}-input-params-nodes`}
+							name={event.eventName}
 						/>
 					</div>
 				</ErrorBoundary>
@@ -93,12 +83,7 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 		case EventBodyPayloadType.REFERENCE:
 			return (
 				<ErrorBoundary>
-					<ReferenceCard
-						eventId={body.eventId}
-						body={referencedBody}
-						referencedEvent={referencedEvent}
-						referenceHistory={referenceHistory}
-					/>
+					<ReferenceCard eventId={body.eventId} referenceHistory={referenceHistory} />
 				</ErrorBoundary>
 			);
 		default:
@@ -106,12 +91,12 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 	}
 }
 
-export default function EventBodyCard({ parentEvent, body, referenceHistory }: Props) {
+export default function EventBodyCard({ event: parentEvent, body, referenceHistory }: Props) {
 	return (
 		<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 			<EventBodyPayloadRenderer
 				body={body}
-				parentEvent={parentEvent}
+				event={parentEvent}
 				referenceHistory={referenceHistory}
 			/>
 		</ErrorBoundary>
@@ -129,7 +114,7 @@ function JSONBodyFallback({ body }: { body: unknown }) {
 	}
 
 	return (
-		<div className='event-body-fallback'>
+		<div className='event-body-item fallback'>
 			<pre>{JSON.stringify(content, null, 4)}</pre>
 		</div>
 	);

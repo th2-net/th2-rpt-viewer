@@ -23,8 +23,8 @@ import { useBookmarksStore } from 'hooks/useBookmarksStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
+import EventDetailedCard from '../EventDetailedCard';
 import EventList from '../EventList';
-import EventDetailInfoCard from '../event-card/EventDetailInfoCard';
 
 function EventTreeView() {
 	const eventsStore = useEventsStore();
@@ -51,7 +51,7 @@ function EventTreeView() {
 			</SplitViewPane>
 			<SplitViewPane>
 				{node ? (
-					<EventDetailInfoCard
+					<EventDetailedCard
 						node={node}
 						parentNodes={parentNodes}
 						isBookmarked={isBookmarked}

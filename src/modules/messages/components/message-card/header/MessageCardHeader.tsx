@@ -21,6 +21,8 @@ import { formatTime, timestampToNumber } from 'helpers/date';
 import CardDisplayType from 'models/util/CardDisplayType';
 import Checkbox from 'components/util/Checkbox';
 import { Chip } from 'components/Chip';
+import { BookmarkIcon } from 'components/icons/BookmarkIcon';
+import { AttachedMessagesIcon } from 'components/icons/AttachedMessagesIcon';
 import { getSubsequence } from '../../../helpers/message';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { Session } from './Session';
@@ -46,7 +48,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		viewType,
 		setViewType,
 		addMessageToExport,
-		isBookmarked,
+		isBookmarked = false,
 		isAttached,
 		isHighlighted,
 		isExport,
@@ -57,8 +59,6 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	const { timestamp, sessionId, direction } = message;
 
 	const headerClass = createBemBlock('mc-header__info', isHighlighted ? 'highlighted' : null);
-
-	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
@@ -72,8 +72,8 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 			)}
 			<Chip className='mc-header__icons'>
 				<div className='mc-header__message-icon' />
-				{isBookmarked && <div className={bookmarkIconClass} />}
-				{isAttached && <div className='mc-header__attached-icon' />}
+				{isBookmarked && <BookmarkIcon isPinned={isBookmarked} />}
+				{isAttached && <AttachedMessagesIcon />}
 			</Chip>
 			{displayType === CardDisplayType.FULL && (
 				<Chip className='mc-header__timestamp' title={`Timestamp: ${formattedTimestamp}`}>

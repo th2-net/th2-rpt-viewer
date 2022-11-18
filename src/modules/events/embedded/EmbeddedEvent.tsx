@@ -30,7 +30,7 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 	}, []);
 
 	async function getEvent() {
-		const res = await fetch(`http://de-th2-qa:30000/th2-groups/backend/event/${eventId}`);
+		const res = await fetch(`backend/event/${eventId}`);
 		if (res.ok) {
 			setEvent(await res.json());
 		} else {
@@ -48,14 +48,10 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 				<EmbeddedEventHeader event={event} />
 				{Array.isArray(event.body) ? (
 					event.body.map((bodyPayloadItem, index) => (
-						<EventBodyCard
-							key={`body-${eventId}-${index}`}
-							body={bodyPayloadItem}
-							parentEvent={event}
-						/>
+						<EventBodyCard key={`body-${eventId}-${index}`} body={bodyPayloadItem} event={event} />
 					))
 				) : (
-					<EventBodyCard key={eventId} body={event.body} parentEvent={event} />
+					<EventBodyCard key={eventId} body={event.body} event={event} />
 				)}
 			</>
 		);
