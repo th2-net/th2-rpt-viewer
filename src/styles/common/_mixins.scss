@@ -237,16 +237,6 @@
 	th {
 		padding-left: 10px;
 	}
-
-	tr {
-		&:hover td {
-			background-color: darken($color: $tableBodyBackground, $amount: 10);
-
-			&.transparent {
-				background-color: transparent;
-			}
-		}
-	}
 }
 
 @mixin spinner(

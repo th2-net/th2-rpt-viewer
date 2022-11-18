@@ -22,6 +22,7 @@ import { StatusIcon } from 'components/icons/StatusIcon';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { Chip } from 'components/Chip';
 import { copyTextToClipboard } from 'helpers/copyHandler';
+import { showNotification } from 'helpers/showNotification';
 import EventBodyCard from './EventBodyCard';
 
 interface Props {
@@ -42,6 +43,7 @@ function EventCard(props: Props) {
 
 	const copyId = () => {
 		copyTextToClipboard(eventId);
+		showNotification('Copied to clipboard');
 	};
 
 	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;

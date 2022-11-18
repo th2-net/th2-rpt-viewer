@@ -58,10 +58,6 @@
 		background-color: inherit;
 	}
 
-	&:hover {
-		background-color: var(--status-secondary-background-color);
-	}
-
 	&:hover &__details {
 		visibility: visible;
 	}

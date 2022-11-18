@@ -82,19 +82,11 @@
 			& td {
 				background-color: var(--table-passed-row);
 			}
-
-			&:hover td {
-				background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 10);
-			}
 		}
 
 		&.failed {
 			& td {
 				background-color: var(--table-failed-row);
-			}
-
-			&:hover td {
-				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
 			}
 		}
 
@@ -381,10 +373,6 @@
 
 	&-row-toogler {
 		@include unselectable;
-
-		&:hover td {
-			background-color: darken($color: $tableHeaderBackgroundSecondary, $amount: 10) !important;
-		}
 
 		& td {
 			background-color: $tableHeaderBackgroundSecondary;
