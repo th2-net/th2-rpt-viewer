@@ -27,6 +27,7 @@ import {
 	OutsideItems as IOutsideItems,
 	OutsideItemsMenu,
 	OutsideItemsList,
+	OutsideCenters,
 } from './OutsideItemsMenu';
 import '../../styles/graph.scss';
 
@@ -68,6 +69,23 @@ const OutsideItems = (props: OverlayPanelProps) => {
 				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
 		};
 		return outsidePan;
+	}, [from, to, panelsRange]);
+
+	const showPanels: OutsideCenters = React.useMemo(() => {
+		const center0 = (panelsRange[0].range[0] + panelsRange[0].range[1]) / 2;
+		const center1 = (panelsRange[1].range[0] + panelsRange[1].range[1]) / 2;
+
+		const res = {
+			left: {
+				'events-panel': center0 < from,
+				'messages-panel': center1 < from,
+			},
+			right: {
+				'events-panel': center0 > to,
+				'messages-panel': center1 > to,
+			},
+		};
+		return res;
 	}, [from, to, panelsRange]);
 
 	const onOutsidePanelClick = (panelKey: string) => {
@@ -210,6 +228,7 @@ const OutsideItems = (props: OverlayPanelProps) => {
 			/>
 			<OutsideItemsList
 				showCount={false}
+				showPanels={showPanels}
 				itemsMap={outsidePanels.left}
 				direction='left'
 				className='outside-items__panels'
@@ -218,6 +237,7 @@ const OutsideItems = (props: OverlayPanelProps) => {
 			/>
 			<OutsideItemsList
 				showCount={false}
+				showPanels={showPanels}
 				itemsMap={outsidePanels.right}
 				direction='right'
 				className='outside-items__panels'
