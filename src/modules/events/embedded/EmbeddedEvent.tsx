@@ -46,13 +46,7 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 		return (
 			<>
 				<EmbeddedEventHeader event={event} />
-				{Array.isArray(event.body) ? (
-					event.body.map((bodyPayloadItem, index) => (
-						<EventBodyCard key={`body-${eventId}-${index}`} body={bodyPayloadItem} event={event} />
-					))
-				) : (
-					<EventBodyCard key={eventId} body={event.body} event={event} />
-				)}
+				<EventBodyCard key={eventId} body={event.body} event={event} />
 			</>
 		);
 	}
