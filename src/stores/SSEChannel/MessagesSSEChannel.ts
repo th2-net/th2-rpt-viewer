@@ -15,7 +15,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, toJS, when } from 'mobx';
+import { action, when } from 'mobx';
 import moment from 'moment';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
