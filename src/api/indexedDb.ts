@@ -164,20 +164,19 @@ export class IndexedDB {
 	private async initDb() {
 		try {
 			this.db = await openDB<TH2DB>(this.env, dbVersion, {
-			upgrade: async db => {
-				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
-					const name = storeName as IndexedDbStores;
-					if (!db.objectStoreNames.contains(name)) {
-						const store = db.createObjectStore(name, { keyPath });
-						store.createIndex('timestamp', 'timestamp');
-					}
-				});
-			},
-		});
+				upgrade: async db => {
+					Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
+						const name = storeName as IndexedDbStores;
+						if (!db.objectStoreNames.contains(name)) {
+							const store = db.createObjectStore(name, { keyPath });
+							store.createIndex('timestamp', 'timestamp');
+						}
+					});
+				},
+			});
 		} catch (error) {
 			this.error = new Error(String(error));
 		}
-		
 	}
 
 	public getError = () => this.error;
@@ -187,7 +186,7 @@ export class IndexedDB {
 		if (!this.db) {
 			await when(() => this.db !== null);
 		}
-		return (this.db as unknown) as IDBPDatabase<TH2DB>;
+		return this.db as unknown as IDBPDatabase<TH2DB>;
 	};
 
 	public deleteDbStoreItem = async (storeName: IndexedDbStores, key: string | number) => {
@@ -259,7 +258,7 @@ export class IndexedDB {
 			cursor = await cursor.continue();
 		}
 
-		return (data as unknown) as Promise<T[]>;
+		return data as unknown as Promise<T[]>;
 	};
 
 	public getStoreKeys = async <T extends IDBValidKey>(
@@ -286,7 +285,7 @@ export class IndexedDB {
 			cursor = await cursor.continue();
 		}
 
-		return (data as unknown) as Promise<T[]>;
+		return data as unknown as Promise<T[]>;
 	};
 
 	public clearAllData = async () => {
