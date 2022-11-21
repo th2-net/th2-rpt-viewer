@@ -1,6 +1,6 @@
 {
 	"name": "th2-rpt-viewer",
-	"version": "5.0.50",
+	"version": "5.0.51",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
