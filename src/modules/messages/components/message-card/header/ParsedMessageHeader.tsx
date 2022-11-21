@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 import { memo } from 'react';
-import { ParsedMessage, MessageViewType } from 'models/EventMessage';
+import { ParsedMessage, MessageViewType, EventMessage } from 'models/EventMessage';
 import { createBemElement } from 'helpers/styleCreators';
 import { Chip } from 'components/Chip';
-import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
+import MessageCardTools from '../MessageCardTools';
 import { getSubsequence } from '../../../helpers/message';
 
 export interface ParsedMessageHeaderProps {
@@ -27,7 +27,8 @@ export interface ParsedMessageHeaderProps {
 	setViewType: (id: string, vt: MessageViewType) => void;
 	isHighlighted?: boolean;
 	isScreenshotMsg: boolean;
-	messageCardToolsConfig: MessageCardToolsProps;
+	toggleMessagePin?: () => void;
+	message: EventMessage;
 }
 
 export const ParsedMessageHeader = memo((props: ParsedMessageHeaderProps) => {
@@ -54,7 +55,7 @@ export const ParsedMessageHeader = memo((props: ParsedMessageHeaderProps) => {
 			)}
 			<div className='message-card-tools__wrapper'>
 				<MessageCardTools
-					{...props.messageCardToolsConfig}
+					{...props}
 					parsedMessage={parsedMessage}
 					isScreenshotMsg={isScreenshotMsg}
 					viewType={viewType}

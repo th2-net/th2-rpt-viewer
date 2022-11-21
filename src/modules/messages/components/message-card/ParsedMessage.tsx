@@ -17,13 +17,14 @@
 import * as React from 'react';
 import { ParsedMessage, MessageViewType, EventMessage } from 'models/EventMessage';
 import CardDisplayType from 'models/util/CardDisplayType';
-import { MessageCardToolsProps } from './MessageCardTools';
 import MessageBodyComponent, { MessageCardViewTypeRendererProps } from './MessageBody';
 import { ParsedMessageHeader } from './header/ParsedMessageHeader';
 
 export interface ParsedMessageProps {
 	displayType: CardDisplayType;
-	messageCardToolsConfig: MessageCardToolsProps;
+	isBookmarked?: boolean;
+	toggleMessagePin?: () => void;
+	message: EventMessage;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
 }
 

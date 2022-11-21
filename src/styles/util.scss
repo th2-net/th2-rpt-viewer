@@ -145,3 +145,41 @@
 	top: 4px;
 	z-index: 5;
 }
+
+.theme-toggler {
+	position: absolute;
+	top: 6px;
+	right: 10px;
+	&__label {
+		background-color: #111;
+		border-radius: 50px;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 5px;
+		position: relative;
+		height: 8px;
+		width: 27px;
+	}
+
+	&__checkbox {
+		position: absolute;
+	}
+
+	&__checkbox:checked + .label .ball {
+		transform: translateX(19px);
+	}
+
+	&__ball {
+		background-color: #fff;
+		border-radius: 50%;
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		height: 14px;
+		width: 14px;
+		transform: translateX(0px);
+		transition: transform 0.2s linear;
+	}
+}

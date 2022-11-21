@@ -21,6 +21,7 @@ import Toast from './notifications/Toast';
 import ToastContainer from './notifications/ToastContainer';
 import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
+import { ThemeToggler } from './ThemeToggler';
 import '../styles/root.scss';
 
 const AppRootBase = () => (
@@ -31,6 +32,7 @@ const AppRootBase = () => (
 			transitionDuration={400}>
 			<div className='header'>
 				<i className='th2-logo' />
+				{process.env.NODE_ENV === 'development' && <ThemeToggler />}
 			</div>
 			<div className='app__workspaces'>
 				<WorkspacesLayout />

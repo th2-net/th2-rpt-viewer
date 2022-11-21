@@ -21,7 +21,6 @@ import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
 import { isEventMessage } from 'helpers/message';
 import CardDisplayType from 'models/util/CardDisplayType';
 import { MessageCardViewTypeRendererProps } from './MessageBody';
-import { MessageCardToolsProps } from './MessageCardTools';
 import { MessageCardHeader } from './header/MessageCardHeader';
 import { ParsedMessageComponent } from './ParsedMessage';
 import MessageExpandButton from '../MessageExpandButton';
@@ -52,7 +51,6 @@ const MessageCard = (props: MessageCardProps) => {
 		setIsExpanded: setIsExpandedProp,
 		isAttached,
 		isBookmarked,
-		toggleMessagePin,
 		displayType,
 		sortOrderItems = [],
 		viewTypesMap,
@@ -72,12 +70,6 @@ const MessageCard = (props: MessageCardProps) => {
 		rawMessageBase64,
 		isSelected: isAttached || false,
 		sortOrderItems,
-	};
-
-	const messageCardToolsConfig: MessageCardToolsProps = {
-		message,
-		isBookmarked,
-		toggleMessagePin,
 	};
 
 	const indicatorClass = createBemElement(
@@ -103,7 +95,6 @@ const MessageCard = (props: MessageCardProps) => {
 					{...props}
 					viewType={viewTypesMap.get(messages[0].id)}
 					setViewType={setViewType}
-					messageCardToolsConfig={messageCardToolsConfig}
 				/>
 				{messages.slice(0, isExpanded ? undefined : 1).map((msg, index) => (
 					<ParsedMessageComponent
@@ -112,9 +103,9 @@ const MessageCard = (props: MessageCardProps) => {
 						displayType={displayType}
 						viewType={viewTypesMap.get(msg.id)}
 						setViewType={setViewType}
-						messageCardToolsConfig={messageCardToolsConfig}
 						messageViewTypeRendererProps={messageViewTypeRendererProps}
 						displayHeader={index > 0}
+						message={message}
 					/>
 				))}
 			</div>

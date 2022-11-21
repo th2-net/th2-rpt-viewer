@@ -34,6 +34,11 @@ body {
 	overflow: hidden;
 }
 
+* {
+	transition-property: color, background-color;
+  transition-duration: 0.25s, 0.25s;
+}
+
 p,
 h1,
 h2,

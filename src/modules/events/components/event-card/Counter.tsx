@@ -33,8 +33,8 @@ export function Counter(props: Props) {
 	);
 
 	return (
-		<p className={rootClass} title={title} onClick={onClick}>
-			<p>{children}</p>
-		</p>
+		<span className={rootClass} title={title} onClick={onClick}>
+			{children}
+		</span>
 	);
 }

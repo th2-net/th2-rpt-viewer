@@ -29,17 +29,17 @@ import { Session } from './Session';
 
 export interface MessageInfoProps {
 	message: EventMessage;
-	addMessageToExport?: (message: EventMessage) => void;
 	viewType?: MessageViewType;
 	setViewType: (id: string, vt: MessageViewType) => void;
 	isBookmarked?: boolean;
+	toggleMessagePin?: () => void;
 	isAttached?: boolean;
 	isHighlighted?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
+	addMessageToExport?: (message: EventMessage) => void;
 	displayType: CardDisplayType;
 	isScreenshotMsg?: boolean;
-	messageCardToolsConfig: MessageCardToolsProps;
 }
 
 export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
@@ -54,7 +54,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		isExport,
 		isExported,
 		displayType,
-		messageCardToolsConfig,
+		toggleMessagePin,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
 
@@ -93,7 +93,9 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 			)}
 			<div className='message-card-tools__wrapper'>
 				<MessageCardTools
-					{...messageCardToolsConfig}
+					message={message}
+					toggleMessagePin={toggleMessagePin}
+					isBookmarked={isBookmarked}
 					parsedMessage={parsedMessage}
 					isScreenshotMsg={props.isScreenshotMsg}
 					viewType={viewType}
