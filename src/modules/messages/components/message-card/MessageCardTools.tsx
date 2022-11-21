@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createBemElement } from 'helpers/styleCreators';
 import { EventMessage, MessageViewType, ParsedMessage } from 'models/EventMessage';
@@ -26,6 +26,7 @@ import useViewMode from 'hooks/useViewMode';
 import { ViewMode } from 'components/ViewModeProvider';
 import { decodeBase64RawContent, getAllRawContent } from '../../helpers/rawFormatter';
 import { isRawViewType, normalizeFields } from '../../helpers/message';
+import { ViewTypeSelect } from './ViewTypeSelect';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
@@ -105,9 +106,12 @@ const MessageCardTools = ({
 		}
 	}
 
-	const toggleViewType = (v: MessageViewType) => {
-		setViewType(parsedMessage && !isRaw ? parsedMessage.id : message.id, v);
-	};
+	const toggleViewType = useCallback(
+		(v: MessageViewType) => {
+			setViewType(parsedMessage && !isRaw ? parsedMessage.id : message.id, v);
+		},
+		[parsedMessage, isRaw],
+	);
 
 	return (
 		<div className='message-card-tools' ref={rootRef}>
@@ -132,28 +136,11 @@ const MessageCardTools = ({
 					/>
 				</div>
 				{!isScreenshotMsg && (
-					<div className='message-card-tools__controls-group'>
-						{viewTypes.map(currentViewType => {
-							const iconClassName = createBemElement('message-card-tools', 'icon', currentViewType);
-							const indicatorClassName = createBemElement(
-								'message-card-tools',
-								'indicator',
-								currentViewType === viewType ? 'active' : null,
-							);
-
-							return (
-								<div
-									title={currentViewType}
-									className='message-card-tools__item'
-									key={currentViewType}
-									onClick={() => toggleViewType(currentViewType)}>
-									<div className={iconClassName} />
-									<span className='message-card-tools__item-title'>{currentViewType}</span>
-									<div className={indicatorClassName} />
-								</div>
-							);
-						})}
-					</div>
+					<ViewTypeSelect
+						onViewTypeSelect={toggleViewType}
+						viewTypes={viewTypes}
+						selectedViewType={viewType}
+					/>
 				)}
 				{!isScreenshotMsg ? <div className='message-card-tools__line' /> : null}
 				<div className='message-card-tools__header'>
