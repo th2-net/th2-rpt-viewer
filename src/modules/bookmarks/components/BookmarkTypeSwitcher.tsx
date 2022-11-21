@@ -14,7 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createBemElement } from 'helpers/styleCreators';
+import { MessageIcon } from 'components/icons/MessageIcon';
+import { StatusIcon } from 'components/icons/StatusIcon';
+import { ToggleButtonGroup, ToggleButton } from 'components/buttons/ToggleButton';
 import { BookmarkType } from '../models/Bookmarks';
 
 interface Props {
@@ -24,38 +26,25 @@ interface Props {
 }
 
 const BookmarkTypeSwitcher = ({ value, setValue, label }: Props) => {
+	const selectedType = value || 'All';
 	const setType = (type: string) => {
-		setValue(type === 'any' ? null : (type as BookmarkType));
+		setValue(type === 'All' ? null : (type as BookmarkType));
 	};
 
 	return (
 		<div className='bookmark-panel-header__row'>
 			<div className='bookmark-panel-header__row-label'>{label}</div>
-			<div className='bookmark-type-switcher'>
-				{['event', 'message', 'any'].map(type => {
-					const buttonClassName = createBemElement(
-						'bookmark-type-switcher',
-						'switch-bookmark-type-button',
-						'switch-bookmark-type-button',
-						type,
-						value === type || (type === 'any' && value === null) ? 'active' : null,
-					);
-
-					const iconClassName = createBemElement(
-						'switch-bookmark-type-button',
-						'icon',
-						type,
-						value === type ? 'active' : null,
-					);
-
-					return (
-						<button key={type} className={buttonClassName} onClick={() => setType(type)}>
-							<i className={iconClassName} />
-							<div className='switch-bookmark-type-button__label'>{type}</div>
-						</button>
-					);
-				})}
-			</div>
+			<ToggleButtonGroup value={selectedType} onChange={setType}>
+				<ToggleButton value='All'>All</ToggleButton>
+				<ToggleButton value='event'>
+					<StatusIcon />
+					Events
+				</ToggleButton>
+				<ToggleButton value='message'>
+					<MessageIcon />
+					Messages
+				</ToggleButton>
+			</ToggleButtonGroup>
 		</div>
 	);
 };

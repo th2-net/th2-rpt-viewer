@@ -19,10 +19,11 @@ import { EventStatus } from 'modules/events/models/Status';
 import '../../styles/icons.scss';
 
 interface StatusIconProps {
-	status: EventStatus | 'unknown';
+	status?: EventStatus | 'unknown';
 }
 
 export function StatusIcon(props: StatusIconProps) {
-	const className = createStyleSelector('status-icon', props.status.toLowerCase());
+	const { status = EventStatus.PASSED } = props;
+	const className = createStyleSelector('status-icon', status.toLowerCase());
 	return <div className={className}></div>;
 }

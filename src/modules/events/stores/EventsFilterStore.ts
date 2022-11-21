@@ -138,7 +138,7 @@ export default class EventsFilterStore {
 		if (!this.filter) return false;
 		return getObjectKeys(this.filter).some((filterName: EventFilterKeys) => {
 			if (filterName === 'status') {
-				return this.filter && this.filter[filterName].values !== 'any';
+				return this.filter && this.filter[filterName].values !== 'All';
 			}
 			return this.filter !== null && this.filter[filterName].values.length > 0;
 		});

@@ -193,7 +193,7 @@ export function useFilterConfig<T extends Filter>({
 								value: state.values as string,
 								setValue: getValuesUpdater(name),
 								options: statusValues,
-								defaultValue: 'any',
+								defaultValue: 'All',
 							};
 						default:
 							return null;

@@ -201,11 +201,6 @@
 .search-type-switcher {
 	display: flex;
 	flex-direction: column;
-
-	&__togglers {
-		display: flex;
-		padding: 2px;
-	}
 }
 
 .search-result-count-limit {
@@ -246,7 +241,8 @@
 	padding: 8px 12px;
 	box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.16);
 	opacity: 0.8;
-
+	background-color: var(--input-border);
+	color: var(--text-primary);
 	transition: color 0.3s, background-color 0.3s, opacity 0.3s;
 
 	&.active {

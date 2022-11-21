@@ -27,7 +27,6 @@
 	border-radius: 6px;
 	color: var(--text-primary);
 
-
 	.hint {
 		padding: 6px;
 		font-size: 10px;
@@ -54,25 +53,11 @@
 			}
 		}
 	}
-	.switchers {
-		display: flex;
-		justify-content: center;
-	}
-	.switcher {
-		cursor: pointer;
-		border: none;
-		outline: none;
-		padding: 2px 0;
-		flex-basis: 50%;
-		background-color: $filterPickerScrollItemBlockedColor;
-		color: $filterPickerScrollItemBlockedFontColor;
-		text-align: center;
-		transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+	&__togglers {
+		width: 100%;
 
-		&.active {
-			color: #fff;
-			background-color: $filterPickerScrollItemActiveColor;
-			cursor: pointer;
+		& button {
+			flex: 1;
 		}
 	}
 }

@@ -18,10 +18,10 @@ import { useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
 import { IconButton } from 'components/buttons/IconButton';
+import { ToggleButtonGroup, ToggleButton } from 'components/buttons/ToggleButton';
 import { useMessagesFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { ModalPortal } from '../../../../components/util/Portal';
 import RulesList from './RulesList';
-import { createStyleSelector } from '../../../../helpers/styleCreators';
 import BodySortConfig from './BodySortConfig';
 import 'styles/messages-view-configurator.scss';
 
@@ -48,15 +48,6 @@ const MessageViewConfigurator = () => {
 
 	const offsetTop = buttonRef.current?.getBoundingClientRect().top;
 	const offsetRight = buttonRef.current?.getBoundingClientRect().left;
-
-	const rulesButtonClassName = createStyleSelector(
-		'switcher',
-		mode === 'display-rules' ? 'active' : null,
-	);
-	const sortButtonClassName = createStyleSelector(
-		'switcher',
-		mode === 'body-sort' ? 'active' : null,
-	);
 
 	return (
 		<>
@@ -89,14 +80,14 @@ const MessageViewConfigurator = () => {
 							<i>Use * character to match an unknown substring as part of session name</i>
 						</p>
 					) : null}
-					<div className='switchers'>
-						<button className={rulesButtonClassName} onClick={() => setMode('display-rules')}>
-							Display rules
-						</button>
-						<button className={sortButtonClassName} onClick={() => setMode('body-sort')}>
-							Body sort
-						</button>
-					</div>
+
+					<ToggleButtonGroup
+						value={mode}
+						onChange={setMode}
+						className='messages-view-configurator__togglers'>
+						<ToggleButton value='display-rules'>Display rules</ToggleButton>
+						<ToggleButton value='body-sort'>Body sort</ToggleButton>
+					</ToggleButtonGroup>
 				</div>
 			</ModalPortal>
 		</>

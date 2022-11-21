@@ -5,6 +5,7 @@ export const ThemeToggler = () => {
 
 	useLayoutEffect(() => {
 		document.documentElement.setAttribute('data-theme', theme);
+		localStorage.setItem('theme', theme);
 	}, [theme]);
 
 	return (

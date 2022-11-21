@@ -14,7 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createBemElement } from 'helpers/styleCreators';
+import { StatusIcon } from 'components/icons/StatusIcon';
+import { MessageIcon } from 'components/icons/MessageIcon';
+import { ToggleButtonGroup, ToggleButton } from 'components/buttons/ToggleButton';
+import { EventStatus } from 'modules/events/models/Status';
 import { SearchPanelType } from '../../models/Search';
 
 type Props = {
@@ -22,42 +25,17 @@ type Props = {
 	setFormType: (formType: SearchPanelType) => void;
 };
 
-const types = ['event', 'message'] as const;
-
-const SearchTypeSwitcher = ({ formType, setFormType }: Props) => {
-	const setType = (type: typeof formType) => {
-		setFormType(type);
-	};
-
-	return (
-		<div className='search-type-switcher__togglers'>
-			{types.map(type => {
-				const buttonClassName = createBemElement(
-					'search-type-switcher',
-					'switch-search-type-button',
-					'switch-search-type-button',
-					type,
-					formType === type ? 'active' : null,
-				);
-
-				const iconClassName = createBemElement(
-					'switch-search-type-button',
-					'icon',
-					type,
-					formType === type ? 'active' : null,
-				);
-
-				return (
-					<button key={type} className={buttonClassName} onClick={() => setType(type)}>
-						<i className={iconClassName} />
-						<div className='switch-search-type-button__label'>
-							{type.charAt(0).toUpperCase().concat(type.slice(1))}
-						</div>
-					</button>
-				);
-			})}
-		</div>
-	);
-};
+const SearchTypeSwitcher = ({ formType, setFormType }: Props) => (
+	<ToggleButtonGroup value={formType} onChange={setFormType}>
+		<ToggleButton value='event'>
+			<StatusIcon status={EventStatus.PASSED} />
+			Events
+		</ToggleButton>
+		<ToggleButton value='message'>
+			<MessageIcon />
+			Messages
+		</ToggleButton>
+	</ToggleButtonGroup>
+);
 
 export default SearchTypeSwitcher;

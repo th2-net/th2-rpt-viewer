@@ -62,3 +62,47 @@
 		color: #fff;
 	}
 }
+
+.toggle-button-group {
+	display: flex;
+
+	.toggle-button {
+		height: auto;
+		border: none;
+		outline: none;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		background: none;
+		padding: 8px 12px;
+		box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.16);
+		opacity: 0.8;
+		background-color: var(--input-border);
+		color: var(--text-primary);
+		transition: color 0.3s, background-color 0.3s, opacity 0.3s;
+		font-size: 12px;
+		line-height: 16px;
+		border-radius: 0;
+
+		&.selected {
+			color: white;
+			background-color: var(--text-info);
+			opacity: 1;
+			color: #fff;
+		}
+
+		&.disabled {
+			opacity: 0.5;
+			cursor: inherit;
+		}
+
+		&:first-child {
+			border-radius: 8px 0px 0px 8px;
+		}
+
+		&:last-child {
+			border-radius: 0px 8px 8px 0px;
+		}
+	}
+}
