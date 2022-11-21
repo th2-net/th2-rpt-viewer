@@ -939,6 +939,10 @@
 	&__session-filter {
 		margin-bottom: 0;
 		flex-grow: 1;
+		flex-direction: column;
+		& label {
+			align-self: flex-start;
+		}
 
 		.filter-row {
 			&__input {
@@ -948,7 +952,6 @@
 			&__label {
 				width: auto;
 				padding-right: 15px;
-				color: #4d4d4d;
 				font-size: 12px;
 				line-height: 15px;
 				font-weight: bold;
@@ -1034,14 +1037,14 @@
 }
 
 .replay {
+	@include surface;
 	display: grid;
-	row-gap: 8px;
+	row-gap: 16px;
 	position: absolute;
 	top: calc(50% - 400px);
 	left: calc(50% - 400px);
 	width: 800px;
-	background-color: white;
-	border: 3px solid #0bc;
+	background-color: var(--background-primary);
 	padding: 0px 20px 20px 20px;
 	border-radius: 6px;
 	z-index: 300;
@@ -1073,13 +1076,17 @@
 	}
 
 	&__generated-text {
-		background-color: #f1f1f1;
-		padding: 3px 15px;
+		padding: 8px 16px;
 		position: relative;
-		color: #4d4d4d;
+		color: var(--text-primary);
+		background-color: var(--text-background);
 		white-space: pre-wrap;
 		word-break: break-all;
 		margin: 10px 0;
+
+		& a {
+			color: var(--info-color);
+		}
 
 		&::before {
 			content: '';
@@ -1093,14 +1100,6 @@
 	}
 
 	&__copy-button {
-		padding: 3px 10px;
-		min-width: 100px;
-		width: fit-content;
-		background-color: #ffdd99;
-		border: 1px solid #4d4d4d;
-		color: #4d4d4d;
-		font-size: 14px;
-		border-radius: 6px;
 		justify-self: end;
 	}
 

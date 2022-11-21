@@ -98,7 +98,7 @@
 
 	&__bubble {
 		color: #ffffff;
-		background-color: #71A2FF;
+		background-color: #71a2ff;
 	}
 
 	&__controls {
@@ -273,6 +273,7 @@
 		display: flex;
 		width: 100%;
 		justify-content: flex-end;
+		gap: 6px;
 
 		&.status {
 			justify-content: flex-start;
@@ -409,8 +410,6 @@
 }
 
 .filter-row {
-	@include surface();
-
 	overflow: hidden;
 	border-radius: 4px;
 	min-height: 40px;
@@ -472,7 +471,7 @@
 		// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
 		min-width: 0;
 		border-radius: 4px;
-		border:1px solid $searchInputBorderColor;
+		border: 1px solid var(--input-border);
 		&:disabled {
 			opacity: 0.5;
 		}
@@ -543,7 +542,7 @@
 		flex-shrink: 0;
 		color: var(--text-primary);
 		font-size: 16px;
-    font-weight: bold;
+		font-weight: bold;
 
 		&.status {
 			align-self: flex-start;

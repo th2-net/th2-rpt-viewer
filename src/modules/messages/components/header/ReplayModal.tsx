@@ -34,6 +34,7 @@ import { useFilterConfig } from 'hooks/useFilterConfig';
 import { FilterRows } from 'components/filter/FilterRows';
 import { ButtonBase } from 'components/buttons/ButtonBase';
 import MessagesFilter from 'models/filter/MessagesFilter';
+import { Button } from 'components/buttons/Button';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 
 const filterOrder: MessageFilterKeys[] = [
@@ -228,15 +229,17 @@ function ReplayModal() {
 							{textToCopy}
 						</a>
 					</p>
-					<button
+
+					<Button
 						style={{
 							cursor: isCopied ? 'default' : 'pointer',
 						}}
+						variant='contained'
 						disabled={isCopied}
 						className='replay__copy-button'
 						onClick={onCopy}>
 						{isCopied ? 'Copied to clipboard' : 'Copy'}
-					</button>
+					</Button>
 				</motion.div>
 			</ModalPortal>
 		</>

@@ -47,6 +47,8 @@
 	--text-background: #f8f8f8;
 	--workspace-background: #fbfbfb;
 
+	--input-border: #fbfbfb;
+
 	// tables
 	--table-passed-row: rgba(157, 255, 148, 0.32);
 	--table-failed-row: #ffdddd;
@@ -68,6 +70,7 @@ html[data-theme='dark'] {
 
 	--panel-background: #22262c;
 	--workspace-background: #4f5156;
+	--input-border: #4f5156;
 
 	--table-passed-row: rgba(89, 255, 115, 0.5);
 	--table-failed-row: rgba(255, 145, 130, 0.5);
