@@ -53,8 +53,8 @@ export default class MessagesUpdateStore {
 
 		this.messagesDataStore.loadMessages({
 			onClose: async chunk => {
+				this.messagesDataStore.onNextChannelResponse(chunk);
 				if (this.isActive) {
-					this.messagesDataStore.onNextChannelResponse(chunk);
 					this.timer = setTimeout(this.loadNextMessages, 5000);
 				}
 			},
