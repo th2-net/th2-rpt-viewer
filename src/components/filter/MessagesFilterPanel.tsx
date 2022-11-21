@@ -99,7 +99,7 @@ const MessagesFilterPanel = () => {
 		messagesStore.applyFilter(
 			{
 				...filterStore.filter,
-				streams,
+				streams: getArrayOfUniques(streams),
 			},
 			filter,
 			isSoftFilterApplied,

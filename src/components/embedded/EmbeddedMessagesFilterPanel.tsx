@@ -30,6 +30,7 @@ import { prettifyCamelcase } from '../../helpers/stringUtils';
 import FilterPanel from '../filter/FilterPanel';
 import MessagesFilterSessionFilter from '../filter/MessageFilterSessionFilter';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
+import { getArrayOfUniques } from '../../helpers/array';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -78,7 +79,7 @@ const EmbeddedMessagesFilterPanel = ({
 		messagesStore.applyFilter(
 			{
 				...filterStore.filter,
-				streams,
+				streams: getArrayOfUniques(streams),
 			},
 			filter,
 		);
