@@ -152,6 +152,9 @@ const dbVersion = 4;
 
 export class IndexedDB {
 	@observable
+	private error: Error | null = null;
+
+	@observable
 	private db: IDBPDatabase<TH2DB> | null = null;
 
 	constructor(private env: string) {
@@ -159,7 +162,8 @@ export class IndexedDB {
 	}
 
 	private async initDb() {
-		this.db = await openDB<TH2DB>(this.env, dbVersion, {
+		try {
+			this.db = await openDB<TH2DB>(this.env, dbVersion, {
 			upgrade: async db => {
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 					const name = storeName as IndexedDbStores;
@@ -170,7 +174,13 @@ export class IndexedDB {
 				});
 			},
 		});
+		} catch (error) {
+			this.error = new Error(String(error));
+		}
+		
 	}
+
+	public getError = () => this.error;
 
 	private getDb = async (): Promise<IDBPDatabase<TH2DB>> => {
 		if (this.db) return this.db;
