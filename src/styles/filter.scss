@@ -410,6 +410,7 @@
 }
 
 .filter-row {
+	@include surface;
 	overflow: hidden;
 	border-radius: 4px;
 	min-height: 40px;
@@ -458,6 +459,7 @@
 	}
 
 	&__input {
+
 		width: 100%;
 		flex-grow: 1;
 		padding: 3px 5px;

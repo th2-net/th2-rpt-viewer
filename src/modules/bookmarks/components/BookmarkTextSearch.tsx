@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { Button } from 'components/buttons/Button';
 import { createStyleSelector } from 'helpers/styleCreators';
 
 interface Props {
@@ -22,7 +23,7 @@ interface Props {
 	label: string;
 }
 
-export default function BookmarkTextSearch({ value, setValue, label }: Props) {
+export default function BookmarkTextSearch({ value, setValue }: Props) {
 	const inputClassName = createStyleSelector(
 		'bookmark-panel-header__row-input',
 		value.length ? 'non-empty' : '',
@@ -30,9 +31,6 @@ export default function BookmarkTextSearch({ value, setValue, label }: Props) {
 
 	return (
 		<div className='bookmark-panel-header__row'>
-			<label className='bookmark-panel-header__row-label' htmlFor='bookmark-text-search'>
-				{label}
-			</label>
 			<input
 				type='text'
 				className={inputClassName}
@@ -40,6 +38,9 @@ export default function BookmarkTextSearch({ value, setValue, label }: Props) {
 				value={value}
 				onChange={e => setValue(e.target.value)}
 			/>
+			<Button className='input-submit' variant='contained'>
+				Search
+			</Button>
 		</div>
 	);
 }

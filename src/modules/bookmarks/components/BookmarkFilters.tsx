@@ -29,15 +29,15 @@ export function BookmarkFiltersBase() {
 
 	return (
 		<div className='bookmark-panel-header'>
-			<BookmarkTypeSwitcher
-				value={filterStore.bookmarkType}
-				setValue={filterStore.setBookmarkType}
-				label='Type'
-			/>
 			<BookmarkTextSearch
 				value={filterStore.search}
 				setValue={filterStore.setSearch}
 				label='Search'
+			/>
+			<BookmarkTypeSwitcher
+				value={filterStore.bookmarkType}
+				setValue={filterStore.setBookmarkType}
+				label='Type'
 			/>
 			<div className='bookmark-panel-header-actions'>
 				<div className='bookmark-panel-header-actions_left-side'>

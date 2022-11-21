@@ -25,7 +25,7 @@ interface Props {
 	label: string;
 }
 
-const BookmarkTypeSwitcher = ({ value, setValue, label }: Props) => {
+const BookmarkTypeSwitcher = ({ value, setValue }: Props) => {
 	const selectedType = value || 'All';
 	const setType = (type: string) => {
 		setValue(type === 'All' ? null : (type as BookmarkType));
@@ -33,7 +33,6 @@ const BookmarkTypeSwitcher = ({ value, setValue, label }: Props) => {
 
 	return (
 		<div className='bookmark-panel-header__row'>
-			<div className='bookmark-panel-header__row-label'>{label}</div>
 			<ToggleButtonGroup value={selectedType} onChange={setType}>
 				<ToggleButton value='All'>All</ToggleButton>
 				<ToggleButton value='event'>
