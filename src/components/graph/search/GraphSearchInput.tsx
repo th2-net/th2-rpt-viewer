@@ -101,21 +101,6 @@ function GraphSearchInput(props: Props) {
 	const refInput = useRef<HTMLInputElement | null>(null);
 
 	React.useEffect(() => {
-		function onKeyDown(e: KeyboardEvent) {
-			if (e.shiftKey && e.code === 'KeyT') {
-				e.preventDefault();
-				refInput.current?.focus();
-			}
-		}
-
-		document.documentElement.addEventListener('keydown', onKeyDown);
-
-		return () => {
-			document.documentElement.removeEventListener('keydown', onKeyDown);
-		};
-	}, []);
-
-	React.useEffect(() => {
 		if (timestamp !== null && timestamp !== inputConfig.timestamp) {
 			const updatedTimestamp = moment.utc(timestamp);
 
