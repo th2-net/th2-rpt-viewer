@@ -106,7 +106,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 						this.getFetchedChunk(),
 				  ])
 				: this.getFetchedChunk());
-			return messagesChunk.map(val => toJS(val)).slice();
+			return messagesChunk;
 		} catch (error) {
 			if (error !== 'WHEN_CANCELLED') {
 				console.log(error);
