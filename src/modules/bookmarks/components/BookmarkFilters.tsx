@@ -28,7 +28,7 @@ export function BookmarkFiltersBase() {
 	const filterStore = useBookmarksFilterStore();
 
 	return (
-		<div className='bookmark-panel-header'>
+		<div className='window__controls bookmark-panel-header'>
 			<BookmarkTextSearch
 				value={filterStore.search}
 				setValue={filterStore.setSearch}

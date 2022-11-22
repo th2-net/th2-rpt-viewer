@@ -18,7 +18,6 @@
 
 .message-card {
 	@include scrollbar();
-	@include bookmark-button($showOnHoverOverParent: true);
 	position: relative;
 	display: flex;
 	flex-direction: column;
@@ -42,17 +41,21 @@
 		top: 12px;
 
 		&.bookmarked {
-			background: #a65cd6;
+			background: var(--bookmarks-primary);
 			visibility: visible;
 		}
 
 		&.attached {
-			background: #f26c0d;
+			background: var(--events-primary);
 			visibility: visible;
 		}
 
 		&.bookmarked.attached {
-			background: linear-gradient(to bottom, #a65cd6 50%, #f26c0d 50%);
+			background: linear-gradient(
+				to bottom,
+				var(--bookmarks-primary) 50%,
+				var(--events-primary) 50%
+			);
 		}
 	}
 
@@ -299,39 +302,6 @@
 	&__line {
 		border: 1px solid #dedede;
 		margin: 4px 0;
-	}
-}
-
-.mc-label {
-	width: 20px;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-start;
-	align-items: center;
-
-	&__icon {
-		height: 14px;
-		width: 14px;
-		margin-top: 12px;
-		background-size: 100%;
-		filter: opacity(0.4);
-
-		&.rejected {
-			background-image: url(../../resources/icons/rejected-label.svg);
-		}
-
-		&.admin {
-			background-image: url(../../resources/icons/admin-icon.svg);
-		}
-	}
-
-	&.rejected {
-		background-color: $rejectedMessageLabelBackground;
-	}
-
-	&.admin {
-		background-color: $adminMessageLabelBackground;
 	}
 }
 

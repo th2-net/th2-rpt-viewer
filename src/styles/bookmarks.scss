@@ -16,9 +16,8 @@
 
 @import './common/vars';
 
-.bookmarks-panel {
+.window.bookmarks-panel {
 	height: 100%;
-	background-color: #fff;
 	display: grid;
 	grid-template-rows: auto 1fr;
 
@@ -39,7 +38,6 @@
 	display: grid;
 	width: 100%;
 	grid-template-columns: 1fr 30px;
-	background-color: #fff;
 	padding: 5px 7px 5px 30px;
 	position: relative;
 	overflow: hidden;
@@ -173,18 +171,19 @@
 	}
 }
 
-.bookmark-panel-header {
+.window__controls.bookmark-panel-header {
 	padding: 12px 16px;
 	overflow: hidden;
-	display: flex;
-	flex-direction: column;
 	gap: 12px;
 	color: var(--text-primary);
 	border-radius: 0 0 5px 5px;
 	flex-shrink: 0;
+	align-items: start;
+}
 
+.bookmark-panel-header {
 	&__row {
-		min-height: 32px;
+		width: 100%;
 		font-size: 14px;
 		font-weight: bold;
 		box-sizing: border-box;

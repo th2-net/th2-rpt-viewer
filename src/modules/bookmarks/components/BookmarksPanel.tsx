@@ -65,7 +65,7 @@ function BookmarksPanel(props: BookmarkPanelProps) {
 	}
 
 	return (
-		<div className='bookmarks-panel' ref={panelRef}>
+		<div className='window bookmarks-panel' ref={panelRef}>
 			<BookmarkFilters />
 			<BookmarkList
 				isEmpty={isEmpty}
