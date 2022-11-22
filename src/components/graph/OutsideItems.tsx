@@ -30,6 +30,7 @@ import {
 	OutsideCenters,
 } from './OutsideItemsMenu';
 import '../../styles/graph.scss';
+import { getFirst, getLast } from '../../helpers/array';
 
 interface OverlayPanelProps {
 	range: TimeRange;
@@ -104,108 +105,53 @@ const OutsideItems = (props: OverlayPanelProps) => {
 	};
 
 	const onOutsidePanelArrowClick = (direction: 'left' | 'right') => {
-		const panelTypes = Object.keys(outsidePanels[direction]);
-		// we already know that 'panels' is not empty, so previously implemented check is unnecessary
-		const panels = panelsRange.filter(p => panelTypes.includes(p.type));
+		const getInterval = (range: TimeRange) => range[1] - range[0];
+		const border = direction === 'left' ? from : to;
+		const isOutside = (ts: number) => (direction === 'left' ? ts < border : ts > border);
+		const closestToBorder = (arr: number[]) =>
+			direction === 'left' ? getLast(arr) : getFirst(arr);
+		const isIntersected = ([start, end]: TimeRange, ts: number) => ts > start && ts < end;
+		const windowInterval = getInterval([from, to]);
 
-		const windowRange = to - from;
-		const windowCenter = from + windowRange / 2;
-
-		// the first condition is needed in case  t > 30min.
-		// then there is no point in centering while inside the event.
-		const center0 =
-			panels[0].range[1] - panels[0].range[0] < windowRange
-				? (panels[0].range[1] + panels[0].range[0]) / 2
-				: 0;
-		const center1 =
-			panels[1] && panels[1].range[1] - panels[1].range[0] < windowRange
-				? (panels[1].range[1] + panels[1].range[0]) / 2
-				: 0;
-
-		if (direction === 'left') {
-			const isLeftCovered =
-				(panels[0].range[1] > from && panels[0].range[0] < from) ||
-				(panels[1] && panels[1].range[1] > from && panels[1].range[0] < from);
-
-			if (isLeftCovered) {
-				const centerTo = [center0, center1]
-					.filter(center => windowCenter - center > 0 && windowCenter - center < windowRange)
-					.sort((a, b) => b - a)[0];
-
-				if (centerTo) {
-					onPanelRangeSelect([centerTo - windowRange / 2, centerTo + windowRange / 2]);
-				} else {
-					// check, whether we need to jump the full interval, or just reveal the remaining part.
-					const newLeftBorder = [panels[0].range[0], panels[1] ? panels[1].range[0] : 0]
-						.filter(leftBorder => from - leftBorder < windowRange - 5000)
-						.sort((a, b) => b - a)[0];
-					if (newLeftBorder) {
-						onPanelRangeSelect([newLeftBorder - 5000, newLeftBorder + windowRange - 5000]);
-					} else {
-						onPanelRangeSelect([from - windowRange, to - windowRange]);
-					}
+		const getPanelOffset = (panel: PanelRange) =>
+			closestToBorder(
+				panel.range
+					.filter(isOutside)
+					.map(timestamp =>
+						isIntersected(panel.range, border) ? 0 : Math.abs(border - timestamp),
+					),
+			);
+		const sortedPanels = panelsRange
+			.filter(panel => panel.range.some(isOutside))
+			.sort((panelA, panelB) => {
+				const closestA = getPanelOffset(panelA);
+				const closestB = getPanelOffset(panelB);
+				if (closestA === closestB) {
+					return (
+						closestToBorder(panelA.range.slice().reverse()) -
+						closestToBorder(panelB.range.slice().reverse())
+					);
 				}
+				return closestA - closestB;
+			});
+
+		const panel = sortedPanels[0];
+
+		if (panel) {
+			if (getInterval(panel.range) < windowInterval) {
+				onPanelRangeSelect(panel.range);
 			} else {
-				// here we decide, whether we can jump to closest center without missing closest border
-				let closestBorder;
-				if (panels[1]) {
-					closestBorder =
-						panels[0].range[1] > panels[1].range[1] ? panels[0].range[1] : panels[1].range[1];
-				} else {
-					closestBorder = panels[0].range[1];
-				}
-				const closestCenter = [center0, center1].filter(a => a > 0).sort((a, b) => b - a)[0];
-
-				if (closestBorder - closestCenter < windowRange / 2) {
-					onPanelRangeSelect([closestCenter - windowRange / 2, closestCenter + windowRange / 2]);
-				} else {
-					// in this case we decide to already move from the rightmost border, so extra 5sec is ok
-					onPanelRangeSelect([closestBorder - windowRange + 5000, closestBorder + 5000]);
-				}
-			}
-		} else {
-			const isRightCovered =
-				(panels[0].range[1] > to && panels[0].range[0] < to) ||
-				(panels[1] && panels[1].range[1] > to && panels[1].range[0] < to);
-
-			if (isRightCovered) {
-				const centerTo = [center0, center1]
-					.filter(
-						center =>
-							center > 0 && center - windowCenter > 0 && center - windowCenter < windowRange,
-					)
-					.sort((a, b) => b - a)[0];
-
-				if (centerTo) {
-					onPanelRangeSelect([centerTo - windowRange / 2, centerTo + windowRange / 2]);
-				} else {
-					// check, whether we need to jump the full interval, or just reveal the remaining part.
-					const newRightBorder = [panels[0].range[1], panels[1] ? panels[1].range[1] : 0]
-						.filter(rightBorder => rightBorder > 0 && rightBorder - to < windowRange - 5000)
-						.sort((a, b) => a - b)[0];
-					if (newRightBorder) {
-						onPanelRangeSelect([newRightBorder - windowRange + 5000, newRightBorder + 5000]);
-					} else {
-						onPanelRangeSelect([from + windowRange, to + windowRange]);
-					}
-				}
-			} else {
-				// here we decide, whether we can jump to closest center without missing closest border
-				let closestBorder;
-				if (panels[1]) {
-					closestBorder =
-						panels[0].range[0] > panels[1].range[0] ? panels[1].range[0] : panels[0].range[0];
-				} else {
-					closestBorder = panels[0].range[1];
-				}
-				const closestCenter = [center0, center1].filter(a => a > 0).sort((a, b) => a - b)[0];
-
-				if (closestCenter - closestBorder < windowRange / 2) {
-					onPanelRangeSelect([closestCenter - windowRange / 2, closestCenter + windowRange / 2]);
-				} else {
-					// in this case we decide to already move from the leftmost border, so extra 5sec is ok
-					onPanelRangeSelect([closestBorder - 5000, closestBorder + windowRange - 5000]);
-				}
+				const dir = direction === 'left' ? -1 : 1;
+				// TODO: add padding
+				// const padding = 30 * 1000 * dir;
+				let nextFrom = isIntersected(panel.range, border) ? border : closestToBorder(panel.range);
+				const compareFn = direction === 'left' ? Math.max : Math.min;
+				const maxTimestamp = direction === 'left' ? panel.range[0] : panel.range[1];
+				const nextTo = compareFn(nextFrom + windowInterval * dir, maxTimestamp);
+				nextFrom = nextTo + windowInterval * dir * -1;
+				const nextRange: TimeRange = [nextFrom, nextTo];
+				if (direction === 'left') nextRange.reverse();
+				onPanelRangeSelect(nextRange);
 			}
 		}
 	};
