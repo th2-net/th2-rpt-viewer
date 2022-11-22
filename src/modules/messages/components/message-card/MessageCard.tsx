@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
-import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
+import { createBemElement } from 'helpers/styleCreators';
 import { isEventMessage } from 'helpers/message';
 import CardDisplayType from 'models/util/CardDisplayType';
 import { MessageCardViewTypeRendererProps } from './MessageBody';
@@ -55,7 +55,6 @@ const MessageCard = (props: MessageCardProps) => {
 		sortOrderItems = [],
 		viewTypesMap,
 		setViewType,
-		isExported,
 	} = props;
 
 	const [expanded, setIsExpanded] = React.useState(isExpandedProp || false);
@@ -85,29 +84,29 @@ const MessageCard = (props: MessageCardProps) => {
 		return [...parsedMessages, message];
 	}, [message]);
 
-	const rootClassName = createStyleSelector('message-card', isExported ? 'exported' : null);
-
 	return (
-		<div className={rootClassName}>
-			<div className='message-card__messages'>
+		<div className='message-card'>
+			<div className='message-card__body'>
 				<div className={indicatorClass} />
-				<MessageCardHeader
-					{...props}
-					viewType={viewTypesMap.get(messages[0].id)}
-					setViewType={setViewType}
-				/>
-				{messages.slice(0, isExpanded ? undefined : 1).map((msg, index) => (
-					<ParsedMessageComponent
-						key={msg.id}
-						parsedMessage={isEventMessage(msg) ? undefined : msg}
-						displayType={displayType}
-						viewType={viewTypesMap.get(msg.id)}
+				<div className='message-card__messages'>
+					<MessageCardHeader
+						{...props}
+						viewType={viewTypesMap.get(messages[0].id)}
 						setViewType={setViewType}
-						messageViewTypeRendererProps={messageViewTypeRendererProps}
-						displayHeader={index > 0}
-						message={message}
 					/>
-				))}
+					{messages.slice(0, isExpanded ? undefined : 1).map((msg, index) => (
+						<ParsedMessageComponent
+							key={msg.id}
+							parsedMessage={isEventMessage(msg) ? undefined : msg}
+							displayType={displayType}
+							viewType={viewTypesMap.get(msg.id)}
+							setViewType={setViewType}
+							messageViewTypeRendererProps={messageViewTypeRendererProps}
+							displayHeader={index > 0}
+							message={message}
+						/>
+					))}
+				</div>
 			</div>
 			<MessageExpandButton
 				isExpanded={isExpanded}

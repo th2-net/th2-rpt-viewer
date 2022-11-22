@@ -90,6 +90,7 @@ const MessageCardListItem = observer((props: Props) => {
 		'messages-list__item',
 		isSoftFiltered ? 'soft-filtered' : null,
 		isAttached ? 'attached' : null,
+		isExported ? 'exported' : null,
 	);
 
 	return (
