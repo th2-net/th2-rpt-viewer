@@ -142,12 +142,11 @@ const OutsideItems = (props: OverlayPanelProps) => {
 				onPanelRangeSelect(panel.range);
 			} else {
 				const dir = direction === 'left' ? -1 : 1;
-				// TODO: add padding
-				// const padding = 30 * 1000 * dir;
+				const padding = 5 * 1000 * dir;
 				let nextFrom = isIntersected(panel.range, border) ? border : closestToBorder(panel.range);
 				const compareFn = direction === 'left' ? Math.max : Math.min;
 				const maxTimestamp = direction === 'left' ? panel.range[0] : panel.range[1];
-				const nextTo = compareFn(nextFrom + windowInterval * dir, maxTimestamp);
+				const nextTo = compareFn(nextFrom + windowInterval * dir, maxTimestamp + padding);
 				nextFrom = nextTo + windowInterval * dir * -1;
 				const nextRange: TimeRange = [nextFrom, nextTo];
 				if (direction === 'left') nextRange.reverse();
