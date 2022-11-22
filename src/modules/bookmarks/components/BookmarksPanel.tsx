@@ -14,18 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { Observer, observer } from 'mobx-react-lite';
-import Checkbox from 'components/util/Checkbox';
+import { observer } from 'mobx-react-lite';
 import { useActivePanel } from 'hooks/index';
 import { EventTreeNode, EventAction } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
 import { Panel } from 'models/Panel';
 import { useBookmarksFilterStore } from '../hooks/useBookmarkFilterStore';
 import { useBookmarksStore } from '../hooks/useBookmarksStore';
-import { BookmarkItem } from './BookmarkItem';
+import { EventBookmarkComponent, MessageBookmarkComponent } from './BookmarkItem';
 import { BookmarkFilters } from './BookmarkFilters';
 import { BookmarkList } from './BookmarkList';
 import { Bookmark } from '../models/Bookmarks';
+import { isEventBookmark, isMessageBookmark } from '../helpers/bookmarks';
 import 'styles/bookmarks.scss';
 
 interface BookmarkPanelProps {
@@ -33,7 +33,7 @@ interface BookmarkPanelProps {
 }
 
 function BookmarksPanel(props: BookmarkPanelProps) {
-	const { isBookmarksFull, isEmpty } = useBookmarksStore();
+	const { isEmpty } = useBookmarksStore();
 
 	const filterStore = useBookmarksFilterStore();
 
@@ -44,24 +44,21 @@ function BookmarksPanel(props: BookmarkPanelProps) {
 	}
 
 	function renderBookmarkItem(index: number, bookmark: Bookmark) {
-		return (
-			<Observer>
-				{() => (
-					<div className='bookmarks-panel-item'>
-						<BookmarkItem
-							bookmark={bookmark}
-							onClick={onBookmarkClick}
-							isBookmarkButtonDisabled={isBookmarksFull}
-						/>
-						<Checkbox
-							className='bookmarks-panel-checkbox'
-							checked={filterStore.selectedBookmarks.has(bookmark.id)}
-							onChange={() => filterStore.selectItem(bookmark)}
-						/>
-					</div>
-				)}
-			</Observer>
-		);
+		if (isMessageBookmark(bookmark)) {
+			return (
+				<div className='bookmarks-panel__list-item'>
+					<MessageBookmarkComponent bookmark={bookmark} onClick={onBookmarkClick} />
+				</div>
+			);
+		}
+		if (isEventBookmark(bookmark)) {
+			return (
+				<div className='bookmarks-panel__list-item'>
+					<EventBookmarkComponent bookmark={bookmark} onClick={onBookmarkClick} />
+				</div>
+			);
+		}
+		return null;
 	}
 
 	return (

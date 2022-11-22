@@ -283,6 +283,10 @@
 			height: 24px;
 		}
 
+		.chip:not(:first-child) {
+			display: block;
+		}
+
 		&:hover .message-card-tools__ellipsis {
 			visibility: visible;
 		}
@@ -541,20 +545,7 @@
 
 	&__item {
 		padding: 4px 16px;
-		border-radius: 16px;
 		border: 2px solid transparent;
-
-		&.attached > div {
-			border: 2px solid var(--events-primary);
-		}
-
-		&.soft-filtered > div {
-			border: 1px solid $filterPrimaryColor;
-
-			&:hover {
-				background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
-			}
-		}
 
 		&.exported > div {
 			border: 2px solid var(--info-color);

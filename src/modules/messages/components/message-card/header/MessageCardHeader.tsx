@@ -31,7 +31,7 @@ import { Session } from './Session';
 export interface MessageInfoProps {
 	message: EventMessage;
 	viewType?: MessageViewType;
-	setViewType: (id: string, vt: MessageViewType) => void;
+	setViewType?: (id: string, vt: MessageViewType) => void;
 	isBookmarked?: boolean;
 	toggleMessagePin?: () => void;
 	isAttached?: boolean;
@@ -39,8 +39,9 @@ export interface MessageInfoProps {
 	isExport?: boolean;
 	isExported?: boolean;
 	addMessageToExport?: (message: EventMessage) => void;
-	displayType: CardDisplayType;
+	displayType?: CardDisplayType;
 	isScreenshotMsg?: boolean;
+	onClick?: (message: EventMessage) => void;
 }
 
 export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
@@ -54,8 +55,9 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		isHighlighted,
 		isExport,
 		isExported,
-		displayType,
+		displayType = CardDisplayType.FULL,
 		toggleMessagePin,
+		onClick,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
 
@@ -66,8 +68,14 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	const parsedMessage = message.parsedMessages ? message.parsedMessages[0] : undefined;
 	const subsequence = parsedMessage && getSubsequence(parsedMessage);
 
+	const handleClick = () => {
+		if (onClick) {
+			onClick(message);
+		}
+	};
+
 	return (
-		<div className={headerClass}>
+		<div className={headerClass} onClick={handleClick}>
 			{isExport && isExported !== undefined && addMessageToExport && (
 				<Checkbox checked={isExported} onChange={() => addMessageToExport(message)} />
 			)}
@@ -82,7 +90,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				</Chip>
 			)}
 			<Session sessionId={sessionId} direction={direction} />
-			{displayType === CardDisplayType.FULL && <Chip>{message.id}</Chip>}
+			{displayType === CardDisplayType.FULL && <Chip title={message.id}>{message.id}</Chip>}
 
 			{typeof subsequence === 'number' &&
 				displayType === CardDisplayType.FULL &&

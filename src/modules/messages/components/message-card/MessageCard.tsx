@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
-import { createBemElement } from 'helpers/styleCreators';
 import { isEventMessage } from 'helpers/message';
 import CardDisplayType from 'models/util/CardDisplayType';
 import { MessageCardViewTypeRendererProps } from './MessageBody';
@@ -28,7 +28,7 @@ import 'styles/messages.scss';
 
 interface MessageCardProps {
 	message: EventMessage;
-	displayType: CardDisplayType;
+	displayType?: CardDisplayType;
 	addMessageToExport?: (msg: EventMessage) => void;
 	isExport?: boolean;
 	isExported?: boolean;
@@ -51,7 +51,7 @@ const MessageCard = (props: MessageCardProps) => {
 		setIsExpanded: setIsExpandedProp,
 		isAttached,
 		isBookmarked,
-		displayType,
+		displayType = CardDisplayType.FULL,
 		sortOrderItems = [],
 		viewTypesMap,
 		setViewType,
@@ -71,28 +71,26 @@ const MessageCard = (props: MessageCardProps) => {
 		sortOrderItems,
 	};
 
-	const indicatorClass = createBemElement(
-		'message-card',
-		'status',
-		isBookmarked ? 'bookmarked' : null,
-		isAttached ? 'attached' : null,
-	);
-
 	const messages = React.useMemo(() => {
 		const parsedMessages = message.parsedMessages || [];
-
 		return [...parsedMessages, message];
 	}, [message]);
 
 	return (
 		<div className='message-card'>
 			<div className='message-card__body'>
-				<div className={indicatorClass} />
+				<div
+					className={clsx('message-card__status', {
+						bookmarked: isBookmarked,
+						attached: isAttached,
+					})}
+				/>
 				<div className='message-card__messages'>
 					<MessageCardHeader
 						{...props}
 						viewType={viewTypesMap.get(messages[0].id)}
 						setViewType={setViewType}
+						displayType={displayType}
 					/>
 					{messages.slice(0, isExpanded ? undefined : 1).map((msg, index) => (
 						<ParsedMessageComponent
