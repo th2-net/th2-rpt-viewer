@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import KeyCodes from '../../../../models/util/KeyCodes';
-import AutocompleteInput from '../../../../components/util/AutocompleteInput';
+import KeyCodes from 'models/util/KeyCodes';
+import AutocompleteInput from 'components/util/AutocompleteInput';
 
 interface SessionEditorProps {
 	value: string;

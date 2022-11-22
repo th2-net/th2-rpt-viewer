@@ -25,7 +25,7 @@ import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { AttachedMessagesIcon } from 'components/icons/AttachedMessagesIcon';
 import { MessageIcon } from 'components/icons/MessageIcon';
 import { getSubsequence } from '../../../helpers/message';
-import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
+import MessageCardTools, { MessageCardToolsProps } from '../menu/MessageCardTools';
 import { Session } from './Session';
 
 export interface MessageInfoProps {

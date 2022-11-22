@@ -19,7 +19,7 @@ import { ParsedMessage, MessageViewType, EventMessage } from 'models/EventMessag
 import { createBemElement } from 'helpers/styleCreators';
 import { Chip } from 'components/Chip';
 import { MessageIcon } from 'components/icons/MessageIcon';
-import MessageCardTools from '../MessageCardTools';
+import MessageCardTools from '../menu/MessageCardTools';
 import { getSubsequence } from '../../../helpers/message';
 
 export interface ParsedMessageHeaderProps {

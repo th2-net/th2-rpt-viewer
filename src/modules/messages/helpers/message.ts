@@ -14,6 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { showNotification } from 'helpers/showNotification';
+import { copyTextToClipboard } from 'helpers/copyHandler';
 import { EventMessage, MessageViewType, ParsedMessage } from 'models/EventMessage';
 import {
 	isMessageValue,
@@ -22,6 +24,7 @@ import {
 	MessageBodyField,
 	MessageBodyFields,
 } from '../models/MessageBody';
+import { getAllRawContent, decodeBase64RawContent } from './rawFormatter';
 
 export function normalizeFields(fields: MessageBodyFields) {
 	return Object.entries(fields).reduce(
@@ -97,4 +100,44 @@ export function splitOnReadableParts(targetString: string): PartOfString[] {
 export function getSubsequence(parsedMessage: ParsedMessage): null | number {
 	const subsequence = parsedMessage.message.metadata.id.subsequence;
 	return subsequence ? subsequence[0] : null;
+}
+
+export function copyMessageContents(
+	message: EventMessage,
+	viewType?: MessageViewType,
+	parsedMessage?: ParsedMessage,
+	jsonObjectToCopy: 'body' | 'fields' = 'body',
+) {
+	let content: string;
+
+	const jsonToCopy =
+		jsonObjectToCopy === 'fields'
+			? parsedMessage?.message.fields
+				? normalizeFields(parsedMessage.message.fields)
+				: null
+			: parsedMessage;
+
+	switch (viewType) {
+		case MessageViewType.ASCII:
+			content = message.rawMessageBase64 ? atob(message.rawMessageBase64) : '';
+			break;
+		case MessageViewType.BINARY:
+			content = message.rawMessageBase64
+				? getAllRawContent(decodeBase64RawContent(message.rawMessageBase64))
+				: '';
+			break;
+		case MessageViewType.FORMATTED:
+			content = jsonToCopy ? JSON.stringify(jsonToCopy, null, 4) : '';
+			break;
+		case MessageViewType.JSON:
+			content = jsonToCopy ? JSON.stringify(jsonToCopy) : '';
+			break;
+		default:
+			content = '';
+	}
+
+	if (content) {
+		copyTextToClipboard(content);
+		showNotification();
+	}
 }

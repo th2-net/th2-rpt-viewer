@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import { MessageDisplayRule } from '../../../../models/EventMessage';
+import { MessageDisplayRule } from 'models/EventMessage';
 import NewRule from './NewRule';
 import EditableRule from './EditableRule';
 

@@ -15,11 +15,11 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { MessageViewType } from '../../../../models/EventMessage';
-import useDimensions from '../../../../hooks/useDimensions';
-import { createStyleSelector } from '../../../../helpers/styleCreators';
-import { ModalPortal } from '../../../../components/util/Portal';
-import { useOutsideClickListener } from '../../../../hooks';
+import { MessageViewType } from 'models/EventMessage';
+import useDimensions from 'hooks/useDimensions';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { ModalPortal } from 'components/util/Portal';
+import { useOutsideClickListener } from 'hooks/index';
 
 interface RuleEditorProps {
 	selected: string;

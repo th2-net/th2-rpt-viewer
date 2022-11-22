@@ -24,7 +24,7 @@ import MessageExport from './MessageExport';
 import MessagesFilterPanel from '../filter/MessagesFilterPanel';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 import MessagesUpdateButton from './MessagesUpdateButton';
-import MessagesViewConfigurator from '../messages-view-configurator/MessagesViewConfigurator';
+import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
 import ReportViewerLink from './ReportViewerLink';
 import ReplayModal from './ReplayModal';
 import 'styles/messages.scss';

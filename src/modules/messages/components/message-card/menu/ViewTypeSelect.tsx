@@ -14,6 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import {
+	BinaryIcon,
+	ASCIIcon,
+	BeautyfiedJSONIcon,
+	JSONIcon,
+} from 'components/icons/MessageViewTypesIcon';
 import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
 import { MessageViewType } from 'models/EventMessage';
 
@@ -23,32 +29,42 @@ interface Props {
 	onViewTypeSelect: (viewType: MessageViewType) => void;
 }
 
+const icons = {
+	[MessageViewType.ASCII]: ASCIIcon,
+	[MessageViewType.BINARY]: BinaryIcon,
+	[MessageViewType.JSON]: JSONIcon,
+	[MessageViewType.FORMATTED]: BeautyfiedJSONIcon,
+};
+
 export const ViewTypeSelect = (props: Props) => {
 	const { viewTypes, selectedViewType, onViewTypeSelect } = props;
 
 	return (
-		<div className='message-card-tools__controls-group'>
+		<>
+			<p>View</p>
 			{viewTypes.map(vt => {
 				const isSelected = vt === selectedViewType;
 				const rootClassname = createStyleSelector(
 					'message-card-tools__item',
 					isSelected ? 'active' : null,
 				);
-				const iconClassName = createBemElement('message-card-tools', 'icon', vt);
+
 				const indicatorClassName = createBemElement(
 					'message-card-tools',
 					'indicator',
 					isSelected ? 'active' : null,
 				);
+				const ViewTypeIcon = icons[vt];
 
 				return (
 					<div title={vt} className={rootClassname} key={vt} onClick={() => onViewTypeSelect(vt)}>
-						<div className={iconClassName} />
+						<ViewTypeIcon />
 						<span className='message-card-tools__item-title'>{vt}</span>
 						<div className={indicatorClassName} />
 					</div>
 				);
 			})}
-		</div>
+			<div className='message-card-tools__line' />
+		</>
 	);
 };

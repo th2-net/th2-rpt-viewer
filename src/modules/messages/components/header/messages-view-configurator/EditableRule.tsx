@@ -16,8 +16,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { usePrevious } from 'hooks/usePrevious';
-import { useMessageDisplayRulesStore } from '../../hooks/useMessageDisplayRulesStore';
-import { MessageDisplayRule, MessageViewType } from '../../../../models/EventMessage';
+import { MessageDisplayRule, MessageViewType } from 'models/EventMessage';
+import { useMessageDisplayRulesStore } from '../../../hooks/useMessageDisplayRulesStore';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';
 import Reorder from './Reorder';

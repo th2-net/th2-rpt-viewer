@@ -14,11 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-interface IconProps {
-	children: React.ReactNode;
+export interface IconProps {
+	children?: React.ReactNode;
+	size?: number;
 }
 
 export const Icon = (props: IconProps) => {
-	const { children } = props;
-	return <span className='icon'>{children}</span>;
+	const { children, size } = props;
+	return (
+		<span className='icon' style={{ fontSize: size }}>
+			{children}
+		</span>
+	);
 };
