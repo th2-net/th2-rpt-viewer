@@ -81,7 +81,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 						setIsExpanded={setIsExpanded}
 						isDisplayRuleRaw={false}
 					/>
-					<MessageCardWarning isScreenshotMsg={false} parsedMessages={message.parsedMessages} />
+					{!message.parsedMessages && <MessageCardWarning isScreenshotMsg={false} />}
 				</div>
 			</div>
 		);

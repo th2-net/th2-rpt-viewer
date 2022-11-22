@@ -63,10 +63,7 @@ const EmbeddedMessageCard = observer(
 							setIsExpanded={setIsExpanded}
 							isDisplayRuleRaw={false}
 						/>
-						<MessageCardWarning
-							parsedMessages={props.message.parsedMessages}
-							isScreenshotMsg={false}
-						/>
+						{!props.message.parsedMessages && <MessageCardWarning isScreenshotMsg={false} />}
 					</div>
 				)}
 			</StateSaver>

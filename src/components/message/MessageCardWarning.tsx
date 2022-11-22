@@ -16,21 +16,18 @@
 import React from 'react';
 import { createBemElement, createBemBlock } from '../../helpers/styleCreators';
 import '../../styles/messages.scss';
-import { ParsedMessage } from '../../models/EventMessage';
 
 interface Props {
 	isScreenshotMsg: boolean;
 	isHighlighted?: boolean;
-	parsedMessages: ParsedMessage[] | null;
 }
 
 const MessageCardWarning = (props: Props) => {
-	const { isHighlighted, isScreenshotMsg, parsedMessages } = props;
+	const { isHighlighted, isScreenshotMsg } = props;
 
 	const rootClass = createBemBlock(
 		'message-card-warning-wrapper',
 		isHighlighted ? 'highlighted' : null,
-		parsedMessages ? 'hidden' : null,
 	);
 
 	const warningClass = createBemElement('message-card-warning-wrapper', 'warning');
@@ -39,7 +36,7 @@ const MessageCardWarning = (props: Props) => {
 		<div className={rootClass}>
 			{!isScreenshotMsg ? (
 				<div className={warningClass}>
-					<div className={'message-card-warning-wrapper__warning-icon'} />
+					<div className='message-card-warning-wrapper__warning-icon' />
 					<p>Only Raw Data Available</p>
 				</div>
 			) : null}

@@ -155,11 +155,9 @@ export const MessageCard = observer((props: Props) => {
 	return (
 		<div className={rootClass}>
 			<MessageCardBase {...messageCardBaseProps} />
-			<MessageCardWarning
-				isHighlighted={isHighlighted}
-				isScreenshotMsg={false}
-				parsedMessages={message.parsedMessages}
-			/>
+			{!message.parsedMessages && (
+				<MessageCardWarning isHighlighted={isHighlighted} isScreenshotMsg={false} />
+			)}
 		</div>
 	);
 });
