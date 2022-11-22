@@ -41,6 +41,7 @@ export interface MessageCardBaseProps {
 	toogleMessagePin?: () => void;
 	sortOrderItems?: string[];
 	isExpanded: boolean;
+	setIsExpanded: (state: boolean) => void;
 	isDisplayRuleRaw: boolean;
 }
 
@@ -52,6 +53,7 @@ const MessageCardBase = React.memo(
 		viewTypeConfig,
 		isDisplayRuleRaw,
 		isExpanded,
+		setIsExpanded,
 		isAttached,
 		isHighlighted,
 		isBookmarked,
@@ -95,6 +97,8 @@ const MessageCardBase = React.memo(
 			isHighlighted,
 			isExport,
 			isExported,
+			isExpanded,
+			setIsExpanded,
 			displayType,
 			isScreenshotMsg: false,
 			isDisplayRuleRaw,
@@ -137,6 +141,11 @@ const MessageCardBase = React.memo(
 												defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType
 											}
 											displayHeader={index > 0}
+											isLastParsedMessage={
+												message.parsedMessages
+													? index === message.parsedMessages?.length - 1 && !isExpanded
+													: false
+											}
 										/>
 									))}
 								{(!message.parsedMessages || isExpanded) && (
@@ -148,6 +157,7 @@ const MessageCardBase = React.memo(
 										isScreenshotMsg={false}
 										isHighlighted={isHighlighted}
 										isDisplayRuleRaw={isDisplayRuleRaw}
+										isLastMessageRaw={true}
 										messageCardToolsConfig={messageCardToolsConfig}
 										messageViewTypeRendererProps={messageViewTypeRendererProps}
 									/>
@@ -163,15 +173,21 @@ const MessageCardBase = React.memo(
 									isScreenshotMsg={false}
 									isHighlighted={isHighlighted}
 									isDisplayRuleRaw={isDisplayRuleRaw}
+									isLastMessageRaw={message.parsedMessages ? !isExpanded : false}
 									messageCardToolsConfig={messageCardToolsConfig}
 									messageViewTypeRendererProps={messageViewTypeRendererProps}
 								/>
 								{isExpanded &&
-									message.parsedMessages?.map(parsedMessage => (
+									message.parsedMessages?.map((parsedMessage, index) => (
 										<ParsedMessageComponent
 											{...parsedMessageProps}
 											key={parsedMessage.id}
 											parsedMessage={parsedMessage}
+											isLastParsedMessage={
+												message.parsedMessages
+													? index === message.parsedMessages?.length - 1
+													: false
+											}
 											viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
 											setViewType={
 												defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType
