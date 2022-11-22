@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { EventMessage } from '../../models/EventMessage';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
-import MessageExpandButton from '../message/MessageExpandButton';
+import MessageCardWarning from '../message/MessageCardWarning';
 import useElementSize from '../../hooks/useElementSize';
 import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../util/CardDisplayType';
 import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
@@ -78,14 +78,10 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 						displayType={displayType}
 						viewTypeConfig={viewTypesConfig}
 						isExpanded={isExpanded}
+						setIsExpanded={setIsExpanded}
 						isDisplayRuleRaw={false}
 					/>
-					<MessageExpandButton
-						isExpanded={isExpanded}
-						isScreenshotMsg={false}
-						setExpanded={setIsExpanded}
-						parsedMessages={message.parsedMessages}
-					/>
+					{!message.parsedMessages && <MessageCardWarning isScreenshotMsg={false} />}
 				</div>
 			</div>
 		);

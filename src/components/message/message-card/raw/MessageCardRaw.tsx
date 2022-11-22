@@ -33,6 +33,7 @@ export interface MessageCardRawProps {
 	isScreenshotMsg: boolean;
 	isHighlighted?: boolean;
 	isDisplayRuleRaw: boolean;
+	isLastMessageRaw: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
 }
@@ -46,11 +47,17 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 		isScreenshotMsg,
 		isHighlighted,
 		isDisplayRuleRaw,
+		isLastMessageRaw,
 		messageCardToolsConfig,
 		messageViewTypeRendererProps,
 	} = props;
 
-	const parsedMessageClass = createBemBlock('parsed-message', isHighlighted ? 'highlighted' : null);
+	const parsedMessageClass = createBemBlock(
+		'parsed-message',
+		isHighlighted ? 'highlighted' : null,
+		isLastMessageRaw ? 'last' : null,
+		!message.parsedMessages ? 'warning' : null,
+	);
 
 	return (
 		<div className='parsed-message-wrapper'>

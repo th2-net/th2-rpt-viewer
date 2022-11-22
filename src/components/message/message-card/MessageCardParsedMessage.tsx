@@ -35,6 +35,7 @@ export interface ParsedMessageProps {
 
 interface OwnProps {
 	parsedMessage: ParsedMessage;
+	isLastParsedMessage: boolean;
 	viewType: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 }
@@ -45,6 +46,7 @@ export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & Ow
 		isDisplayRuleRaw,
 		isHighlighted,
 		parsedMessage,
+		isLastParsedMessage,
 		viewType,
 		setViewType,
 		messageCardToolsConfig,
@@ -52,7 +54,11 @@ export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & Ow
 		displayHeader,
 	} = props;
 
-	const parsedMessageClass = createBemBlock('parsed-message', isHighlighted ? 'highlighted' : null);
+	const parsedMessageClass = createBemBlock(
+		'parsed-message',
+		isHighlighted ? 'highlighted' : null,
+		isLastParsedMessage ? 'last' : null,
+	);
 
 	return (
 		<div className='parsed-message-wrapper'>

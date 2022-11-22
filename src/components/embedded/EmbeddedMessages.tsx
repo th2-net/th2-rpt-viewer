@@ -32,7 +32,7 @@ import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
 import { getViewTypesConfig } from '../../helpers/message';
 import StateSaver from '../util/StateSaver';
 import MessageCardBase from '../message/message-card/MessageCardBase';
-import MessageExpandButton from '../message/MessageExpandButton';
+import MessageCardWarning from '../message/MessageCardWarning';
 import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
 import FilterConfig from '../filter/FilterConfig';
 import { FilterRowConfig, ActionFilterConfig } from '../../models/filter/FilterInputs';
@@ -60,14 +60,10 @@ const EmbeddedMessageCard = observer(
 							message={props.message}
 							displayType={props.displayType}
 							isExpanded={isExpanded}
+							setIsExpanded={setIsExpanded}
 							isDisplayRuleRaw={false}
 						/>
-						<MessageExpandButton
-							isExpanded={isExpanded}
-							setExpanded={setIsExpanded}
-							parsedMessages={props.message.parsedMessages}
-							isScreenshotMsg={false}
-						/>
+						{!props.message.parsedMessages && <MessageCardWarning isScreenshotMsg={false} />}
 					</div>
 				)}
 			</StateSaver>

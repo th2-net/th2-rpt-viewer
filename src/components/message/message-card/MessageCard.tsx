@@ -27,7 +27,7 @@ import {
 import { EventMessage, MessageViewTypeConfig } from '../../../models/EventMessage';
 import MessageCardBase, { MessageCardBaseProps } from './MessageCardBase';
 import '../../../styles/messages.scss';
-import MessageExpandButton from '../MessageExpandButton';
+import MessageCardWarning from '../MessageCardWarning';
 import StateSaver from '../../util/StateSaver';
 import { getViewTypesConfig } from '../../../helpers/message';
 import { createBemBlock } from '../../../helpers/styleCreators';
@@ -134,6 +134,7 @@ export const MessageCard = observer((props: Props) => {
 		unhoverMessage,
 		isDisplayRuleRaw: props.isDisplayRuleRaw,
 		isExpanded: props.isExpanded,
+		setIsExpanded: props.setIsExpanded,
 		isBookmarked,
 		isAttached,
 		isHighlighted,
@@ -154,13 +155,9 @@ export const MessageCard = observer((props: Props) => {
 	return (
 		<div className={rootClass}>
 			<MessageCardBase {...messageCardBaseProps} />
-			<MessageExpandButton
-				isExpanded={props.isExpanded}
-				isHighlighted={isHighlighted}
-				isScreenshotMsg={false}
-				setExpanded={props.setIsExpanded}
-				parsedMessages={message.parsedMessages}
-			/>
+			{!message.parsedMessages && (
+				<MessageCardWarning isHighlighted={isHighlighted} isScreenshotMsg={false} />
+			)}
 		</div>
 	);
 });

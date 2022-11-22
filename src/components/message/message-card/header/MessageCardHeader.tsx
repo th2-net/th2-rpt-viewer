@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { EventMessage, MessageViewType } from '../../../../models/EventMessage';
-import { createBemBlock } from '../../../../helpers/styleCreators';
+import { createBemBlock, createBemElement } from '../../../../helpers/styleCreators';
 import { formatTime, timestampToNumber } from '../../../../helpers/date';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { Chip } from '../../../Chip';
@@ -37,6 +37,8 @@ export interface MessageInfoProps {
 	isHighlighted?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
+	isExpanded: boolean;
+	setIsExpanded: (state: boolean) => void;
 	displayType: CardDisplayType;
 	isDisplayRuleRaw: boolean;
 	isScreenshotMsg: boolean;
@@ -56,6 +58,8 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		isHighlighted,
 		isExport,
 		isExported,
+		isExpanded,
+		setIsExpanded,
 		isDisplayRuleRaw,
 		displayType,
 		messageCardToolsConfig,
@@ -66,6 +70,17 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
 
+	const buttonWrapperClass = createBemBlock(
+		'message-card-expand-button-wrapper',
+		isExpanded ? 'expanded' : null,
+	);
+
+	const buttonClass = createBemElement(
+		'message-card-expand-button-wrapper',
+		'expand-button',
+		isExpanded ? 'expanded' : null,
+	);
+
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
 	const timestampClassName =
@@ -73,6 +88,10 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	const parsedMessage = message.parsedMessages && message.parsedMessages[0];
 	const subsequence = parsedMessage && getSubsequence(parsedMessage);
+
+	const changeExpandState = () => {
+		setIsExpanded(!isExpanded);
+	};
 
 	return (
 		<div className={headerClass}>
@@ -115,6 +134,11 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 					setViewType={setViewType}
 				/>
 			</div>
+			{message.parsedMessages && (
+				<div className={buttonWrapperClass}>
+					<div className={buttonClass} onClick={changeExpandState} />
+				</div>
+			)}
 		</div>
 	);
 });

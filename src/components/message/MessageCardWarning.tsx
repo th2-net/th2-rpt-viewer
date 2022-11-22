@@ -16,54 +16,32 @@
 import React from 'react';
 import { createBemElement, createBemBlock } from '../../helpers/styleCreators';
 import '../../styles/messages.scss';
-import { ParsedMessage } from '../../models/EventMessage';
 
 interface Props {
-	isExpanded: boolean;
 	isScreenshotMsg: boolean;
 	isHighlighted?: boolean;
-	setExpanded: (state: boolean) => void;
-	parsedMessages: ParsedMessage[] | null;
 }
 
-const MessageExpandButton = (props: Props) => {
-	const { isExpanded, isHighlighted, isScreenshotMsg, setExpanded, parsedMessages } = props;
+const MessageCardWarning = (props: Props) => {
+	const { isHighlighted, isScreenshotMsg } = props;
 
 	const rootClass = createBemBlock(
-		'message-card-expand-wrapper',
+		'message-card-warning-wrapper',
 		isHighlighted ? 'highlighted' : null,
 	);
 
-	const buttonClass = createBemElement(
-		'message-card-expand-wrapper',
-		'expand-button',
-		isExpanded ? 'expanded' : null,
-	);
-
-	const warningClass = createBemElement('message-card-expand-wrapper', 'warning');
-
-	const changeExpandState = () => {
-		setExpanded(!isExpanded);
-	};
+	const warningClass = createBemElement('message-card-warning-wrapper', 'warning');
 
 	return (
 		<div className={rootClass}>
 			{!isScreenshotMsg ? (
-				<>
-					{parsedMessages ? (
-						<div className={buttonClass} onClick={changeExpandState}>
-							{isExpanded ? 'Show Less' : 'Show More'}
-						</div>
-					) : (
-						<div className={warningClass}>
-							<div className={'message-card-expand-wrapper__warning-icon'} />
-							<p>Only Raw Data Available</p>
-						</div>
-					)}
-				</>
+				<div className={warningClass}>
+					<div className='message-card-warning-wrapper__warning-icon' />
+					<p>Only Raw Data Available</p>
+				</div>
 			) : null}
 		</div>
 	);
 };
 
-export default MessageExpandButton;
+export default MessageCardWarning;
