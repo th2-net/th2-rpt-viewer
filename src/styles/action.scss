@@ -111,31 +111,6 @@
 		}
 	}
 
-	&__nav {
-		display: flex;
-		cursor: pointer;
-		outline: none;
-		border: none;
-		opacity: 0.8;
-		background-color: transparent;
-		padding: 0;
-		&:hover {
-			opacity: 1;
-			.label {
-				display: block;
-			}
-		}
-		.label {
-			display: none;
-		}
-		.newer {
-			@include icon(url(../../resources/icons/arr4-up.svg), 16px, 24px);
-		}
-		.older {
-			@include icon(url(../../resources/icons/arr4-down.svg), 16px, 24px);
-		}
-	}
-
 	& > div {
 		@include scrollbar;
 		height: 100%;
