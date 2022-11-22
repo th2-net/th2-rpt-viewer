@@ -23,6 +23,7 @@ import Checkbox from 'components/util/Checkbox';
 import { Chip } from 'components/Chip';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { AttachedMessagesIcon } from 'components/icons/AttachedMessagesIcon';
+import { MessageIcon } from 'components/icons/MessageIcon';
 import { getSubsequence } from '../../../helpers/message';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { Session } from './Session';
@@ -71,7 +72,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				<Checkbox checked={isExported} onChange={() => addMessageToExport(message)} />
 			)}
 			<Chip className='mc-header__icons'>
-				<div className='mc-header__message-icon' />
+				<MessageIcon />
 				{isBookmarked && <BookmarkIcon isPinned={isBookmarked} />}
 				{isAttached && <AttachedMessagesIcon />}
 			</Chip>

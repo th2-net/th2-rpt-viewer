@@ -16,6 +16,15 @@
 
 @import './common/vars';
 
+.icon {
+	width: 1em;
+	height: 1em;
+	font-size: 14px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
 .status-icon {
 	width: 12px;
 	height: 12px;
@@ -54,8 +63,9 @@
 }
 
 .message-icon {
-	height: 9px;
-	width: 9px;
+	height: 11px;
+	width: 11px;
 	background-color: var(--messages-primary);
 	transform: rotate(45deg);
+	border-radius: 2px;
 }

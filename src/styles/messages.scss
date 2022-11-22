@@ -310,6 +310,10 @@
 		padding: 12px 0;
 		overflow: hidden;
 
+		.chip {
+			height: 24px;
+		}
+
 		&:hover .message-card-tools__ellipsis {
 			visibility: visible;
 		}
@@ -340,10 +344,6 @@
 		&.first {
 			transform: scale(-1);
 		}
-	}
-
-	&__message-icon {
-		@include icon(url(../../resources/icons/message-icon.svg), 12px, 12px);
 	}
 
 	&__session-id {

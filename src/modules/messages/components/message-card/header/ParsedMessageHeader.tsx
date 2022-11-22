@@ -18,6 +18,7 @@ import { memo } from 'react';
 import { ParsedMessage, MessageViewType, EventMessage } from 'models/EventMessage';
 import { createBemElement } from 'helpers/styleCreators';
 import { Chip } from 'components/Chip';
+import { MessageIcon } from 'components/icons/MessageIcon';
 import MessageCardTools from '../MessageCardTools';
 import { getSubsequence } from '../../../helpers/message';
 
@@ -41,7 +42,7 @@ export const ParsedMessageHeader = memo((props: ParsedMessageHeaderProps) => {
 	return (
 		<div className={headerClass}>
 			<Chip>
-				<div className='mc-header__message-icon'></div>
+				<MessageIcon />
 			</Chip>
 			{parsedMessage && (
 				<>
