@@ -187,3 +187,7 @@ export function getArrayOfUniques<T>(arr: T[]) {
 export function getItemAt<T>(arr: T[], index: number): T | null {
 	return index < arr.length && index >= 0 ? arr[index] : null;
 }
+
+export const getFirst = <T>(arr: T[]) => getItemAt(arr, 0) as T;
+
+export const getLast = <T>(arr: T[]) => getItemAt(arr, arr.length - 1) as T;

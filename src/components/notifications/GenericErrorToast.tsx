@@ -29,12 +29,13 @@ export default function GenericErrorToast(props: GenericError) {
 		setCopied(true);
 	};
 
-	const shortenedDesc = description.length > 32 ? `${description.slice(0, 32)}...` : description;
+	const shortenedDesc = description.length > 48 ? `${description.slice(0, 48)}...` : description;
+	const shortenedHeader = header.length > 48 ? `${header.slice(0, 48)}...` : header;
 
 	return (
 		<div className='toast-content'>
 			<div className='toast-content__top'>
-				<p className='user-message'>{header}</p>
+				<p className='user-message'>{shortenedHeader}</p>
 			</div>
 			<div className='toast-content__description'>{shortenedDesc}</div>
 			<div className='toast-content__bottom'>

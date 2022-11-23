@@ -68,6 +68,17 @@ export interface OutsideItems {
 	right: GraphItem[];
 }
 
+export interface OutsideCenters {
+	left: {
+		'events-panel': boolean;
+		'messages-panel': boolean;
+	};
+	right: {
+		'events-panel': boolean;
+		'messages-panel': boolean;
+	};
+}
+
 interface OutsideItemsMenuProps extends Omit<OutsideItemsListProps, 'itemsMap'> {
 	items: GraphItem[];
 	direction: 'left' | 'right';
@@ -130,6 +141,8 @@ interface OutsideItemsListProps {
 	onArrowClick?: (direction: 'left' | 'right') => void;
 	className?: string;
 	showCount?: boolean;
+	// pretty sure showPanels has to stay as an optional prop, because we don't use it with bookmarks
+	showPanels?: OutsideCenters;
 }
 
 export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsListProps>(
@@ -140,11 +153,30 @@ export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsLis
 			onClick,
 			className = '',
 			showCount = true,
+			showPanels = {
+				left: {
+					'events-panel': false,
+					'messages-panel': false,
+				},
+				right: {
+					'events-panel': false,
+					'messages-panel': false,
+				},
+			},
 			onItemClick,
 			onArrowClick,
 		}: OutsideItemsListProps,
 		ref,
 	) => {
+		const isPanel = (value: string): value is 'events-panel' | 'messages-panel' => {
+			switch (value) {
+				case 'events-panel':
+				case 'messages-panel':
+					return true;
+				default:
+					return false;
+			}
+		};
 		return (
 			<AnimatePresence>
 				{Object.values(itemsMap).some(Boolean) && (
@@ -164,25 +196,34 @@ export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsLis
 								}
 							}}
 						/>
+						{/* maybe this could be done better with motion.div */}
 						<div className='outside-items__wrapper' onClick={onClick}>
 							{Object.entries(itemsMap)
 								.filter(item => Boolean(item[1]))
-								.map(([type, count]) => (
-									<div
-										key={type}
-										className={`outside-items__indicator-item ${direction}`}
-										onClick={e => {
-											if (onItemClick) {
-												e.stopPropagation();
-												onItemClick(type);
-											}
-										}}>
-										<i className={`outside-items__indicator-icon ${type.toLowerCase()}`} />
-										{showCount && (
-											<span className='outside-items__indicator-value'>{`+ ${count}`}</span>
-										)}
-									</div>
-								))}
+								.map(([type, count]) => {
+									const lowercaseType = type.toLowerCase();
+									if (type && isPanel(lowercaseType)) {
+										if (!showPanels[direction][lowercaseType]) {
+											return null;
+										}
+									}
+									return (
+										<div
+											key={type}
+											className={`outside-items__indicator-item ${direction}`}
+											onClick={e => {
+												if (onItemClick) {
+													e.stopPropagation();
+													onItemClick(type);
+												}
+											}}>
+											<i className={`outside-items__indicator-icon ${type.toLowerCase()}`} />
+											{showCount && (
+												<span className='outside-items__indicator-value'>{`+ ${count}`}</span>
+											)}
+										</div>
+									);
+								})}
 						</div>
 					</motion.div>
 				)}
