@@ -14,14 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import clsx from 'clsx';
 import { Virtuoso } from 'react-virtuoso';
 import { formatTimestamp } from 'helpers/date';
-import { getItemId } from 'helpers/event';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import EventsFilter from 'models/filter/EventsFilter';
+import { getItemId } from 'helpers/event';
+import { isEventMessage } from 'helpers/message';
 import { SearchResult } from '../stores/SearchStore';
 import SearchPanelSeparator from './SearchPanelSeparator';
-import SearchResultItem from './SearchResultItem';
+import { EventSearchResult, MessageSearchResult } from './SearchResultItem';
 
 interface SearchPanelResultsProps {
 	onResultClick: (searchResult: SearchResult, isNewWorkspace?: boolean) => void;
@@ -49,16 +51,26 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 
 	const isResultItemHighlighted = (result: SearchResult) => itemsInView[getItemId(result)];
 
+	// TODO implement opening item in a new workspace
+
 	const renderResult = (i: number, result: SearchResult | [number, number]) => {
 		if (Array.isArray(result)) {
 			return <SearchPanelSeparator prevElement={result[0]} nextElement={result[1]} />;
 		}
+
+		const rootClassName = clsx('search-result', { highlight: isResultItemHighlighted(result) });
+
+		if (isEventMessage(result)) {
+			return (
+				<div className={rootClassName}>
+					<MessageSearchResult message={result} onClick={onResultItemClick} />
+				</div>
+			);
+		}
 		return (
-			<SearchResultItem
-				result={result}
-				onResultClick={onResultItemClick}
-				highlighted={isResultItemHighlighted(result)}
-			/>
+			<div className={rootClassName}>
+				<EventSearchResult event={result as any} onClick={onResultItemClick as any} />
+			</div>
 		);
 	};
 
