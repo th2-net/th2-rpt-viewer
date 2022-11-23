@@ -17,6 +17,7 @@
 import { Observer, observer } from 'mobx-react-lite';
 import { showNotification } from 'helpers/showNotification';
 import { MessagesStoreProvider } from 'modules/messages/components/MessagesStoreProvider';
+import { WorkspaceLinkIcon } from 'components/icons/WorkspaceLinkIcon';
 import MessagesStore from 'modules/messages/stores/MessagesStore';
 import Workspace from './Workspace';
 import { WorkspaceContextProvider } from '../WorkspaceStoreProvider';
@@ -36,11 +37,6 @@ const WorkspacesLayout = () => {
 			const controlButtonClassName = createBemElement(
 				'workspace-tab',
 				'control-button',
-				isTabSelected ? 'selected' : null,
-			);
-			const copyButtonClassName = createBemElement(
-				'workspace-tab',
-				'copy',
 				isTabSelected ? 'selected' : null,
 			);
 
@@ -71,7 +67,7 @@ const WorkspacesLayout = () => {
 										);
 										showNotification('Workspace link copied to clipboard');
 									}}>
-									<div className={copyButtonClassName} />
+									<WorkspaceLinkIcon />
 								</div>
 								{workspacesStore.workspaces.length > 1 && (
 									<div

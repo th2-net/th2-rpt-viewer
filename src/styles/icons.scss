@@ -43,17 +43,12 @@
 }
 
 .bookmark-icon {
-	width: 12px;
-	height: 14px;
-	flex-shrink: 0;
-	@include icon(url(../../resources/icons/bookmark-add-icon.svg), 14px, 12px);
+	& svg, path {
+		transition: none;
+	}
 
 	&.pinned {
-		display: inline-block;
-		@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
-	}
-	&.clickable {
-		cursor: pointer;
+		color: var(--bookmarks-primary);
 	}
 }
 

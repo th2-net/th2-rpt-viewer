@@ -58,8 +58,8 @@ function EventCard(props: Props) {
 		<div className='event-card'>
 			<div className={cardClassName}>
 				<div>
-					<Chip className='event-card__bookmark'>
-						<BookmarkIcon isPinned={isBookmarked} onClick={onToggleBookmark} />
+					<Chip className='event-card__bookmark' onClick={onToggleBookmark}>
+						<BookmarkIcon isPinned={isBookmarked} />
 					</Chip>
 					<div className='event-card__title' title={eventName}>
 						{eventName}

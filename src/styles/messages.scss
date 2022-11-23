@@ -186,6 +186,11 @@
 			}
 		}
 
+		.chip {
+			color: #B0B0B0;
+			padding: 5px 6px;
+		}
+
 		&.active,
 		&:hover {
 			background-color: rgba(0, 0, 0, 0.07);
@@ -282,7 +287,7 @@
 			height: 24px;
 		}
 
-		.chip:not(:first-child) {
+		.chip:not(.mc-header__icons) {
 			display: block;
 		}
 
@@ -535,7 +540,7 @@
 		padding: 4px 16px;
 		border: 2px solid transparent;
 
-		&.exported > div {
+		&.selected > div {
 			border: 2px solid var(--info-color);
 		}
 	}

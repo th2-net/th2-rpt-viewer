@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
-import { createBemBlock } from 'helpers/styleCreators';
 import { formatTime, timestampToNumber } from 'helpers/date';
 import CardDisplayType from 'models/util/CardDisplayType';
 import Checkbox from 'components/util/Checkbox';
@@ -35,7 +34,6 @@ export interface MessageInfoProps {
 	isBookmarked?: boolean;
 	toggleMessagePin?: () => void;
 	isAttached?: boolean;
-	isHighlighted?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
 	addMessageToExport?: (message: EventMessage) => void;
@@ -52,7 +50,6 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		addMessageToExport,
 		isBookmarked = false,
 		isAttached,
-		isHighlighted,
 		isExport,
 		isExported,
 		displayType = CardDisplayType.FULL,
@@ -60,8 +57,6 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		onClick,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
-
-	const headerClass = createBemBlock('mc-header__info', isHighlighted ? 'highlighted' : null);
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
@@ -75,7 +70,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	};
 
 	return (
-		<div className={headerClass} onClick={handleClick}>
+		<div className='mc-header__info' onClick={handleClick}>
 			{isExport && isExported !== undefined && addMessageToExport && (
 				<Checkbox checked={isExported} onChange={() => addMessageToExport(message)} />
 			)}

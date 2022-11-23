@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { useState, useMemo } from 'react';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
@@ -58,7 +58,7 @@ const MessageCard = (props: MessageCardProps) => {
 		setViewType,
 	} = props;
 
-	const [expanded, setIsExpanded] = React.useState(isExpandedProp || false);
+	const [expanded, setIsExpanded] = useState(isExpandedProp || false);
 
 	const isExpanded = isExpandedProp === undefined ? expanded : isExpandedProp;
 	const updateIsExpanded = setIsExpandedProp || setIsExpanded;
@@ -72,7 +72,7 @@ const MessageCard = (props: MessageCardProps) => {
 		sortOrderItems,
 	};
 
-	const messages = React.useMemo(() => {
+	const messages = useMemo(() => {
 		const parsedMessages = message.parsedMessages || [];
 		return [...parsedMessages, message];
 	}, [message]);
