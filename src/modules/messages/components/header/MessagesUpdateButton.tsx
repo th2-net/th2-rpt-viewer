@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { IconButton } from 'components/buttons/IconButton';
+import { UpdateIcon } from 'components/icons/UpdateIcon';
 import { createBemElement } from 'helpers/styleCreators';
 
 type MessagesUpdateButtonProps = {
@@ -30,7 +31,7 @@ const MessagesUpdateButton = ({
 }: MessagesUpdateButtonProps) => {
 	const updateButtonClass = createBemElement(
 		'messages-window-header',
-		'realtime-button',
+		'update-button',
 		isLoading ? 'active' : null,
 	);
 
@@ -38,7 +39,7 @@ const MessagesUpdateButton = ({
 
 	return (
 		<IconButton className={updateButtonClass} onClick={toggleSubscribe}>
-			<i className='messages-window-header__realtime-button-icon' />
+			<UpdateIcon />
 		</IconButton>
 	);
 };

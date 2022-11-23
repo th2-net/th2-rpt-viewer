@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { Paper } from 'components/Paper';
 import { createStyleSelector } from 'helpers/styleCreators';
 
 interface Props
@@ -35,8 +36,8 @@ export function Chip(props: Props) {
 	);
 
 	return (
-		<div {...restProps} className={rootClass}>
+		<Paper {...restProps} className={rootClass}>
 			{children}
-		</div>
+		</Paper>
 	);
 }

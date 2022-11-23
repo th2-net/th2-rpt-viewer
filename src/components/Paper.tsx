@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/* eslint-disable max-len */
-import { Icon, IconProps } from './Icon';
+import clsx from 'clsx';
 
-export const FilterIcon = (props: IconProps) => (
-	<Icon {...props}>
-		<svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-			<path d='M10 18H14V16H10V18ZM3 6V8H21V6H3ZM6 13H18V11H6V13Z' fill='currentColor' />
-		</svg>
-	</Icon>
-);
+export const Paper = (
+	props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>,
+) => <div {...props} className={clsx('paper', props.className)}></div>;

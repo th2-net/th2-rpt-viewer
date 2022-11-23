@@ -20,6 +20,7 @@ import { observer } from 'mobx-react-lite';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
 import { isEventMessage } from 'helpers/message';
 import CardDisplayType from 'models/util/CardDisplayType';
+import { Paper } from 'components/Paper';
 import { MessageCardViewTypeRendererProps } from './MessageBody';
 import { MessageCardHeader } from './header/MessageCardHeader';
 import { ParsedMessageComponent } from './ParsedMessage';
@@ -77,7 +78,7 @@ const MessageCard = (props: MessageCardProps) => {
 	}, [message]);
 
 	return (
-		<div className='message-card'>
+		<Paper className='message-card'>
 			<div className='message-card__body'>
 				<div
 					className={clsx('message-card__status', {
@@ -110,7 +111,7 @@ const MessageCard = (props: MessageCardProps) => {
 				isExpanded={isExpanded}
 				setExpanded={message.parsedMessages ? updateIsExpanded : undefined}
 			/>
-		</div>
+		</Paper>
 	);
 };
 

@@ -24,6 +24,7 @@ import { getEventStatus } from 'helpers/event';
 import { Chip } from 'components/Chip';
 import { StatusIcon } from 'components/icons/StatusIcon';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
+import { Paper } from 'components/Paper';
 import { getElapsedTime } from '../../helpers/date';
 import SearchableContent from '../search/SearchableContent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -111,7 +112,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		: '';
 
 	return (
-		<div className={rootClassName} onClick={onRootClick}>
+		<Paper className={rootClassName} onClick={onRootClick}>
 			<Chip className='event-header-card__icons'>
 				<StatusIcon status={status} />
 				{/* <div className='search-by-parent' onClick={onFilterClick} /> */}
@@ -122,7 +123,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 					<div className='event-header-card__title' title={eventName}>
 						<SearchableContent content={eventName} eventId={eventId} />
 					</div>
-					<Chip onClick={handleTypeClick}>{eventType}</Chip>
+					{eventType && <Chip onClick={handleTypeClick}>{eventType}</Chip>}
 				</>
 			)}
 			{counter && <Counter>{counter}</Counter>}
@@ -139,7 +140,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 					</>
 				)}
 			</div>
-		</div>
+		</Paper>
 	);
 }
 

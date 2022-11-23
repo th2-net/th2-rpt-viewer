@@ -24,7 +24,6 @@
 	flex-direction: column;
 	flex-grow: 1;
 	width: 100%;
-	background-color: var(--background-primary);
 	border-radius: 16px;
 	border: 2px solid transparent;
 
@@ -311,6 +310,7 @@
 	}
 
 	&__session {
+		flex-shrink: 0;
 		font-size: 12px;
 		line-height: 16px;
 		position: relative;
@@ -800,14 +800,9 @@
 	align-items: center;
 	gap: 10px;
 
-	&__realtime-button {
-		&-icon {
-			@include icon(url(../../resources/icons/realtime.svg), 24px, 24px);
-
-			display: inline-block;
-		}
-
-		&.active &-icon {
+	&__update-button {
+		font-size: 20px;
+		&.active span {
 			animation: rotating 4s linear infinite;
 
 			@keyframes rotating {
