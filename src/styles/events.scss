@@ -39,8 +39,16 @@
 	font-size: 12px;
 	line-height: 16px;
 
+	.chip {
+		display: block;
+	}
+
 	&__icons {
 		flex-shrink: 0;
+
+		&.chip {
+			display: flex;
+		}
 	}
 
 	&__details {
@@ -126,7 +134,7 @@
 		border-radius: 8px;
 		height: 24px;
 		flex-shrink: 0;
-		color: #4e8aff;
+		color: var(--text-info);
 		background-color: white;
 		font-size: 12px;
 		line-height: 24px;
@@ -215,6 +223,10 @@
 			align-items: center;
 			width: 100%;
 			gap: 8px;
+		}
+
+		.chip {
+			display: block;
 		}
 
 		& div:last-child {

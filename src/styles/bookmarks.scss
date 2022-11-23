@@ -96,50 +96,6 @@
 	}
 }
 
-.bookmark-panel-header-actions {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	width: 100%;
-	height: auto;
-
-	.button {
-		padding: 3px 0;
-		border-radius: 3px;
-		display: flex;
-		align-items: center;
-		font-size: 14px;
-		font-weight: bold;
-		color: $bookmarkPanelButtonTextColor;
-		background: $bookmarkPanelButtonBackgroundColor;
-		font-family: 'Open Sans', sans-serif;
-		cursor: pointer;
-		outline: none;
-		border: none;
-
-		&:hover {
-			background: rgba($bookmarkPanelButtonTextColor, 0.2);
-		}
-
-		&__icon {
-			margin-left: 3px;
-			margin-right: 1px;
-			flex-shrink: 0;
-			opacity: 0.85;
-			@include icon(url(../../resources/icons/cross-icon-white.svg), 20px, 20px);
-		}
-
-		&__label {
-			margin-right: 6px;
-		}
-
-		&:disabled {
-			opacity: 0.5;
-			cursor: inherit;
-		}
-	}
-}
-
 .bookmarks-panel__list {
 	@include scrollbar;
 }

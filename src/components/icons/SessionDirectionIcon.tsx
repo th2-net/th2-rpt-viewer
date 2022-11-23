@@ -14,20 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import clsx from 'clsx';
+/* eslint-disable max-len */
+import { Icon, IconProps } from './Icon';
 
-export interface IconProps {
-	children?: React.ReactNode;
-	className?: string;
-	size?: number;
-	style?: React.CSSProperties;
-}
-
-export const Icon = (props: IconProps) => {
-	const { children, size, className, style } = props;
-	return (
-		<span className={clsx('icon', className)} style={{ fontSize: size, ...style }}>
-			{children}
-		</span>
-	);
-};
+export const SessionDirectionIcon = (props: IconProps) => (
+	<Icon {...props}>
+		<svg viewBox='0 0 12 12' fill='currentColor' xmlns='http://www.w3.org/2000/svg'>
+			<path
+				d='M3.21875 5.33312H11.3334V6.66645H3.21875L6.79475 10.2425L5.85208 11.1851L0.666748 5.99979L5.85208 0.814453L6.79475 1.75712L3.21875 5.33312Z'
+				fill='currentColor'
+			/>
+		</svg>
+	</Icon>
+);
