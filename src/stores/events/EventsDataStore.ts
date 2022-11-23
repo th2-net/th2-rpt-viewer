@@ -391,9 +391,8 @@ export default class EventsDataStore {
 						}
 						this.rootEventIds.push(rootNode.eventId);
 					}
-				} else {
-					this.loadedParentNodes.push(parentNodes);
 				}
+				this.loadedParentNodes.push(parentNodes);
 			}
 		}
 	};
