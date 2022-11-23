@@ -86,13 +86,6 @@
 				background-color: #fff;
 			}
 		}
-
-		&-label {
-			width: 80px;
-			font-weight: bold;
-			font-size: 14px;
-			flex-shrink: 0;
-		}
 	}
 }
 
@@ -108,6 +101,6 @@
 		padding-right: 12px;
 		@include surface;
 		background-color: var(--background-primary);
-		cursor: pointer	;
+		cursor: pointer;
 	}
 }

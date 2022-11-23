@@ -254,7 +254,8 @@
 
 	&__status-icon {
 		@include surface();
-		padding: 4px;
+		height: 24px;
+		padding: 6px;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
@@ -560,7 +561,7 @@
 	}
 
 	&__footer {
-		background-color: var(--background-secondary);	
+		background-color: var(--background-secondary);
 		margin: 0px 16px;
 		padding: 8px;
 		border-radius: 0 0 8px 8px;
@@ -568,7 +569,7 @@
 		justify-content: center;
 
 		.button {
-			background-color: var(--background-primary);	
+			background-color: var(--background-primary);
 			border-radius: 20px;
 			border: none;
 			height: 28px;
