@@ -303,7 +303,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				newMessagesList = newMessagesList.slice(-this.messagesLimit);
 			}
 
-			this.messages = newMessagesList;
+			this.messages = newMessagesList.sort(
+				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+			);
 		}
 	};
 
@@ -332,12 +334,18 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		const prevMessages =
 			this.messages.length > 0
-				? messages.filter(
-						message =>
-							timestampToNumber(message.timestamp) < timestampToNumber(this.messages[0].timestamp),
-				  )
+				? messages
+						.filter(
+							message =>
+								timestampToNumber(message.timestamp) <
+								timestampToNumber(this.messages[0].timestamp),
+						)
+						.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp))
 				: [];
-		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
+
+		const nextMessages = messages
+			.slice(0, messages.length - prevMessages.length)
+			.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
 
 		if (prevMessages.length > 0 || nextMessages.length > 0) {
 			this.startIndex -= nextMessages.length;
@@ -349,7 +357,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
 			}
-			this.messages = newMessagesList;
+			this.messages = newMessagesList.sort(
+				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+			);
 		}
 	};
 
