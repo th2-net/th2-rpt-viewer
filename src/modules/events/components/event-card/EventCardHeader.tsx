@@ -62,7 +62,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		parentsCount = 0,
 		disabled = false,
 		isBookmarked = false,
-		toggleEventPin,
+		// toggleEventPin,
 		hasChildrenToLoad = false,
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
@@ -82,10 +82,10 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		disabled ? 'disabled' : null,
 	);
 
-	function onPinClicked(e: React.MouseEvent) {
-		e.stopPropagation();
-		if (toggleEventPin) toggleEventPin(event);
-	}
+	// function onPinClicked(e: React.MouseEvent) {
+	// 	e.stopPropagation();
+	// 	if (toggleEventPin) toggleEventPin(event);
+	// }
 
 	// function onFilterClick(e: React.MouseEvent) {
 	// 	e.stopPropagation();
@@ -116,7 +116,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 			<Chip className='event-header-card__icons'>
 				<StatusIcon status={status} />
 				{/* <div className='search-by-parent' onClick={onFilterClick} /> */}
-				<BookmarkIcon isPinned={isBookmarked} onClick={onPinClicked} />
+				<BookmarkIcon isPinned={isBookmarked} />
 			</Chip>
 			{displayType !== CardDisplayType.STATUS_ONLY && (
 				<>
