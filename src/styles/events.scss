@@ -686,13 +686,9 @@
 		}
 	}
 
-	&__arrow-icon {
-		@include icon(url(../../resources/icons/event-arrow-right.svg), 10px, 6px);
-	}
-
 	&__calendar-button {
-		@include icon(url(../../resources/icons/calendar.svg), 20px, 20px);
-		margin: 2px;
+		margin-left: 2px;
+		margin-right: 10px;
 		color: var(--info-color);
 	}
 }

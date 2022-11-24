@@ -17,8 +17,11 @@
 import { formatTimestamp } from 'helpers/date';
 import { observer } from 'mobx-react-lite';
 import { SearchDirection } from 'models/SearchDirection';
-import { useEventsStore } from '../hooks/useEventsStore';
 import '../../../styles/events.scss';
+import { CalendarIcon } from 'components/icons/CalendarIcon';
+import { Chip } from 'components/Chip';
+import { EventsArrowIcon } from 'components/icons/EventsArrowIcon';
+import { useEventsStore } from '../hooks/useEventsStore';
 
 export const EventListNavigation = observer(() => {
 	const eventsStore = useEventsStore();
@@ -35,9 +38,11 @@ export const EventListNavigation = observer(() => {
 
 	return (
 		<div className='events-nav'>
-			<div className='events-nav__arrow-wrapper events-nav__arrow-wrapper--left'  onClick={getPrevEvents}>
-				<div className='events-nav__arrow-icon' />
-			</div>
+			<Chip
+				className='events-nav__arrow-wrapper events-nav__arrow-wrapper--left'
+				onClick={getPrevEvents}>
+				<EventsArrowIcon />
+			</Chip>
 			<button className='button-base button-base--events' onClick={getPrevEvents}>
 				Show previous
 			</button>
@@ -45,10 +50,10 @@ export const EventListNavigation = observer(() => {
 			<button className='button-base button-base--events' onClick={getNextEvents}>
 				Show next
 			</button>
-			<div className='events-nav__arrow-wrapper' onClick={getNextEvents}>
-				<div className='events-nav__arrow-icon' />
-			</div>
-			<div className='events-nav__calendar-button' />
+			<Chip className='events-nav__arrow-wrapper' onClick={getNextEvents}>
+				<EventsArrowIcon />
+			</Chip>
+			<CalendarIcon className='events-nav__calendar-button' />
 		</div>
 	);
 });
