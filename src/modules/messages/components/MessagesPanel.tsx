@@ -23,7 +23,6 @@ import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
 import useViewMode from 'hooks/useViewMode';
 import MessagesPanelHeader from './header/MessagesPanelHeader';
 import MessagesCardList from './message-card-list/MessagesCardList';
-import AttachedMessagesSelection from './AttachedMessagesSelection';
 
 export const MessagesPanelBase = forwardRef<HTMLDivElement, MessagesPanelProps>((props, ref) => {
 	const viewMode = useViewMode();
@@ -32,10 +31,7 @@ export const MessagesPanelBase = forwardRef<HTMLDivElement, MessagesPanelProps>(
 
 	return (
 		<div className={rootClassname} ref={ref}>
-			<div className='window__controls'>
-				<MessagesPanelHeader {...props} />
-				<AttachedMessagesSelection />
-			</div>
+			<MessagesPanelHeader />
 			<div className='window__body'>
 				<MessagesCardList />
 			</div>

@@ -15,10 +15,9 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import RuleRow from '../message-settings/display-rules-settings/RuleRow';
 import { Virtuoso } from 'react-virtuoso';
 import { useMessageDisplayRulesStore } from '../../../hooks/useMessageDisplayRulesStore';
-import RuleRow from './RuleRow';
 
 interface Props {
 	sessions: string[];

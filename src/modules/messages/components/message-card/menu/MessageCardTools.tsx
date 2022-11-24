@@ -24,7 +24,7 @@ import { ViewMode } from 'components/ViewModeProvider';
 import { Chip } from 'components/Chip';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { isRawViewType, copyMessageContents } from '../../../helpers/message';
-import { ViewTypeSelect } from './ViewTypeSelect';
+import { ViewTypesList } from '../ViewTypesList';
 import { ActUIButton } from './ActUIButton';
 
 const JSON_COPY_OPTIONS = ['body', 'fields'] as const;
@@ -106,11 +106,17 @@ const MessageCardTools = ({
 					className='message-card-tools__header-close'
 					onClick={() => setIsViewMenuOpen(false)}
 				/>
-				<ViewTypeSelect
-					onViewTypeSelect={toggleViewType}
-					viewTypes={viewTypes}
-					selectedViewType={viewType}
-				/>
+				{viewTypes.length > 0 && (
+					<>
+						<p>View</p>
+						<ViewTypesList
+							onViewTypeSelect={toggleViewType}
+							viewTypes={viewTypes}
+							selectedViewType={viewType}
+						/>
+						<div className='message-card-tools__line' />
+					</>
+				)}
 				<p>Action</p>
 				{viewMode !== ViewMode.EmbeddedMessages && toggleMessagePin && (
 					<div className='message-card-tools__item' onClick={toggleMessagePin}>

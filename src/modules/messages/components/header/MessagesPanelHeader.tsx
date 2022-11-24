@@ -20,11 +20,12 @@ import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
 import { ViewMode } from 'components/ViewModeProvider';
 import useViewMode from 'hooks/useViewMode';
 import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
+import AttachedMessagesSelection from './AttachedMessagesSelection';
 import MessageExport from './MessageExport';
+import MessageSettings from './message-settings/MessageSettings';
 import MessagesFilterPanel from '../filter/MessagesFilterPanel';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 import MessagesUpdateButton from './MessagesUpdateButton';
-import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
 import ReportViewerLink from './ReportViewerLink';
 import ReplayModal from './ReplayModal';
 import 'styles/messages.scss';
@@ -40,25 +41,34 @@ function MessagesPanelHeader(props: Props) {
 	const viewMode = useViewMode();
 
 	return (
-		<div className='messages-window-header'>
-			{updateStore.canActivate && (
-				<MessagesUpdateButton
-					isLoading={updateStore.isActive}
-					subscribeOnChanges={updateStore.subscribeOnChanges}
-					stopSubscription={updateStore.stopSubscription}
-				/>
-			)}
-			<MessagesFilterPanel {...props} />
-			<MessagesViewConfigurator />
-			{viewMode === ViewMode.Full && <ReplayModal />}
-			<MessageExport
-				isExporting={messagesStore.exportStore.isExport}
-				enableExport={messagesStore.exportStore.enableExport}
-				disableExport={messagesStore.exportStore.disableExport}
-				endExport={messagesStore.exportStore.endExport}
-				exportedCount={messagesStore.exportStore.exportMessages.length}
-			/>
-			{viewMode === ViewMode.EmbeddedMessages && <ReportViewerLink />}
+		<div className='window__controls messages-window-header'>
+			<div className='messages-window-header__row'>
+				{updateStore.canActivate && (
+					<MessagesUpdateButton
+						isLoading={updateStore.isActive}
+						subscribeOnChanges={updateStore.subscribeOnChanges}
+						stopSubscription={updateStore.stopSubscription}
+					/>
+				)}
+				<MessagesFilterPanel {...props} />
+				<MessageSettings />
+				{viewMode === ViewMode.EmbeddedMessages && <ReportViewerLink />}
+			</div>
+			<div className='messages-window-header__row'>
+				<div className='messages-window-header__group'>
+					<AttachedMessagesSelection />
+				</div>
+				<div className='messages-window-header__group'>
+					{viewMode === ViewMode.Full && <ReplayModal />}
+					<MessageExport
+						isExporting={messagesStore.exportStore.isExport}
+						enableExport={messagesStore.exportStore.enableExport}
+						disableExport={messagesStore.exportStore.disableExport}
+						endExport={messagesStore.exportStore.endExport}
+						exportedCount={messagesStore.exportStore.exportMessages.length}
+					/>
+				</div>
+			</div>
 		</div>
 	);
 }

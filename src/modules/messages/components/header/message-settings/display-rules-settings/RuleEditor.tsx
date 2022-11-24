@@ -20,7 +20,7 @@ import useDimensions from 'hooks/useDimensions';
 import { createStyleSelector } from 'helpers/styleCreators';
 import { ModalPortal } from 'components/util/Portal';
 import { useOutsideClickListener } from 'hooks/index';
-import { viewTypeIcons, ViewTypesList } from '../../message-card/ViewTypesList';
+import { viewTypeIcons, ViewTypesList } from '../../../message-card/ViewTypesList';
 
 interface RuleEditorProps {
 	selected: string;

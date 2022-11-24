@@ -21,8 +21,8 @@ import { IconButton } from 'components/buttons/IconButton';
 import { ToggleButtonGroup, ToggleButton } from 'components/buttons/ToggleButton';
 import { SettingsIcon } from 'components/icons/SettingsIcon';
 import { ModalPortal } from 'components/util/Portal';
-import { DisplayRules as DisplayRulesComponent } from '../message-settings/display-rules-settings/DisplayRules';
-import { BodySortRules as BodySortRulesComponent } from '../message-settings/body-sort-settings/BodySortRules';
+import { DisplayRules as DisplayRulesComponent } from './display-rules-settings/DisplayRules';
+import { BodySortRules as BodySortRulesComponent } from './body-sort-settings/BodySortRules';
 import 'styles/messages-view-configurator.scss';
 
 enum MessagesSettingsViews {

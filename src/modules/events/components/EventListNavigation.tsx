@@ -17,6 +17,10 @@
 import { formatTimestamp } from 'helpers/date';
 import { observer } from 'mobx-react-lite';
 import { SearchDirection } from 'models/SearchDirection';
+import '../../../styles/events.scss';
+import { CalendarIcon } from 'components/icons/CalendarIcon';
+import { Chip } from 'components/Chip';
+import { EventsArrowIcon } from 'components/icons/EventsArrowIcon';
 import { useEventsStore } from '../hooks/useEventsStore';
 
 export const EventListNavigation = observer(() => {
@@ -34,13 +38,20 @@ export const EventListNavigation = observer(() => {
 
 	return (
 		<div className='events-nav'>
-			<button className='button-base' onClick={getPrevEvents}>
+			<button className='button-base event-button' onClick={getPrevEvents}>
+				<Chip className='events-nav__nav-circle left'>
+					<EventsArrowIcon className='arrow' />
+				</Chip>
 				Show previous
 			</button>
 			<span className='events-nav__timestamp'>{formatTimestamp(timestamp)}</span>
-			<button className='button-base' onClick={getNextEvents}>
+			<button className='button-base event-button' onClick={getNextEvents}>
 				Show next
+				<Chip className='events-nav__nav-circle'>
+					<EventsArrowIcon />
+				</Chip>
 			</button>
+			<CalendarIcon className='events-nav__calendar-button' />
 		</div>
 	);
 });

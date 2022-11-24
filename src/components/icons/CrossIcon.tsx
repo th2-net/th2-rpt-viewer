@@ -14,20 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import clsx from 'clsx';
+/* eslint-disable max-len */
+import { Icon, IconProps } from './Icon';
 
-export interface IconProps {
-	children?: React.ReactNode;
-	className?: string;
-	size?: number;
-	style?: React.CSSProperties;
-}
-
-export const Icon = (props: IconProps) => {
-	const { children, size, className, style } = props;
-	return (
-		<span className={clsx('icon', className)} style={{ fontSize: size, ...style }}>
-			{children}
-		</span>
-	);
-};
+export const CrossIcon = (props: IconProps) => (
+	<Icon {...props}>
+		<svg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'>
+			<path
+				d='M6.00012 5.29299L8.47512 2.81799L9.18212 3.52499L6.70711 5.99999L9.18212 8.47499L8.47512 9.18199L6.00012 6.70699L3.52512 9.18199L2.81812 8.47499L5.29312 5.99999L2.81812 3.52499L3.52512 2.81799L6.00012 5.29299Z'
+				fill='currentColor'
+			/>
+		</svg>
+	</Icon>
+);

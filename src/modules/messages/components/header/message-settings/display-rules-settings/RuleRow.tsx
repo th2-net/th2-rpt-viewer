@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { MessageDisplayRule, MessageViewType } from 'models/EventMessage';
 import moment from 'moment';
 import React, { useState } from 'react';
-import { useMessageDisplayRulesStore } from '../../../hooks/useMessageDisplayRulesStore';
+import { useMessageDisplayRulesStore } from '../../../../hooks/useMessageDisplayRulesStore';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';
 import EditableRule from './EditableRule';

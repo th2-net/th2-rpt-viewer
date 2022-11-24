@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
-import { createBemBlock, createBemElement } from 'helpers/styleCreators';
+import { createBemBlock } from 'helpers/styleCreators';
 import { formatTime, timestampToNumber } from 'helpers/date';
 import CardDisplayType from 'models/util/CardDisplayType';
 import Checkbox from 'components/util/Checkbox';

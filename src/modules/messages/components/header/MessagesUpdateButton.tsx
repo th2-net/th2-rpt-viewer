@@ -14,9 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import clsx from 'clsx';
 import { IconButton } from 'components/buttons/IconButton';
 import { UpdateIcon } from 'components/icons/UpdateIcon';
-import { createBemElement } from 'helpers/styleCreators';
 
 type MessagesUpdateButtonProps = {
 	isLoading: boolean;
@@ -29,16 +29,10 @@ const MessagesUpdateButton = ({
 	subscribeOnChanges,
 	stopSubscription,
 }: MessagesUpdateButtonProps) => {
-	const updateButtonClass = createBemElement(
-		'messages-window-header',
-		'update-button',
-		isLoading ? 'active' : null,
-	);
-
 	const toggleSubscribe = isLoading ? stopSubscription : subscribeOnChanges;
 
 	return (
-		<IconButton className={updateButtonClass} onClick={toggleSubscribe}>
+		<IconButton className={clsx('update-button', { active: isLoading })} onClick={toggleSubscribe}>
 			<UpdateIcon />
 		</IconButton>
 	);

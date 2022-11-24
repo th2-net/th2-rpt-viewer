@@ -22,8 +22,8 @@ import { MessageDisplayRule, MessageViewType } from 'models/EventMessage';
 import { Chip } from 'components/Chip';
 import { CrossIcon } from 'components/icons/CrossIcon';
 import { ArrowIcon } from 'components/icons/ArrowIcon';
-import { viewTypeIcons } from '../../message-card/ViewTypesList';
-import { useMessageDisplayRulesStore } from '../../../hooks/useMessageDisplayRulesStore';
+import { viewTypeIcons } from '../../../message-card/ViewTypesList';
+import { useMessageDisplayRulesStore } from '../../../../hooks/useMessageDisplayRulesStore';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';
 

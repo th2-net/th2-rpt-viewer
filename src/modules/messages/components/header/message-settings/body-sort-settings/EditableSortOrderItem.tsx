@@ -21,8 +21,8 @@ import AutocompleteInput from 'components/util/AutocompleteInput';
 import { CrossIcon } from 'components/icons/CrossIcon';
 import { Chip } from 'components/Chip';
 import { MessageSortOrderItem } from 'models/EventMessage';
-import { useMessageBodySortStore } from '../../../hooks/useMessageBodySortStore';
-import { Reorder } from '../message-settings/display-rules-settings/EditableRule';
+import { useMessageBodySortStore } from '../../../../hooks/useMessageBodySortStore';
+import { Reorder } from '../display-rules-settings/EditableRule';
 
 type EditableSortOrderItemProps = {
 	item: MessageSortOrderItem;

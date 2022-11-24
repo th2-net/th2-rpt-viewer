@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { Virtuoso } from 'react-virtuoso';
-import { useMessageBodySortStore } from '../../../hooks/useMessageBodySortStore';
+import { useMessageBodySortStore } from '../../../../hooks/useMessageBodySortStore';
 import NewSortOrderItem from './NewSortOrderItem';
 import EditableSortOrderItem from './EditableSortOrderItem';
 
