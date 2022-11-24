@@ -16,10 +16,13 @@
  ***************************************************************************** */
 
 import { action, when } from 'mobx';
+import moment from 'moment';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
+import { getArrayOfUniques } from '../../helpers/array';
 import { isEventMessage } from '../../helpers/event';
+import { getSession, isInvalidResumeId } from '../../helpers/message';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
@@ -63,6 +66,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		if (this.fetchedChunkSubscription == null || this.eventListeners.onClose) {
 			const chunk = this.getNextChunk();
 			(this.eventListeners.onClose || this.eventListeners.onResponse)(chunk);
+
 			this.resetSSEState({ isEndReached });
 		} else {
 			this.isEndReached = isEndReached;
@@ -116,7 +120,6 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
 		this.messageIds = resumeMessageIds || this.messageIds;
-
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
@@ -153,8 +156,29 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private _onMessageIdsEvent = (e: Event) => {
 		const messagesIdsEvent: MessageIdsEvent =
 			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-		this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(Boolean) as string[];
-		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
+		const streams = getArrayOfUniques(this.messageIds.filter(isInvalidResumeId).map(getSession));
+		this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(
+			id => id && isInvalidResumeId,
+		) as string[];
+		if (streams.length > 0) {
+			api.messages
+				.getResumptionMessageIds({
+					streams,
+					startTimestamp: moment().utc().valueOf(),
+				})
+				.then(streamInfo => {
+					this.messageIds = [
+						...this.messageIds.filter(id => !isInvalidResumeId(id)),
+						...(this.queryParams.searchDirection === 'next'
+							? streamInfo.next.map(info => info.lastElement)
+							: streamInfo.previous.map(info => info.lastElement)),
+					];
+
+					if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
+						this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
+					}
+				});
+		} else if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
 			this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
 		}
 	};

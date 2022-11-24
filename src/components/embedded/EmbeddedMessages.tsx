@@ -196,7 +196,6 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					isStartReached &&
 					messagesStore.dataStore.searchChannelNext &&
 					!messagesStore.dataStore.searchChannelNext.isLoading &&
-					!messagesStore.dataStore.searchChannelNext.isEndReached &&
 					!messagesStore.dataStore.updateStore.isActive &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
