@@ -27,6 +27,10 @@ import { MessageIcon } from 'components/icons/MessageIcon';
 import { getSubsequence } from '../../../helpers/message';
 import MessageCardTools, { MessageCardToolsProps } from '../menu/MessageCardTools';
 import { Session } from './Session';
+import {
+	MessageExpandOnIcon,
+	MessageExpandOffIcon,
+} from '../../../../../components/icons/MessageExpandIcon';
 
 export interface MessageInfoProps {
 	message: EventMessage;
@@ -64,8 +68,6 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	const { timestamp, sessionId, direction } = message;
 
 	const buttonWrapperClass = createBemBlock('expand-wrapper', isExpanded ? 'expanded' : null);
-
-	const buttonClass = createBemElement('expand-wrapper', 'button', isExpanded ? 'expanded' : null);
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
@@ -121,8 +123,8 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				/>
 			</div>
 			{message.parsedMessages && setIsExpanded && (
-				<div className={buttonWrapperClass}>
-					<div className={buttonClass} onClick={changeExpandState} />
+				<div className={buttonWrapperClass} onClick={changeExpandState}>
+					{isExpanded ? <MessageExpandOnIcon size={15} /> : <MessageExpandOffIcon size={15} />}
 				</div>
 			)}
 		</div>

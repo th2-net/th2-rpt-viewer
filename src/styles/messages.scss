@@ -187,7 +187,7 @@
 		}
 
 		.chip {
-			color: #B0B0B0;
+			color: #b0b0b0;
 			padding: 5px 6px;
 		}
 
@@ -355,22 +355,13 @@
 .expand-wrapper {
 	cursor: pointer;
 	align-items: center;
-	background: #fbfbfb;
+	background: var(--surface-background);
 	box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
 	padding: 4px;
 	border-radius: 20px;
 
 	&.expanded {
 		background-color: #e3ecff;
-	}
-
-	&__button {
-		@include icon(url(../../resources/icons/message-expand-button-off.svg), 15px, 15px);
-
-		&.expanded {
-			@include icon(url(../../resources/icons/message-expand-button-on.svg), 15px, 15px);
-			background-color: #e3ecff;
-		}
 	}
 }
 
