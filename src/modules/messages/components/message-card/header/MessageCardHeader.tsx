@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
-import { createBemBlock } from 'helpers/styleCreators';
+import { createBemBlock, createBemElement } from 'helpers/styleCreators';
 import { formatTime, timestampToNumber } from 'helpers/date';
 import CardDisplayType from 'models/util/CardDisplayType';
 import Checkbox from 'components/util/Checkbox';
@@ -37,6 +37,8 @@ export interface MessageInfoProps {
 	isHighlighted?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
+	isExpanded?: boolean;
+	setIsExpanded: (state: boolean) => void;
 	addMessageToExport?: (message: EventMessage) => void;
 	displayType: CardDisplayType;
 	isScreenshotMsg?: boolean;
@@ -53,6 +55,8 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		isHighlighted,
 		isExport,
 		isExported,
+		isExpanded,
+		setIsExpanded,
 		displayType,
 		toggleMessagePin,
 	} = props;
@@ -60,10 +64,18 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	const headerClass = createBemBlock('mc-header__info', isHighlighted ? 'highlighted' : null);
 
+	const buttonWrapperClass = createBemBlock('expand-wrapper', isExpanded ? 'expanded' : null);
+
+	const buttonClass = createBemElement('expand-wrapper', 'button', isExpanded ? 'expanded' : null);
+
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
 	const parsedMessage = message.parsedMessages ? message.parsedMessages[0] : undefined;
 	const subsequence = parsedMessage && getSubsequence(parsedMessage);
+
+	const changeExpandState = () => {
+		setIsExpanded(!isExpanded);
+	};
 
 	return (
 		<div className={headerClass}>
@@ -102,6 +114,11 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 					setViewType={setViewType}
 				/>
 			</div>
+			{message.parsedMessages && (
+				<div className={buttonWrapperClass}>
+					<div className={buttonClass} onClick={changeExpandState} />
+				</div>
+			)}
 		</div>
 	);
 });
