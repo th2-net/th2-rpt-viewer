@@ -990,11 +990,15 @@
 
 	&__close-button {
 		position: absolute;
-		top: 5px;
-		right: 5px;
-		background-color: transparent;
+		top: 8px;
+		border-radius: 50%;
+		right: 8px;
+		width: 24px;
+    height: 24px;
 
-		@include round-button(url(../../resources/icons/cross-icon.svg));
+		& span {
+			color: var(--info-color);
+		}
 	}
 
 	.dragable-area {
