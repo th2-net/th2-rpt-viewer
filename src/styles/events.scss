@@ -17,30 +17,28 @@
 @import './common/vars';
 
 .event-header-card {
-	@include status-card;
-	@include bookmark-button();
-	@include event-status-icon($isParentHoverable: true);
-	@include surface();
-
-	line-height: 15px;
 	width: 100%;
 	border-radius: 0px 8px 8px 0px;
-	padding: 0px 5px;
+	padding: 12px;
 	display: flex;
 	align-items: center;
 	border: 2px solid transparent;
 	overflow: hidden;
 	cursor: pointer;
-	gap: 5px;
-	height: 23px;
+	gap: 6px;
 	position: relative;
-	background-color: var(--background-primary);
 	height: 48px;
-	font-size: 12px;
-	line-height: 16px;
+
+	.chip {
+		display: block;
+	}
 
 	&__icons {
 		flex-shrink: 0;
+
+		&.chip {
+			display: flex;
+		}
 	}
 
 	&__details {
@@ -49,14 +47,13 @@
 		top: 0;
 		right: 0;
 		height: 100%;
-		padding-left: 15px;
 		display: flex;
 		align-items: center;
 		gap: 4px;
 		max-width: 90%;
 		transition: none;
 		background-color: inherit;
-		padding: 0 5px;
+		padding: 0 12px;
 	}
 
 	&:hover &__details {
@@ -126,7 +123,7 @@
 		border-radius: 8px;
 		height: 24px;
 		flex-shrink: 0;
-		color: #4e8aff;
+		color: var(--text-info);
 		background-color: white;
 		font-size: 12px;
 		line-height: 24px;
@@ -217,6 +214,10 @@
 			gap: 8px;
 		}
 
+		.chip {
+			display: block;
+		}
+
 		& div:last-child {
 			justify-content: space-between;
 		}
@@ -228,6 +229,7 @@
 		flex-shrink: 0;
 		border-radius: 50%;
 		padding: 5px 6px;
+		cursor: pointer;
 	}
 
 	&__title {
@@ -253,7 +255,8 @@
 
 	&__status-icon {
 		@include surface();
-		padding: 4px;
+		height: 24px;
+		padding: 6px;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
@@ -339,7 +342,7 @@
 	width: 100%;
 	height: 40px;
 	display: flex;
-	justify-content: space-between;
+	gap: 12px;
 	align-items: center;
 	color: var(--status-primary-color);
 	z-index: 1;
@@ -363,7 +366,6 @@
 		line-height: 15px;
 		font-weight: bold;
 		cursor: pointer;
-		margin: 0 5px;
 		transition: color 0.2s;
 
 		&.active {
@@ -482,12 +484,12 @@
 	gap: 4px;
 	flex-direction: row;
 	align-items: center;
-	padding: 4px 5px 4px 0;
-	height: 56px;
+	padding: 4px 16px;
 
 	&__indent {
-		@include surface();
-		background-color: var(--background-primary);
+		background-color: var(--background-secondary);
+		min-height: 48px;
+		min-width: 48px;
 		height: 100%;
 		border-radius: 8px 0px 0px 8px;
 		display: flex;
@@ -558,6 +560,27 @@
 			}
 		}
 	}
+
+	&__footer {
+		background-color: var(--background-secondary);
+		margin: 0px 16px;
+		padding: 8px;
+		border-radius: 0 0 8px 8px;
+		display: flex;
+		justify-content: center;
+
+		.button {
+			background-color: var(--background-primary);
+			border-radius: 20px;
+			border: none;
+			height: 28px;
+		}
+	}
+
+	&__spinner {
+		@include spinner(2px, 16px);
+		margin: auto;
+	}
 }
 
 .event-breadcrumbs {
@@ -620,5 +643,21 @@
 		&:first-child {
 			margin-right: 5px;
 		}
+	}
+}
+
+.events-nav {
+	@include surface;
+	display: flex;
+	align-items: center;
+	border-radius: 4px;
+
+	&__timestamp {
+		color: var(--timestamp-color);
+		border: 1px solid var(--timestamp-color);
+		border-radius: 8px;
+		padding: 0 10px;
+		font-size: 12px;
+		line-height: 24px;
 	}
 }

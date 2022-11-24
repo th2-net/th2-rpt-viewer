@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useMemo, useState } from 'react';
 import { createStyleSelector } from 'helpers/styleCreators';
 
 interface IToggleButtonContext<T> {
@@ -56,10 +56,11 @@ type ToggleButtonProps = React.PropsWithChildren<{
 	className?: string;
 	activeClassName?: string;
 	value: string;
+	style?: React.CSSProperties;
 }>;
 
 export const ToggleButton = (props: ToggleButtonProps) => {
-	const { activeClassName = '', value, className = '' } = props;
+	const { activeClassName = '', value, className = '', style = {} } = props;
 	const { selectedOption, setSelectedOption } = useContext(ToggleButtonContext);
 
 	const isSelected = selectedOption === value;
@@ -75,7 +76,7 @@ export const ToggleButton = (props: ToggleButtonProps) => {
 	const onClick = () => setSelectedOption(value);
 
 	return (
-		<button className={buttonClassName} onClick={onClick}>
+		<button className={buttonClassName} onClick={onClick} style={style}>
 			{props.children}
 		</button>
 	);

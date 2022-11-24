@@ -40,7 +40,7 @@ const SearchPanel = (props: SearchPanelProps) => {
 	}, [searchStore.currentSearch]);
 
 	return (
-		<div className='search-panel' ref={searchPanelRef}>
+		<div className='search-panel window' ref={searchPanelRef}>
 			<SearchPanelForm />
 			{searchStore.currentSearch && (
 				<SearchPanelResults

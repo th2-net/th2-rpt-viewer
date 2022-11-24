@@ -24,6 +24,7 @@ import { getEventStatus } from 'helpers/event';
 import { Chip } from 'components/Chip';
 import { StatusIcon } from 'components/icons/StatusIcon';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
+import { Paper } from 'components/Paper';
 import { getElapsedTime } from '../../helpers/date';
 import SearchableContent from '../search/SearchableContent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -61,7 +62,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		parentsCount = 0,
 		disabled = false,
 		isBookmarked = false,
-		toggleEventPin,
+		// toggleEventPin,
 		hasChildrenToLoad = false,
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
@@ -81,10 +82,10 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		disabled ? 'disabled' : null,
 	);
 
-	function onPinClicked(e: React.MouseEvent) {
-		e.stopPropagation();
-		if (toggleEventPin) toggleEventPin(event);
-	}
+	// function onPinClicked(e: React.MouseEvent) {
+	// 	e.stopPropagation();
+	// 	if (toggleEventPin) toggleEventPin(event);
+	// }
 
 	// function onFilterClick(e: React.MouseEvent) {
 	// 	e.stopPropagation();
@@ -111,18 +112,18 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		: '';
 
 	return (
-		<div className={rootClassName} onClick={onRootClick}>
+		<Paper className={rootClassName} onClick={onRootClick}>
 			<Chip className='event-header-card__icons'>
 				<StatusIcon status={status} />
 				{/* <div className='search-by-parent' onClick={onFilterClick} /> */}
-				<BookmarkIcon isPinned={isBookmarked} onClick={onPinClicked} />
+				<BookmarkIcon isPinned={isBookmarked} />
 			</Chip>
 			{displayType !== CardDisplayType.STATUS_ONLY && (
 				<>
 					<div className='event-header-card__title' title={eventName}>
 						<SearchableContent content={eventName} eventId={eventId} />
 					</div>
-					<Chip onClick={handleTypeClick}>{eventType}</Chip>
+					{eventType && <Chip onClick={handleTypeClick}>{eventType}</Chip>}
 				</>
 			)}
 			{counter && <Counter>{counter}</Counter>}
@@ -139,7 +140,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 					</>
 				)}
 			</div>
-		</div>
+		</Paper>
 	);
 }
 

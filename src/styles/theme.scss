@@ -39,12 +39,14 @@
 
 	// workspace
 	--panel-title: #fff;
+	--tab-background: #4e8aff;
 
 	// rest
 	--info-color: #4e8aff;
+	--timestamp-color: #4e8aff;
 
 	--background-primary: #ffffff;
-	--background-secondary: #fff;
+	--background-secondary: #fbfbfb;
 
 	--surface-background: #fbfbfb;
 	--panel-background: #f1f1f1;
@@ -78,7 +80,7 @@ html[data-theme='dark'] {
 	// bookmarks
 
 	// workspace
-	--panel-title: #2D3036;
+	--panel-title: #2d3036;
 
 	// rest
 
@@ -86,7 +88,7 @@ html[data-theme='dark'] {
 	--text-background: #383b41;
 
 	--background-primary: #2d3036;
-	--background-secondary: #22262c;
+	--background-secondary: #383b41;
 
 	--panel-background: #22262c;
 	--workspace-background: #4f5156;

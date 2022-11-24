@@ -36,14 +36,13 @@
 	align-items: center;
 	border-radius: 6px 6px 0 0;
 	padding: 6px 7px;
-	background-color: $workspaceTabBackground;
-	color: $workspaceTabTextColor;
+	background-color: var(--workspace-background);
+	color: var(--text-primary);
 	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 	cursor: pointer;
-	transition: background-color 0.2s;
-
+	
 	&.active {
-		background-color: $workspaceTabActiveBackground;
+		background-color: var(--tab-background);
 		color: white;
 	}
 

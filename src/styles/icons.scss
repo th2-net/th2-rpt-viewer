@@ -16,6 +16,17 @@
 
 @import './common/vars';
 
+.icon {
+	width: 1em;
+	height: 1em;
+	font-size: 14px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-shrink: 0;
+	font-size: inherit;
+}
+
 .status-icon {
 	width: 12px;
 	height: 12px;
@@ -32,17 +43,12 @@
 }
 
 .bookmark-icon {
-	width: 12px;
-	height: 14px;
-	flex-shrink: 0;
-	@include icon(url(../../resources/icons/bookmark-add-icon.svg), 14px, 12px);
+	& svg, path {
+		transition: none;
+	}
 
 	&.pinned {
-		display: inline-block;
-		@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
-	}
-	&.clickable {
-		cursor: pointer;
+		color: var(--bookmarks-primary);
 	}
 }
 
@@ -54,8 +60,9 @@
 }
 
 .message-icon {
-	height: 9px;
-	width: 9px;
+	height: 11px;
+	width: 11px;
 	background-color: var(--messages-primary);
 	transform: rotate(45deg);
+	border-radius: 2px;
 }

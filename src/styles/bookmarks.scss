@@ -33,142 +33,9 @@
 	}
 }
 
-.bookmark-item {
-	@include bookmark-button($showOnHoverOverParent: false);
-	display: grid;
-	width: 100%;
-	grid-template-columns: 1fr 30px;
-	padding: 5px 7px 5px 30px;
-	position: relative;
-	overflow: hidden;
-
-	&__info {
-		overflow: hidden;
-		display: grid;
-		grid-template-areas:
-			'name name'
-			'timestamp id';
-		grid-template-columns: auto 1fr;
-		grid-template-rows: 15px auto;
-		gap: 2px 10px;
-	}
-
-	&__buttons {
-		flex-grow: 0;
-		flex-shrink: 1;
-		display: grid;
-		place-items: center;
-	}
-
-	&__remove-btn {
-		background-color: transparent;
-		border: none;
-		outline: none;
-
-		&-icon {
-			@include clickable;
-			@include icon(url(../../resources/icons/cross-icon.svg), 20px, 20px);
-
-			border-radius: 50%;
-			display: inline-block;
-		}
-	}
-
-	&__toggle-btn {
-		@include clickable;
-		display: grid;
-		place-items: center;
-		border-radius: 50%;
-		width: 20px;
-		height: 20px;
-
-		&.disabled {
-			opacity: 0.6;
-			cursor: default;
-		}
-	}
-
-	&__title,
-	&__timestamp {
-		@include ellipsis();
-	}
-
-	&__title {
-		cursor: pointer;
-		white-space: nowrap;
-		font-weight: 600;
-		font-size: 12px;
-		line-height: 14px;
-		color: $attachedItemNameColor;
-		transition: color 0.15s, border-bottom 0.15s;
-		border-bottom: 1px solid transparent;
-
-		&:hover {
-			color: $bookmarkLinkHoverColor;
-			border-bottom: 1px solid $bookmarkLinkHoverColor;
-		}
-	}
-
-	&__name {
-		grid-area: name;
-		display: flex;
-		justify-content: flex-start;
-	}
-
-	&__timestamp,
-	&__id {
-		grid-area: timestamp;
-		font-size: 9px;
-		color: $bookmarkAttachedItemTimestampColor;
-	}
-
-	&__id {
-		grid-area: id;
-	}
-
-	&__icon {
-		position: absolute;
-		left: 7px;
-		top: 7px;
-
-		&.message-icon {
-			margin: 1px;
-			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
-		}
-
-		&.event-icon,
-		&.eventtreenode-icon {
-			width: 12px;
-			height: 12px;
-			margin: 1px;
-			border-radius: 50%;
-
-			&.passed {
-				background-color: $passedEventsColor;
-			}
-
-			&.failed {
-				background-color: $failedEventsColor;
-			}
-		}
-	}
-
-	&:last-child {
-		margin-bottom: 6px;
-	}
-}
-
 .bookmarks-panel-item {
 	display: flex;
 	padding: 5px 0;
-}
-
-.bookmarks-panel-checkbox {
-	margin: 0 5px;
-
-	.checkbox__control {
-		background-color: $bookmarkPanelCheckboxColor;
-	}
 }
 
 .window__controls.bookmark-panel-header {
@@ -219,56 +86,21 @@
 				background-color: #fff;
 			}
 		}
-
-		&-label {
-			width: 80px;
-			font-weight: bold;
-			font-size: 14px;
-			flex-shrink: 0;
-		}
 	}
 }
 
-.bookmark-panel-header-actions {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	width: 100%;
-	height: auto;
+.bookmarks-panel__list {
+	@include scrollbar;
+}
 
-	.button {
-		padding: 3px 0;
-		border-radius: 3px;
-		display: flex;
-		align-items: center;
-		font-size: 14px;
-		font-weight: bold;
-		color: $bookmarkPanelButtonTextColor;
-		background: $bookmarkPanelButtonBackgroundColor;
-		font-family: 'Open Sans', sans-serif;
+.bookmarks-panel__list-item {
+	padding: 6px 12px;
+	& > div {
+		border-radius: 8px;
+		padding-left: 12px;
+		padding-right: 12px;
+		@include surface;
+		background-color: var(--background-primary);
 		cursor: pointer;
-		outline: none;
-		border: none;
-
-		&:hover {
-			background: rgba($bookmarkPanelButtonTextColor, 0.2);
-		}
-
-		&__icon {
-			margin-left: 3px;
-			margin-right: 1px;
-			flex-shrink: 0;
-			opacity: 0.85;
-			@include icon(url(../../resources/icons/cross-icon-white.svg), 20px, 20px);
-		}
-
-		&__label {
-			margin-right: 6px;
-		}
-
-		&:disabled {
-			opacity: 0.5;
-			cursor: inherit;
-		}
 	}
 }

@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import {
 	DateTimeInputType,
@@ -31,8 +32,8 @@ import { FilterRows } from 'components/filter/FilterRows';
 import { SearchDirection } from 'models/SearchDirection';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
 import { useSessionsHistoryStore } from 'hooks/useSessionsStore';
-import { createBemElement } from 'helpers/styleCreators';
 import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
+import { Button } from 'components/buttons/Button';
 import {
 	TIME_INPUT_MASK,
 	DATE_TIME_INPUT_MASK,
@@ -258,41 +259,35 @@ const SearchPanelForm = () => {
 	};
 
 	return (
-		<>
+		<div className='search-panel-form'>
 			<SearchDatetimeControls {...searchDatetimeControlsConfig} />
 			<SearchProgressBar {...progressBarConfig} />
-			<div className='search-panel-form'>
-				<SearchSubmit {...searchSubmitConfig} />
-				<div className='search-panel__fields'>
-					<FiltersHistory disabled={disabled} type={formType} />
-					<div className='filter-row'>
-						<div className='search-type-config'>
-							<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
-							<SearchResultCountLimit {...resultCountLimitConfig} />
-						</div>
+			<div className='search-panel__fields'>
+				<FiltersHistory disabled={disabled} type={formType} />
+				<div className='filter-row'>
+					<div className='search-type-config'>
+						<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
+						<SearchResultCountLimit {...resultCountLimitConfig} />
 					</div>
-					{formType === 'message' ? <FilterRow rowConfig={sessionsConfig} /> : null}
 				</div>
-				<div className='filter'>
-					<FilterRows config={config} />
-				</div>
-				{!disabled && (
-					<div className='search-panel-form__footer'>
-						<button
-							className={createBemElement(
-								'search-panel-form',
-								'clear-btn',
-								isSearching ? 'disabled' : null,
-							)}
-							onClick={clearFilters}
-							disabled={isSearching}>
-							<i className='search-panel-form__clear-icon' />
-							Clear All
-						</button>
-					</div>
-				)}
+				{formType === 'message' ? <FilterRow rowConfig={sessionsConfig} /> : null}
 			</div>
-		</>
+			<div className='filter'>
+				<FilterRows config={config} />
+			</div>
+			<div className='search-panel-form__footer'>
+				{!disabled && (
+					<Button
+						variant='outlined'
+						className={clsx({ disabled: isSearching })}
+						onClick={clearFilters}
+						disabled={isSearching}>
+						Clear All
+					</Button>
+				)}
+				<SearchSubmit {...searchSubmitConfig} />
+			</div>
+		</div>
 	);
 };
 

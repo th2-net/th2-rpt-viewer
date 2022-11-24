@@ -14,52 +14,30 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { formatTime, getTimestampAsNumber } from 'helpers/date';
-import { getItemName, isEventAction } from 'helpers/event';
-import { isEventMessage } from 'helpers/message';
-import { createBemBlock, createBemElement, createStyleSelector } from 'helpers/styleCreators';
-import { SearchResult } from '../stores/SearchStore';
+import { EventMessage } from 'models/EventMessage';
+import { EventTreeNode } from 'models/EventAction';
+// eslint-disable-next-line max-len
+import { MessageCardHeader } from 'modules/messages/components/message-card/header/MessageCardHeader';
+import EventCardHeader from 'modules/events/components/event-card/EventCardHeader';
 
-interface SearchResultItemProps {
-	result: SearchResult;
-	onResultClick: (item: SearchResult, isNewWorkspace?: boolean) => void;
-	highlighted?: boolean;
+interface MessageBookmarkComponentProps {
+	message: EventMessage;
+	onClick: (message: EventMessage) => void;
 }
 
-const SearchResultItem = (props: SearchResultItemProps) => {
-	const { result, highlighted = false, onResultClick } = props;
+export const MessageSearchResult = (props: MessageBookmarkComponentProps) => (
+	<MessageCardHeader
+		message={props.message}
+		isBookmarked={true}
+		onClick={() => props.onClick(props.message)}
+	/>
+);
 
-	const rootClassName = createBemBlock(
-		'search-result',
-		result.type,
-		highlighted ? 'highlight' : null,
-	);
+interface EventBookmarkComponentProps {
+	event: EventTreeNode;
+	onClick: (event: EventTreeNode) => void;
+}
 
-	const nameClassName = createBemElement(
-		'search-result',
-		'name',
-		result.type,
-		isEventAction(result) ? (result.successful ? 'success' : 'fail') : null,
-	);
-
-	const iconClassName = createStyleSelector(
-		'search-result__icon',
-		`${result.type}-icon`,
-		isEventMessage(result) ? null : result.successful ? 'passed' : 'failed',
-	);
-
-	return (
-		<div className={rootClassName}>
-			<i className={iconClassName} />
-			<div className={nameClassName} onClick={() => onResultClick(result)}>
-				{getItemName(result)}
-			</div>
-			<div className='search-result__new-workspace' onClick={() => onResultClick(result, true)}>
-				Open in a new workspace
-			</div>
-			<div className='search-result__timestamp'>{formatTime(getTimestampAsNumber(result))}</div>
-		</div>
-	);
-};
-
-export default SearchResultItem;
+export const EventSearchResult = (props: EventBookmarkComponentProps) => (
+	<EventCardHeader event={props.event} onSelect={() => props.onClick(props.event)} />
+);

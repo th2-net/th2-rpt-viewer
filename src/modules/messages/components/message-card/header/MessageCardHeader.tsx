@@ -23,25 +23,26 @@ import Checkbox from 'components/util/Checkbox';
 import { Chip } from 'components/Chip';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { AttachedMessagesIcon } from 'components/icons/AttachedMessagesIcon';
+import { MessageIcon } from 'components/icons/MessageIcon';
 import { getSubsequence } from '../../../helpers/message';
-import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
+import MessageCardTools, { MessageCardToolsProps } from '../menu/MessageCardTools';
 import { Session } from './Session';
 
 export interface MessageInfoProps {
 	message: EventMessage;
 	viewType?: MessageViewType;
-	setViewType: (id: string, vt: MessageViewType) => void;
+	setViewType?: (id: string, vt: MessageViewType) => void;
 	isBookmarked?: boolean;
 	toggleMessagePin?: () => void;
 	isAttached?: boolean;
-	isHighlighted?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
 	isExpanded?: boolean;
-	setIsExpanded: (state: boolean) => void;
+	setIsExpanded?: (state: boolean) => void;
 	addMessageToExport?: (message: EventMessage) => void;
-	displayType: CardDisplayType;
+	displayType?: CardDisplayType;
 	isScreenshotMsg?: boolean;
+	onClick?: (message: EventMessage) => void;
 }
 
 export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
@@ -52,17 +53,15 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		addMessageToExport,
 		isBookmarked = false,
 		isAttached,
-		isHighlighted,
 		isExport,
 		isExported,
 		isExpanded,
 		setIsExpanded,
-		displayType,
+		displayType = CardDisplayType.FULL,
 		toggleMessagePin,
+		onClick,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
-
-	const headerClass = createBemBlock('mc-header__info', isHighlighted ? 'highlighted' : null);
 
 	const buttonWrapperClass = createBemBlock('expand-wrapper', isExpanded ? 'expanded' : null);
 
@@ -74,16 +73,23 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	const subsequence = parsedMessage && getSubsequence(parsedMessage);
 
 	const changeExpandState = () => {
-		setIsExpanded(!isExpanded);
+		if (setIsExpanded) {
+			setIsExpanded(!isExpanded);
+		}
+	};
+	const handleClick = () => {
+		if (onClick) {
+			onClick(message);
+		}
 	};
 
 	return (
-		<div className={headerClass}>
+		<div className='mc-header__info' onClick={handleClick}>
 			{isExport && isExported !== undefined && addMessageToExport && (
 				<Checkbox checked={isExported} onChange={() => addMessageToExport(message)} />
 			)}
 			<Chip className='mc-header__icons'>
-				<div className='mc-header__message-icon' />
+				<MessageIcon />
 				{isBookmarked && <BookmarkIcon isPinned={isBookmarked} />}
 				{isAttached && <AttachedMessagesIcon />}
 			</Chip>
@@ -93,7 +99,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				</Chip>
 			)}
 			<Session sessionId={sessionId} direction={direction} />
-			{displayType === CardDisplayType.FULL && <Chip>{message.id}</Chip>}
+			{displayType === CardDisplayType.FULL && <Chip title={message.id}>{message.id}</Chip>}
 
 			{typeof subsequence === 'number' &&
 				displayType === CardDisplayType.FULL &&
@@ -114,7 +120,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 					setViewType={setViewType}
 				/>
 			</div>
-			{message.parsedMessages && (
+			{message.parsedMessages && setIsExpanded && (
 				<div className={buttonWrapperClass}>
 					<div className={buttonClass} onClick={changeExpandState} />
 				</div>

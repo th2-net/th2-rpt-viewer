@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import '../styles/notification.scss';
+/* eslint-disable max-len */
+import { Icon, IconProps } from './Icon';
 
-const NOTIFICATION_TIMEOUT = 1500;
-
-export function showNotification(text = 'Text copied to the clipboard!') {
-	const element = document.createElement('div');
-	element.className = 'notification';
-	element.innerHTML = `<p>${text}</p>`;
-
-	const root = document.getElementById('index');
-
-	root?.appendChild(element);
-
-	window.setTimeout(() => {
-		root?.removeChild(element);
-	}, NOTIFICATION_TIMEOUT);
-}
+export const SessionDirectionIcon = (props: IconProps) => (
+	<Icon {...props}>
+		<svg viewBox='0 0 12 12' fill='currentColor' xmlns='http://www.w3.org/2000/svg'>
+			<path
+				d='M3.21875 5.33312H11.3334V6.66645H3.21875L6.79475 10.2425L5.85208 11.1851L0.666748 5.99979L5.85208 0.814453L6.79475 1.75712L3.21875 5.33312Z'
+				fill='currentColor'
+			/>
+		</svg>
+	</Icon>
+);

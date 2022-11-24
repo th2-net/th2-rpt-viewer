@@ -18,11 +18,10 @@ import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemElement } from 'helpers/styleCreators';
 import { ButtonBase } from 'components/buttons/ButtonBase';
-import { EventListArrowNav } from './EventListNavigation';
+import { EventListNavigation } from './EventListNavigation';
 import EventsFilterPanel from './filter/EventsFilterPanel';
 import { useEventsStore } from '../hooks/useEventsStore';
 import useEventsDataStore from '../hooks/useEventsDataStore';
-import { SearchDirection } from '../../../models/SearchDirection';
 import { EventTreeNode } from '../models/Event';
 import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
 
@@ -56,26 +55,19 @@ function EventsPanelHeader() {
 				/>
 			</div>
 			<div className='event-window-header'>
-				<div className='event-window-header__group'>
-					<EventsFilterPanel />
-					<ButtonBase
-						role='button'
-						onClick={eventsStore.viewStore.toggleFlattenEventListView}
-						className={flattenButtonClassName}>
-						Flat view
-					</ButtonBase>
-				</div>
+				<EventsFilterPanel />
+				<ButtonBase
+					role='button'
+					onClick={eventsStore.viewStore.toggleFlattenEventListView}
+					className={flattenButtonClassName}>
+					Flat view
+				</ButtonBase>
+				<EventListNavigation />
 				{eventDataStore.isLoading && (
 					<div className='event-window-header__loader'>
 						Resolving events<span>.</span>
 						<span>.</span>
 						<span>.</span>
-					</div>
-				)}
-				{!eventDataStore.isLoading && (
-					<div className='event-window-header__nav'>
-						<EventListArrowNav direction={SearchDirection.Previous} />
-						<EventListArrowNav direction={SearchDirection.Next} />
 					</div>
 				)}
 			</div>

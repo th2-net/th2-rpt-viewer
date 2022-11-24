@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +14,20 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import '../styles/notification.scss';
+import clsx from 'clsx';
 
-const NOTIFICATION_TIMEOUT = 1500;
-
-export function showNotification(text = 'Text copied to the clipboard!') {
-	const element = document.createElement('div');
-	element.className = 'notification';
-	element.innerHTML = `<p>${text}</p>`;
-
-	const root = document.getElementById('index');
-
-	root?.appendChild(element);
-
-	window.setTimeout(() => {
-		root?.removeChild(element);
-	}, NOTIFICATION_TIMEOUT);
+export interface IconProps {
+	children?: React.ReactNode;
+	className?: string;
+	size?: number;
+	style?: React.CSSProperties;
 }
+
+export const Icon = (props: IconProps) => {
+	const { children, size, className, style } = props;
+	return (
+		<span className={clsx('icon', className)} style={{ fontSize: size, ...style }}>
+			{children}
+		</span>
+	);
+};

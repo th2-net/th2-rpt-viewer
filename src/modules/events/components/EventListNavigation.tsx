@@ -14,27 +14,33 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { formatTimestamp } from 'helpers/date';
 import { observer } from 'mobx-react-lite';
 import { SearchDirection } from 'models/SearchDirection';
 import { useEventsStore } from '../hooks/useEventsStore';
 
-interface Props {
-	direction: SearchDirection.Next | SearchDirection.Previous;
-}
-
-export const EventListArrowNav = observer((props: Props) => {
+export const EventListNavigation = observer(() => {
 	const eventsStore = useEventsStore();
+	const timestamp = eventsStore.filterStore.timestampFrom;
 
-	const label = props.direction === SearchDirection.Next ? 'Newer' : 'Older';
-
-	const getNextEvents = () => {
-		eventsStore.eventDataStore.findClosestEvent(props.direction);
-	};
+	const getNextEvents = eventsStore.eventDataStore.findClosestEvent.bind(
+		null,
+		SearchDirection.Next,
+	);
+	const getPrevEvents = eventsStore.eventDataStore.findClosestEvent.bind(
+		null,
+		SearchDirection.Previous,
+	);
 
 	return (
-		<button className='actions-list__nav' onClick={getNextEvents}>
-			<span className={label.toLowerCase()}></span>
-			<span className='label'>{label}</span>
-		</button>
+		<div className='events-nav'>
+			<button className='button-base' onClick={getPrevEvents}>
+				Show previous
+			</button>
+			<span className='events-nav__timestamp'>{formatTimestamp(timestamp)}</span>
+			<button className='button-base' onClick={getNextEvents}>
+				Show next
+			</button>
+		</div>
 	);
 });

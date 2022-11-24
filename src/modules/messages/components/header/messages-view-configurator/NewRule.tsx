@@ -14,42 +14,50 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useState } from 'react';
-import moment from 'moment';
 import { nanoid } from 'nanoid';
-import { useMessageBodySortStore } from '../../hooks/useMessageBodySortStore';
-import StringFilterRow from '../../../../components/filter/row/StringRow';
+import moment from 'moment';
+import React, { useState } from 'react';
+import { MessageViewType } from 'models/EventMessage';
+import { useMessageDisplayRulesStore } from '../../../hooks/useMessageDisplayRulesStore';
+import SessionEditor from './SessionEditor';
+import RuleEditor from './RuleEditor';
 
-const NewSortOrderItem = () => {
-	const sortOrder = useMessageBodySortStore();
-	const [newItem, setNewItem] = useState('');
+type NewRuleProps = {
+	sessions: string[];
+};
+
+const NewRule = ({ sessions }: NewRuleProps) => {
+	const rulesStore = useMessageDisplayRulesStore();
+
+	const [session, setSession] = useState('');
+	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		sortOrder.setNewItem({ id: nanoid(), item: newItem, timestamp: moment.utc().valueOf() });
+		rulesStore.setNewMessagesDisplayRule({
+			id: nanoid(),
+			session,
+			viewType,
+			removable: true,
+			editableSession: true,
+			editableType: true,
+			timestamp: moment.utc().valueOf(),
+		});
 	};
 
 	return (
-		<div className='order-item'>
-			<StringFilterRow
-				config={{
-					className: 'order-item',
-					id: 'new-order-item',
-					type: 'string',
-					placeholder: 'Enter field name',
-					value: newItem,
-					setValue: setNewItem,
-				}}
-			/>
+		<div className='rule'>
+			<SessionEditor value={session} setValue={setSession} sessions={sessions} />
+			<RuleEditor selected={viewType} setSelected={setViewType} />
 			<button
 				className='rule-button'
 				onClick={submitHandler}
 				title='submit'
-				disabled={!newItem.trim()}>
+				disabled={!session.trim()}>
 				add
 			</button>
 		</div>
 	);
 };
 
-export default NewSortOrderItem;
+export default NewRule;

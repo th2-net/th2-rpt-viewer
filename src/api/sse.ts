@@ -147,7 +147,7 @@ type ParamsFromFilter = Record<string, string | string[] | boolean>;
 export function getParamsFromFilter(filter: EventsFilter): EventSSEParams {
 	const filters = getObjectKeys(filter).filter(filterName =>
 		filterName === 'status'
-			? filter[filterName].values !== 'any'
+			? filter[filterName].values !== 'All'
 			: filter[filterName].values.length > 0,
 	);
 
@@ -295,8 +295,8 @@ const sseApi: SSESchema = {
 					{
 						type: { value: 'switcher' },
 						name: 'values',
-						defaultValue: 'any',
-						hint: 'passed, failed, any',
+						defaultValue: 'All',
+						hint: 'passed, failed, all',
 					},
 				];
 			}

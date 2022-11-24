@@ -14,110 +14,29 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { memo } from 'react';
-import { formatTimestamp, getTimestampAsNumber } from 'helpers/date';
-import { isEventMessage } from 'helpers/message';
-import { getEventStatus, getItemName } from 'helpers/event';
-import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
-import { Bookmark } from '../models/Bookmarks';
+// eslint-disable-next-line max-len
+import { MessageCardHeader } from 'modules/messages/components/message-card/header/MessageCardHeader';
+import EventCardHeader from 'modules/events/components/event-card/EventCardHeader';
+import { EventBookmark, MessageBookmark } from '../models/Bookmarks';
 
-interface BookmarkItemProps {
-	bookmark: Bookmark;
-	onRemove?: (item: Bookmark) => void;
-	onClick?: (item: Bookmark) => void;
-	toggleBookmark?: () => void;
-	isBookmarked?: boolean;
-	isBookmarkButtonDisabled: boolean;
+interface MessageBookmarkComponentProps {
+	bookmark: MessageBookmark;
+	onClick: (message: MessageBookmark) => void;
 }
 
-const BookmarkItemBase = (props: BookmarkItemProps) => {
-	const {
-		bookmark,
-		onRemove,
-		onClick,
-		toggleBookmark,
-		isBookmarked = true,
-		isBookmarkButtonDisabled,
-	} = props;
+export const MessageBookmarkComponent = (props: MessageBookmarkComponentProps) => (
+	<MessageCardHeader
+		message={props.bookmark.item}
+		isBookmarked={true}
+		onClick={() => props.onClick(props.bookmark)}
+	/>
+);
 
-	const item = bookmark.item;
+interface EventBookmarkComponentProps {
+	bookmark: EventBookmark;
+	onClick: (event: EventBookmark) => void;
+}
 
-	const itemInfo = {
-		id: isEventMessage(item) ? item.id : item.eventId,
-		status: isEventMessage(item) ? null : getEventStatus(item).toLowerCase(),
-		title: getItemName(item),
-		timestamp: getTimestampAsNumber(item),
-		type: item.type,
-	};
-
-	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
-		if (onRemove) {
-			event.stopPropagation();
-			onRemove(bookmark);
-		}
-	}
-
-	function onBookmarkAdd(e: React.MouseEvent<HTMLDivElement>) {
-		if (toggleBookmark) {
-			e.stopPropagation();
-			toggleBookmark();
-		}
-	}
-
-	function onBookmarkClick() {
-		if (onClick) {
-			onClick(bookmark);
-		}
-	}
-
-	const rootClassName = createStyleSelector('bookmark-item', itemInfo.type, itemInfo.status);
-
-	const iconClassName = createStyleSelector(
-		'bookmark-item__icon',
-		`${itemInfo.type}-icon`,
-		itemInfo.status,
-	);
-
-	const bookmarkButtonClassname = createBemElement(
-		'bookmark-item',
-		'toggle-btn',
-		isBookmarkButtonDisabled ? 'disabled' : null,
-	);
-
-	return (
-		<div className={rootClassName}>
-			<i className={iconClassName} />
-			<div className='bookmark-item__info'>
-				<div className='bookmark-item__name'>
-					<p className='bookmark-item__title' title={itemInfo.title} onClick={onBookmarkClick}>
-						{itemInfo.title}
-					</p>
-				</div>
-				<div className='bookmark-item__timestamp'>{formatTimestamp(itemInfo.timestamp)}</div>
-				<div className='bookmark-item__id'>{itemInfo.id}</div>
-			</div>
-			<div className='bookmark-item__buttons'>
-				{onRemove && (
-					<button className='bookmark-item__remove-btn' onClick={onBookmarkRemove}>
-						<i className='bookmark-item__remove-btn-icon' />
-					</button>
-				)}
-				{!onRemove && toggleBookmark && (
-					<div className={bookmarkButtonClassname}>
-						<div
-							title={
-								isBookmarkButtonDisabled
-									? 'Maximum bookmarks limit reached. Delete old bookmarks'
-									: undefined
-							}
-							className={createStyleSelector('bookmark-button', isBookmarked ? 'pinned' : null)}
-							onClick={onBookmarkAdd}
-						/>
-					</div>
-				)}
-			</div>
-		</div>
-	);
-};
-
-export const BookmarkItem = memo(BookmarkItemBase);
+export const EventBookmarkComponent = (props: EventBookmarkComponentProps) => (
+	<EventCardHeader event={props.bookmark.item} onSelect={() => props.onClick(props.bookmark)} />
+);

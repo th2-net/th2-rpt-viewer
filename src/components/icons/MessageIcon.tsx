@@ -17,5 +17,5 @@
 import '../../styles/icons.scss';
 
 export function MessageIcon() {
-	return <div className='message-icon'></div>;
+	return <span className='message-icon'></span>;
 }

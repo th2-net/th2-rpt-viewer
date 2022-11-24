@@ -20,7 +20,7 @@ import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import { SavedMessageViewType } from './SavedMessageViewType';
 
 class MessagesViewTypeStore {
-	constructor(private messageDisplayRulesStore: MessageDisplayRulesStore) {}
+	constructor(private messageDisplayRulesStore?: MessageDisplayRulesStore) {}
 
 	@observable
 	public savedViewTypes = new Map<string, SavedMessageViewType>();

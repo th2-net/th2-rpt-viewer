@@ -19,6 +19,8 @@ import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { EventTreeNode } from 'models/EventAction';
 import { createBemBlock } from 'helpers/styleCreators';
+import { Paper } from 'components/Paper';
+import { Button } from 'components/buttons/Button';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import EventCardHeader from '../event-card/EventCardHeader';
@@ -114,15 +116,13 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	return (
 		<>
 			<div className='event-tree-card'>
-				<div className='event-tree-card__indent' style={{ width: nestingLevel }}>
-					{expandIconStatus !== 'none' && (
-						<ExpandButton
-							status={expandIconStatus}
-							onClick={onExpandClick}
-							disabled={eventsStore.isLoadingTargetNode}
-						/>
-					)}
-				</div>
+				<Paper className='event-tree-card__indent' style={{ width: nestingLevel }}>
+					<ExpandButton
+						status={expandIconStatus}
+						onClick={onExpandClick}
+						disabled={eventsStore.isLoadingTargetNode}
+					/>
+				</Paper>
 				<EventCardHeader
 					childrenCount={childrenCount}
 					event={eventTreeNode}
@@ -138,12 +138,17 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					disabled={eventsStore.isLoadingTargetNode}
 				/>
 			</div>
-			{showLoadButton && !isLoadingSiblings && (
-				<button onClick={loadMoreSiblings} className='actions-list__load-button'>
-					Load more
-				</button>
+			{showLoadButton && (
+				<div className='event-tree-card__footer'>
+					{isLoadingSiblings ? (
+						<div className='event-tree-card__spinner' />
+					) : (
+						<Button variant='outlined' onClick={loadMoreSiblings}>
+							Load more
+						</Button>
+					)}
+				</div>
 			)}
-			{showLoadButton && isLoadingSiblings && <div className='actions-list__spinner' />}
 		</>
 	);
 }
@@ -160,6 +165,8 @@ interface Props {
 
 function ExpandButton(props: Props) {
 	const { status, onClick, className, style, disabled = false } = props;
+
+	if (status === 'none') return null;
 
 	const rootClass = createBemBlock(
 		'expand-icon',

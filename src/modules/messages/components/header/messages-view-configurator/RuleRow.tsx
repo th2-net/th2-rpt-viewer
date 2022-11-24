@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +14,26 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import '../styles/notification.scss';
+import { MessageDisplayRule } from 'models/EventMessage';
+import NewRule from './NewRule';
+import EditableRule from './EditableRule';
 
-const NOTIFICATION_TIMEOUT = 1500;
-
-export function showNotification(text = 'Text copied to the clipboard!') {
-	const element = document.createElement('div');
-	element.className = 'notification';
-	element.innerHTML = `<p>${text}</p>`;
-
-	const root = document.getElementById('index');
-
-	root?.appendChild(element);
-
-	window.setTimeout(() => {
-		root?.removeChild(element);
-	}, NOTIFICATION_TIMEOUT);
+interface RuleRowProps {
+	rule: MessageDisplayRule | null;
+	sessions: string[];
+	index: number;
+	isFirst?: boolean;
+	isLast?: boolean;
+	autofocus?: boolean;
 }
+
+const RuleRow = (props: RuleRowProps) => {
+	const { rule, sessions, ...restProps } = props;
+	return rule ? (
+		<EditableRule rule={rule} sessions={sessions} {...restProps} />
+	) : (
+		<NewRule sessions={sessions} />
+	);
+};
+
+export default RuleRow;

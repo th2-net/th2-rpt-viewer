@@ -18,12 +18,8 @@
 
 .search-panel {
 	@include scrollbar();
-	overflow-y: auto;
-	display: flex;
-	flex-direction: column;
 	gap: 10px;
 	height: 100%;
-	background-color: var(--background-primary);
 
 	&__fields {
 		display: flex;
@@ -37,8 +33,12 @@
 	}
 }
 
+.search-panel.window {
+	overflow-y: auto;
+}
+
 .search-panel-form {
-	padding: 0 8px 8px;
+	padding: 16px;
 	background-color: var(--background-primary);
 	overflow: hidden;
 	display: flex;
@@ -73,6 +73,7 @@
 	&__footer {
 		display: flex;
 		justify-content: flex-end;
+		gap: 12px;
 	}
 
 	&__clear-btn {
@@ -207,7 +208,8 @@
 	display: flex;
 	align-items: center;
 	white-space: nowrap;
-	color: #3a3a3a;
+	color: var(--text-primary);
+
 
 	& > * {
 		margin-right: 10px;
@@ -218,12 +220,9 @@
 		width: 50px;
 		font-size: 13px;
 		background-color: inherit;
-		border-bottom: 1px solid black;
-
-		&:focus {
-			background-color: white;
-			color: $alternativeTextColor;
-		}
+		color: var(--text-primary);
+		border: 1px solid var(--info-color);
+		border-radius: 4px;
 
 		&:disabled {
 			opacity: 0.5;
@@ -721,18 +720,15 @@
 }
 
 .search-result {
-	background-color: $searchResultBackgroundColor;
-	display: grid;
-	grid-template-areas:
-		'icon name new-workspace timestamp'
-		'body body body body';
-	grid-template-columns: 15px auto 1fr auto;
-	grid-template-rows: 15px auto;
-	gap: 5px 7px;
-	padding: 5px;
-	margin-bottom: 5px;
-	border-left: 2px solid transparent;
+	padding: 6px 12px;	
 
+	& > div {
+		border-radius: 8px;
+		padding-left: 12px;
+		padding-right: 12px;
+		background-color: var(--background-primary);
+		cursor: pointer;
+	}
 	&.highlight {
 		&.event {
 			border-color: $searchResultEventHighlightColor;
@@ -741,79 +737,6 @@
 		&.message {
 			border-color: $searchResultMessageHighlightColor;
 		}
-	}
-
-	&__icon {
-		grid-area: icon;
-
-		&.message-icon {
-			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 15px, 15px);
-		}
-
-		&.event-icon,
-		&.eventtreenode-icon {
-			width: 11px;
-			height: 11px;
-			margin: 2px;
-			border-radius: 50%;
-
-			&.passed {
-				background-color: $passedEventsColor;
-			}
-
-			&.failed {
-				background-color: $failedEventsColor;
-			}
-		}
-	}
-
-	&__name {
-		@include ellipsis();
-
-		grid-area: name;
-		font-weight: 700;
-		font-size: 10px;
-		line-height: 15px;
-		cursor: pointer;
-
-		&.message {
-			color: #087a91;
-		}
-
-		&.eventtreenode {
-			&.success {
-				color: $passedTextColor;
-			}
-
-			&.fail {
-				color: $failedTextColor;
-			}
-		}
-
-		&:hover {
-			color: $bookmarkLinkHoverColor;
-			text-decoration: underline;
-		}
-	}
-
-	&__new-workspace {
-		grid-area: new-workspace;
-		font-size: 10px;
-		color: #808080;
-		line-height: 15px;
-		cursor: pointer;
-		justify-self: start;
-
-		&:hover {
-			color: #595959;
-		}
-	}
-
-	&__timestamp {
-		grid-area: timestamp;
-		color: #808080;
-		font-size: 9px;
-		line-height: 15px;
 	}
 }
 

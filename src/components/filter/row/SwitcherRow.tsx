@@ -50,7 +50,10 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 			)}
 			<ToggleButtonGroup value={selectedValue} onChange={setType}>
 				{options.map(option => (
-					<ToggleButton key={option} value={option}>
+					<ToggleButton
+						key={option}
+						value={option}
+						style={{ padding: option.toLowerCase() === 'all' ? '8px 24px' : undefined }}>
 						{icons[option.toLowerCase()]}
 						{option}
 					</ToggleButton>

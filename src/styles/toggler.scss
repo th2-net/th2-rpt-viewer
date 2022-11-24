@@ -16,49 +16,49 @@
 
 @import './common/vars';
 
-.toggler {
+.toggler-row {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	width: 30px;
 
-	&-wrapper {
-		display: flex;
-	}
-
 	&.disabled {
 		opacity: 0.5;
-		& > div {
+		& > button {
 			cursor: default;
 		}
 	}
 
-	&__icon {
-		cursor: pointer;
-		position: relative;
-		box-sizing: border-box;
+	&__button {
+		@include surface;
 		width: 24px;
 		height: 24px;
-	}
-	.include {
-		@include icon(url(../../resources/icons/include.svg), 24px, 24px);
-	}
-	.exclude {
-		@include icon(url(../../resources/icons/exclude.svg), 24px, 24px);
-	}
-	.and {
-		@include icon(url(../../resources/icons/and.svg), 24px, 24px);
-	}
-	.or {
-		@include icon(url(../../resources/icons/or.svg), 24px, 24px);
-	}
+		position: relative;
+		border-radius: 4px;
 
-	.strict-off {
-		@include icon(url(../../resources/icons/strict-off.svg), 24px, 24px);
-	}
+		& > span {
+			position: relative;
+			z-index: 1;
+		}
 
-	.strict-on {
-		@include icon(url(../../resources/icons/strict-on.svg), 24px, 24px);
+		&.active {
+			& svg,
+			path,
+			rect {
+				fill: var(--text-info);
+			}
+
+			&::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				background-color: var(--text-info);
+				opacity: 0.2;
+			}
+		}
 	}
 
 	&__label {

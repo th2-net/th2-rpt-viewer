@@ -27,6 +27,7 @@
 		"@types/react-text-mask": "^5.4.6",
 		"@types/regenerator-runtime": "^0.13.1",
 		"@wojtekmaj/enzyme-adapter-react-17": "^0.6.7",
+		"clsx": "^1.2.1",
 		"core-js": "^3.12.1",
 		"cross-env": "^6.0.3",
 		"fetch-retry": "^5.0.3",

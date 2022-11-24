@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { Chip } from 'components/Chip';
-import { createStyleSelector } from 'helpers/styleCreators';
+import { SessionDirectionIcon } from 'components/icons/SessionDirectionIcon';
 
 /* eslint-disable no-bitwise */
 export function getHashCode(str: string): number {
@@ -69,15 +69,15 @@ export function Session(props: Props) {
 		)}deg)`,
 	};
 
-	const sessionClass = createStyleSelector(
-		'mc-header__icon mc-header__direction-icon',
-		direction?.toLowerCase(),
-	);
-
 	return (
-		<Chip title={`Session: ${sessionId}`} className='mc-header__sessionId'>
+		<Chip
+			style={{ display: 'flex' }}
+			title={`Session: ${sessionId}`}
+			className='mc-header__session'>
 			<div style={sessionBackgroundStyle} />
-			<span className={sessionClass} />
+			<SessionDirectionIcon
+				style={{ transform: direction.toLowerCase() === 'first' ? 'scale(-1)' : undefined }}
+			/>
 			<span className='mc-header__session-id'>{sessionId}</span>
 		</Chip>
 	);

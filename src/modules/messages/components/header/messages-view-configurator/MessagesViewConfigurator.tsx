@@ -19,8 +19,9 @@ import { observer } from 'mobx-react-lite';
 import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
 import { IconButton } from 'components/buttons/IconButton';
 import { ToggleButtonGroup, ToggleButton } from 'components/buttons/ToggleButton';
-import { useMessagesFilterConfigStore } from '../../hooks/useFilterConfigStore';
-import { ModalPortal } from '../../../../components/util/Portal';
+import { SettingsIcon } from 'components/icons/SettingsIcon';
+import { ModalPortal } from 'components/util/Portal';
+import { useMessagesFilterConfigStore } from '../../../hooks/useFilterConfigStore';
 import RulesList from './RulesList';
 import BodySortConfig from './BodySortConfig';
 import 'styles/messages-view-configurator.scss';
@@ -52,7 +53,7 @@ const MessageViewConfigurator = () => {
 	return (
 		<>
 			<IconButton ref={buttonRef} onClick={() => setIsOpen(open => !open)}>
-				<i className='messages-window-header__settings-icon' />
+				<SettingsIcon size={24} />
 			</IconButton>
 			<ModalPortal
 				isOpen={isOpen}

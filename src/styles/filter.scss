@@ -61,14 +61,18 @@
 		border: none;
 		outline: none;
 
+		& span {
+			font-size: 24px;
+		}
+
+		&.applied path {
+			fill: var(--text-info);
+		}
+
 		&.disabled {
 			opacity: 0.6;
 			cursor: default;
 		}
-	}
-
-	&__icon {
-		@include icon(url(../../resources/icons/filter.svg), 24px, 24px);
 	}
 
 	&__title {
@@ -273,7 +277,7 @@
 		display: flex;
 		width: 100%;
 		justify-content: flex-end;
-		gap: 6px;
+		gap: 16px;
 
 		&.status {
 			justify-content: flex-start;
@@ -411,6 +415,7 @@
 
 .filter-row {
 	@include surface;
+	background-color: unset;
 	overflow: hidden;
 	border-radius: 4px;
 	min-height: 40px;
@@ -459,7 +464,6 @@
 	}
 
 	&__input {
-
 		width: 100%;
 		flex-grow: 1;
 		padding: 3px 5px;

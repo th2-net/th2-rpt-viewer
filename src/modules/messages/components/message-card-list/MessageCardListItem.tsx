@@ -22,7 +22,6 @@ import CardDisplayType from 'models/util/CardDisplayType';
 import StateSaver from 'components/util/StateSaver';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
-import { useIsSoftFiltered } from '../../hooks/useIsSoftFiltered';
 import { useMessagesViewTypeStore } from '../../hooks/useMessagesViewTypeStore';
 import { useMessageBodySortStore } from '../../hooks/useMessageBodySortStore';
 import MessageCard from '../message-card/MessageCard';
@@ -48,25 +47,23 @@ const MessageCardListItem = observer((props: Props) => {
 
 	const messagesStore = useMessagesStore();
 	const { sortOrderItems } = useMessageBodySortStore();
-	const isSoftFiltered = useIsSoftFiltered(id);
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
-	const highlightTimer = React.useRef<NodeJS.Timeout>();
-
 	React.useEffect(() => {
-		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === id) {
-			setHighlighted(true);
+		const isSelected = messagesStore.highlightedMessageId?.valueOf() === id;
+		setHighlighted(isSelected);
 
-			highlightTimer.current = setTimeout(() => {
-				setHighlighted(false);
-				messagesStore.highlightedMessageId = null;
-			}, 3000);
-		}
+		const resetHighlightedMessageId = isSelected
+			? setTimeout(() => {
+					setHighlighted(false);
+					messagesStore.highlightedMessageId = null;
+			  }, 3000)
+			: null;
 
 		return () => {
-			if (highlightTimer.current) {
-				window.clearTimeout(highlightTimer.current);
+			if (resetHighlightedMessageId !== null) {
+				window.clearTimeout(resetHighlightedMessageId);
 			}
 			setHighlighted(false);
 		};
@@ -88,9 +85,7 @@ const MessageCardListItem = observer((props: Props) => {
 
 	const rootClass = createBemBlock(
 		'messages-list__item',
-		isSoftFiltered ? 'soft-filtered' : null,
-		isAttached ? 'attached' : null,
-		isExported ? 'exported' : null,
+		isExported || isHighlighted ? 'selected' : null,
 	);
 
 	return (

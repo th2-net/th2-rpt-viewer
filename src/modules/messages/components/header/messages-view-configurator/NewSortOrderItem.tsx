@@ -14,50 +14,42 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { nanoid } from 'nanoid';
+import { useState } from 'react';
 import moment from 'moment';
-import React, { useState } from 'react';
-import { useMessageDisplayRulesStore } from '../../hooks/useMessageDisplayRulesStore';
-import { MessageViewType } from '../../../../models/EventMessage';
-import SessionEditor from './SessionEditor';
-import RuleEditor from './RuleEditor';
+import { nanoid } from 'nanoid';
+import StringFilterRow from 'components/filter/row/StringRow';
+import { useMessageBodySortStore } from '../../../hooks/useMessageBodySortStore';
 
-type NewRuleProps = {
-	sessions: string[];
-};
-
-const NewRule = ({ sessions }: NewRuleProps) => {
-	const rulesStore = useMessageDisplayRulesStore();
-
-	const [session, setSession] = useState('');
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
+const NewSortOrderItem = () => {
+	const sortOrder = useMessageBodySortStore();
+	const [newItem, setNewItem] = useState('');
 
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		rulesStore.setNewMessagesDisplayRule({
-			id: nanoid(),
-			session,
-			viewType,
-			removable: true,
-			editableSession: true,
-			editableType: true,
-			timestamp: moment.utc().valueOf(),
-		});
+		sortOrder.setNewItem({ id: nanoid(), item: newItem, timestamp: moment.utc().valueOf() });
 	};
 
 	return (
-		<div className='rule'>
-			<SessionEditor value={session} setValue={setSession} sessions={sessions} />
-			<RuleEditor selected={viewType} setSelected={setViewType} />
+		<div className='order-item'>
+			<StringFilterRow
+				config={{
+					className: 'order-item',
+					id: 'new-order-item',
+					type: 'string',
+					placeholder: 'Enter field name',
+					value: newItem,
+					setValue: setNewItem,
+				}}
+			/>
 			<button
 				className='rule-button'
 				onClick={submitHandler}
 				title='submit'
-				disabled={!session.trim()}>
+				disabled={!newItem.trim()}>
 				add
 			</button>
 		</div>
 	);
 };
 
-export default NewRule;
+export default NewSortOrderItem;
