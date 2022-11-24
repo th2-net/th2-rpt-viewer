@@ -18,6 +18,7 @@ import { formatTimestamp } from 'helpers/date';
 import { observer } from 'mobx-react-lite';
 import { SearchDirection } from 'models/SearchDirection';
 import { useEventsStore } from '../hooks/useEventsStore';
+import '../../../styles/events.scss';
 
 export const EventListNavigation = observer(() => {
 	const eventsStore = useEventsStore();
@@ -34,13 +35,20 @@ export const EventListNavigation = observer(() => {
 
 	return (
 		<div className='events-nav'>
-			<button className='button-base' onClick={getPrevEvents}>
+			<div className='events-nav__arrow-wrapper events-nav__arrow-wrapper--left'  onClick={getPrevEvents}>
+				<div className='events-nav__arrow-icon' />
+			</div>
+			<button className='button-base button-base--events' onClick={getPrevEvents}>
 				Show previous
 			</button>
 			<span className='events-nav__timestamp'>{formatTimestamp(timestamp)}</span>
-			<button className='button-base' onClick={getNextEvents}>
+			<button className='button-base button-base--events' onClick={getNextEvents}>
 				Show next
 			</button>
+			<div className='events-nav__arrow-wrapper' onClick={getNextEvents}>
+				<div className='events-nav__arrow-icon' />
+			</div>
+			<div className='events-nav__calendar-button' />
 		</div>
 	);
 });
