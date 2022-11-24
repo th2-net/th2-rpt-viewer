@@ -38,21 +38,19 @@ export const EventListNavigation = observer(() => {
 
 	return (
 		<div className='events-nav'>
-			<Chip
-				className='events-nav__arrow-wrapper events-nav__arrow-wrapper--left'
-				onClick={getPrevEvents}>
-				<EventsArrowIcon />
-			</Chip>
-			<button className='button-base button-base--events' onClick={getPrevEvents}>
+			<button className='button-base event-button' onClick={getPrevEvents}>
+				<Chip className='events-nav__nav-circle left'>
+					<EventsArrowIcon className='arrow' />
+				</Chip>
 				Show previous
 			</button>
 			<span className='events-nav__timestamp'>{formatTimestamp(timestamp)}</span>
-			<button className='button-base button-base--events' onClick={getNextEvents}>
+			<button className='button-base event-button' onClick={getNextEvents}>
 				Show next
+				<Chip className='events-nav__nav-circle'>
+					<EventsArrowIcon />
+				</Chip>
 			</button>
-			<Chip className='events-nav__arrow-wrapper' onClick={getNextEvents}>
-				<EventsArrowIcon />
-			</Chip>
 			<CalendarIcon className='events-nav__calendar-button' />
 		</div>
 	);
