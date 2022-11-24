@@ -166,12 +166,15 @@
 	&__item {
 		display: grid;
 		grid-template-columns: 29px 1fr auto;
-		height: 36px;
 		align-items: center;
 		gap: 8px;
-		padding: 4px 8px;
+		padding:12px;
 		cursor: pointer;
 		color: var(--text-secondary);
+
+		.icon {
+			font-size: 12px;
+		}
 
 		&-title {
 			text-transform: capitalize;
@@ -187,7 +190,7 @@
 		}
 
 		.chip {
-			color: #B0B0B0;
+			color: #b0b0b0;
 			padding: 5px 6px;
 		}
 
@@ -287,7 +290,7 @@
 			height: 24px;
 		}
 
-		.chip:not(.mc-header__icons) {
+		.chip:not(.mc-header__icons):not(:first-child) {
 			display: block;
 		}
 
@@ -716,7 +719,7 @@
 		width: auto;
 		gap: 8px;
 		padding: 0 10px;
-		color: #4e8aff;
+		color: var(--info-color);
 	}
 
 	&__icon {
@@ -739,13 +742,13 @@
 	}
 
 	&__tools-list {
+		@include surface;
 		position: absolute;
-		background-color: white;
-		box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
-		display: flex;
-		flex-direction: column;
 		right: 35px;
 		z-index: 2;
+		font-size: 14px;
+		line-height: 16px;	
+		border-radius: 8px;
 	}
 
 	&__tool {
@@ -760,24 +763,6 @@
 		&:hover {
 			background-color: #00000012;
 		}
-	}
-
-	&.json {
-		@include icon(url(../../resources/icons/json.svg), 20px, 20px);
-		margin-top: 5%;
-	}
-
-	&.formatted {
-		@include icon(url(../../resources/icons/messages-beautify.svg), 20px, 20px);
-	}
-
-	&.binary {
-		@include icon(url(../../resources/icons/binar.svg), 20px, 20px);
-		opacity: 0.7;
-	}
-
-	&.ascii {
-		@include icon(url(../../resources/icons/ascii.svg), 20px, 20px);
 	}
 }
 
@@ -798,26 +783,26 @@
 	}
 }
 .messages-window-header {
-	height: 100%;
 	width: 100%;
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 10px;
+	flex-direction: column;
 
-	&__update-button {
-		font-size: 20px;
-		&.active span {
-			animation: rotating 4s linear infinite;
+	&__row {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 10px;
 
-			@keyframes rotating {
-				from {
-					transform: rotate(0deg);
-				}
-				to {
-					transform: rotate(360deg);
-				}
-			}
+		&:last-child {
+			justify-content: space-between;
+		}
+	}
+
+	&__group {
+		display: flex;
+		align-items: center;
+		& button {
+			margin-left: 10px;
 		}
 	}
 
@@ -849,6 +834,22 @@
 		}
 	}
 
+	.update-button {
+		font-size: 20px;
+		&.active span {
+			animation: rotating 4s linear infinite;
+
+			@keyframes rotating {
+				from {
+					transform: rotate(0deg);
+				}
+				to {
+					transform: rotate(360deg);
+				}
+			}
+		}
+	}
+
 	.report-viewer-link {
 		@include clickable;
 
@@ -858,6 +859,10 @@
 		font-size: 14px;
 		line-height: 15px;
 		font-weight: bold;
+	}
+
+	.replay-button {
+		background-color: var(--text-background);
 	}
 }
 
@@ -985,11 +990,15 @@
 
 	&__close-button {
 		position: absolute;
-		top: 5px;
-		right: 5px;
-		background-color: transparent;
+		top: 8px;
+		border-radius: 50%;
+		right: 8px;
+		width: 24px;
+    height: 24px;
 
-		@include round-button(url(../../resources/icons/cross-icon.svg));
+		& span {
+			color: var(--info-color);
+		}
 	}
 
 	.dragable-area {

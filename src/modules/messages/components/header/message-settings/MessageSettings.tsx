@@ -21,16 +21,18 @@ import { IconButton } from 'components/buttons/IconButton';
 import { ToggleButtonGroup, ToggleButton } from 'components/buttons/ToggleButton';
 import { SettingsIcon } from 'components/icons/SettingsIcon';
 import { ModalPortal } from 'components/util/Portal';
-import { useMessagesFilterConfigStore } from '../../../hooks/useFilterConfigStore';
-import RulesList from './RulesList';
-import BodySortConfig from './BodySortConfig';
+import { DisplayRules as DisplayRulesComponent } from './display-rules-settings/DisplayRules';
+import { BodySortRules as BodySortRulesComponent } from './body-sort-settings/BodySortRules';
 import 'styles/messages-view-configurator.scss';
 
-const MessageViewConfigurator = () => {
-	const { messageSessions } = useMessagesFilterConfigStore();
+enum MessagesSettingsViews {
+	DisplayRules = 'display-rules',
+	BodySortRules = 'body-sort-rules',
+}
 
+const MessagesSettings = () => {
 	const [isOpen, setIsOpen] = useState(false);
-	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');
+	const [mode, setMode] = useState<MessagesSettingsViews>(MessagesSettingsViews.DisplayRules);
 
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
@@ -60,34 +62,22 @@ const MessageViewConfigurator = () => {
 				ref={modalRef}
 				style={{
 					position: 'absolute',
-					width: '320px',
+					width: '380px',
 					top: `calc(35px + ${offsetTop}px)`,
 					right: `calc(100% - ${offsetRight}px - 14px)`,
 					zIndex: 500,
 				}}>
-				<div className='messages-view-configurator'>
-					<div className='messages-view-configurator-header'>
-						<p>{mode === 'display-rules' ? 'Message Display Rules' : 'Message Body Sort'}</p>
-					</div>
-					<div className='messages-view-configurator-body'>
-						{mode === 'display-rules' ? (
-							<RulesList sessions={messageSessions} />
+				<div className='message-settings'>
+					<div className='message-settings__body'>
+						{mode === MessagesSettingsViews.DisplayRules ? (
+							<DisplayRulesComponent />
 						) : (
-							<BodySortConfig />
+							<BodySortRulesComponent />
 						)}
 					</div>
-					{mode === 'display-rules' ? (
-						<p className='hint'>
-							<i>Use * character to match an unknown substring as part of session name</i>
-						</p>
-					) : null}
-
-					<ToggleButtonGroup
-						value={mode}
-						onChange={setMode}
-						className='messages-view-configurator__togglers'>
-						<ToggleButton value='display-rules'>Display rules</ToggleButton>
-						<ToggleButton value='body-sort'>Body sort</ToggleButton>
+					<ToggleButtonGroup value={mode} onChange={setMode} className='message-settings__togglers'>
+						<ToggleButton value={MessagesSettingsViews.DisplayRules}>Display rules</ToggleButton>
+						<ToggleButton value={MessagesSettingsViews.BodySortRules}>Body sort</ToggleButton>
 					</ToggleButtonGroup>
 				</div>
 			</ModalPortal>
@@ -95,4 +85,4 @@ const MessageViewConfigurator = () => {
 	);
 };
 
-export default observer(MessageViewConfigurator);
+export default observer(MessagesSettings);

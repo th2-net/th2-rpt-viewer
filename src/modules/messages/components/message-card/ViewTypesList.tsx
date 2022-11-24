@@ -29,19 +29,18 @@ interface Props {
 	onViewTypeSelect: (viewType: MessageViewType) => void;
 }
 
-const icons = {
+export const viewTypeIcons = {
 	[MessageViewType.ASCII]: ASCIIcon,
 	[MessageViewType.BINARY]: BinaryIcon,
 	[MessageViewType.JSON]: JSONIcon,
 	[MessageViewType.FORMATTED]: BeautyfiedJSONIcon,
 };
 
-export const ViewTypeSelect = (props: Props) => {
+export const ViewTypesList = (props: Props) => {
 	const { viewTypes, selectedViewType, onViewTypeSelect } = props;
 
 	return (
-		<>
-			<p>View</p>
+		<ul>
 			{viewTypes.map(vt => {
 				const isSelected = vt === selectedViewType;
 				const rootClassname = createStyleSelector(
@@ -54,17 +53,16 @@ export const ViewTypeSelect = (props: Props) => {
 					'indicator',
 					isSelected ? 'active' : null,
 				);
-				const ViewTypeIcon = icons[vt];
+				const ViewTypeIcon = viewTypeIcons[vt];
 
 				return (
-					<div title={vt} className={rootClassname} key={vt} onClick={() => onViewTypeSelect(vt)}>
+					<li title={vt} className={rootClassname} key={vt} onClick={() => onViewTypeSelect(vt)}>
 						<ViewTypeIcon />
 						<span className='message-card-tools__item-title'>{vt}</span>
-						<div className={indicatorClassName} />
-					</div>
+						<span className={indicatorClassName} />
+					</li>
 				);
 			})}
-			<div className='message-card-tools__line' />
-		</>
+		</ul>
 	);
 };

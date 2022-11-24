@@ -18,9 +18,11 @@ import { useState, useCallback, useEffect } from 'react';
 import KeyCodes from 'models/util/KeyCodes';
 import { usePrevious } from 'hooks/index';
 import AutocompleteInput from 'components/util/AutocompleteInput';
+import { CrossIcon } from 'components/icons/CrossIcon';
+import { Chip } from 'components/Chip';
 import { MessageSortOrderItem } from 'models/EventMessage';
-import { useMessageBodySortStore } from '../../../hooks/useMessageBodySortStore';
-import Reorder from './Reorder';
+import { useMessageBodySortStore } from '../../../../hooks/useMessageBodySortStore';
+import { Reorder } from '../display-rules-settings/EditableRule';
 
 type EditableSortOrderItemProps = {
 	item: MessageSortOrderItem;
@@ -37,10 +39,11 @@ const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrd
 			<Reorder isFirst={isFirst} isLast={isLast} index={index} move={sortOrderStore.reorder} />
 			<Editor item={item} />
 			<button
-				className='rule-delete'
+				className='settings-button rule-delete'
 				onClick={() => sortOrderStore.deleteItem(item)}
-				title='delete'
-			/>
+				title='delete'>
+				<CrossIcon />
+			</button>
 		</>
 	);
 };
@@ -75,11 +78,6 @@ const Editor = ({ item }: { item: MessageSortOrderItem }) => {
 			autoFocus={true}
 		/>
 	) : (
-		<p
-			onClick={() => {
-				setIsEditing(true);
-			}}>
-			{value}
-		</p>
+		<Chip onClick={() => setIsEditing(true)}>{value}</Chip>
 	);
 };

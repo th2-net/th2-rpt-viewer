@@ -35,6 +35,9 @@ import { FilterRows } from 'components/filter/FilterRows';
 import { ButtonBase } from 'components/buttons/ButtonBase';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { Button } from 'components/buttons/Button';
+import { createURLSearchParams } from 'helpers/url';
+import { IconButton } from 'components/buttons/IconButton';
+import { CrossIcon } from 'components/icons/CrossIcon';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 
 const filterOrder: MessageFilterKeys[] = [
@@ -168,11 +171,14 @@ function ReplayModal() {
 			}, {} as MessagesFilter);
 		}
 
-		const params = getMessagesSSEParams(currentFilter, {
-			endTimestamp,
-			startTimestamp,
-			streams: [...streams, currentStream].filter(Boolean),
-		}).toString();
+		const params = createURLSearchParams(
+			getMessagesSSEParams(currentFilter, {
+				endTimestamp,
+				startTimestamp,
+				streams: [...streams, currentStream].filter(Boolean),
+			}) as unknown as Record<string, boolean | string | string[]>,
+		);
+
 		return `${link}?${params}`;
 	}, [filter, streams, startTimestamp, endTimestamp, currentStream, currentValues]);
 
@@ -201,7 +207,7 @@ function ReplayModal() {
 
 	return (
 		<>
-			<ButtonBase onClick={toggleReplayModal}>
+			<ButtonBase onClick={toggleReplayModal} className='replay-button'>
 				<span>Replay</span>
 			</ButtonBase>
 			<ModalPortal isOpen={isOpen}>
@@ -220,9 +226,9 @@ function ReplayModal() {
 						onMouseDown={() => setMouseDown(true)}
 						onMouseUp={() => setMouseDown(false)}
 					/>
-					<button className='replay__close-button' onClick={() => setIsOpen(false)}>
-						<i></i>
-					</button>
+					<IconButton className='replay__close-button' onClick={() => setIsOpen(false)}>
+						<CrossIcon />
+					</IconButton>
 					<FilterRows config={filterConfig} headerClassName={'replay__compound-header'} />
 					<p className='replay__generated-text'>
 						<a href={textToCopy} rel='noopener noreferrer' target='_blank'>
