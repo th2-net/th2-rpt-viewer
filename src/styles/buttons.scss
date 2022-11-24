@@ -33,6 +33,12 @@
 	&:hover:not([disabled]) {
 		cursor: pointer;
 	}
+
+	&--events {
+		box-shadow: none;
+		padding: 0;
+		margin: 0 8px;
+	}
 }
 
 .icon-button {
