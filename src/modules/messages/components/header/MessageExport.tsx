@@ -18,6 +18,7 @@ import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MessageViewType } from 'models/EventMessage';
 import { ButtonBase } from 'components/buttons/ButtonBase';
+import { ViewTypesList } from '../message-card/ViewTypesList';
 
 interface Props {
 	isExporting: boolean;
@@ -78,15 +79,7 @@ const MessageExport = (props: Props) => {
 							animate={{ opacity: 1, scale: 1 }}
 							exit={{ opacity: 0, scale: 0.5 }}
 							transition={{ duration: 0.15, ease: 'easeOut' }}>
-							{viewTypes.map(type => (
-								<button
-									key={type}
-									className='messages-export__tool'
-									title={`Export to ${type}`}
-									onClick={() => exportMessages(type)}>
-									<i className={`messages-export ${type.toLowerCase()}`} />
-								</button>
-							))}
+							<ViewTypesList onViewTypeSelect={exportMessages} viewTypes={viewTypes} />
 						</motion.div>
 					)}
 				</AnimatePresence>

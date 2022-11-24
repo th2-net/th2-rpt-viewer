@@ -14,26 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { MessageDisplayRule } from 'models/EventMessage';
-import NewRule from './NewRule';
-import EditableRule from './EditableRule';
+/* eslint-disable max-len */
+import { Icon, IconProps } from './Icon';
 
-interface RuleRowProps {
-	rule: MessageDisplayRule | null;
-	sessions: string[];
-	index: number;
-	isFirst?: boolean;
-	isLast?: boolean;
-	autofocus?: boolean;
-}
-
-const RuleRow = (props: RuleRowProps) => {
-	const { rule, sessions, ...restProps } = props;
-	return rule ? (
-		<EditableRule rule={rule} sessions={sessions} {...restProps} />
-	) : (
-		<NewRule sessions={sessions} />
-	);
-};
-
-export default RuleRow;
+export const ArrowIcon = (props: IconProps) => (
+	<Icon {...props}>
+		<svg viewBox='0 0 9 9' fill='none' xmlns='http://www.w3.org/2000/svg'>
+			<path
+				d='M4.1296 4.6997L5.7796 6.3497L5.30827 6.82104L3.18694 4.6997L5.30827 2.57837L5.7796 3.0497L4.1296 4.6997Z'
+				fill='currentColor'
+			/>
+		</svg>
+	</Icon>
+);

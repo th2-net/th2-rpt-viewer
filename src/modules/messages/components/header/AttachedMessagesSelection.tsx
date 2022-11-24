@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { Chip } from 'components/Chip';
 import { AttachedMessagesIcon } from 'components/icons/AttachedMessagesIcon';
 import { MessageIcon } from 'components/icons/MessageIcon';
-import { useMessagesStore } from '../hooks/useMessagesStore';
+import { useMessagesStore } from '../../hooks/useMessagesStore';
 
 type Offset = -1 | 1;
 

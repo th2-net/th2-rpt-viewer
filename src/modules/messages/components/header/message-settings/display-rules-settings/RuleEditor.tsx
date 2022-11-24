@@ -14,12 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { useCallback, useState, useRef } from 'react';
 import { MessageViewType } from 'models/EventMessage';
 import useDimensions from 'hooks/useDimensions';
 import { createStyleSelector } from 'helpers/styleCreators';
 import { ModalPortal } from 'components/util/Portal';
 import { useOutsideClickListener } from 'hooks/index';
+import { viewTypeIcons, ViewTypesList } from '../../../message-card/ViewTypesList';
 
 interface RuleEditorProps {
 	selected: string;
@@ -31,10 +32,10 @@ interface RuleEditorProps {
 const viewTypes = Object.values(MessageViewType);
 
 const RuleEditor = ({ selected, setSelected, onSelect, defaultOpen }: RuleEditorProps) => {
-	const [showOptions, setShowOptions] = React.useState(Boolean(defaultOpen));
+	const [showOptions, setShowOptions] = useState(Boolean(defaultOpen));
 
 	const [btnRef, btnDimensions] = useDimensions<HTMLButtonElement>();
-	const listRef = React.useRef(null);
+	const listRef = useRef(null);
 
 	useOutsideClickListener(listRef, (e: MouseEvent) => {
 		if (e.target !== btnRef.current) {
@@ -42,21 +43,31 @@ const RuleEditor = ({ selected, setSelected, onSelect, defaultOpen }: RuleEditor
 		}
 	});
 
-	const triggerClassName = createStyleSelector('rules-select-trigger', selected);
 	const optionsListClassName = createStyleSelector(
 		'rules-select-options-list',
 		showOptions ? 'show' : null,
 	);
 
+	const onViewTypeSelect = useCallback(
+		viewType => {
+			setSelected(viewType);
+			setShowOptions(false);
+			if (onSelect) {
+				onSelect(viewType);
+			}
+		},
+		[onSelect, setSelected],
+	);
+
+	const toggleOptionsList = () => setShowOptions(isOpen => !isOpen);
+
+	const Icon = viewTypeIcons[selected as MessageViewType];
+
 	return (
 		<div className='rules-select'>
-			<button
-				ref={btnRef}
-				className={triggerClassName}
-				onClick={() => {
-					setShowOptions(show => !show);
-				}}
-			/>
+			<button ref={btnRef} className='rules-select__button' onClick={toggleOptionsList}>
+				<Icon />
+			</button>
 			{btnDimensions ? (
 				<ModalPortal
 					isOpen={showOptions}
@@ -65,26 +76,14 @@ const RuleEditor = ({ selected, setSelected, onSelect, defaultOpen }: RuleEditor
 						top: btnDimensions.top,
 						left: btnDimensions.left,
 						zIndex: 500,
+						transform: 'translate(-95%, 0)',
 					}}>
 					<div className={optionsListClassName} ref={listRef}>
-						{viewTypes.map((opt, index) => (
-							<button
-								className={`rules-select-option`}
-								key={index}
-								value={opt}
-								title={opt}
-								onClick={(e: React.MouseEvent) => {
-									const viewType = (e.currentTarget as HTMLButtonElement).value as MessageViewType;
-									setSelected(viewType);
-									setShowOptions(false);
-									if (onSelect) {
-										onSelect(viewType);
-									}
-								}}>
-								<span className={`select-icon ${opt.toLowerCase()}`} />
-								{opt}
-							</button>
-						))}
+						<ViewTypesList
+							onViewTypeSelect={onViewTypeSelect}
+							viewTypes={viewTypes}
+							selectedViewType={selected as MessageViewType}
+						/>
 					</div>
 				</ModalPortal>
 			) : null}

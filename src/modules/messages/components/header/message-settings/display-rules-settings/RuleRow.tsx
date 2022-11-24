@@ -15,18 +15,40 @@
  ***************************************************************************** */
 
 import { nanoid } from 'nanoid';
+import { observer } from 'mobx-react-lite';
+import { MessageDisplayRule, MessageViewType } from 'models/EventMessage';
 import moment from 'moment';
 import React, { useState } from 'react';
-import { MessageViewType } from 'models/EventMessage';
-import { useMessageDisplayRulesStore } from '../../../hooks/useMessageDisplayRulesStore';
+import { useMessageDisplayRulesStore } from '../../../../hooks/useMessageDisplayRulesStore';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';
+import EditableRule from './EditableRule';
+
+interface RuleRowProps {
+	rule: MessageDisplayRule | null;
+	sessions: string[];
+	index: number;
+	isFirst?: boolean;
+	isLast?: boolean;
+	autofocus?: boolean;
+}
+
+const RuleRow = (props: RuleRowProps) => {
+	const { rule, sessions, ...restProps } = props;
+	return rule ? (
+		<EditableRule rule={rule} sessions={sessions} {...restProps} />
+	) : (
+		<NewRule sessions={sessions} />
+	);
+};
+
+export default RuleRow;
 
 type NewRuleProps = {
 	sessions: string[];
 };
 
-const NewRule = ({ sessions }: NewRuleProps) => {
+const NewRule = observer(({ sessions }: NewRuleProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
 	const [session, setSession] = useState('');
@@ -46,18 +68,18 @@ const NewRule = ({ sessions }: NewRuleProps) => {
 	};
 
 	return (
-		<div className='rule'>
+		<div className='rule-row'>
 			<SessionEditor value={session} setValue={setSession} sessions={sessions} />
 			<RuleEditor selected={viewType} setSelected={setViewType} />
 			<button
-				className='rule-button'
+				className='settings-button'
 				onClick={submitHandler}
-				title='submit'
+				title='Add rule'
 				disabled={!session.trim()}>
-				add
+				+
 			</button>
 		</div>
 	);
-};
+});
 
-export default NewRule;
+NewRule.displayName = 'NewRuleRow';

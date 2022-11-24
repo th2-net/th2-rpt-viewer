@@ -18,7 +18,7 @@ import { useState } from 'react';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import StringFilterRow from 'components/filter/row/StringRow';
-import { useMessageBodySortStore } from '../../../hooks/useMessageBodySortStore';
+import { useMessageBodySortStore } from '../../../../hooks/useMessageBodySortStore';
 
 const NewSortOrderItem = () => {
 	const sortOrder = useMessageBodySortStore();
@@ -30,7 +30,7 @@ const NewSortOrderItem = () => {
 	};
 
 	return (
-		<div className='order-item'>
+		<div className='rule-row'>
 			<StringFilterRow
 				config={{
 					className: 'order-item',
@@ -42,11 +42,11 @@ const NewSortOrderItem = () => {
 				}}
 			/>
 			<button
-				className='rule-button'
+				className='settings-button'
 				onClick={submitHandler}
-				title='submit'
+				title='Add'
 				disabled={!newItem.trim()}>
-				add
+				+
 			</button>
 		</div>
 	);

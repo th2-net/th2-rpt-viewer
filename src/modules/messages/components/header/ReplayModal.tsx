@@ -201,7 +201,7 @@ function ReplayModal() {
 
 	return (
 		<>
-			<ButtonBase onClick={toggleReplayModal}>
+			<ButtonBase onClick={toggleReplayModal} className='replay-button'>
 				<span>Replay</span>
 			</ButtonBase>
 			<ModalPortal isOpen={isOpen}>

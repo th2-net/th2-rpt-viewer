@@ -14,13 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import clsx from 'clsx';
 import React, { useState, useCallback } from 'react';
+import { observer } from 'mobx-react-lite';
 import { usePrevious } from 'hooks/usePrevious';
 import { MessageDisplayRule, MessageViewType } from 'models/EventMessage';
-import { useMessageDisplayRulesStore } from '../../../hooks/useMessageDisplayRulesStore';
+import { Chip } from 'components/Chip';
+import { CrossIcon } from 'components/icons/CrossIcon';
+import { ArrowIcon } from 'components/icons/ArrowIcon';
+import { viewTypeIcons } from '../../../message-card/ViewTypesList';
+import { useMessageDisplayRulesStore } from '../../../../hooks/useMessageDisplayRulesStore';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';
-import Reorder from './Reorder';
 
 type EditableRuleProps = {
 	rule: MessageDisplayRule;
@@ -31,31 +36,34 @@ type EditableRuleProps = {
 	autofocus?: boolean;
 };
 
-const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: EditableRuleProps) => {
-	const rulesStore = useMessageDisplayRulesStore();
+const EditableRule = observer(
+	({ sessions, rule, isFirst, isLast, index, autofocus }: EditableRuleProps) => {
+		const rulesStore = useMessageDisplayRulesStore();
 
-	return (
-		<div className='rule editable'>
-			<Reorder
-				isFirst={isFirst}
-				isLast={isLast}
-				index={index}
-				move={rulesStore.reorderMessagesDisplayRule}
-			/>
-			<Session rule={rule} sessions={sessions} autofocus={autofocus} />
-			<ViewType rule={rule} />
-			{rule.removable && (
-				<button
-					className='rule-delete'
-					onClick={() => {
-						rulesStore.deleteMessagesDisplayRule(rule);
-					}}
-					title='delete'
+		return (
+			<div className='rule-row editable'>
+				<Reorder
+					isFirst={isFirst}
+					isLast={isLast}
+					index={index}
+					move={rulesStore.reorderMessagesDisplayRule}
 				/>
-			)}
-		</div>
-	);
-};
+				<Session rule={rule} sessions={sessions} autofocus={autofocus} />
+				<ViewType rule={rule} />
+				{rule.removable && (
+					<button
+						className='settings-button rule-delete'
+						onClick={() => {
+							rulesStore.deleteMessagesDisplayRule(rule);
+						}}
+						title='delete'>
+						<CrossIcon />
+					</button>
+				)}
+			</div>
+		);
+	},
+);
 
 export default EditableRule;
 
@@ -83,6 +91,8 @@ const Session = ({ rule, sessions, autofocus }: SessionProps) => {
 		setIsEditing(false);
 	}, []);
 
+	const isRootRule = value === '*';
+
 	return isEditing && rule.editableSession ? (
 		<SessionEditor
 			value={value}
@@ -92,19 +102,11 @@ const Session = ({ rule, sessions, autofocus }: SessionProps) => {
 			autofocus={autofocus}
 		/>
 	) : (
-		<p
-			onClick={() => {
-				setIsEditing(true);
-			}}
-			className={value === '*' ? 'root-rule' : ''}>
-			{value === '*' ? (
-				<>
-					{value} <i>(default)</i>
-				</>
-			) : (
-				value
-			)}
-		</p>
+		<Chip
+			onClick={() => setIsEditing(true)}
+			className={clsx('session', { 'root-rule': isRootRule })}>
+			{value} {isRootRule && <i>(default)</i>}
+		</Chip>
 	);
 };
 
@@ -125,6 +127,8 @@ const ViewType = ({ rule }: { rule: MessageDisplayRule }) => {
 		setRuleIsEditing(false);
 	};
 
+	const Icon = viewTypeIcons[viewType];
+
 	return ruleIsEditing && rule.editableType ? (
 		<RuleEditor
 			selected={viewType}
@@ -133,12 +137,43 @@ const ViewType = ({ rule }: { rule: MessageDisplayRule }) => {
 			defaultOpen={true}
 		/>
 	) : (
-		<p
-			className={`view-type ${viewType.toLowerCase()}`}
-			onClick={() => {
-				setRuleIsEditing(true);
-			}}
-			title={viewType}
-		/>
+		<button className='settings-button' onClick={() => setRuleIsEditing(true)} title={viewType}>
+			<Icon />
+		</button>
 	);
 };
+
+interface ReorderProps {
+	isFirst?: boolean;
+	isLast?: boolean;
+	index: number;
+	move: (from: number, to: number) => void;
+}
+
+export function Reorder({ isFirst, isLast, index, move }: ReorderProps) {
+	if ((isFirst === undefined && isLast === undefined) || (isFirst && isLast)) return null;
+	return (
+		<div className='reorder'>
+			{!isFirst && (
+				<button
+					className='settings-button reorder__up'
+					onClick={(e: React.MouseEvent) => {
+						e.stopPropagation();
+						move(index, index - 1);
+					}}>
+					<ArrowIcon />
+				</button>
+			)}
+			{!isLast && (
+				<button
+					className='reorder__down settings-button'
+					onClick={(e: React.MouseEvent) => {
+						e.stopPropagation();
+						move(index, index + 1);
+					}}>
+					<ArrowIcon />
+				</button>
+			)}
+		</div>
+	);
+}

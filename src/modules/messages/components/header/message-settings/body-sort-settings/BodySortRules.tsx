@@ -16,11 +16,11 @@
 
 import { observer } from 'mobx-react-lite';
 import { Virtuoso } from 'react-virtuoso';
-import { useMessageBodySortStore } from '../../../hooks/useMessageBodySortStore';
+import { useMessageBodySortStore } from '../../../../hooks/useMessageBodySortStore';
 import NewSortOrderItem from './NewSortOrderItem';
 import EditableSortOrderItem from './EditableSortOrderItem';
 
-const BodySortConfig = () => {
+export const BodySortRules = observer(() => {
 	const { sortOrder } = useMessageBodySortStore();
 
 	const computeKey = (index: number) => sortOrder[index].id;
@@ -28,7 +28,7 @@ const BodySortConfig = () => {
 	const renderSortRule = (index: number) => {
 		const item = sortOrder[index];
 		return (
-			<div className='order-item editable'>
+			<div className='rule-row editable'>
 				<EditableSortOrderItem
 					item={item}
 					index={index}
@@ -40,18 +40,18 @@ const BodySortConfig = () => {
 	};
 
 	return (
-		<Virtuoso
-			itemContent={renderSortRule}
-			computeItemKey={computeKey}
-			totalCount={sortOrder.length}
-			style={{ height: '120px' }}
-			components={{
-				Header: function Header() {
-					return <NewSortOrderItem />;
-				},
-			}}
-		/>
+		<div className='body-sort-rules'>
+			<p className='messages-view-configurator-header'>Body Sort Rules</p>
+			<Virtuoso
+				itemContent={renderSortRule}
+				computeItemKey={computeKey}
+				totalCount={sortOrder.length}
+				components={{
+					Header: function Header() {
+						return <NewSortOrderItem />;
+					},
+				}}
+			/>
+		</div>
 	);
-};
-
-export default observer(BodySortConfig);
+});
