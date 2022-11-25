@@ -337,7 +337,6 @@ function WorkspaceSplitter(props: Props) {
 									}
 								/>
 								<div className='pane__header-title'>{panel.title}</div>
-								{console.log(panel.title.toLowerCase())}
 								{panel.title.toLowerCase() === 'bookmarks' && <BookmarkCounter />}
 							</div>
 							<div className='pane__main'>{panel.component}</div>

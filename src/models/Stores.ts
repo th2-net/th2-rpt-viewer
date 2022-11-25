@@ -31,6 +31,7 @@ export interface IBookmarksStore {
 	messages: MessageBookmark[];
 	events: EventBookmark[];
 	bookmarks: Bookmark[];
+	BOOKMARKS_LIMIT: number;
 	isLoadingBookmarks: boolean;
 	toggleMessagePin: (message: EventMessage) => void;
 	toggleEventPin: (message: EventTreeNode) => void;

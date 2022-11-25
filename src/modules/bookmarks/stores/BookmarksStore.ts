@@ -31,6 +31,8 @@ import { isEventBookmark, isMessageBookmark } from '../helpers/bookmarks';
 import { BookmarksFilterStore } from './BookmarkFilterStore';
 
 export class BookmarksStore implements IBookmarksStore {
+	readonly BOOKMARKS_LIMIT = indexedDbLimits.bookmarks;
+
 	@observable.shallow
 	public messages: MessageBookmark[] = [];
 

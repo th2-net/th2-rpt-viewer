@@ -18,11 +18,8 @@ import { observer } from 'mobx-react-lite';
 import { useBookmarksStore } from '../../../hooks/useBookmarksStore';
 import 'styles/bookmarks.scss';
 
-// TODO
-// check, what happens, if i don't wrap in observer
 export function BookmarkCounterBase() {
-	const BOOKMARKS_LIMIT = 1000;
-	const { bookmarks } = useBookmarksStore();
+	const { bookmarks, BOOKMARKS_LIMIT } = useBookmarksStore();
 
 	return (
 		<div className='bookmark-counter'>
