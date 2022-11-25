@@ -18,6 +18,7 @@
 
 import * as React from 'react';
 import { Panel } from 'models/Panel';
+import BookmarkCounter from '../../modules/bookmarks/components/BookmarkCounter';
 import { createStyleSelector } from '../../helpers/styleCreators';
 
 const MIN_PANEL_WIDTH = 15;
@@ -336,6 +337,8 @@ function WorkspaceSplitter(props: Props) {
 									}
 								/>
 								<div className='pane__header-title'>{panel.title}</div>
+								{console.log(panel.title.toLowerCase())}
+								{panel.title.toLowerCase() === 'bookmarks' && <BookmarkCounter />}
 							</div>
 							<div className='pane__main'>{panel.component}</div>
 						</div>
