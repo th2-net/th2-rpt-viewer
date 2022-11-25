@@ -18,6 +18,7 @@ import { useMemo } from 'react';
 import { MessageViewType } from 'models/EventMessage';
 import CardDisplayType from 'models/util/CardDisplayType';
 import ErrorBoundary from 'components/util/ErrorBoundary';
+import MessageCardWarning from './MessageCardWarning';
 import MessageBody from '../../models/MessageBody';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import SimpleMessageRaw from './raw/SimpleMessageRaw';
@@ -38,6 +39,7 @@ interface MessageBodyProps extends MessageCardViewTypeRendererProps {
 	messageBody?: MessageBody;
 	viewType?: MessageViewType;
 	displayType: CardDisplayType;
+	onlyRawData: boolean;
 }
 
 const MessageViewTypeRenderer = ({
@@ -81,7 +83,7 @@ const MessageViewTypeRenderer = ({
 };
 
 const MessageBodyComponent = (props: MessageBodyProps) => {
-	const { rawMessageBase64, isScreenshotMsg, messageId } = props;
+	const { rawMessageBase64, isScreenshotMsg, messageId, onlyRawData } = props;
 
 	const screenshotSrc = useMemo(
 		() =>
@@ -101,6 +103,7 @@ const MessageBodyComponent = (props: MessageBodyProps) => {
 				) : (
 					<div className='mc-body__human'>
 						<MessageViewTypeRenderer {...props} />
+						{onlyRawData && <MessageCardWarning />}
 					</div>
 				)}
 			</div>

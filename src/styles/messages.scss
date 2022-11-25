@@ -26,22 +26,25 @@
 	gap: 12px;
 	flex-grow: 1;
 	width: 100%;
-	border-radius: 16px;
+	overflow: hidden;
 	border: 2px solid transparent;
 
 	&__status {
+		width: 4px;
 		border-radius: 2px;
 		visibility: hidden;
-		margin: 0 8px 0 8px;
+		margin: 12px 0 12px 8px;
+		display: none;
+		flex-shrink: 0;
 
 		&.bookmarked {
-			width: 4px;
+			display: block;
 			background: var(--bookmarks-primary);
 			visibility: visible;
 		}
 
 		&.attached {
-			width: 4px;
+			display: block;
 			background: var(--events-primary);
 			visibility: visible;
 		}
@@ -55,16 +58,21 @@
 		}
 	}
 
-	&__body {
-		display: flex;
-	}
-
 	&__messages {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 1px;
 		overflow: hidden;
 		width: 100%;
+		border-radius: 16px;
+	}
+
+	&__title-message {
+		display: flex;
+		border-radius: 16px 16px 0 0;
+		& > div:not(:first-child) {
+			flex-grow: 1;
+		}
 	}
 
 	&__warning {
@@ -73,7 +81,7 @@
 		align-items: center;
 		color: var(--text-warning);
 		gap: 8px;
-		padding: 0 16px;
+		padding-top: 16px;
 		font-size: 14px;
 		line-height: 16px;
 	}
@@ -98,7 +106,7 @@
 		font-size: 12px;
 		line-height: 16px;
 		width: 100%;
-		padding-bottom: 12px;
+		padding: 12px;
 		overflow: hidden;
 
 		.chip {
@@ -344,6 +352,8 @@
 }
 
 .parsed-message {
+	border-radius: 0;
+
 	&:hover .message-card-tools {
 		visibility: visible;
 	}
@@ -363,6 +373,8 @@
 	border-radius: 5px;
 	display: flex;
 	flex-direction: column;
+	padding: 12px;
+	padding-top: 2px;
 
 	&__human {
 		display: inline;

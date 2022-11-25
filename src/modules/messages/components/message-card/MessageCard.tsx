@@ -21,10 +21,9 @@ import { EventMessage, MessageViewType } from 'models/EventMessage';
 import { isEventMessage } from 'helpers/message';
 import CardDisplayType from 'models/util/CardDisplayType';
 import { Paper } from 'components/Paper';
-import { MessageCardViewTypeRendererProps } from './MessageBody';
+import MessageBodyComponent, { MessageCardViewTypeRendererProps } from './MessageBody';
 import { MessageCardHeader } from './header/MessageCardHeader';
 import { ParsedMessageComponent } from './ParsedMessage';
-import MessageCardWarning from './MessageCardWarning';
 import 'styles/messages.scss';
 
 interface MessageCardProps {
@@ -77,39 +76,53 @@ const MessageCard = (props: MessageCardProps) => {
 		return [...parsedMessages, message];
 	}, [message]);
 
+	const titleMessage = messages[0];
+	const restMessages = isExpanded ? messages.slice(1) : [];
+
+	const onlyRawData = !message.parsedMessages;
+
 	return (
-		<Paper className='message-card'>
-			<div className='message-card__body'>
-				<div
-					className={clsx('message-card__status', {
-						bookmarked: isBookmarked,
-						attached: isAttached,
-					})}
-				/>
-				<div className='message-card__messages'>
-					<MessageCardHeader
-						{...props}
-						viewType={viewTypesMap.get(messages[0].id)}
-						setViewType={setViewType}
-						setIsExpanded={updateIsExpanded}
-						displayType={displayType}
+		<div className='message-card'>
+			<div className='message-card__messages'>
+				<Paper className='message-card__title-message'>
+					<div
+						className={clsx('message-card__status', {
+							bookmarked: isBookmarked,
+							attached: isAttached,
+						})}
 					/>
-					{messages.slice(0, isExpanded ? undefined : 1).map((msg, index) => (
-						<ParsedMessageComponent
-							key={msg.id}
-							parsedMessage={isEventMessage(msg) ? undefined : msg}
-							displayType={displayType}
-							viewType={viewTypesMap.get(msg.id)}
+					<div>
+						<MessageCardHeader
+							{...props}
+							viewType={viewTypesMap.get(titleMessage.id)}
 							setViewType={setViewType}
-							messageViewTypeRendererProps={messageViewTypeRendererProps}
-							displayHeader={index > 0}
-							message={message}
+							setIsExpanded={updateIsExpanded}
+							displayType={displayType}
 						/>
-					))}
-				</div>
+						<MessageBodyComponent
+							onlyRawData={onlyRawData}
+							{...messageViewTypeRendererProps}
+							{...props}
+							displayType={displayType}
+							messageBody={isEventMessage(titleMessage) ? undefined : titleMessage.message}
+							viewType={viewTypesMap.get(titleMessage.id)}
+						/>
+					</div>
+				</Paper>
+				{restMessages.map(msg => (
+					<ParsedMessageComponent
+						onlyRawData={onlyRawData}
+						key={msg.id}
+						parsedMessage={isEventMessage(msg) ? undefined : msg}
+						displayType={displayType}
+						viewType={viewTypesMap.get(msg.id)}
+						setViewType={setViewType}
+						messageViewTypeRendererProps={messageViewTypeRendererProps}
+						message={message}
+					/>
+				))}
 			</div>
-			{!message.parsedMessages && <MessageCardWarning />}
-		</Paper>
+		</div>
 	);
 };
 
