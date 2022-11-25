@@ -16,6 +16,7 @@
 
 import * as React from 'react';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
+import { createBemBlock } from 'helpers/styleCreators';
 import { formatTime, timestampToNumber } from 'helpers/date';
 import CardDisplayType from 'models/util/CardDisplayType';
 import Checkbox from 'components/util/Checkbox';
@@ -26,6 +27,10 @@ import { MessageIcon } from 'components/icons/MessageIcon';
 import { getSubsequence } from '../../../helpers/message';
 import MessageCardTools, { MessageCardToolsProps } from '../menu/MessageCardTools';
 import { Session } from './Session';
+import {
+	MessageExpandOnIcon,
+	MessageExpandOffIcon,
+} from '../../../../../components/icons/MessageExpandIcon';
 
 export interface MessageInfoProps {
 	message: EventMessage;
@@ -36,6 +41,8 @@ export interface MessageInfoProps {
 	isAttached?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
+	isExpanded?: boolean;
+	setIsExpanded?: (state: boolean) => void;
 	addMessageToExport?: (message: EventMessage) => void;
 	displayType?: CardDisplayType;
 	isScreenshotMsg?: boolean;
@@ -52,17 +59,26 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		isAttached,
 		isExport,
 		isExported,
+		isExpanded,
+		setIsExpanded,
 		displayType = CardDisplayType.FULL,
 		toggleMessagePin,
 		onClick,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
 
+	const buttonWrapperClass = createBemBlock('expand-wrapper', isExpanded ? 'expanded' : null);
+
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
 	const parsedMessage = message.parsedMessages ? message.parsedMessages[0] : undefined;
 	const subsequence = parsedMessage && getSubsequence(parsedMessage);
 
+	const changeExpandState = () => {
+		if (setIsExpanded) {
+			setIsExpanded(!isExpanded);
+		}
+	};
 	const handleClick = () => {
 		if (onClick) {
 			onClick(message);
@@ -106,6 +122,11 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 					setViewType={setViewType}
 				/>
 			</div>
+			{message.parsedMessages && setIsExpanded && (
+				<div className={buttonWrapperClass} onClick={changeExpandState}>
+					{isExpanded ? <MessageExpandOnIcon size={15} /> : <MessageExpandOffIcon size={15} />}
+				</div>
+			)}
 		</div>
 	);
 });

@@ -24,7 +24,7 @@ import { Paper } from 'components/Paper';
 import { MessageCardViewTypeRendererProps } from './MessageBody';
 import { MessageCardHeader } from './header/MessageCardHeader';
 import { ParsedMessageComponent } from './ParsedMessage';
-import MessageExpandButton from '../MessageExpandButton';
+import MessageCardWarning from '../MessageCardWarning';
 import 'styles/messages.scss';
 
 interface MessageCardProps {
@@ -91,6 +91,7 @@ const MessageCard = (props: MessageCardProps) => {
 						{...props}
 						viewType={viewTypesMap.get(messages[0].id)}
 						setViewType={setViewType}
+						setIsExpanded={updateIsExpanded}
 						displayType={displayType}
 					/>
 					{messages.slice(0, isExpanded ? undefined : 1).map((msg, index) => (
@@ -107,10 +108,7 @@ const MessageCard = (props: MessageCardProps) => {
 					))}
 				</div>
 			</div>
-			<MessageExpandButton
-				isExpanded={isExpanded}
-				setExpanded={message.parsedMessages ? updateIsExpanded : undefined}
-			/>
+			{!message.parsedMessages && <MessageCardWarning />}
 		</Paper>
 	);
 };
