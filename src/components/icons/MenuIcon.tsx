@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createBemElement } from 'helpers/styleCreators';
-import 'styles/messages.scss';
+/* eslint-disable max-len */
+import { Icon, IconProps } from './Icon';
 
-const MessageCardWarning = () => {
-	const warningClass = createBemElement('expand', 'raw-data-only');
-
-	return (
-		<div className='expand'>
-			<div className={warningClass}>
-				<div className='expand__raw-data-only-icon' />
-				<p>Only Raw Data Available</p>
-			</div>
-		</div>
-	);
-};
-
-export default MessageCardWarning;
+export const MenuIcon = (props: IconProps) => (
+	<Icon {...props}>
+		<svg viewBox='0 0 15 15' fill='none' xmlns='http://www.w3.org/2000/svg'>
+			<circle cx='2.5' cy='7.5' r='1.5' fill='currentColor' />
+			<circle cx='7.5' cy='7.5' r='1.5' fill='currentColor' />
+			<circle cx='12.5' cy='7.5' r='1.5' fill='currentColor' />
+		</svg>
+	</Icon>
+);

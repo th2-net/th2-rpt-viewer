@@ -24,7 +24,7 @@ import { Paper } from 'components/Paper';
 import { MessageCardViewTypeRendererProps } from './MessageBody';
 import { MessageCardHeader } from './header/MessageCardHeader';
 import { ParsedMessageComponent } from './ParsedMessage';
-import MessageCardWarning from '../MessageCardWarning';
+import MessageCardWarning from './MessageCardWarning';
 import 'styles/messages.scss';
 
 interface MessageCardProps {

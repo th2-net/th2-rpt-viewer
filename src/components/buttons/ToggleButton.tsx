@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { createContext, useContext, useMemo, useState } from 'react';
-import { createStyleSelector } from 'helpers/styleCreators';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import clsx from 'clsx';
 
 interface IToggleButtonContext<T> {
 	selectedOption: T;
@@ -34,6 +34,10 @@ export const ToggleButtonGroup = <T,>(props: ToggleButtonGroupProps<T>) => {
 	const { value, onChange, children, className = '' } = props;
 	const [selectedOption, setSelectedOption] = useState(value);
 
+	useEffect(() => {
+		setSelectedOption(value);
+	}, [value]);
+
 	const state: IToggleButtonContext<T> = useMemo(
 		() => ({
 			selectedOption,
@@ -47,7 +51,7 @@ export const ToggleButtonGroup = <T,>(props: ToggleButtonGroupProps<T>) => {
 
 	return (
 		<ToggleButtonContext.Provider value={state}>
-			<div className={createStyleSelector('toggle-button-group', className)}>{children}</div>
+			<div className={clsx('toggle-button-group', className)}>{children}</div>
 		</ToggleButtonContext.Provider>
 	);
 };
@@ -65,13 +69,10 @@ export const ToggleButton = (props: ToggleButtonProps) => {
 
 	const isSelected = selectedOption === value;
 
-	const buttonClassName = createStyleSelector(
-		'toggle-button',
-		'button-base',
-		className,
-		isSelected ? 'selected' : null,
-		isSelected ? activeClassName : null,
-	);
+	const buttonClassName = clsx('toggle-button', 'button-base', className, {
+		selected: isSelected,
+		[activeClassName]: isSelected,
+	});
 
 	const onClick = () => setSelectedOption(value);
 
