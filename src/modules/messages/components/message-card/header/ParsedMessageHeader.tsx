@@ -54,7 +54,7 @@ export const ParsedMessageHeader = memo((props: ParsedMessageHeaderProps) => {
 					</Chip>
 				</>
 			)}
-			<div className='message-card-tools__wrapper'>
+			<div className='mc-header__buttons'>
 				<MessageCardTools
 					{...props}
 					parsedMessage={parsedMessage}

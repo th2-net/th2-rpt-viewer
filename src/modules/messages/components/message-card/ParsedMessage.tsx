@@ -17,6 +17,7 @@
 import * as React from 'react';
 import { ParsedMessage, MessageViewType, EventMessage } from 'models/EventMessage';
 import CardDisplayType from 'models/util/CardDisplayType';
+import { Paper } from 'components/Paper';
 import MessageBodyComponent, { MessageCardViewTypeRendererProps } from './MessageBody';
 import { ParsedMessageHeader } from './header/ParsedMessageHeader';
 
@@ -26,28 +27,28 @@ export interface ParsedMessageProps {
 	toggleMessagePin?: () => void;
 	message: EventMessage;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
+	onlyRawData: boolean;
 }
 
 interface OwnProps {
 	parsedMessage?: ParsedMessage;
 	message?: EventMessage;
-	displayHeader?: boolean;
 	viewType?: MessageViewType;
 	setViewType: (id: string, vt: MessageViewType) => void;
 }
 
 export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & OwnProps) => {
-	const { parsedMessage, displayHeader = true, messageViewTypeRendererProps } = props;
+	const { parsedMessage, messageViewTypeRendererProps } = props;
 
 	return (
-		<div className='parsed-message'>
-			{displayHeader && <ParsedMessageHeader {...props} isScreenshotMsg={false} />}
+		<Paper className='parsed-message'>
+			<ParsedMessageHeader {...props} isScreenshotMsg={false} />
 			<MessageBodyComponent
 				messageBody={parsedMessage?.message}
 				{...messageViewTypeRendererProps}
 				{...props}
 			/>
-		</div>
+		</Paper>
 	);
 });
 

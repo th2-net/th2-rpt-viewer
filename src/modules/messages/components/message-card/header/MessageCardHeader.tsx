@@ -15,14 +15,17 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import clsx from 'clsx';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
 import { formatTime, timestampToNumber } from 'helpers/date';
 import CardDisplayType from 'models/util/CardDisplayType';
 import Checkbox from 'components/util/Checkbox';
+import { IconButton } from 'components/buttons/IconButton';
 import { Chip } from 'components/Chip';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { AttachedMessagesIcon } from 'components/icons/AttachedMessagesIcon';
 import { MessageIcon } from 'components/icons/MessageIcon';
+import { MessageExpandIcon } from 'components/icons/MessageExpandIcon';
 import { getSubsequence } from '../../../helpers/message';
 import MessageCardTools, { MessageCardToolsProps } from '../menu/MessageCardTools';
 import { Session } from './Session';
@@ -36,6 +39,8 @@ export interface MessageInfoProps {
 	isAttached?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
+	isExpanded?: boolean;
+	setIsExpanded?: (state: boolean) => void;
 	addMessageToExport?: (message: EventMessage) => void;
 	displayType?: CardDisplayType;
 	isScreenshotMsg?: boolean;
@@ -52,6 +57,8 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		isAttached,
 		isExport,
 		isExported,
+		isExpanded,
+		setIsExpanded,
 		displayType = CardDisplayType.FULL,
 		toggleMessagePin,
 		onClick,
@@ -63,6 +70,11 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	const parsedMessage = message.parsedMessages ? message.parsedMessages[0] : undefined;
 	const subsequence = parsedMessage && getSubsequence(parsedMessage);
 
+	const changeExpandState = () => {
+		if (setIsExpanded) {
+			setIsExpanded(!isExpanded);
+		}
+	};
 	const handleClick = () => {
 		if (onClick) {
 			onClick(message);
@@ -70,7 +82,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	};
 
 	return (
-		<div className='mc-header__info' onClick={handleClick}>
+		<div className='mc-header mc-header__info' onClick={handleClick}>
 			{isExport && isExported !== undefined && addMessageToExport && (
 				<Checkbox checked={isExported} onChange={() => addMessageToExport(message)} />
 			)}
@@ -95,7 +107,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 					{message.parsedMessages[0].message.metadata.messageType}
 				</Chip>
 			)}
-			<div className='message-card-tools__wrapper'>
+			<div className='mc-header__buttons'>
 				<MessageCardTools
 					message={message}
 					toggleMessagePin={toggleMessagePin}
@@ -105,6 +117,13 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 					viewType={viewType}
 					setViewType={setViewType}
 				/>
+				{message.parsedMessages && setIsExpanded && (
+					<IconButton
+						className={clsx('mc-header__button', { expanded: isExpanded })}
+						onClick={changeExpandState}>
+						<MessageExpandIcon />
+					</IconButton>
+				)}
 			</div>
 		</div>
 	);

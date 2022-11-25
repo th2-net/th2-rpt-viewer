@@ -15,14 +15,17 @@
  ***************************************************************************** */
 
 import React, { useCallback, useRef, useState } from 'react';
+import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
-import { createBemElement } from 'helpers/styleCreators';
 import { EventMessage, MessageViewType, ParsedMessage } from 'models/EventMessage';
 import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
 import useViewMode from 'hooks/useViewMode';
 import { ViewMode } from 'components/ViewModeProvider';
 import { Chip } from 'components/Chip';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
+import { MenuIcon } from 'components/icons/MenuIcon';
+import { IconButton } from 'components/buttons/IconButton';
+import { CrossIcon } from 'components/icons/CrossIcon';
 import { isRawViewType, copyMessageContents } from '../../../helpers/message';
 import { ViewTypesList } from '../ViewTypesList';
 import { ActUIButton } from './ActUIButton';
@@ -85,27 +88,22 @@ const MessageCardTools = ({
 
 	const copyOptions = isRaw ? [JSON_COPY_OPTIONS[0]] : JSON_COPY_OPTIONS;
 
-	const buttonClassName = createBemElement(
-		'message-card-tools',
-		'button',
-		isViewMenuOpen ? 'active' : null,
-	);
-
 	return (
 		<div className='message-card-tools' ref={rootRef}>
-			<div
-				className={buttonClassName}
+			<IconButton
+				className='mc-header__button'
 				onClick={e => {
 					e.stopPropagation();
 					toggleMenu();
 				}}>
-				<div className='message-card-tools__ellipsis' />
-			</div>
+				<MenuIcon />
+			</IconButton>
 			<MessagePopup isOpen={isViewMenuOpen}>
-				<div
-					className='message-card-tools__header-close'
-					onClick={() => setIsViewMenuOpen(false)}
-				/>
+				<IconButton
+					className={clsx('mc-header__button', 'message-card-tools__close-button')}
+					onClick={toggleMenu}>
+					<CrossIcon />
+				</IconButton>
 				{viewTypes.length > 0 && (
 					<>
 						<p>View</p>

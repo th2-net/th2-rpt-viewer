@@ -14,35 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createBemElement } from 'helpers/styleCreators';
+import { WarningIcon } from 'components/icons/WarningIcon';
 import 'styles/messages.scss';
 
-interface Props {
-	isExpanded: boolean;
-	setExpanded?: (state: boolean) => void;
-}
+const MessageCardWarning = () => (
+	<div className='message-card__warning'>
+		<WarningIcon />
+		<p>Only Raw Data Available</p>
+	</div>
+);
 
-const MessageExpandButton = (props: Props) => {
-	const { isExpanded, setExpanded } = props;
-
-	const buttonClass = createBemElement('expand', 'button', isExpanded ? 'expanded' : null);
-
-	const warningClass = createBemElement('expand', 'raw-data-only');
-
-	return (
-		<div className='expand'>
-			{setExpanded ? (
-				<div className={buttonClass} onClick={() => setExpanded(!isExpanded)}>
-					{isExpanded ? 'Show Less' : 'Show More'}
-				</div>
-			) : (
-				<div className={warningClass}>
-					<div className='expand__raw-data-only-icon' />
-					<p>Only Raw Data Available</p>
-				</div>
-			)}
-		</div>
-	);
-};
-
-export default MessageExpandButton;
+export default MessageCardWarning;
