@@ -119,13 +119,14 @@
 		@include unselectable;
 		@include status-card;
 
-		border: 1px solid #e0e0e0;
+		border: 1px solid var(--counter-border);
 		border-radius: 8px;
 		height: 24px;
 		flex-shrink: 0;
 		color: var(--text-info);
-		background-color: white;
+		background-color: var(--surface-background);
 		font-size: 12px;
+		font-weight: bold;
 		line-height: 24px;
 		padding: 0 6px;
 
