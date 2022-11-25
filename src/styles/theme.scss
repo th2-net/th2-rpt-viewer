@@ -57,6 +57,8 @@
 
 	--input-border: #fbfbfb;
 
+	--counter-border: #e0e0e0;
+
 	// tables
 	--table-passed-row: rgba(157, 255, 148, 0.32);
 	--table-failed-row: #ffdddd;
@@ -96,5 +98,8 @@ html[data-theme='dark'] {
 
 	--panel-background: #22262c;
 	--workspace-background: #4f5156;
+	
 	--input-border: #4f5156;
+	--counter-border: #22262c;
+
 }
