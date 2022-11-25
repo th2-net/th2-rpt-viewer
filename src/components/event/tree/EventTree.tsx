@@ -25,6 +25,7 @@ import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime } from '../../../helpers/date';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
+import { isRootEvent } from '../../../helpers/event';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
@@ -35,13 +36,23 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	const eventsStore = useWorkspaceEventStore();
 	const eventsDataStore = useEventsDataStore();
 
+	const isChildrenUnknown = computed(() =>
+		eventsDataStore.childrenAreUnknown.get(eventTreeNode.eventId),
+	).get();
+
+	const isOutOfMainChannel = computed(
+		() => !eventsDataStore.mainSourceEvents.has(eventTreeNode.eventId),
+	).get();
+
+	const isLoading = eventsDataStore.isLoading;
+
 	React.useEffect(() => {
-		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
-		if (eventsDataStore.childrenAreUnknown.get(eventTreeNode.eventId) && !children) {
+		if (isChildrenUnknown || (!isLoading && isOutOfMainChannel && !isRootEvent(eventTreeNode))) {
+			eventsDataStore.mainSourceEvents.set(eventTreeNode.eventId, true);
 			eventsDataStore.childrenAreUnknown.set(eventTreeNode.eventId, false);
 			eventsDataStore.loadChildren(eventTreeNode.eventId);
 		}
-	}, []);
+	}, [isChildrenUnknown, isLoading, eventTreeNode, isOutOfMainChannel]);
 
 	const parents = useMemo(() => {
 		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
