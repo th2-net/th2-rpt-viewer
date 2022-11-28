@@ -339,7 +339,6 @@
 }
 
 @mixin bookmark-button($showOnHoverOverParent: false) {
-
 }
 
 @mixin event-status-icon($isParentHoverable: false) {
@@ -362,4 +361,17 @@
 @mixin surface {
 	box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
 	background-color: var(--surface-background);
+}
+
+@mixin light() {
+	@at-root #{selector-nest(':root[data-theme=light]', &)} {
+		@content;
+	}
+}
+
+
+@mixin dark() {
+	@at-root #{selector-nest(':root[data-theme=dark]', &)} {
+		@content;
+	}
 }

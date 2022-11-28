@@ -1,7 +1,19 @@
 import { useLayoutEffect, useState } from 'react';
 
 export const ThemeToggler = () => {
-	const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+	const [theme, setTheme] = useState(() => {
+		let defaultTheme = localStorage.getItem('theme');
+
+		if (
+			!defaultTheme &&
+			window.matchMedia &&
+			window.matchMedia('(prefers-color-scheme: dark)').matches
+		) {
+			defaultTheme = 'dark';
+		}
+
+		return defaultTheme || 'light';
+	});
 
 	useLayoutEffect(() => {
 		document.documentElement.setAttribute('data-theme', theme);

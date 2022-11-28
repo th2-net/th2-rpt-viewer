@@ -17,40 +17,41 @@
 import { formatTimestamp } from 'helpers/date';
 import { observer } from 'mobx-react-lite';
 import { SearchDirection } from 'models/SearchDirection';
-import '../../../styles/events.scss';
 import { CalendarIcon } from 'components/icons/CalendarIcon';
+import { ButtonBase } from 'components/buttons/ButtonBase';
 import { Chip } from 'components/Chip';
 import { EventsArrowIcon } from 'components/icons/EventsArrowIcon';
 import { useEventsStore } from '../hooks/useEventsStore';
+import '../../../styles/events.scss';
 
 export const EventListNavigation = observer(() => {
 	const eventsStore = useEventsStore();
 	const timestamp = eventsStore.filterStore.timestampFrom;
 
 	const getNextEvents = eventsStore.eventDataStore.findClosestEvent.bind(
-		null,
+		eventsStore,
 		SearchDirection.Next,
 	);
 	const getPrevEvents = eventsStore.eventDataStore.findClosestEvent.bind(
-		null,
+		eventsStore,
 		SearchDirection.Previous,
 	);
 
 	return (
 		<div className='events-nav'>
-			<button className='button-base event-button' onClick={getPrevEvents}>
+			<ButtonBase onClick={getPrevEvents}>
 				<Chip className='events-nav__nav-circle left'>
-					<EventsArrowIcon className='arrow' />
+					<EventsArrowIcon />
 				</Chip>
 				Show previous
-			</button>
+			</ButtonBase>
 			<span className='events-nav__timestamp'>{formatTimestamp(timestamp)}</span>
-			<button className='button-base event-button' onClick={getNextEvents}>
+			<ButtonBase onClick={getNextEvents}>
 				Show next
 				<Chip className='events-nav__nav-circle'>
 					<EventsArrowIcon />
 				</Chip>
-			</button>
+			</ButtonBase>
 			<CalendarIcon className='events-nav__calendar-button' />
 		</div>
 	);

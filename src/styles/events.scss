@@ -201,7 +201,6 @@
 		background-color: var(--background-primary);
 		border-radius: 8px;
 		padding: 8px;
-		flex-grow: 1;
 		flex-shrink: 1;
 		display: flex;
 		flex-direction: column;
@@ -653,9 +652,18 @@
 	align-items: center;
 	border-radius: 4px;
 
+	& button {
+		box-shadow: none;
+		padding: 0 8px;
+	}
+
 	&__timestamp {
-		color: var(--timestamp-color);
-		border: 1px solid var(--timestamp-color);
+		@include dark {
+			--info-color: #c6daff;
+		}
+
+		color: var(--info-color);
+		border: 1px solid var(--info-color);
 		border-radius: 8px;
 		padding: 0 10px;
 		font-size: 12px;
@@ -675,12 +683,15 @@
 		width: 16px;
 		height: 16px;
 
-		background: var(--arrow-background);
+		@include light {
+			--surface-background: #fff;
+		}
 
-		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
-		border-radius: 20px;
+		@include dark {
+			--surface-background: #4f5156;
+		}
 
-		.arrow {
+		& > span {
 			color: var(--text-secondary);
 		}
 	}
