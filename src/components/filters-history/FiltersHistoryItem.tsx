@@ -26,6 +26,8 @@ import { createBemElement } from '../../helpers/styleCreators';
 import { useDebouncedCallback } from '../../hooks';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { showNotification } from '../../helpers/showNotification';
+import { ShareIcon } from '../icons/ShareIcon';
+import { DeleteIcon } from '../icons/DeleteIcon';
 
 const FILTER_HISTORY_DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss.SSS' as const;
 
@@ -183,14 +185,14 @@ const FiltersHistoryItem = (props: Props) => {
 						onClick={onShareClick}
 						ref={shareButtonRef}
 						title='Share filters'>
-						<i></i>
+						<ShareIcon />
 					</button>
 					<button
 						className='filter-history-item__delete-icon'
 						onClick={onDeleteClick}
 						ref={shareButtonRef}
 						title='Delete from history'>
-						<i></i>
+						<DeleteIcon />
 					</button>
 				</div>
 			</div>
