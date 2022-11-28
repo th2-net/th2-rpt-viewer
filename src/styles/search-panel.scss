@@ -659,7 +659,9 @@
 
 	&__timestamp {
 		margin: 0;
+		margin-left: 10px;
 		font-size: 12px;
+		color: var(--text-primary);
 	}
 
 	&__list {
