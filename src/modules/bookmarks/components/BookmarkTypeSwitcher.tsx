@@ -32,21 +32,19 @@ const BookmarkTypeSwitcher = ({ value, setValue }: Props) => {
 	};
 
 	return (
-		<div className='bookmark-panel-header__row'>
-			<ToggleButtonGroup value={selectedType} onChange={setType}>
-				<ToggleButton style={{ padding: '8px 24px' }} value='All'>
-					All
-				</ToggleButton>
-				<ToggleButton value='event'>
-					<StatusIcon />
-					Events
-				</ToggleButton>
-				<ToggleButton value='message'>
-					<MessageIcon />
-					Messages
-				</ToggleButton>
-			</ToggleButtonGroup>
-		</div>
+		<ToggleButtonGroup value={selectedType} onChange={setType}>
+			<ToggleButton style={{ padding: '8px 24px' }} value='All'>
+				All
+			</ToggleButton>
+			<ToggleButton value='event'>
+				<StatusIcon />
+				Events
+			</ToggleButton>
+			<ToggleButton value='message'>
+				<MessageIcon />
+				Messages
+			</ToggleButton>
+		</ToggleButtonGroup>
 	);
 };
 

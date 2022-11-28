@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import clsx from 'clsx';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { formatTime } from 'helpers/date';
@@ -51,6 +52,7 @@ interface EventCardHeaderBaseProps {
 	showCheckbox?: boolean;
 	onSelect?: React.ChangeEventHandler<HTMLInputElement>;
 	checked?: boolean;
+	onNameClick?: (eventNode: EventTreeNode) => void;
 }
 
 export function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
@@ -71,6 +73,7 @@ export function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		showCheckbox = true,
 		onSelect,
 		checked = false,
+		onNameClick,
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
 
@@ -99,9 +102,15 @@ export function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 	// 	if (onFilterByParentEvent) onFilterByParentEvent(event);
 	// }
 
-	function onRootClick() {
+	function handleRootClick() {
 		if (!disabled && onClick) {
 			onClick(event);
+		}
+	}
+
+	function handleNameClick() {
+		if (!disabled && onNameClick) {
+			onNameClick(event);
 		}
 	}
 
@@ -119,7 +128,7 @@ export function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		: '';
 
 	return (
-		<Paper className={rootClassName} onClick={onRootClick}>
+		<Paper className={rootClassName} onClick={handleRootClick}>
 			{showCheckbox && onSelect && <Checkbox checked={checked} onChange={onSelect} />}
 			<Chip className='event-header-card__icons'>
 				<StatusIcon status={status} />
@@ -128,7 +137,10 @@ export function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 			</Chip>
 			{displayType !== CardDisplayType.STATUS_ONLY && (
 				<>
-					<div className='event-header-card__title' title={eventName}>
+					<div
+						className={clsx('event-header-card__title', { clickable: Boolean(onNameClick) })}
+						title={eventName}
+						onClick={handleNameClick}>
 						<SearchableContent content={eventName} eventId={eventId} />
 					</div>
 					{eventType && <Chip onClick={handleTypeClick}>{eventType}</Chip>}

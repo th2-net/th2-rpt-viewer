@@ -42,6 +42,7 @@ interface MessageCardProps {
 	setIsExpanded?: (isExpanded: boolean) => void;
 	viewTypesMap: Map<string, MessageViewType>;
 	setViewType: (id: string, vt: MessageViewType) => void;
+	onIdClick?: (msg: EventMessage) => void;
 }
 
 const MessageCard = (props: MessageCardProps) => {

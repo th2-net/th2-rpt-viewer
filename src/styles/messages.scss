@@ -176,6 +176,16 @@
 		gap: 8px;
 	}
 
+	&__id {
+		&.clickable {
+			cursor: pointer;
+
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+	}
+
 	.icon-button {
 		cursor: pointer;
 		align-items: center;

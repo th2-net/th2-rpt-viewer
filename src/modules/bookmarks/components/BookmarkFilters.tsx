@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import Checkbox from 'components/util/Checkbox';
 import { Button } from 'components/buttons/Button';
 import { useBookmarksStore } from '../hooks/useBookmarksStore';
 import { useBookmarksFilterStore } from '../hooks/useBookmarkFilterStore';
@@ -34,27 +33,22 @@ export function BookmarkFiltersBase() {
 				setValue={filterStore.setSearch}
 				label='Search'
 			/>
-			<BookmarkTypeSwitcher
-				value={filterStore.bookmarkType}
-				setValue={filterStore.setBookmarkType}
-				label='Type'
-			/>
-			<div>
+			<div className='bookmark-panel-header__row'>
+				<BookmarkTypeSwitcher
+					value={filterStore.bookmarkType}
+					setValue={filterStore.setBookmarkType}
+					label='Type'
+				/>
 				<div>
-					<Button
-						variant='contained'
-						disabled={filterStore.selectedBookmarks.size === 0}
-						onClick={bookmarkStore.removeSelected}>
-						Delete
-						{filterStore.selectedBookmarks.size > 0 && ` (${filterStore.selectedBookmarks.size})`}
-					</Button>
-				</div>
-				<div>
-					<Checkbox
-						className='bookmarks-panel-checkbox'
-						checked={filterStore.isAllSelected}
-						onChange={filterStore.selectAll}
-					/>
+					<div>
+						<Button
+							variant='contained'
+							disabled={filterStore.selectedBookmarks.size === 0}
+							onClick={bookmarkStore.removeSelected}>
+							Delete
+							{filterStore.selectedBookmarks.size > 0 && ` (${filterStore.selectedBookmarks.size})`}
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>

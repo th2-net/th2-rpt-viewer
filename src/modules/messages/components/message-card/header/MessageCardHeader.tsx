@@ -43,8 +43,8 @@ export interface MessageInfoProps {
 	setIsExpanded?: (state: boolean) => void;
 	displayType?: CardDisplayType;
 	isScreenshotMsg?: boolean;
-	onClick?: (message: EventMessage) => void;
 	onSelect?: (message: EventMessage) => void;
+	onIdClick?: (msg: EventMessage) => void;
 }
 
 export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
@@ -61,7 +61,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		setIsExpanded,
 		displayType = CardDisplayType.FULL,
 		toggleMessagePin,
-		onClick,
+		onIdClick,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
 
@@ -76,13 +76,13 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		}
 	};
 	const handleClick = () => {
-		if (onClick) {
-			onClick(message);
+		if (onIdClick) {
+			onIdClick(message);
 		}
 	};
 
 	return (
-		<div className='mc-header mc-header__info' onClick={handleClick}>
+		<div className='mc-header mc-header__info'>
 			{showCheckbox && checked !== undefined && onSelect && (
 				<Checkbox checked={checked} onChange={() => onSelect(message)} />
 			)}
@@ -97,7 +97,14 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				</Chip>
 			)}
 			<Session sessionId={sessionId} direction={direction} />
-			{displayType === CardDisplayType.FULL && <Chip title={message.id}>{message.id}</Chip>}
+			{displayType === CardDisplayType.FULL && (
+				<Chip
+					onClick={onIdClick ? handleClick : undefined}
+					title={message.id}
+					className={clsx('mc-header__id', { clickable: Boolean(onIdClick) })}>
+					{message.id}
+				</Chip>
+			)}
 
 			{typeof subsequence === 'number' &&
 				displayType === CardDisplayType.FULL &&

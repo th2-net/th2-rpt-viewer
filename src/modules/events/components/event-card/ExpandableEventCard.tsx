@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { useCallback } from 'react';
 import clsx from 'clsx';
 import { Button } from 'components/buttons/Button';
 import { EventCardHeaderBase } from './EventCardHeader';
@@ -36,12 +37,16 @@ export const ExpandableEventCard = (props: EventBookmarkComponentProps) => {
 
 	const isEmpty = isEmptyBody(event.body);
 
+	const handleClick = useCallback(() => {
+		onClick(event);
+	}, [onClick]);
+
 	return (
 		<div className={clsx('event-expandable-card', { empty: isEmpty })}>
 			<div className='event-expandable-card__header'>
 				<EventCardHeaderBase
 					event={toEventTreeNode(event)}
-					onClick={() => onClick(event)}
+					onNameClick={handleClick}
 					showCheckbox={showCheckbox}
 					checked={checked}
 					onSelect={onSelect}

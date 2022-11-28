@@ -86,6 +86,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 								setIsExpanded={() => isExpandedStore.toggleExpand(result.id)}
 								viewTypesMap={viewTypeStore.viewTypes}
 								setViewType={viewTypeStore.setViewType}
+								onIdClick={onResultItemClick}
 							/>
 						</div>
 					)}

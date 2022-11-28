@@ -57,6 +57,10 @@
 		display: flex;
 		align-items: center;
 
+		&:last-child {
+			justify-content: space-between;
+		}
+
 		&-input {
 			@include surface;
 			height: 40px;
@@ -70,6 +74,7 @@
 			box-sizing: border-box;
 			min-width: 0;
 			outline: none;
+			max-width: 500px;
 
 			&:disabled {
 				opacity: 0.5;

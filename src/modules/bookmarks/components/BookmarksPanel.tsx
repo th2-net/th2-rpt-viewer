@@ -64,12 +64,12 @@ function BookmarksPanel(props: BookmarkPanelProps) {
 		[props.onBookmarkClick],
 	);
 
-	// const onMessageClick = useCallback(
-	// 	(event: EventMessage) => {
-	// 		props.onBookmarkClick(event);
-	// 	},
-	// 	[props.onBookmarkClick],
-	// );
+	const onMessageClick = useCallback(
+		(event: EventMessage) => {
+			props.onBookmarkClick(event);
+		},
+		[props.onBookmarkClick],
+	);
 
 	function renderBookmarkItem(index: number, bookmark: Bookmark) {
 		const togglerSelect = () => filterStore.selectItem(bookmark);
@@ -89,6 +89,7 @@ function BookmarksPanel(props: BookmarkPanelProps) {
 								showCheckbox={true}
 								checked={filterStore.selectedBookmarks.has(bookmark.id)}
 								onSelect={togglerSelect}
+								onIdClick={onMessageClick}
 							/>
 						</div>
 					)}
