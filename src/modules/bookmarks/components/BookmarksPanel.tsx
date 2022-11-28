@@ -98,7 +98,6 @@ function BookmarksPanel(props: BookmarkPanelProps) {
 		}
 		if (isEventBookmark(bookmark)) {
 			const event = bookmark.item;
-
 			if (isEventAction(event)) {
 				return (
 					<Observer>
@@ -118,15 +117,19 @@ function BookmarksPanel(props: BookmarkPanelProps) {
 					</Observer>
 				);
 			}
+
+			const node = event as EventTreeNode;
+			const onClick = () => props.onBookmarkClick(event);
 			return (
 				<Observer>
 					{() => (
 						<div className='bookmarks-panel__list-item'>
 							<EventCardHeader
-								event={event}
+								event={node}
 								showCheckbox={true}
 								checked={filterStore.selectedBookmarks.has(bookmark.id)}
 								onSelect={togglerSelect}
+								onNameClick={onClick}
 							/>
 						</div>
 					)}
