@@ -25,7 +25,7 @@ import { Chip } from 'components/Chip';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { AttachedMessagesIcon } from 'components/icons/AttachedMessagesIcon';
 import { MessageIcon } from 'components/icons/MessageIcon';
-import { MessageExpandIcon } from 'components/icons/MessageExpandIcon';
+import { ExpandIcon } from 'components/icons/ExpandIcon';
 import { getSubsequence } from '../../../helpers/message';
 import MessageCardTools, { MessageCardToolsProps } from '../menu/MessageCardTools';
 import { Session } from './Session';
@@ -128,7 +128,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 					<IconButton
 						className={clsx('mc-header__button', { expanded: isExpanded })}
 						onClick={changeExpandState}>
-						<MessageExpandIcon />
+						<ExpandIcon />
 					</IconButton>
 				)}
 			</div>
