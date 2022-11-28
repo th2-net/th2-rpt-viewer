@@ -416,10 +416,6 @@ export default class EventsDataStore {
 
 				const { parentId, eventId } = event;
 
-				if (parentId && !this.parentChildrensMap.has(eventId)) {
-					this.childrenAreUnknown.set(eventId, true);
-				}
-
 				if (isRootEvent(event) && !rootNodes.includes(eventId)) {
 					rootNodes.push(eventId);
 				}
