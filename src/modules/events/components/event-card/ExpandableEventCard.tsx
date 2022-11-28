@@ -37,8 +37,8 @@ export const ExpandableEventCard = (props: EventBookmarkComponentProps) => {
 	const isEmpty = isEmptyBody(event.body);
 
 	return (
-		<div className={clsx('event-search-item', { empty: isEmpty })}>
-			<div className='event-search-item__header'>
+		<div className={clsx('event-expandable-card', { empty: isEmpty })}>
+			<div className='event-expandable-card__header'>
 				<EventCardHeaderBase
 					event={toEventTreeNode(event)}
 					onClick={() => onClick(event)}
@@ -48,9 +48,9 @@ export const ExpandableEventCard = (props: EventBookmarkComponentProps) => {
 				/>
 			</div>
 			{!isEmpty && (
-				<div className='event-search-item__body'>
+				<div className='event-expandable-card__body'>
 					{isExpanded && <EventBodyCard event={event} />}
-					<div className='event-search-item__footer'>
+					<div className='event-expandable-card__footer'>
 						<Button variant='text' onClick={() => toggleExpand(event.eventId)}>
 							{isExpanded ? 'Show less' : 'Show more'}
 						</Button>
