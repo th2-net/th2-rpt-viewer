@@ -39,6 +39,10 @@ body {
   transition-duration: 0.25s, 0.25s;
 }
 
+svg, svg > * {
+	transition: none;
+}
+
 p,
 h1,
 h2,

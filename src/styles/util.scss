@@ -145,13 +145,13 @@
 	background-color: $headerBackground;
 }
 
-.th2-logo {
-	@include icon(url(../../resources/icons/th2-icon.svg), 22px, 60px);
-	display: inline-block;
+.icon.th2-icon {
 	position: absolute;
 	left: 14px;
 	top: 4px;
 	z-index: 5;
+	height: auto;
+	font-size: 64px;
 }
 
 .theme-toggler {
