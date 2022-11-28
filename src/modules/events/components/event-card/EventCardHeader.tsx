@@ -126,7 +126,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 					{eventType && <Chip onClick={handleTypeClick}>{eventType}</Chip>}
 				</>
 			)}
-			{counter && <Counter>{counter}</Counter>}
+			{counter > 0 && <Counter>{counter}</Counter>}
 			<div className='event-header-card__details'>
 				{displayType !== CardDisplayType.STATUS_ONLY && (
 					<>

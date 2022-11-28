@@ -596,14 +596,20 @@
 		margin-right: 10px;
 	}
 
+	.status-icon {
+		width: 10px;
+		height: 10px;
+	}
+
 	&__item {
-		@include status-card;
 		display: flex;
 		align-items: center;
 		max-width: 100%;
+		color: var(--text-primary);
 
 		&-title {
 			@include ellipsis;
+			margin-left: 8px;
 			cursor: pointer;
 			margin-right: 10px;
 			color: var(--status-primary-color-light);
@@ -625,9 +631,10 @@
 
 		&.root & {
 			&-title {
-				color: $eventTextColorLight;
+				color: var(--events-primary);
 				font-size: 14px;
 				line-height: 16px;
+				margin-left: 0;
 			}
 
 			&-icon {
