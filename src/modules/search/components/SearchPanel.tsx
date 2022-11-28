@@ -22,6 +22,7 @@ import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import { SearchResult } from '../stores/SearchStore';
+import { SearchProgress } from './SearchProgress';
 import 'styles/search-panel.scss';
 
 interface SearchPanelProps {
@@ -39,9 +40,17 @@ const SearchPanel = (props: SearchPanelProps) => {
 		}
 	}, [searchStore.currentSearch]);
 
+	const searchCount = searchStore.currentSearch ? searchStore.flattenedResult.length : 0;
+	const limit = searchStore.currentSearch?.request.state.resultCountLimit;
+
+	const progress = limit ? Math.min((searchCount / limit) * 100, 100) : null;
+
+	// TODO: change progress calc from count to time
+
 	return (
 		<div className='search-panel window' ref={searchPanelRef}>
 			<SearchPanelForm />
+			{progress !== null && <SearchProgress progress={progress} searchCount={searchCount} />}
 			{searchStore.currentSearch && (
 				<SearchPanelResults
 					flattenedResult={searchStore.flattenedResult}

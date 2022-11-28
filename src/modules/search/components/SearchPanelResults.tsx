@@ -43,8 +43,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
 		flattenedResult,
 		onResultClick: onResultItemClick,
-		onResultDelete,
-		disabledRemove,
 		loadMore,
 		showLoadMoreButton,
 		itemsInView = {},
@@ -112,14 +110,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 
 	return (
 		<div className='search-results'>
-			<div className='search-results__header'>
-				<button
-					className='search-results__remove-btn'
-					disabled={disabledRemove}
-					onClick={onResultDelete}>
-					<i />
-				</button>
-			</div>
 			<div className='search-results__list'>
 				<Virtuoso
 					data={flattenedResult}

@@ -20,7 +20,7 @@
 	--text-secondary: #585858;
 	--text-input: #898989;
 	--text-info: #4e8aff;
-	--text-warning: #FFB84E;
+	--text-warning: #ffb84e;
 
 	// events
 	--events-primary: #f26c0d;
@@ -62,6 +62,11 @@
 	--table-failed-row: #ffdddd;
 	--table-status-passed: var(--events-passed);
 	--table-status-failed: var(--events-failed);
+
+	--app-background: #bdccdb;
+	--app-header-background: #3d668f;
+
+	--progress-bar-background: #d0d0d0;
 }
 
 html[data-theme='dark'] {
@@ -78,7 +83,7 @@ html[data-theme='dark'] {
 	--session-text-color: #2d3036;
 
 	// search
-
+	--search-primary: #0df292;
 	// bookmarks
 
 	// workspace
@@ -93,8 +98,12 @@ html[data-theme='dark'] {
 
 	--panel-background: #22262c;
 	--workspace-background: #4f5156;
-	
+
 	--input-border: #4f5156;
 	--counter-border: #22262c;
 
+	--app-background: #33383d;
+	--app-header-background: #18191b;
+
+	--progress-bar-background: #7a7c80;
 }

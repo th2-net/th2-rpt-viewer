@@ -93,7 +93,7 @@ const MessageCard = (props: MessageCardProps) => {
 							attached: isAttached,
 						})}
 					/>
-					<div>
+					<div style={{ width: '100%' }}>
 						<MessageCardHeader
 							{...props}
 							viewType={viewTypesMap.get(titleMessage.id)}
