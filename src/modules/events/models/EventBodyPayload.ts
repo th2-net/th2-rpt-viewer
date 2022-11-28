@@ -89,4 +89,4 @@ export interface VerificationPayloadField {
 	};
 }
 
-export type EventActionBody = EventBodyPayload[];
+export type EventActionBody = EventBodyPayload | EventBodyPayload[];

@@ -29,7 +29,8 @@ export const ReferenceCard = (props: Props) => {
 
 	const { event: referencedEvent, isError, isLoading } = useEvent(eventId);
 
-	const body = referencedEvent?.body || [];
+	let body = referencedEvent?.body || [];
+	body = Array.isArray(body) ? body : [body];
 
 	const [isOpen, toggleIsOpen] = useReducer(o => !o, false);
 
@@ -64,7 +65,6 @@ export const ReferenceCard = (props: Props) => {
 						{referencedEvent &&
 							(body.length > 0 ? (
 								<EventBodyCard
-									body={body}
 									event={referencedEvent}
 									referenceHistory={[...referenceHistory, eventId]}
 								/>

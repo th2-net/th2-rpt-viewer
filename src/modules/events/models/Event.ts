@@ -14,41 +14,4 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventBodyPayload } from './EventBodyPayload';
-
-export type EventTree = Array<EventTreeNode>;
-
-export enum ActionType {
-	EVENT_ACTION = 'event',
-	EVENT_TREE_NODE = 'eventTreeNode',
-	MESSAGE = 'message',
-}
-
-export type EntityType = 'event' | 'message';
-
-interface EventBase {
-	eventId: string;
-	eventName: string;
-	eventType: string;
-	startTimestamp: string;
-	endTimestamp?: string | null;
-	successful: boolean;
-}
-
-export interface EventTreeNode extends EventBase {
-	parentId: string | null;
-	type: ActionType.EVENT_TREE_NODE;
-	isUnknown?: boolean;
-}
-
-export interface EventAction extends EventBase {
-	attachedMessageIds: Array<string>;
-	isBatched: boolean;
-	batchId: null | string;
-	batched: boolean;
-	body: EventActionBody;
-	parentEventId: string | null;
-	type: ActionType.EVENT_ACTION;
-}
-
-export type EventActionBody = EventBodyPayload[];
+export * from '../../../models/EventAction';

@@ -90,6 +90,8 @@
 }
 
 .mc-header {
+	background-color: var(--background-primary);
+
 	&__icons,
 	&__timestamp {
 		flex-shrink: 0;
@@ -174,7 +176,7 @@
 		gap: 8px;
 	}
 
-	&__button {
+	.icon-button {
 		cursor: pointer;
 		align-items: center;
 		background: var(--surface-background);
@@ -230,6 +232,12 @@
 		top: 8px;
 		right: 8px;
 		color: var(--info-color);
+	}
+
+	&__close-button {
+		&.icon-button {
+			position: absolute;
+		}
 	}
 
 	&__button.active &__ellipsis {

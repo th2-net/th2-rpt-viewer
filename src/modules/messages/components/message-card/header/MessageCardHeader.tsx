@@ -37,14 +37,14 @@ export interface MessageInfoProps {
 	isBookmarked?: boolean;
 	toggleMessagePin?: () => void;
 	isAttached?: boolean;
-	isExport?: boolean;
-	isExported?: boolean;
+	showCheckbox?: boolean;
+	checked?: boolean;
 	isExpanded?: boolean;
 	setIsExpanded?: (state: boolean) => void;
-	addMessageToExport?: (message: EventMessage) => void;
 	displayType?: CardDisplayType;
 	isScreenshotMsg?: boolean;
 	onClick?: (message: EventMessage) => void;
+	onSelect?: (message: EventMessage) => void;
 }
 
 export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
@@ -52,11 +52,11 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		message,
 		viewType,
 		setViewType,
-		addMessageToExport,
+		onSelect,
 		isBookmarked = false,
 		isAttached,
-		isExport,
-		isExported,
+		showCheckbox,
+		checked,
 		isExpanded,
 		setIsExpanded,
 		displayType = CardDisplayType.FULL,
@@ -83,8 +83,8 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	return (
 		<div className='mc-header mc-header__info' onClick={handleClick}>
-			{isExport && isExported !== undefined && addMessageToExport && (
-				<Checkbox checked={isExported} onChange={() => addMessageToExport(message)} />
+			{showCheckbox && checked !== undefined && onSelect && (
+				<Checkbox checked={checked} onChange={() => onSelect(message)} />
 			)}
 			<Chip className='mc-header__icons'>
 				<MessageIcon />

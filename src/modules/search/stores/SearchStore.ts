@@ -524,8 +524,12 @@ export class SearchStore implements ISearchStore {
 
 			const queryParams: SSEParams =
 				this.formType === 'event'
-					? { ...params }
-					: { ...params, stream: stream.flatMap(s => [`${s}:first`, `${s}:second`]) };
+					? { ...params, metadataOnly: false }
+					: {
+							...params,
+							stream: stream.flatMap(s => [`${s}:first`, `${s}:second`]),
+							metadataOnly: false,
+					  };
 
 			const searchChannel = this.api.sse.getEventSource({
 				type: this.formType,

@@ -703,32 +703,19 @@
 }
 
 .search-result-separator {
-	font-size: 11px;
-	display: block;
-	text-align: center;
-	margin: 12px 0px;
-	margin-left: 24px;
-	border-bottom: 1px solid $secondaryTextColor;
-	color: $eventCardIdColor;
-	line-height: 0.1em;
-
-	&__text {
-		background-color: #fff;
-		padding: 0 45px;
-		width: 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+	.chip {
+		line-height: 14px;
+		font-size: 11px;
 	}
 }
 
 .search-result {
 	padding: 6px 12px;	
 
-	& > div {
-		border-radius: 8px;
-		padding-left: 12px;
-		padding-right: 12px;
-		background-color: var(--background-primary);
-		cursor: pointer;
-	}
 	&.highlight {
 		&.event {
 			border-color: $searchResultEventHighlightColor;

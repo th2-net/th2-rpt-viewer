@@ -37,7 +37,7 @@ function FlatEventListItem(props: FlatEventListItemProps) {
 				childrenCount={0}
 				event={node}
 				displayType={CardDisplayType.MINIMAL}
-				onSelect={eventsStore.selectNode}
+				onClick={eventsStore.selectNode}
 				isSelected={eventsStore.isNodeSelected(node)}
 				isFlatView={true}
 				parentsCount={

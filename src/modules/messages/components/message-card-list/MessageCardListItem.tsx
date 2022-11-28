@@ -92,14 +92,14 @@ const MessageCardListItem = observer((props: Props) => {
 		<div className={rootClass}>
 			<MessageCard
 				{...props}
-				addMessageToExport={messagesStore.exportStore.addMessageToExport}
-				isExport={messagesStore.exportStore.isExport}
+				onSelect={messagesStore.exportStore.addMessageToExport}
+				showCheckbox={messagesStore.exportStore.isExport}
 				toggleMessagePin={toggleMessagePin}
 				isBookmarked={isBookmarked}
 				isHighlighted={isHighlighted}
 				sortOrderItems={sortOrderItems}
 				isAttached={isAttached}
-				isExported={isExported}
+				checked={isExported}
 			/>
 		</div>
 	);
@@ -107,11 +107,7 @@ const MessageCardListItem = observer((props: Props) => {
 
 const RecoverableMessageCardListItem = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypeStore();
-	const { getSavedViewType } = viewTypesStore;
-
-	const viewTypeStore = getSavedViewType(props.message);
-	const viewTypesMap = viewTypeStore.viewTypes;
-	const setViewType = viewTypeStore.setViewType;
+	const viewTypeStore = viewTypesStore.getSavedViewType(props.message);
 
 	return (
 		<StateSaver stateKey={props.message.id}>
@@ -121,8 +117,8 @@ const RecoverableMessageCardListItem = (props: OwnProps) => {
 					displayType={props.displayType}
 					isExpanded={isExpanded}
 					setIsExpanded={setIsExpanded}
-					viewTypesMap={viewTypesMap}
-					setViewType={setViewType}
+					viewTypesMap={viewTypeStore.viewTypes}
+					setViewType={viewTypeStore.setViewType}
 				/>
 			)}
 		</StateSaver>

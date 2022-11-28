@@ -46,7 +46,6 @@ const SearchPanel = (props: SearchPanelProps) => {
 				<SearchPanelResults
 					flattenedResult={searchStore.flattenedResult}
 					filters={searchStore.currentSearch.request.filters}
-					timestamp={searchStore.currentSearch.timestamp}
 					disabledRemove={searchStore.isSearching}
 					showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
 					loadMore={searchStore.loadMore}

@@ -14,23 +14,25 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { useState } from 'react';
 import clsx from 'clsx';
 import { Virtuoso } from 'react-virtuoso';
-import { formatTimestamp } from 'helpers/date';
+import { Observer, useLocalStore } from 'mobx-react-lite';
+import MessagesViewTypeStore from 'modules/messages/stores/MessagesViewTypeStore';
+import MessageCard from 'modules/messages/components/message-card/MessageCard';
+import { ExpandableEventCard } from 'modules/events/components/event-card/ExpandableEventCard';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import EventsFilter from 'models/filter/EventsFilter';
 import { getItemId } from 'helpers/event';
 import { isEventMessage } from 'helpers/message';
 import { SearchResult } from '../stores/SearchStore';
 import SearchPanelSeparator from './SearchPanelSeparator';
-import { EventSearchResult, MessageSearchResult } from './SearchResultItem';
 
 interface SearchPanelResultsProps {
 	onResultClick: (searchResult: SearchResult, isNewWorkspace?: boolean) => void;
 	onResultDelete: () => void;
 	flattenedResult: (SearchResult | [number, number])[];
 	filters: EventsFilter | MessagesFilter;
-	timestamp: number;
 	disabledRemove: boolean;
 	showLoadMoreButton: boolean;
 	loadMore: () => void;
@@ -40,7 +42,6 @@ interface SearchPanelResultsProps {
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
 		flattenedResult,
-		timestamp,
 		onResultClick: onResultItemClick,
 		onResultDelete,
 		disabledRemove,
@@ -49,9 +50,22 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		itemsInView = {},
 	} = props;
 
-	const isResultItemHighlighted = (result: SearchResult) => itemsInView[getItemId(result)];
-
 	// TODO implement opening item in a new workspace
+
+	const isExpandedStore = useLocalStore(() => ({
+		map: new Map(),
+		toggleExpand: (id: string) => {
+			const isExpanded = isExpandedStore.map.get(id);
+			isExpandedStore.map.set(id, !isExpanded);
+		},
+		clear: () => {
+			isExpandedStore.map.clear();
+		},
+	}));
+
+	const [viewTypesStore] = useState(() => new MessagesViewTypeStore());
+
+	const isResultItemHighlighted = (result: SearchResult) => itemsInView[getItemId(result)];
 
 	const renderResult = (i: number, result: SearchResult | [number, number]) => {
 		if (Array.isArray(result)) {
@@ -61,23 +75,43 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		const rootClassName = clsx('search-result', { highlight: isResultItemHighlighted(result) });
 
 		if (isEventMessage(result)) {
+			const viewTypeStore = viewTypesStore.getSavedViewType(result);
 			return (
-				<div className={rootClassName}>
-					<MessageSearchResult message={result} onClick={onResultItemClick} />
-				</div>
+				<Observer>
+					{() => (
+						<div className={rootClassName}>
+							<MessageCard
+								message={result}
+								isExpanded={Boolean(isExpandedStore.map.get(result.id))}
+								setIsExpanded={() => isExpandedStore.toggleExpand(result.id)}
+								viewTypesMap={viewTypeStore.viewTypes}
+								setViewType={viewTypeStore.setViewType}
+							/>
+						</div>
+					)}
+				</Observer>
 			);
 		}
+
 		return (
-			<div className={rootClassName}>
-				<EventSearchResult event={result as any} onClick={onResultItemClick as any} />
-			</div>
+			<Observer>
+				{() => (
+					<div className={rootClassName}>
+						<ExpandableEventCard
+							event={result}
+							onClick={onResultItemClick}
+							isExpanded={Boolean(isExpandedStore.map.get(result.eventId))}
+							toggleExpand={isExpandedStore.toggleExpand}
+						/>
+					</div>
+				)}
+			</Observer>
 		);
 	};
 
 	return (
 		<div className='search-results'>
 			<div className='search-results__header'>
-				<p className='search-results__timestamp'>{formatTimestamp(timestamp)}</p>
 				<button
 					className='search-results__remove-btn'
 					disabled={disabledRemove}

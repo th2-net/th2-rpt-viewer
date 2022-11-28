@@ -19,7 +19,6 @@ import { EventTreeNode } from 'models/EventAction';
 import SplashScreen from 'components/SplashScreen';
 import Empty from 'components/util/Empty';
 import EventCard from './event-card/EventCard';
-import { convertEventActionToEventTreeNode } from '../helpers/event';
 import EventCardHeader from './event-card/EventCardHeader';
 import { useEvent } from '../hooks/useEvent';
 import { EventAction } from '../models/Event';
@@ -29,7 +28,7 @@ interface Props {
 	parentNodes?: EventTreeNode[];
 	children?: React.ReactNode;
 	isBookmarked?: boolean;
-	onBookmarkClick?: (node: EventTreeNode) => void;
+	onBookmarkClick?: (node: EventAction) => void;
 }
 
 function EventDetailedCard(props: Props) {
@@ -47,7 +46,7 @@ function EventDetailedCard(props: Props) {
 		if (onBookmarkClick) {
 			return (e: EventAction) => {
 				if (onBookmarkClick) {
-					onBookmarkClick(convertEventActionToEventTreeNode(e));
+					onBookmarkClick(e);
 				}
 			};
 		}
@@ -75,11 +74,11 @@ function EventDetailedCard(props: Props) {
 						<EventCardHeader
 							key={eventNode.eventId}
 							event={eventNode}
-							onSelect={!eventNode.isUnknown ? e => setSelectedNode(e) : undefined}
+							onClick={!eventNode.isUnknown ? e => setSelectedNode(e) : undefined}
 							isActive={selectedNode === eventNode}
 						/>
 					))}
-					<EventCardHeader key={node.eventId} event={node} onSelect={setSelectedNode} />
+					<EventCardHeader key={node.eventId} event={node} onClick={setSelectedNode} />
 				</div>
 			)}
 			<EventCard

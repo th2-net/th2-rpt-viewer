@@ -196,7 +196,7 @@
 	td {
 		word-break: break-all;
 		white-space: pre-wrap;
-		background-color: $tableBodyBackground;
+		background-color: var(--text-background);
 		border-right: 0;
 		border-left: 0;
 		display: flex;

@@ -17,7 +17,7 @@
 import { formatTimestamp } from 'helpers/date';
 import { observer } from 'mobx-react-lite';
 import { SearchDirection } from 'models/SearchDirection';
-import { CalendarIcon } from 'components/icons/CalendarIcon';
+// import { CalendarIcon } from 'components/icons/CalendarIcon';
 import { ButtonBase } from 'components/buttons/ButtonBase';
 import { Chip } from 'components/Chip';
 import { EventsArrowIcon } from 'components/icons/EventsArrowIcon';
@@ -52,7 +52,7 @@ export const EventListNavigation = observer(() => {
 					<EventsArrowIcon />
 				</Chip>
 			</ButtonBase>
-			<CalendarIcon className='events-nav__calendar-button' />
+			{/* <CalendarIcon className='events-nav__calendar-button' /> */}
 		</div>
 	);
 });

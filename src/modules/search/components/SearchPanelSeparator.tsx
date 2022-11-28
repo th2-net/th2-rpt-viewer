@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { Chip } from 'components/Chip';
 import moment from 'moment';
 
 interface Props {
@@ -26,7 +27,7 @@ const SearchPanelSeparator = (props: Props) => {
 	const time = moment(Math.abs(nextElement - prevElement)).utc();
 	return (
 		<div className='search-result-separator'>
-			<span className='search-result-separator__text'>
+			<Chip>
 				No Data for
 				<b>
 					{time.hour() > 0 && ` ${time.hour()}h`}
@@ -34,7 +35,7 @@ const SearchPanelSeparator = (props: Props) => {
 					{time.second() > 0 && ` ${time.second()}sec`}
 					{time.millisecond() > 0 && ` ${time.millisecond()}ms`}
 				</b>
-			</span>
+			</Chip>
 		</div>
 	);
 };

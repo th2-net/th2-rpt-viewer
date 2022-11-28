@@ -34,7 +34,7 @@ export interface IBookmarksStore {
 	BOOKMARKS_LIMIT: number;
 	isLoadingBookmarks: boolean;
 	toggleMessagePin: (message: EventMessage) => void;
-	toggleEventPin: (message: EventTreeNode) => void;
+	toggleEventPin: (message: EventAction) => void;
 	syncData: (unsavedData?: DbData) => void;
 }
 

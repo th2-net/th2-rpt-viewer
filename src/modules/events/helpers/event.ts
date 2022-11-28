@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import { ActionType, EventAction, EventTreeNode } from 'models/EventAction';
+import { ActionType, EventAction, EventTreeNode, EventActionBody } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
 import { getTimestampAsNumber, timestampToNumber } from 'helpers/date';
 import { EventStatus } from '../models/Status';
@@ -107,7 +107,7 @@ export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
 	return item.eventName;
 }
 
-export const convertEventActionToEventTreeNode = (event: EventAction): EventTreeNode => ({
+export const toEventTreeNode = (event: EventAction): EventTreeNode => ({
 	eventId: event.eventId,
 	eventName: event.eventName,
 	eventType: event.eventType,
@@ -140,3 +140,10 @@ export const unknownRoot: EventTreeNode = {
 	startTimestamp: '',
 	successful: false,
 };
+
+export function isEmptyBody(eventBody: EventActionBody) {
+	if (Array.isArray(eventBody)) {
+		return eventBody.length === 0;
+	}
+	return typeof eventBody === 'object' && eventBody !== null && Object.keys(eventBody).length === 0;
+}

@@ -21,12 +21,7 @@ import { nanoid } from 'nanoid';
 import EventsFilter from 'models/filter/EventsFilter';
 import { SearchDirection } from 'models/SearchDirection';
 import ApiSchema from '../../../api/ApiSchema';
-import {
-	convertEventActionToEventTreeNode,
-	getErrorEventTreeNode,
-	isRootEvent,
-	unknownRoot,
-} from '../helpers/event';
+import { toEventTreeNode, getErrorEventTreeNode, isRootEvent, unknownRoot } from '../helpers/event';
 import { EventTreeNode } from '../../../models/EventAction';
 import notificationsStore from '../../../stores/NotificationsStore';
 import EventsFilterStore from './EventsFilterStore';
@@ -333,7 +328,7 @@ export default class EventsDataStore {
 						{ probe: true },
 					);
 					if (!currentParentEvent) break;
-					parentNode = convertEventActionToEventTreeNode(currentParentEvent);
+					parentNode = toEventTreeNode(currentParentEvent);
 					parentNodes.unshift(parentNode);
 					currentParentId = parentNode.parentId;
 				}
@@ -583,7 +578,7 @@ export default class EventsDataStore {
 					this.eventStore.targetNodeId = null;
 					return;
 				}
-				const targetNode = convertEventActionToEventTreeNode(event);
+				const targetNode = toEventTreeNode(event);
 				if (targetNode.parentId !== null) {
 					this.loadParentNodes(targetNode.parentId, true);
 				}
