@@ -14,21 +14,37 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { observer } from 'mobx-react-lite';
 import { Chip } from 'components/Chip';
+import { MessagesSearchResult, EventsSearchResult } from '../stores/SearchResult';
 
 interface Props {
-	progress: number;
-	searchCount: number;
+	search: MessagesSearchResult | EventsSearchResult | null;
 }
 
-export const SearchProgress = (props: Props) => (
-	<div className='search-progress'>
-		<div className='search-progress__labels'>
-			<p className='search-progress__label'>{props.progress}% Completed</p>
-			<Chip className='search-progress__count'>{props.searchCount}</Chip>
+export const SearchProgress = observer((props: Props) => {
+	if (!props.search) return null;
+
+	const { startTimestamp, endTimestamp, currentTimestamp, count, processedObjectsCount } =
+		props.search;
+	const searchTime = currentTimestamp - startTimestamp;
+	const progress = Math.floor((searchTime / (endTimestamp - startTimestamp)) * 100);
+
+	return (
+		<div className='search-progress'>
+			<div className='search-progress__info'>
+				<div>
+					<p className='search-progress__completed'>{progress}% Completed</p>
+					<Chip className='search-progress__count'>{count}</Chip>
+				</div>
+
+				{processedObjectsCount > 0 && (
+					<p className='search-progress__processed'>Processed items: {processedObjectsCount}</p>
+				)}
+			</div>
+			<div className='search-progress__loader'>
+				<div className='search-progress__loader-filler' style={{ width: `${progress}%` }}></div>
+			</div>
 		</div>
-		<div className='search-progress__loader'>
-			<div className='search-progress__loader-filler' style={{ width: `${props.progress}%` }}></div>
-		</div>
-	</div>
-);
+	);
+});

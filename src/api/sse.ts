@@ -26,7 +26,7 @@ interface BaseSSEParams {
 	startTimestamp?: number;
 	endTimestamp?: number | null;
 	resultCountLimit?: number;
-	searchDirection?: 'next' | 'previous'; // defaults to next
+	searchDirection?: SearchDirection.Next | SearchDirection.Previous; // defaults to next
 }
 
 export interface SSEHeartbeat {
@@ -78,6 +78,11 @@ export interface MessagesFilterInfo {
 export interface EventSSEParams extends BaseSSEParams {
 	parentEvent?: string;
 	filters?: Array<EventFilterKeys>;
+	resumeFromId?: string;
+	resultCountLimit?: number;
+	limitForParent?: number;
+	metadataOnly?: boolean;
+
 	'attachedMessageId-values'?: string;
 	'attachedMessageId-negative'?: boolean;
 	'attachedMessageId-conjunct'?: boolean;
@@ -90,7 +95,6 @@ export interface EventSSEParams extends BaseSSEParams {
 	'name-negative'?: boolean;
 	'name-conjunct'?: boolean;
 	'name-strict'?: boolean;
-	resumeFromId?: string;
 }
 
 export type MessageDirection = 'first' | 'second';
@@ -117,15 +121,6 @@ export interface MessagesSSEParams extends BaseSSEParams {
 	'body-strict'?: boolean;
 	messageId?: string[];
 	resumeFromId?: string;
-	metadataOnly?: boolean;
-}
-
-export interface SSEParamsEvents {
-	parentEvent?: string;
-	resultCountLimit?: number;
-	resumeFromId?: string;
-	searchDirection?: 'next' | 'previous'; // defaults to next
-	limitForParent?: number;
 }
 
 export interface MessageIdsEvent {
@@ -139,8 +134,6 @@ export interface MessageIdsEvent {
 		};
 	};
 }
-
-export type SSEParams = EventSSEParams | MessagesSSEParams;
 
 type ParamsFromFilter = Record<string, string | string[] | boolean>;
 
@@ -179,28 +172,47 @@ export function getParamsFromFilter(filter: EventsFilter): EventSSEParams {
 	);
 }
 
-export function getEventsSSEParams(
-	filter: EventsFilter,
-	startTimestamp: number,
-	searchDirection: SearchDirection.Next | SearchDirection.Previous = SearchDirection.Previous,
-	resultCountLimit = 15,
-): EventSSEParams {
-	const filters = getParamsFromFilter(filter);
+interface EventParams {
+	filter: EventsFilter | null;
+	startTimestamp: number;
+	endTimestamp?: number;
+	searchDirection: SearchDirection.Next | SearchDirection.Previous;
+	resultCountLimit?: number;
+	metadataOnly?: boolean;
+	parentEvent?: string;
+	resumeFromId?: string;
+}
+
+export function getEventsSSEParams(params: EventParams): EventSSEParams {
+	const {
+		filter,
+		searchDirection,
+		resultCountLimit,
+		startTimestamp,
+		metadataOnly = true,
+		...restParams
+	} = params;
+	const filters = filter ? getParamsFromFilter(filter) : {};
 
 	return {
-		...filters,
 		startTimestamp,
 		searchDirection,
 		resultCountLimit,
+		metadataOnly,
+		...restParams,
+		...filters,
 	};
 }
 
-export function getMessagesSSEParams(
-	filter: MessagesFilter | null,
-	params: MessagesParams,
-	searchDirection = SearchDirection.Previous,
-	resultCountLimit = 15,
-): MessagesSSEParams {
+interface MessageParams {
+	filter: MessagesFilter | null;
+	params: MessagesParams;
+	searchDirection: SearchDirection;
+	resultCountLimit?: number;
+}
+
+export function getMessagesSSEParams(searchParams: MessageParams): MessagesSSEParams {
+	const { filter, params, searchDirection, resultCountLimit } = searchParams;
 	const filtersToAdd: Array<keyof MessagesFilter> = !filter
 		? []
 		: Object.entries(filter)
@@ -227,11 +239,11 @@ export function getMessagesSSEParams(
 		filter && filter[filterName].strict ? [`${filterName}-strict`, filter[filterName].strict] : [],
 	);
 
-	const { streams, startTimestamp: timestampFrom, endTimestamp: timestampTo } = params;
+	const { streams, startTimestamp, endTimestamp } = params;
 
 	const queryParams: MessagesSSEParams = {
-		startTimestamp: timestampFrom ? new Date(timestampFrom).toISOString() : timestampFrom,
-		endTimestamp: timestampTo ? new Date(timestampTo).toISOString() : timestampTo,
+		startTimestamp: startTimestamp && new Date(startTimestamp).toISOString(),
+		endTimestamp: endTimestamp && new Date(endTimestamp).toISOString(),
 		stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
 		searchDirection,
 		resultCountLimit,
@@ -260,16 +272,6 @@ const sseApi: SSESchema = {
 				: null,
 		});
 		return new EventSource(`backend/search/sse/${type}s/?${params}`);
-	},
-	getEventsTreeSource: ({ startTimestamp, endTimestamp, filter, sseParams }) => {
-		const paramFromFilter = filter ? getParamsFromFilter(filter) : {};
-		const params = createURLSearchParams({
-			startTimestamp: new Date(startTimestamp).toISOString(),
-			endTimestamp: endTimestamp && new Date(endTimestamp).toISOString(),
-			...paramFromFilter,
-			...sseParams,
-		});
-		return new EventSource(`backend/search/sse/events/?${params}`);
 	},
 	getFilters: async <T>(filterType: 'events' | 'messages'): Promise<T[]> => {
 		const res = await fetch(`backend/filters/sse-${filterType}`);

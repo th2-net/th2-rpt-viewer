@@ -117,13 +117,13 @@ export default class WorkspacesStore {
 		timestamp: number,
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
-		const requestInfo = this.searchStore.currentSearch?.request;
-		const filters: MessagesFilter | null = (requestInfo?.filters as MessagesFilter) || null;
+		const currentSearch = this.searchStore.currentSearch;
+		const filter = currentSearch?.filter as MessagesFilter;
 
 		return {
 			messages: {
-				sse: filters,
-				streams: requestInfo?.state.stream || [],
+				sse: filter,
+				streams: currentSearch?.streams || [],
 				startTimestamp: timestamp,
 				endTimestamp: null,
 				targetMessage,

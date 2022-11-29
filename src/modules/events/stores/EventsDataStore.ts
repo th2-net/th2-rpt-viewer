@@ -20,6 +20,7 @@ import moment from 'moment';
 import { nanoid } from 'nanoid';
 import EventsFilter from 'models/filter/EventsFilter';
 import { SearchDirection } from 'models/SearchDirection';
+import { getEventsSSEParams } from 'api/sse';
 import ApiSchema from '../../../api/ApiSchema';
 import { toEventTreeNode, getErrorEventTreeNode, isRootEvent, unknownRoot } from '../helpers/event';
 import { EventTreeNode } from '../../../models/EventAction';
@@ -137,16 +138,16 @@ export default class EventsDataStore {
 
 		try {
 			this.eventTreeEventSource?.stop();
+
 			this.eventTreeEventSource = new EventsSSEChannel(
-				{
+				getEventsSSEParams({
 					startTimestamp: timeRange[0],
 					endTimestamp: timeRange[1],
 					filter,
-					sseParams: {
-						searchDirection: SearchDirection.Next,
-						limitForParent: this.CHILDREN_CHUNK_SIZE,
-					},
-				},
+					searchDirection: SearchDirection.Next,
+					metadataOnly: true,
+					resultCountLimit: this.CHILDREN_CHUNK_SIZE,
+				}),
 				{
 					onResponse: this.handleIncomingEventTreeNodes,
 					onError: this.onEventTreeFetchError,
@@ -473,17 +474,16 @@ export default class EventsDataStore {
 		}
 
 		const loader = new EventsSSEChannel(
-			{
-				startTimestamp: this.filterStore.timestampFrom,
-				endTimestamp: this.filterStore.timestampTo,
+			getEventsSSEParams({
+				startTimestamp: this.filterStore.startTimestamp,
+				endTimestamp: this.filterStore.endTimestamp,
 				filter: this.filterStore.filter,
-				sseParams: {
-					parentEvent: parentId,
-					resumeFromId,
-					resultCountLimit: this.CHILDREN_CHUNK_SIZE,
-					searchDirection: 'next',
-				},
-			},
+				searchDirection: SearchDirection.Next,
+				metadataOnly: true,
+				resultCountLimit: this.CHILDREN_CHUNK_SIZE,
+				parentEvent: parentId,
+				resumeFromId,
+			}),
 			{
 				onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
 				onError: this.onEventTreeFetchError,
@@ -569,8 +569,8 @@ export default class EventsDataStore {
 				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
 				const targetEventTimestamp = event.startTimestamp;
 				if (
-					timestampToNumber(targetEventTimestamp) < this.filterStore.timestampFrom ||
-					timestampToNumber(targetEventTimestamp) > this.filterStore.timestampTo
+					timestampToNumber(targetEventTimestamp) < this.filterStore.startTimestamp ||
+					timestampToNumber(targetEventTimestamp) > this.filterStore.endTimestamp
 				) {
 					this.targetEventLoadSubscription();
 					this.targetEventAC = null;
@@ -679,17 +679,16 @@ export default class EventsDataStore {
 		const offset = searchDirection === SearchDirection.Next ? 1 : -1;
 
 		this.eventTreeEventSource = new EventsSSEChannel(
-			{
+			getEventsSSEParams({
 				startTimestamp:
 					searchDirection === SearchDirection.Previous
-						? this.filterStore.timestampFrom
-						: this.filterStore.timestampTo,
+						? this.filterStore.startTimestamp
+						: this.filterStore.endTimestamp,
 				filter: this.filterStore.filter,
-				sseParams: {
-					searchDirection,
-					resultCountLimit: 1,
-				},
-			},
+				metadataOnly: true,
+				searchDirection,
+				resultCountLimit: 1,
+			}),
 			{
 				onResponse: events => {
 					const closestEvent = events[0];

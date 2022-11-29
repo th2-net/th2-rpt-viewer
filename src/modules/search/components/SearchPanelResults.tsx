@@ -17,36 +17,24 @@
 import { useState } from 'react';
 import clsx from 'clsx';
 import { Virtuoso } from 'react-virtuoso';
-import { Observer, useLocalStore } from 'mobx-react-lite';
+import { observer, Observer, useLocalStore } from 'mobx-react-lite';
 import MessagesViewTypeStore from 'modules/messages/stores/MessagesViewTypeStore';
 import MessageCard from 'modules/messages/components/message-card/MessageCard';
 import { ExpandableEventCard } from 'modules/events/components/event-card/ExpandableEventCard';
-import MessagesFilter from 'models/filter/MessagesFilter';
-import EventsFilter from 'models/filter/EventsFilter';
 import { getItemId } from 'helpers/event';
 import { isEventMessage } from 'helpers/message';
-import { SearchResult } from '../stores/SearchStore';
+import { SearchResultItem } from '../stores/SearchStore';
 import SearchPanelSeparator from './SearchPanelSeparator';
 
 interface SearchPanelResultsProps {
-	onResultClick: (searchResult: SearchResult, isNewWorkspace?: boolean) => void;
-	onResultDelete: () => void;
-	flattenedResult: (SearchResult | [number, number])[];
-	filters: EventsFilter | MessagesFilter;
+	onResultClick: (searchResult: SearchResultItem, isNewWorkspace?: boolean) => void;
+	data: SearchResultItem[];
 	disabledRemove: boolean;
-	showLoadMoreButton: boolean;
-	loadMore: () => void;
 	itemsInView?: Record<string, boolean>;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
-	const {
-		flattenedResult,
-		onResultClick: onResultItemClick,
-		loadMore,
-		showLoadMoreButton,
-		itemsInView = {},
-	} = props;
+	const { data, onResultClick: onResultItemClick, itemsInView = {} } = props;
 
 	// TODO implement opening item in a new workspace
 
@@ -63,9 +51,9 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 
 	const [viewTypesStore] = useState(() => new MessagesViewTypeStore());
 
-	const isResultItemHighlighted = (result: SearchResult) => itemsInView[getItemId(result)];
+	const isResultItemHighlighted = (result: SearchResultItem) => itemsInView[getItemId(result)];
 
-	const renderResult = (i: number, result: SearchResult | [number, number]) => {
+	const renderResult = (i: number, result: SearchResultItem | [number, number]) => {
 		if (Array.isArray(result)) {
 			return <SearchPanelSeparator prevElement={result[0]} nextElement={result[1]} />;
 		}
@@ -112,19 +100,9 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		<div className='search-results'>
 			<div className='search-results__list'>
 				<Virtuoso
-					data={flattenedResult}
+					data={data}
 					className='search-results__virtuoso'
 					style={{ height: '100%' }}
-					components={{
-						Footer: function SearchResultsFooter() {
-							if (!showLoadMoreButton) return null;
-							return (
-								<button onClick={loadMore} className='search-results__load-more-button'>
-									Load more
-								</button>
-							);
-						},
-					}}
 					itemContent={renderResult}
 				/>
 			</div>
@@ -132,4 +110,4 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	);
 };
 
-export default SearchPanelResults;
+export default observer(SearchPanelResults);

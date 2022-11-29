@@ -38,6 +38,7 @@ import { Button } from 'components/buttons/Button';
 import { createURLSearchParams } from 'helpers/url';
 import { IconButton } from 'components/buttons/IconButton';
 import { CrossIcon } from 'components/icons/CrossIcon';
+import { SearchDirection } from 'models/SearchDirection';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 
 const filterOrder: MessageFilterKeys[] = [
@@ -172,10 +173,14 @@ function ReplayModal() {
 		}
 
 		const params = createURLSearchParams(
-			getMessagesSSEParams(currentFilter, {
-				endTimestamp,
-				startTimestamp,
-				streams: [...streams, currentStream].filter(Boolean),
+			getMessagesSSEParams({
+				filter: currentFilter,
+				params: {
+					endTimestamp,
+					startTimestamp,
+					streams: [...streams, currentStream].filter(Boolean),
+				},
+				searchDirection: SearchDirection.Next,
 			}) as unknown as Record<string, boolean | string | string[]>,
 		);
 

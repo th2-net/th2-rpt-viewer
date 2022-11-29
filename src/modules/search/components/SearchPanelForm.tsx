@@ -14,42 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import {
-	DateTimeInputType,
-	DateTimeMask,
-	FitlerRowItem,
-	TimeInputType,
-} from 'models/filter/FilterInputs';
-import EventsFilter from 'models/filter/EventsFilter';
-import MessagesFilter from 'models/filter/MessagesFilter';
+import { DateTimeInputType, FitlerRowItem } from 'models/filter/FilterInputs';
 import FilterRow from 'components/filter/row';
 import { EventFilterKeys, MessageFilterKeys } from 'api/sse';
+import EventsFilter from 'models/filter/EventsFilter';
 import { useFilterConfig } from 'hooks/useFilterConfig';
 import { FilterRows } from 'components/filter/FilterRows';
-import { SearchDirection } from 'models/SearchDirection';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
 import { useSessionsHistoryStore } from 'hooks/useSessionsStore';
 import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
 import { Button } from 'components/buttons/Button';
-import {
-	TIME_INPUT_MASK,
-	DATE_TIME_INPUT_MASK,
-	TIMESTAMPS_INPUT_MASK,
-} from '../../../models/util/filterInputs';
-import { SearchPanelFormState } from '../stores/SearchStore';
+import { EntityType } from 'models/EventAction';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
-import SearchDatetimeControls, {
-	SearchDatetimeControlsConfig,
-} from './search-form/SearchDatetimeControls';
-import SearchProgressBar, { SearchProgressBarConfig } from './search-form/SearchProgressBar';
 import SearchSubmit, { SearchSubmitConfig } from './search-form/SearchSubmit';
-import SearchResultCountLimit, {
-	ResultCountLimitConfig,
-} from './search-form/SearchResultCountLimit';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -74,47 +56,32 @@ const messagesFilterOrder: MessageFilterKeys[] = [
 
 const SearchPanelForm = () => {
 	const {
-		isHistorySearch,
-		updateForm,
-		searchForm: form,
 		formType,
-		filters,
 		startSearch,
-		pauseSearch,
+		stopSearch,
 		setFormType,
 		isSearching,
-		searchProgress,
-		isPaused,
-		resetSearchProgressState,
-		clearFilters,
+		eventsFilterStore,
+		messagesFilterStore,
 	} = useSearchStore();
+
+	const filterStore = formType === 'event' ? eventsFilterStore : messagesFilterStore;
+
+	const clearFilter = filterStore.clearFilter;
 
 	const filterConfigStore = useFilterConfigStore();
 
-	const disabled = isHistorySearch || isSearching;
+	const disabled = isSearching;
 
 	const { config, filter } = useFilterConfig({
-		filterInfo: filters?.info || [],
-		filter: filters?.state || null,
+		filterInfo: filterStore.filterInfo,
+		filter: filterStore.filter,
 		disabled,
 		order: formType === 'event' ? eventFilterOrder : messagesFilterOrder,
 	});
 
-	useEffect(() => {
-		resetSearchProgressState();
-	}, [filter]);
-
-	const onStartSearch = useCallback(
-		(loadMore = false) => {
-			startSearch(loadMore, {
-				eventsFilter: formType === 'event' ? (filter as EventsFilter) : undefined,
-				messagesFilter: formType !== 'event' ? (filter as MessagesFilter) : undefined,
-			});
-		},
-		[filter, startSearch, filters],
-	);
-
 	const [currentStream, setCurrentStream] = useState('');
+	const [sessions, setSessions] = useState<string[]>([]);
 	const sessionsStore = useSessionsHistoryStore();
 
 	const sessionsAutocomplete: string[] = React.useMemo(
@@ -129,35 +96,17 @@ const SearchPanelForm = () => {
 
 	const areSessionInvalid: boolean = React.useMemo(
 		() =>
-			form.stream.length === 0 ||
-			form.stream.some(stream => !filterConfigStore.messageSessions.includes(stream.trim())),
-		[form.stream, filterConfigStore.messageSessions],
+			sessions.length === 0 ||
+			sessions.some(stream => !filterConfigStore.messageSessions.includes(stream.trim())),
+		[sessions, filterConfigStore.messageSessions],
 	);
-
-	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
-		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
-			updateForm({ [name]: value });
-		};
-	}
-
-	function updateCountLimit(value: string) {
-		if (value === '' || /^\d+$/.test(value)) {
-			updateForm({ resultCountLimit: value === '' ? undefined : Number(value) });
-		}
-	}
-
-	const resultCountLimitConfig: ResultCountLimitConfig = {
-		value: !form.resultCountLimit ? '' : form.resultCountLimit.toString(),
-		setValue: updateCountLimit,
-		disabled: false,
-	};
 
 	const sessionsConfig: FitlerRowItem = {
 		type: 'multiple-strings',
 		id: 'stream',
 		label: 'Session',
-		values: form.stream,
-		setValues: getFormStateUpdater('stream'),
+		values: sessions,
+		setValues: setSessions,
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
 		autocompleteList: sessionsAutocomplete,
@@ -166,108 +115,33 @@ const SearchPanelForm = () => {
 		validateBubbles: true,
 	};
 
-	const startTimestampInput: DateInputProps = {
-		inputConfig: {
-			id: 'startTimestamp',
-			value: form.startTimestamp,
-			setValue: getFormStateUpdater('startTimestamp'),
-			type: TimeInputType.DATE_TIME,
-			dateTimeMask: DateTimeMask.DATE_TIME_MASK,
-			dateMask: DateTimeMask.DATE_SECONDARY_MASK,
-			timeMask: DateTimeMask.TIME_MASK,
-			placeholder: '',
-			timestampsInputMask: TIMESTAMPS_INPUT_MASK,
-			dateTimeInputMask: DATE_TIME_INPUT_MASK,
-			timeInputMask: TIME_INPUT_MASK,
-		},
-	};
-
-	const { startTimestamp, completed, progress, timeLimits, timeIntervals, processedObjectCount } =
-		searchProgress;
-
-	const searchDatetimeControlsConfig: SearchDatetimeControlsConfig = {
-		isSearching,
-		updateForm,
-		startTimestampInput,
-		disabled: isSearching,
-		searchDirection: form.searchDirection,
-		previousTimeLimit: {
-			value:
-				isSearching && !timeLimits.previous && startTimestamp
-					? startTimestamp - Math.abs(progress.previous)
-					: timeLimits.previous,
-			setValue: nextValue =>
-				updateForm({ timeLimits: { ...form.timeLimits, previous: nextValue } }),
-		},
-		nextTimeLimit: {
-			value:
-				isSearching && !timeLimits.next && startTimestamp
-					? startTimestamp + progress.next
-					: timeLimits.next,
-			setValue: nextValue => updateForm({ timeLimits: { ...timeLimits, next: nextValue } }),
-		},
-	};
-
-	const progressBarConfig: SearchProgressBarConfig = {
-		isSearching,
-		searchDirection: form.searchDirection,
-		leftProgress: {
-			completed: completed.previous,
-			isInfinite: !timeLimits.previous,
-			progress: timeIntervals.previous ? (progress.previous / timeIntervals.previous) * 100 : 0,
-		},
-		rightProgress: {
-			completed: completed.next,
-			isInfinite: !timeLimits.next,
-			progress: timeIntervals.next ? (progress.next / timeIntervals.next) * 100 : 0,
-		},
-	};
-
-	let commonProgress: number | null = null;
-
-	if (
-		form.searchDirection === SearchDirection.Both &&
-		!progressBarConfig.leftProgress.isInfinite &&
-		!progressBarConfig.rightProgress.isInfinite
-	) {
-		commonProgress = Math.floor(
-			(progressBarConfig.leftProgress.progress + progressBarConfig.rightProgress.progress) / 2,
-		);
-	} else if (
-		form.searchDirection === SearchDirection.Previous &&
-		!progressBarConfig.leftProgress.isInfinite
-	) {
-		commonProgress = Math.floor(progressBarConfig.leftProgress.progress);
-	} else if (
-		form.searchDirection === SearchDirection.Next &&
-		!progressBarConfig.rightProgress.isInfinite
-	) {
-		commonProgress = Math.floor(progressBarConfig.rightProgress.progress);
-	}
+	const onSearchStart = useCallback(() => {
+		if (formType === 'event') {
+			eventsFilterStore.setEventsFilter(filter as EventsFilter);
+		} else {
+			messagesFilterStore.setMessagesFilter(
+				{ ...messagesFilterStore.params, streams: sessions },
+				filter as MessagesFilter,
+			);
+		}
+		startSearch();
+	}, [filterStore, startSearch, sessions, filter]);
 
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
-		disabled:
-			isHistorySearch ||
-			!form.searchDirection ||
-			(formType === 'message' && form.stream.length === 0),
-		progress: commonProgress,
-		processedObjectCount,
-		isPaused,
-		startSearch: onStartSearch,
-		pauseSearch,
+		disabled: formType === 'message' && sessions.length === 0,
+		startSearch: onSearchStart,
+		stopSearch,
 	};
 
 	return (
 		<div className='search-panel-form'>
-			<SearchDatetimeControls {...searchDatetimeControlsConfig} />
-			<SearchProgressBar {...progressBarConfig} />
+			{/* <SearchDatetimeControls {...searchDatetimeControlsConfig} /> */}
 			<div className='search-panel__fields'>
-				<FiltersHistory disabled={disabled} type={formType} />
+				<FiltersHistory disabled={disabled} type={formType as EntityType} />
 				<div className='filter-row'>
 					<div className='search-type-config'>
-						<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
-						<SearchResultCountLimit {...resultCountLimitConfig} />
+						<SearchTypeSwitcher formType={formType as EntityType} setFormType={setFormType} />
 					</div>
 				</div>
 				{formType === 'message' ? <FilterRow rowConfig={sessionsConfig} /> : null}
@@ -280,7 +154,7 @@ const SearchPanelForm = () => {
 					<Button
 						variant='outlined'
 						className={clsx({ disabled: isSearching })}
-						onClick={clearFilters}
+						onClick={() => clearFilter()}
 						disabled={isSearching}>
 						Clear All
 					</Button>

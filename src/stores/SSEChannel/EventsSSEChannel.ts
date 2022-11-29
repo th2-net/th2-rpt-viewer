@@ -16,25 +16,23 @@
  ***************************************************************************** */
 
 import { action } from 'mobx';
-import EventsFilter from 'models/filter/EventsFilter';
 import api from '../../api';
-import { SSEParamsEvents } from '../../api/sse';
-import { isEventNode } from '../../helpers/event';
+import { EventSSEParams, SSEHeartbeat } from '../../api/sse';
+import { isEvent } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
+export type EventSSEEventListeners = SSEEventListeners<EventTreeNode> & {
+	onKeepAlive?: (event: SSEHeartbeat) => void;
+};
+
 export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 	constructor(
-		protected searchParams: {
-			startTimestamp: number;
-			endTimestamp?: number;
-			filter: EventsFilter | null;
-			sseParams: SSEParamsEvents;
-		},
-		protected eventListeners: SSEEventListeners<EventTreeNode>,
+		protected queryParams: EventSSEParams,
+		protected eventListeners: EventSSEEventListeners,
 		protected options?: SSEChannelOptions,
 	) {
-		super(isEventNode, eventListeners, options);
+		super(isEvent as any, eventListeners, options);
 	}
 
 	get eventsFetched() {
@@ -48,14 +46,27 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 		});
 		this.clearFetchedChunkSubscription();
 
-		this.channel = api.sse.getEventsTreeSource(this.searchParams);
+		this.channel = api.sse.getEventSource({ type: 'event', queryParams: this.queryParams });
 
 		this.channel.addEventListener('event', this.onSSEResponse);
 		this.channel.addEventListener('close', this.onClose);
 		this.channel.addEventListener('error', this._onError);
+		if (this.eventListeners.onKeepAlive) {
+			this.channel.addEventListener('keep_alive', this._onKeepAliveResponse);
+		}
 
 		this.initUpdateScheduler();
 	}
+
+	private _onKeepAliveResponse = (event: Event) => {
+		if (this.eventListeners.onKeepAlive) {
+			const heatbeat = JSON.parse((event as MessageEvent).data) as SSEHeartbeat;
+
+			if (heatbeat.timestamp !== 0) {
+				this.eventListeners.onKeepAlive(heatbeat);
+			}
+		}
+	};
 
 	protected getNextChunk(chunkSize = this.accumulatedData.length): EventTreeNode[] {
 		return this.accumulatedData.splice(0, chunkSize);

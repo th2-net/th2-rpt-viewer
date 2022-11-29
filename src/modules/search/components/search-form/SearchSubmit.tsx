@@ -19,38 +19,17 @@ import { Button } from 'components/buttons/Button';
 export type SearchSubmitConfig = {
 	isSearching: boolean;
 	disabled: boolean;
-	progress: number | null;
-	processedObjectCount: number;
-	isPaused: boolean;
 	startSearch: () => void;
-	pauseSearch: () => void;
+	stopSearch: () => void;
 };
 
-const SearchSubmit = ({
-	isSearching,
-	disabled,
-	progress,
-	processedObjectCount,
-	isPaused,
-	startSearch,
-	pauseSearch,
-}: SearchSubmitConfig) => {
-	const getButtonTextWithProgress = (defaultText: string) =>
-		progress === null ? defaultText : `${progress}%`;
+const SearchSubmit = ({ isSearching, disabled, startSearch, stopSearch }: SearchSubmitConfig) => {
+	const buttonText = isSearching ? 'Stop' : 'Search';
 
-	const buttonText = isSearching
-		? getButtonTextWithProgress('Pause')
-		: isPaused
-		? getButtonTextWithProgress('Resume')
-		: 'Search';
-
-	const handleClick = isSearching ? () => pauseSearch() : () => startSearch();
+	const handleClick = isSearching ? () => stopSearch() : () => startSearch();
 
 	return (
 		<div className='search-panel-form__submit'>
-			{Boolean(processedObjectCount) && (
-				<div className='search-processed-objects'> {processedObjectCount} processed objects </div>
-			)}
 			<Button variant='contained' disabled={disabled} onClick={handleClick}>
 				<span className='search-submit-button__label'>{buttonText}</span>
 			</Button>

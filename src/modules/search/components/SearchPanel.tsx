@@ -14,19 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useActivePanel } from 'hooks/index';
 import { Panel } from 'models/Panel';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
-import { SearchResult } from '../stores/SearchStore';
+import { SearchResultItem } from '../stores/SearchStore';
 import { SearchProgress } from './SearchProgress';
 import 'styles/search-panel.scss';
 
 interface SearchPanelProps {
-	onResultClick: (searchResult: SearchResult) => void;
+	onResultClick: (searchResult: SearchResultItem) => void;
 	itemsInView?: Record<string, boolean>;
 }
 
@@ -34,31 +33,14 @@ const SearchPanel = (props: SearchPanelProps) => {
 	const searchStore = useSearchStore();
 	const { ref: searchPanelRef } = useActivePanel(Panel.Search);
 
-	const removeCurrentSearch = useCallback(() => {
-		if (searchStore.currentSearch) {
-			searchStore.deleteHistoryItem(searchStore.currentSearch);
-		}
-	}, [searchStore.currentSearch]);
-
-	const searchCount = searchStore.currentSearch ? searchStore.flattenedResult.length : 0;
-	const limit = searchStore.currentSearch?.request.state.resultCountLimit;
-
-	const progress = limit ? Math.min((searchCount / limit) * 100, 100) : null;
-
-	// TODO: change progress calc from count to time
-
 	return (
 		<div className='search-panel window' ref={searchPanelRef}>
 			<SearchPanelForm />
-			{progress !== null && <SearchProgress progress={progress} searchCount={searchCount} />}
+			<SearchProgress search={searchStore.currentSearch} />
 			{searchStore.currentSearch && (
 				<SearchPanelResults
-					flattenedResult={searchStore.flattenedResult}
-					filters={searchStore.currentSearch.request.filters}
+					data={searchStore.currentSearch.data}
 					disabledRemove={searchStore.isSearching}
-					showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
-					loadMore={searchStore.loadMore}
-					onResultDelete={removeCurrentSearch}
 					itemsInView={props.itemsInView}
 					onResultClick={props.onResultClick}
 				/>

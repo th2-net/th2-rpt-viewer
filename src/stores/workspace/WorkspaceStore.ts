@@ -196,8 +196,6 @@ export default class WorkspaceStore {
 	};
 
 	public onFilterByParentEvent = (parentEvent: EventTreeNode) => {
-		this.searchStore.stopSearch();
-		this.searchStore.setFormType('event');
 		this.searchStore.filterEventsByParent(
 			parentEvent.eventId,
 			timestampToNumber(parentEvent.startTimestamp),
