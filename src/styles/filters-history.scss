@@ -52,7 +52,9 @@
 	padding: 7px;
 	position: relative;
 	transition: background-color 0.15s;
-
+	&.active {
+		background-color: darken($color: #fff, $amount: 10);
+	}
 	&__title {
 		text-decoration: underline;
 		display: flex;
