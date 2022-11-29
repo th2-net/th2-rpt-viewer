@@ -17,7 +17,13 @@
 import React, { useCallback, useState } from 'react';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { DateTimeInputType, FitlerRowItem } from 'models/filter/FilterInputs';
+import {
+	FilterRowTimeWindowConfig,
+	DateTimeMask,
+	TimeInputType,
+	FitlerRowItem,
+} from 'models/filter/FilterInputs';
+import { TIME_INPUT_MASK, DATE_TIME_INPUT_MASK } from 'models/util/filterInputs';
 import FilterRow from 'components/filter/row';
 import { EventFilterKeys, MessageFilterKeys } from 'api/sse';
 import EventsFilter from 'models/filter/EventsFilter';
@@ -32,10 +38,6 @@ import MessagesFilter from 'models/filter/MessagesFilter';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
 import SearchSubmit, { SearchSubmitConfig } from './search-form/SearchSubmit';
-
-export type DateInputProps = {
-	inputConfig: DateTimeInputType;
-};
 
 const eventFilterOrder: EventFilterKeys[] = [
 	'status',
@@ -134,9 +136,63 @@ const SearchPanelForm = () => {
 		stopSearch,
 	};
 
+	const setStartTimestamp = useCallback(
+		(timestamp: number | null) => {
+			if (timestamp) {
+				filterStore.setStartTimestamp(timestamp);
+			}
+		},
+		[filterStore],
+	);
+
+	const setEndTimestamp = useCallback(
+		(timestamp: number | null) => {
+			if (timestamp) {
+				filterStore.setEndTimestamp(timestamp);
+			}
+		},
+		[filterStore],
+	);
+
+	const timestampFromConfig: FilterRowTimeWindowConfig[] = React.useMemo(
+		() => [
+			{
+				id: 'replay-timerange',
+				inputs: [
+					{
+						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
+						dateMask: DateTimeMask.DATE_MASK,
+						timeMask: DateTimeMask.TIME_MASK,
+						id: 'replay-startTimestamp',
+						dateTimeInputMask: DATE_TIME_INPUT_MASK,
+						timeInputMask: TIME_INPUT_MASK,
+						placeholder: '',
+						setValue: setStartTimestamp,
+						value: filterStore.startTimestamp,
+						type: TimeInputType.DATE_TIME,
+					},
+					{
+						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
+						dateMask: DateTimeMask.DATE_MASK,
+						timeMask: DateTimeMask.TIME_MASK,
+						id: 'replay-endTimestamp',
+						dateTimeInputMask: DATE_TIME_INPUT_MASK,
+						timeInputMask: TIME_INPUT_MASK,
+						placeholder: '',
+						setValue: setEndTimestamp,
+						value: filterStore.endTimestamp,
+						type: TimeInputType.DATE_TIME,
+					},
+				],
+				type: 'time-window',
+			},
+		],
+		[setStartTimestamp, setEndTimestamp, filterStore.startTimestamp, filterStore.endTimestamp],
+	);
+
 	return (
 		<div className='search-panel-form'>
-			{/* <SearchDatetimeControls {...searchDatetimeControlsConfig} /> */}
+			<FilterRows config={timestampFromConfig} />
 			<div className='search-panel__fields'>
 				<FiltersHistory disabled={disabled} type={formType as EntityType} />
 				<div className='filter-row'>

@@ -63,6 +63,16 @@ export default class MessagesFilterStore {
 
 	@observable params: MessagesParams = getDefaultMessagesParams();
 
+	@computed
+	public get startTimestamp() {
+		return this.params.startTimestamp;
+	}
+
+	@computed
+	public get endTimestamp() {
+		return this.params.endTimestamp;
+	}
+
 	@observable filter: MessagesFilter | null = null;
 
 	/*
