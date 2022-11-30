@@ -23,7 +23,7 @@ import {
 	TimeInputType,
 	FitlerRowItem,
 } from 'models/filter/FilterInputs';
-import { TIME_INPUT_MASK, DATE_TIME_INPUT_MASK } from 'models/util/filterInputs';
+import { DATE_TIME_INPUT_MASK } from 'models/util/filterInputs';
 import FilterRow from 'components/filter/row';
 import { EventFilterKeys, MessageFilterKeys } from 'api/sse';
 import EventsFilter from 'models/filter/EventsFilter';
@@ -160,24 +160,18 @@ const SearchPanelForm = () => {
 				id: 'replay-timerange',
 				inputs: [
 					{
-						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
-						dateMask: DateTimeMask.DATE_MASK,
-						timeMask: DateTimeMask.TIME_MASK,
+						dateMask: DateTimeMask.DATE_TIME_MASK,
+						inputMask: DATE_TIME_INPUT_MASK,
 						id: 'replay-startTimestamp',
-						dateTimeInputMask: DATE_TIME_INPUT_MASK,
-						timeInputMask: TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setStartTimestamp,
 						value: filterStore.startTimestamp,
 						type: TimeInputType.DATE_TIME,
 					},
 					{
-						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
-						dateMask: DateTimeMask.DATE_MASK,
-						timeMask: DateTimeMask.TIME_MASK,
+						dateMask: DateTimeMask.DATE_TIME_MASK,
+						inputMask: DATE_TIME_INPUT_MASK,
 						id: 'replay-endTimestamp',
-						dateTimeInputMask: DATE_TIME_INPUT_MASK,
-						timeInputMask: TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setEndTimestamp,
 						value: filterStore.endTimestamp,

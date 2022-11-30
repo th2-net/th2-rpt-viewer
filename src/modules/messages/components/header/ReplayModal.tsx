@@ -18,7 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'framer-motion';
 import moment from 'moment';
-import { TIME_INPUT_MASK, DATE_TIME_INPUT_MASK } from 'models/util/filterInputs';
+import { DATE_TIME_INPUT_MASK } from 'models/util/filterInputs';
 import {
 	FilterRowConfig,
 	FilterRowMultipleStringsConfig,
@@ -113,24 +113,18 @@ function ReplayModal() {
 				id: 'replay-timerange',
 				inputs: [
 					{
-						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
-						dateMask: DateTimeMask.DATE_MASK,
-						timeMask: DateTimeMask.TIME_MASK,
+						dateMask: DateTimeMask.DATE_TIME_MASK,
+						inputMask: DATE_TIME_INPUT_MASK,
 						id: 'replay-startTimestamp',
-						dateTimeInputMask: DATE_TIME_INPUT_MASK,
-						timeInputMask: TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setStartTimestamp,
 						value: startTimestamp,
 						type: TimeInputType.DATE_TIME,
 					},
 					{
-						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
-						dateMask: DateTimeMask.DATE_MASK,
-						timeMask: DateTimeMask.TIME_MASK,
+						dateMask: DateTimeMask.DATE_TIME_MASK,
+						inputMask: DATE_TIME_INPUT_MASK,
 						id: 'replay-endTimestamp',
-						dateTimeInputMask: DATE_TIME_INPUT_MASK,
-						timeInputMask: TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setEndTimestamp,
 						value: endTimestamp,
