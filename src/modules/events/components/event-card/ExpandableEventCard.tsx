@@ -50,6 +50,7 @@ export const ExpandableEventCard = (props: EventBookmarkComponentProps) => {
 					showCheckbox={showCheckbox}
 					checked={checked}
 					onSelect={onSelect}
+					isBookmarked={true}
 				/>
 			</div>
 			{!isEmpty && (

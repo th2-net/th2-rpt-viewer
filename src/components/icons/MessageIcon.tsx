@@ -14,8 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { Icon } from 'components/icons/Icon';
 import '../../styles/icons.scss';
 
 export function MessageIcon() {
-	return <span className='message-icon'></span>;
+	return (
+		<Icon className='message-icon'>
+			<svg
+				width='17'
+				height='17'
+				viewBox='0 0 17 17'
+				fill='none'
+				xmlns='http://www.w3.org/2000/svg'>
+				<path
+					// eslint-disable-next-line max-len
+					d='M9.7648 14.7509C8.98375 15.5319 7.71742 15.5319 6.93637 14.7509L1.7648 9.57931C0.983751 8.79826 0.983752 7.53194 1.7648 6.75089L6.93638 1.57931C7.71743 0.798264 8.98375 0.798265 9.7648 1.57931L14.9364 6.75089C15.7174 7.53194 15.7174 8.79826 14.9364 9.57931L9.7648 14.7509Z'
+					fill='currentColor'
+				/>
+			</svg>
+		</Icon>
+	);
 }
