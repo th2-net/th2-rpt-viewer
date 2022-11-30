@@ -44,8 +44,12 @@ export const EventListNavigation = observer(() => {
 				</Chip>
 				Show previous
 			</ButtonBase>
-			<span className='events-nav__timestamp'>
-				{formatTimestamp(eventsStore.filterStore.startTimestamp)}
+			<span
+				className='events-nav__timestamp'
+				title={`${formatTimestamp(eventsStore.filterStore.startTimestamp)} - ${formatTimestamp(
+					eventsStore.filterStore.endTimestamp,
+				)}`}>
+				{formatTimestamp(eventsStore.filterStore.rangeCenter)}
 			</span>
 			<ButtonBase onClick={getNextEvents}>
 				Show next
