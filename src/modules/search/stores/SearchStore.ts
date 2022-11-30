@@ -263,7 +263,7 @@ export class SearchStore implements ISearchStore {
 				IndexedDbStores.SEARCH_HISTORY,
 			);
 			const lastSearchItem = searchHistory[searchHistory.length - 1];
-			if (lastSearchItem) {
+			if (lastSearchItem && SearchResult.isValidSearchHistory(lastSearchItem)) {
 				runInAction(() => {
 					if (lastSearchItem.type === 'event') {
 						const state = lastSearchItem as EventsSearchHistory;

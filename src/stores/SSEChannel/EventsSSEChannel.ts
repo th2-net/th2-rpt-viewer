@@ -51,18 +51,16 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 		this.channel.addEventListener('event', this.onSSEResponse);
 		this.channel.addEventListener('close', this.onClose);
 		this.channel.addEventListener('error', this._onError);
-		if (this.eventListeners.onKeepAlive) {
-			this.channel.addEventListener('keep_alive', this._onKeepAliveResponse);
-		}
+		this.channel.addEventListener('keep_alive', this._onKeepAliveResponse);
 
 		this.initUpdateScheduler();
 	}
 
 	private _onKeepAliveResponse = (event: Event) => {
-		if (this.eventListeners.onKeepAlive) {
-			const heatbeat = JSON.parse((event as MessageEvent).data) as SSEHeartbeat;
+		if (this.eventListeners.onKeepAlive && event instanceof MessageEvent) {
+			const heatbeat: SSEHeartbeat = JSON.parse(event.data);
 
-			if (heatbeat.timestamp !== 0) {
+			if (heatbeat && heatbeat.timestamp !== 0) {
 				this.eventListeners.onKeepAlive(heatbeat);
 			}
 		}

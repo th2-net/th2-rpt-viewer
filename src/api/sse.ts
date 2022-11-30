@@ -184,21 +184,10 @@ interface EventParams {
 }
 
 export function getEventsSSEParams(params: EventParams): EventSSEParams {
-	const {
-		filter,
-		searchDirection,
-		resultCountLimit,
-		startTimestamp,
-		metadataOnly = true,
-		...restParams
-	} = params;
+	const { filter, ...restParams } = params;
 	const filters = filter ? getParamsFromFilter(filter) : {};
 
 	return {
-		startTimestamp,
-		searchDirection,
-		resultCountLimit,
-		metadataOnly,
 		...restParams,
 		...filters,
 	};
