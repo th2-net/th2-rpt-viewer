@@ -26,6 +26,7 @@ import { raf } from '../../helpers/raf';
 import FiltersHistoryItem from './FiltersHistoryItem';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import '../../styles/filters-history.scss';
+import { FilterHistoryIcon } from '../icons/FilterHistoryIcon';
 
 interface Props {
 	type: EntityType;
@@ -98,8 +99,9 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 					setIsOpen(o => !o);
 				}}
 				title={'Filters history'}
-				disabled={disabled}
-			/>
+				disabled={disabled}>
+				<FilterHistoryIcon className='history-icon' />
+			</button>
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
 					{filter &&
@@ -125,8 +127,9 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 			ref={buttonRef}
 			className='filters-history-open'
 			title={'Filters history'}
-			disabled={true}
-		/>
+			disabled={true}>
+			<FilterHistoryIcon className='filters-history-open history-icon' />
+		</button>
 	);
 };
 

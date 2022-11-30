@@ -18,14 +18,28 @@
 
 .filters-history-open {
 	@include clickable;
-	background-image: url(../../resources/icons/filters-history-open.svg);
-	width: 24px;
-	height: 25px;
+	width: 40px;
+	height: 40px;
 	border: none;
+
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	padding-top: 10px;
+	
+	background-color: var(--background-primary);
 
 	&:disabled {
 		opacity: 0.5;
 		cursor: default;
+	}
+
+	.history-icon {
+		width: 39px;
+		height: 40px;
+
+		padding-left: 2px;
+		color: var(--text-info);
 	}
 }
 
@@ -51,10 +65,10 @@
 	cursor: pointer;
 	padding: 7px;
 	position: relative;
-	transition: background-color 0.15s;
-	&.active {
-		background-color: darken($color: #fff, $amount: 10);
-	}
+	transition: background-color 0.15s;	
+	// &.active {
+	// 	background-color: darken($color: #fff, $amount: 10);
+	// }
 	&__title {
 		text-decoration: underline;
 		display: flex;
@@ -118,14 +132,16 @@
 		}
 	}
 	&__pin-icon {
-		& i {
-			display: inline-block;
+		margin-bottom: 1px;
+		padding-left: 3px;
+		.pin {
+			width: 14px;
+			height: 14px;
 			transition: transform 0.15s;
-			@include icon(url(../../resources/icons/pin.svg), 14px, 14px);
 		}
 		&.pinned {
 			background-color: rgba(0, 0, 0, 0.1);
-			& i {
+			.pin {
 				transform: rotate(-45deg);
 			}
 		}
@@ -142,6 +158,7 @@
 	&__delete-icon {
 		width: 14px;
 		height: 14px;
+		margin-bottom: 3px;
 		position: relative;
 		color: var(--text-secondary);
 		opacity: 0.5;

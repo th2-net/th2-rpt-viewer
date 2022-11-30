@@ -367,9 +367,9 @@
 	gap: 12px;
 	font-size: 14px;
 
-	.filters-history-open {
-		@include improved-clickable(#fff, 10px);
-	}
+	// .filters-history-open {
+	// 	@include improved-clickable(var(--background-primary), 10px);
+	// }
 
 	&__counts {
 		flex: auto;

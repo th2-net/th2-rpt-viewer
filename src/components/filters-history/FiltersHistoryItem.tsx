@@ -28,6 +28,7 @@ import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { showNotification } from '../../helpers/showNotification';
 import { ShareIcon } from '../icons/ShareIcon';
 import { DeleteIcon } from '../icons/DeleteIcon';
+import { PinIcon } from '../icons/PinIcon';
 
 const FILTER_HISTORY_DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss.SSS' as const;
 
@@ -178,7 +179,7 @@ const FiltersHistoryItem = (props: Props) => {
 						onClick={onFilterPin}
 						ref={pinButtonRef}
 						title={item.isPinned ? 'Unpin filter' : 'Pin filter'}>
-						<i></i>
+						<PinIcon className='pin' />
 					</button>
 					<button
 						className='filter-history-item__share-icon'
@@ -192,7 +193,7 @@ const FiltersHistoryItem = (props: Props) => {
 						onClick={onDeleteClick}
 						ref={shareButtonRef}
 						title='Delete from history'>
-						<DeleteIcon />
+						<DeleteIcon className='deleter' />
 					</button>
 				</div>
 			</div>
