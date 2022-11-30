@@ -78,6 +78,7 @@
 	}
 
 	&__controls {
+		margin-right: -5px;
 		display: flex;
 		align-items: center;
 	}
@@ -116,9 +117,12 @@
 		@include icon(url(../../resources/icons/include.svg), 16px, 16px);
 	}
 
-	&__delete-icon,
-	&__share-icon,
-	&__pin-icon {
+	&__filter-delete-icon,
+	&__filter-share-icon,
+	&__filter-pin-icon {
+		display: flex;
+		justify-content: center;
+		align-items: center;
 		width: 18px;
 		height: 18px;
 		border-radius: 50%;
@@ -132,35 +136,33 @@
 			background-color: rgba(0, 0, 0, 0.1);
 		}
 	}
-	&__pin-icon {
+	&__filter-pin-icon {
 		margin-bottom: 1px;
 		padding-left: 3px;
-		.pin {
+		.pin-icon {
 			width: 14px;
 			height: 14px;
 			transition: transform 0.15s;
 		}
 		&.pinned {
 			background-color: rgba(0, 0, 0, 0.1);
-			.pin {
+			.pin-icon {
 				transform: rotate(-45deg);
 			}
 		}
 	}
-	&__share-icon {
-		position: relative;
-		width: 14px;
-		height: 14px;
+	&__filter-share-icon {
 		color: var(--text-secondary);
 		opacity: 0.5;
 	}
 
 	
-	&__delete-icon {
-		width: 14px;
-		height: 14px;
+	&__filter-delete-icon {
+		padding-right: 3px;
+		padding-bottom: 1px;
 		margin-bottom: 3px;
-		position: relative;
+		margin-right: 5px;
+		margin-left: -1px;
 		color: var(--text-secondary);
 		opacity: 0.5;
 	}

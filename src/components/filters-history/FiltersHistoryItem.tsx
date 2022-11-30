@@ -160,7 +160,7 @@ const FiltersHistoryItem = (props: Props) => {
 
 	const pinButtonClassname = createBemElement(
 		'filter-history-item',
-		'pin-icon',
+		'filter-pin-icon',
 		item.isPinned ? 'pinned' : null,
 	);
 
@@ -179,21 +179,21 @@ const FiltersHistoryItem = (props: Props) => {
 						onClick={onFilterPin}
 						ref={pinButtonRef}
 						title={item.isPinned ? 'Unpin filter' : 'Pin filter'}>
-						<PinIcon className='pin' />
+						<PinIcon className='pin-icon' />
 					</button>
 					<button
-						className='filter-history-item__share-icon'
+						className='filter-history-item__filter-share-icon'
 						onClick={onShareClick}
 						ref={shareButtonRef}
 						title='Share filters'>
-						<ShareIcon />
+						<ShareIcon className='share-icon' />
 					</button>
 					<button
-						className='filter-history-item__delete-icon'
+						className='filter-history-item__filter-delete-icon'
 						onClick={onDeleteClick}
 						ref={shareButtonRef}
 						title='Delete from history'>
-						<DeleteIcon className='deleter' />
+						<DeleteIcon className='delete-icon' />
 					</button>
 				</div>
 			</div>
