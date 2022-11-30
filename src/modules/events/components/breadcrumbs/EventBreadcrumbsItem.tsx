@@ -44,7 +44,7 @@ export default function EventBreadcrumbsItem(props: Props) {
 			{eventNode === 'root' ? (
 				<i className='event-breadcrumbs__item-icon' />
 			) : (
-				<StatusIcon status={getEventStatus(eventNode)} />
+				<StatusIcon status={eventNode.isUnknown ? undefined : getEventStatus(eventNode)} />
 			)}
 			<div className='event-breadcrumbs__item-title' onClick={onSelect} title={title}>
 				{title}

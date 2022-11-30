@@ -16,6 +16,7 @@
 
 import { MessageIcon } from 'components/icons/MessageIcon';
 import { StatusIcon } from 'components/icons/StatusIcon';
+import { EventStatus } from 'modules/events/models/Status';
 import { ToggleButtonGroup, ToggleButton } from 'components/buttons/ToggleButton';
 import { BookmarkType } from '../models/Bookmarks';
 
@@ -37,7 +38,7 @@ const BookmarkTypeSwitcher = ({ value, setValue }: Props) => {
 				All
 			</ToggleButton>
 			<ToggleButton value='event'>
-				<StatusIcon />
+				<StatusIcon status={EventStatus.PASSED} />
 				Events
 			</ToggleButton>
 			<ToggleButton value='message'>

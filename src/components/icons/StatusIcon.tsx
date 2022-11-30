@@ -23,7 +23,7 @@ interface StatusIconProps {
 }
 
 export function StatusIcon(props: StatusIconProps) {
-	const { status = EventStatus.PASSED } = props;
-	const className = createStyleSelector('status-icon', status.toLowerCase());
+	const { status } = props;
+	const className = createStyleSelector('status-icon', status ? status.toLowerCase() : null);
 	return <div className={className}></div>;
 }

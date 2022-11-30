@@ -31,14 +31,14 @@
 	width: 12px;
 	height: 12px;
 	border-radius: 50%;
-	background-color: var(--events-passed);
+	background-color: var(--events-unknown);
+
+	&.passed {
+		background-color: var(--events-passed);
+	}
 
 	&.failed {
 		background-color: var(--events-failed);
-	}
-
-	.unknown {
-		background-color: var(--events-unknown);
 	}
 }
 
