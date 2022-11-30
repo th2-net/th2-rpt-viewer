@@ -30,7 +30,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	}, []);
 
 	async function getMessage() {
-		const res = await fetch(`backend/message/${messageId}`);
+		const res = await fetch(`${process.env.DATA_PROVIDER_URL}/message/${messageId}`);
 		if (res.ok) {
 			setMessage(await res.json());
 		} else {

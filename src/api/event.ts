@@ -23,7 +23,7 @@ import fetch from '../helpers/fetchRetry';
 const eventHttpApi: EventApiSchema = {
 	getEvent: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/event/${id}?${params}`, {
+		const res = await fetch(`${process.env.DATA_PROVIDER_URL}/event/${id}?${params}`, {
 			signal,
 		});
 

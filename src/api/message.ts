@@ -28,7 +28,7 @@ export type MatchMessageParams = Omit<
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
 		const params = createURLSearchParams({ idsOnly: false });
-		const res = await fetch(`backend/search/messages?${params}`);
+		const res = await fetch(`${process.env.DATA_PROVIDER_URL}/search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -60,7 +60,7 @@ const messageHttpApi: MessageApiSchema = {
 			stream: streams,
 		});
 
-		const res = await fetch(`backend/search/messages?${params}`, {
+		const res = await fetch(`${process.env.DATA_PROVIDER_URL}/search/messages?${params}`, {
 			signal: abortSignal,
 		});
 
@@ -78,7 +78,7 @@ const messageHttpApi: MessageApiSchema = {
 			timestampFrom,
 			timestampTo,
 		});
-		const res = await fetch(`backend/search/messages?${params}`);
+		const res = await fetch(`${process.env.DATA_PROVIDER_URL}/search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -89,7 +89,7 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessage: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/message/${id}?${params}`, {
+		const res = await fetch(`${process.env.DATA_PROVIDER_URL}/message/${id}?${params}`, {
 			signal,
 		});
 
@@ -107,7 +107,7 @@ const messageHttpApi: MessageApiSchema = {
 		return null;
 	},
 	getMessageSessions: async () => {
-		const res = await fetch('backend/messageStreams');
+		const res = await fetch(`${process.env.DATA_PROVIDER_URL}/messageStreams`);
 
 		if (res.ok) return res.json();
 
@@ -116,9 +116,12 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	matchMessage: async (messageId: string, filter: MatchMessageParams, signal?: AbortSignal) => {
 		const params = createURLSearchParams({ ...filter });
-		const res = await fetch(`backend/match/message/${messageId}?${params}`, {
-			signal,
-		});
+		const res = await fetch(
+			`${process.env.DATA_PROVIDER_URL}/match/message/${messageId}?${params}`,
+			{
+				signal,
+			},
+		);
 
 		if (res.ok) return res.json();
 
@@ -131,7 +134,7 @@ const messageHttpApi: MessageApiSchema = {
 		}
 
 		const params = createURLSearchParams({ stream: streams, startTimestamp, messageId });
-		const res = await fetch(`backend/messageIds/?${params}`, { signal });
+		const res = await fetch(`${process.env.DATA_PROVIDER_URL}/messageIds/?${params}`, { signal });
 		if (res.ok) return res.json();
 
 		console.error(res.statusText);

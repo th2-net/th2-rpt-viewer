@@ -67,5 +67,8 @@ module.exports = {
 			favicon: path.resolve(appPath, 'resources', 'icons', 'favicon.svg'),
 		}),
 		new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+		new webpack.DefinePlugin({
+			'process.env.DATA_PROVIDER_URL': JSON.stringify(process.env.DATA_PROVIDER_URL || 'backend')
+		})
 	],
 };
