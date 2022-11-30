@@ -14,116 +14,50 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	action,
-	autorun,
-	computed,
-	IReactionDisposer,
-	observable,
-	reaction,
-	runInAction,
-	toJS,
-} from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
+import { action, computed, IReactionDisposer, observable, runInAction } from 'mobx';
+import { EventMessage } from 'models/EventMessage';
+import { EntityType, EventAction } from 'models/EventAction';
+import { MessagesSSEChannel } from 'stores/SSEChannel/MessagesSSEChannel';
+import EventSSEChannel from 'stores/SSEChannel/EventsSSEChannel';
 import { SearchDirection } from 'models/SearchDirection';
-import notificationsStore from 'stores/NotificationsStore';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
 import FiltersHistoryStore from 'stores/FiltersHistoryStore';
 import { SessionHistoryStore } from 'modules/messages/stores/SessionHistoryStore';
-import EventsFilter from 'models/filter/EventsFilter';
-import MessagesFilter from 'models/filter/MessagesFilter';
-import { getItemAt } from 'helpers/array';
+import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
+import { IndexedDbStores } from 'api/indexedDb';
+import EventsFilterStore from 'modules/events/stores/EventsFilterStore';
+import MessagesFilterStore from 'modules/messages/stores/MessagesFilterStore';
+import { TimeRange } from 'models/Timestamp';
 import {
-	EventsFiltersInfo,
+	EventSSEParams,
 	getEventsSSEParams,
 	getMessagesSSEParams,
-	MessageIdsEvent,
-	MessagesFilterInfo,
 	MessagesSSEParams,
 	SSEHeartbeat,
-	SSEParams,
 } from 'api/sse';
-import { DbData, IndexedDbStores } from 'api/indexedDb';
-import { getItemId, isEventAction, isEventNode, isEvent } from 'helpers/event';
-import { isEventMessage } from 'helpers/message';
-import { IFilterConfigStore, ISearchStore } from 'models/Stores';
-import { getTimestampAsNumber } from 'helpers/date';
+import notificationsStore from 'stores/NotificationsStore';
 import { isQuotaExceededError } from 'helpers/fetch';
-import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from 'helpers/search';
-import { EventAction } from 'models/EventAction';
-import { EventMessage } from 'models/EventMessage';
-import { isSearchHistoryEntity } from '../helpers';
-import { SearchPanelType } from '../models/Search';
+import {
+	EventsSearchResult,
+	MessagesSearchResult,
+	SearchResult,
+	EventsSearchHistory,
+	MessagesSearchHistory,
+} from './SearchResult';
 
-type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
+export type SearchResultItem = EventAction | EventMessage;
 
-export type SearchPanelFormState = {
-	startTimestamp: number | null;
-	timeLimits: {
-		previous: number | null;
-		next: number | null;
-	};
-	resultCountLimit: number;
-	searchDirection: SearchDirection | null;
-	stream: string[];
-};
+export type SearchHistory = EventsSearchHistory | MessagesSearchHistory;
 
-export type SearchResult = EventAction | EventMessage;
+const endTimestampDefault = moment.utc().valueOf();
+const startTimestampDefault = moment.utc(endTimestampDefault).subtract(30, 'minutes').valueOf();
 
-export type SearchHistory = {
-	timestamp: number;
-	results: Record<string, Array<SearchResult>>;
-	request: StateHistory;
-	progress: {
-		previous: number;
-		next: number;
-	};
-	processedObjectCount: {
-		previous: number;
-		next: number;
-	};
-};
+const defaultRange: TimeRange = [startTimestampDefault, endTimestampDefault];
 
-export type StateHistory = {
-	type: SearchPanelType;
-	state: SearchPanelFormState;
-	filters: EventsFilter | MessagesFilter;
-};
-
-export type SearchHistoryState<T> = {
-	index: number;
-	limit: number;
-	disableForward: boolean;
-	disableBackward: boolean;
-	currentSearch: null | T;
-	history: Array<T>;
-};
-
-type SearchProgressState = {
-	completed: boolean;
-	lastEventId: string | null;
-	lastProcessedObjectCount: number;
-	resultCount: number;
-};
-
-const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
-const SEARCH_CHUNK_SIZE = 500;
-
-function getDefaultFormState(): SearchPanelFormState {
-	return {
-		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
-		searchDirection: SearchDirection.Next,
-		resultCountLimit: 50,
-		timeLimits: {
-			previous: null,
-			next: null,
-		},
-		stream: [],
-	};
-}
-
+/* eslint-disable no-param-reassign */
 export class SearchStore implements ISearchStore {
 	private subscriptions: IReactionDisposer[] = [];
 
@@ -135,478 +69,183 @@ export class SearchStore implements ISearchStore {
 		private filterConfigStore: IFilterConfigStore,
 	) {
 		this.getSearchHistory();
-
-		const messageFilterSub = reaction(
-			() => this.filterConfigStore.messagesFilterInfo,
-			this.initMessagesFilter,
-			{ fireImmediately: true },
-		);
-
-		const eventsFilterFilterSub = reaction(
-			() => this.filterConfigStore.eventFilterInfo,
-			this.initEventsFilter,
-			{ fireImmediately: true },
-		);
-
-		const currentSearchSub = autorun(() => {
-			this.currentSearch = getItemAt(this.searchHistory, this.currentIndex);
-		});
-
-		reaction(
-			() => this.currentSearch?.timestamp,
-			currentSearchTimestamp => {
-				if (currentSearchTimestamp && this.currentSearch) {
-					this.formType = this.currentSearch.request.type;
-					this.searchForm = this.currentSearch.request.state;
-					if (this.currentSearch.request.type === 'event') {
-						this.eventsFilter = this.currentSearch.request.filters as EventsFilter;
-					} else {
-						this.messagesFilter = this.currentSearch.request.filters as MessagesFilter;
-					}
-				}
-			},
-		);
-
-		this.subscriptions = [messageFilterSub, eventsFilterFilterSub, currentSearchSub];
 	}
 
-	@observable searchChannel: {
-		previous: EventSource | null;
-		next: EventSource | null;
-	} = {
-		previous: null,
-		next: null,
-	};
+	eventsFilterStore = new EventsFilterStore(this.filterConfigStore, {
+		range: defaultRange,
+	});
 
-	@observable eventsFilter: EventsFilter | null = null;
+	messagesFilterStore = new MessagesFilterStore(this.filterConfigStore, {
+		startTimestamp: defaultRange[0],
+		endTimestamp: defaultRange[1],
+	});
 
-	@observable messagesFilter: MessagesFilter | null = null;
+	@observable.ref
+	eventsLoader: EventSSEChannel | null = null;
 
-	@observable searchForm: SearchPanelFormState = getDefaultFormState();
+	@observable.ref
+	messagesLoader: MessagesSSEChannel | null = null;
 
-	@observable formType: SearchPanelType = 'event';
+	@observable
+	formType: EntityType = 'event';
 
-	@observable searchHistory: SearchHistory[] = [];
+	@observable.ref
+	currentSearch: EventsSearchResult | MessagesSearchResult | null = null;
 
-	@observable currentIndex = 0;
-
-	@observable currentSearch: SearchHistory | null = null;
-
-	@observable searchProgressState: {
-		previous: SearchProgressState;
-		next: SearchProgressState;
-	} = {
-		previous: {
-			completed: this.searchHistory.length > 0,
-			lastEventId: null,
-			lastProcessedObjectCount: 0,
-			resultCount: 0,
-		},
-		next: {
-			completed: this.searchHistory.length > 0,
-			lastEventId: null,
-			lastProcessedObjectCount: 0,
-			resultCount: 0,
-		},
-	};
-
-	private resumeFromMessageIds: {
-		previous: MessageIdsEvent | null;
-		next: MessageIdsEvent | null;
-	} = {
-		previous: null,
-		next: null,
-	};
-
-	@computed get searchProgress() {
-		const startTimestamp = Number(this.searchForm.startTimestamp);
-		const { previous: timeLimitPrevious, next: timeLimitNext } = this.searchForm.timeLimits;
-
-		const timeIntervalPrevious = timeLimitPrevious ? startTimestamp - timeLimitPrevious : null;
-		const timeIntervalNext = timeLimitNext ? timeLimitNext - startTimestamp : null;
-
-		return {
-			startTimestamp: this.searchForm.startTimestamp,
-			completed: {
-				previous: this.searchProgressState.previous.completed,
-				next: this.searchProgressState.next.completed,
-			},
-			timeLimits: {
-				previous: timeLimitPrevious,
-				next: timeLimitNext,
-			},
-			timeIntervals: {
-				previous: timeIntervalPrevious,
-				next: timeIntervalNext,
-			},
-			progress: {
-				previous:
-					this.currentSearch && this.currentSearch.progress.previous
-						? startTimestamp - this.currentSearch.progress.previous
-						: 0,
-				next:
-					this.currentSearch && this.currentSearch.progress.next
-						? this.currentSearch.progress.next - startTimestamp
-						: 0,
-			},
-			processedObjectCount: this.currentSearch
-				? this.currentSearch.processedObjectCount.previous +
-				  this.currentSearch.processedObjectCount.next
-				: 0,
-		};
-	}
-
-	@computed get resultCount(): number {
-		return (
-			this.searchProgressState.previous.resultCount +
-			this.searchProgressState.next.resultCount +
-			this.searchChunk.length
-		);
-	}
-
-	@computed get isSearching(): boolean {
-		return Boolean(this.searchChannel.next || this.searchChannel.previous);
-	}
-
-	@computed get isCompleted() {
-		const { searchDirection } = this.searchForm;
-
-		if (!searchDirection) return false;
-
-		if (searchDirection === SearchDirection.Both)
-			return (
-				this.searchProgressState[SearchDirection.Previous].completed &&
-				this.searchProgressState[SearchDirection.Next].completed
-			);
-
-		return this.searchProgressState[searchDirection].completed;
-	}
-
-	@computed get isPaused() {
-		return (
-			!this.isSearching &&
-			!this.isCompleted &&
-			(!!this.searchProgressState.previous.lastEventId ||
-				!!this.searchProgressState.next.lastEventId)
-		);
-	}
-
-	private searchChunk: Array<
-		| (SearchResult & { searchDirection: SSESearchDirection })
-		| (SSEHeartbeat & { searchDirection: SSESearchDirection })
-	> = [];
-
-	@computed get isHistorySearch() {
-		return this.searchHistory.length > 1 && this.currentIndex !== this.searchHistory.length - 1;
-	}
-
-	@computed get filters() {
-		if (this.formType === 'event') {
-			return this.eventsFilter
-				? {
-						info: this.filterConfigStore.eventFilterInfo,
-						state: this.eventsFilter,
-						setState: this.setEventsFilter,
-						disableAll: this.isHistorySearch || this.isSearching,
-				  }
-				: null;
+	@action
+	public setFormType = (formType: EntityType) => {
+		if (formType === this.formType) {
+			return;
 		}
-		return this.messagesFilter
-			? {
-					info: this.filterConfigStore.messagesFilterInfo,
-					state: this.messagesFilter,
-					setState: this.setMessagesFilter,
-					disableAll: this.isHistorySearch || this.isSearching,
-			  }
-			: null;
-	}
+		const stores = [this.eventsFilterStore, this.messagesFilterStore];
+		if (formType === 'event') {
+			stores.reverse();
+		}
+		stores[1].setStartTimestamp(stores[0].startTimestamp as number);
+		stores[1].setEndTimestamp(stores[0].endTimestamp as number);
 
-	@computed get sortedResultGroups() {
-		if (!this.currentSearch) return [];
-
-		return Object.entries(this.currentSearch.results).sort((a, b) => {
-			const [firstResultGroupTimestamp, secondResultGroupTimestamp] = [a, b].map(
-				resultGroup => +resultGroup[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60,
-			);
-
-			return firstResultGroupTimestamp - secondResultGroupTimestamp;
-		});
-	}
-
-	@computed get flattenedResult(): (SearchResult | [number, number])[] {
-		if (!this.currentSearch) return [];
-		const result: (SearchResult | [number, number])[] = [];
-		this.sortedResultGroups.forEach(([, value], index) => {
-			if (index > 0)
-				result.push([
-					getTimestampAsNumber(this.sortedResultGroups[index - 1][1].slice(-1)[0]),
-					getTimestampAsNumber(value[0]),
-				]);
-			result.push(...value);
-		});
-		return result;
-	}
-
-	@action setFormType = (formType: SearchPanelType) => {
 		this.formType = formType;
 	};
 
-	@action updateForm = (stateUpdate: Partial<SearchPanelFormState>) => {
-		this.searchForm = {
-			...this.searchForm,
-			...stateUpdate,
-		};
+	@computed
+	public get isSearching() {
+		if (this.formType === 'event') {
+			return Boolean(this.eventsLoader?.isLoading);
+		}
+		return Boolean(this.messagesLoader?.isLoading);
+	}
 
-		this.resetSearchProgressState();
+	@action
+	public startSearch = () => {
+		if (this.formType === 'message') {
+			let searchResult = SearchResult.fromFilterStore(
+				this.messagesFilterStore,
+			) as MessagesSearchResult | null;
+
+			if (searchResult) {
+				searchResult = observable(searchResult);
+				this.currentSearch = searchResult;
+
+				const { endTimestamp, startTimestamp, streams, filter } = searchResult;
+				const params = getMessagesSSEParams({
+					filter,
+					params: {
+						endTimestamp,
+						startTimestamp,
+						streams,
+					},
+					searchDirection: SearchDirection.Next,
+				});
+				this.startMessagesSearch(params, searchResult);
+				this.sessionsStore.saveSessions(streams);
+				this.filtersHistory.onMessageFilterSubmit(filter);
+			}
+		} else {
+			let searchResult = SearchResult.fromFilterStore(
+				this.eventsFilterStore,
+			) as EventsSearchResult | null;
+
+			if (searchResult) {
+				searchResult = observable(searchResult);
+				this.currentSearch = searchResult;
+				const { endTimestamp, startTimestamp, filter } = searchResult;
+				const params = getEventsSSEParams({
+					endTimestamp,
+					filter,
+					searchDirection: SearchDirection.Next,
+					startTimestamp,
+					metadataOnly: false,
+				});
+				this.startEventsSearch(params, searchResult);
+				this.filtersHistory.onEventFilterSubmit(filter);
+			}
+		}
 	};
 
-	@action filterEventsByParent = (parentId: string, parentTimestamp: number) => {
-		if (this.eventsFilter) {
-			this.setFormType('event');
+	@action
+	public stopSearch = () => {
+		this.messagesLoader?.stop();
+		this.eventsLoader?.stop();
+	};
+
+	@action
+	private startMessagesSearch = (params: MessagesSSEParams, searchResult: MessagesSearchResult) => {
+		this.messagesLoader = new MessagesSSEChannel(params, {
+			onError: this.onError,
+			onResponse: messages => this.onMessagesResponse(messages, searchResult),
+			onClose: messages => {
+				this.onMessagesResponse(messages, searchResult);
+				searchResult.onSearchEnd();
+				this.saveSearchResult(searchResult.toJs());
+			},
+			onKeepAliveResponse: heartbeat => this.onKeepAlive(heartbeat, searchResult),
+		});
+
+		this.messagesLoader.subscribe();
+	};
+
+	@action
+	private onMessagesResponse = (messages: EventMessage[], searchResult: MessagesSearchResult) => {
+		searchResult.addData(messages);
+	};
+
+	@action
+	private startEventsSearch = (params: EventSSEParams, searchResult: EventsSearchResult) => {
+		this.eventsLoader = new EventSSEChannel(params, {
+			onError: this.onError,
+			// TODO: fix generic events type
+			onResponse: events => this.onEventsResponse(events as unknown as EventAction[], searchResult),
+			onClose: events => {
+				this.onEventsResponse(events as unknown as EventAction[], searchResult);
+				searchResult.onSearchEnd();
+				this.saveSearchResult(searchResult.toJs());
+			},
+			onKeepAlive: heartbeat => this.onKeepAlive(heartbeat, searchResult),
+		});
+
+		this.eventsLoader.subscribe();
+	};
+
+	@action
+	public filterEventsByParent = (parentId: string, parentTimestamp: number) => {
+		const filter = this.eventsFilterStore.filter;
+		if (filter) {
 			this.stopSearch();
-			this.eventsFilter.parentId.values = [parentId];
-			this.searchForm.startTimestamp = parentTimestamp;
-			this.resetSearchProgressState();
+			this.formType = 'event';
+			this.eventsFilterStore.setRange([
+				parentTimestamp,
+				parentTimestamp + this.eventsFilterStore.interval * 60 * 1000,
+			]);
+			this.eventsFilterStore.setEventsFilter({
+				...filter,
+				parentId: {
+					...filter.parentId,
+					values: [parentId],
+				},
+			});
 			this.workspacesStore.tabsStore.setActiveWorkspace(0);
 		}
 	};
 
-	@action setEventsFilter = (patch: Partial<EventsFilter>) => {
-		if (this.eventsFilter) {
-			this.eventsFilter = {
-				...this.eventsFilter,
-				...patch,
-			};
-		}
-
-		this.resetSearchProgressState();
-	};
-
-	@action setMessagesFilter = (patch: Partial<MessagesFilter>) => {
-		if (this.messagesFilter) {
-			this.messagesFilter = {
-				...this.messagesFilter,
-				...patch,
-			};
-		}
-
-		this.resetSearchProgressState();
-	};
-
-	@action clearFilters = () => {
-		if (!this.isSearching) {
-			this.messagesFilter = getDefaultMessagesFiltersState(
-				this.filterConfigStore.messagesFilterInfo,
-			);
-			this.eventsFilter = getDefaultEventsFiltersState(this.filterConfigStore.eventFilterInfo);
-
-			this.searchForm = getDefaultFormState();
-		}
+	@action
+	private onEventsResponse = (events: EventAction[], searchResult: EventsSearchResult) => {
+		searchResult.addData(events);
 	};
 
 	@action
-	private initEventsFilter = (eventsFilterInfo: EventsFiltersInfo[]) => {
-		this.eventsFilter = getDefaultEventsFiltersState(eventsFilterInfo);
-	};
-
-	@action
-	private initMessagesFilter = (messagesFilterInfo: MessagesFilterInfo[]) => {
-		this.messagesFilter = getDefaultMessagesFiltersState(messagesFilterInfo);
-	};
-
-	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
-		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
-		this.currentIndex = Math.max(this.currentIndex - 1, 0);
-
-		this.resetSearchProgressState();
-
-		if (this.searchHistory.length !== 0) {
-			this.setCompleted(true);
-		}
-		this.api.indexedDb.deleteDbStoreItem(
-			IndexedDbStores.SEARCH_HISTORY,
-			searchHistoryItem.timestamp,
-		);
-	};
-
-	@action newSearch = (searchHistoryItem: SearchHistory) => {
-		this.searchHistory = [searchHistoryItem];
-		this.resetSearchProgressState();
-	};
-
-	@action startSearch = (
-		loadMore = false,
-		filters: Partial<{
-			eventsFilter: EventsFilter | null;
-			messagesFilter: MessagesFilter | null;
-		}> = {},
+	private onKeepAlive = (
+		heartbeat: SSEHeartbeat,
+		searchResult: MessagesSearchResult | EventsSearchResult,
 	) => {
-		const { eventsFilter = this.eventsFilter, messagesFilter = this.messagesFilter } = filters;
-		this.eventsFilter = eventsFilter;
-		this.messagesFilter = messagesFilter;
-
-		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
-		if (this.isSearching || !filterParams) return;
-		const isPaused = this.isPaused;
-		this.setCompleted(false);
-
-		if (loadMore) {
-			if (isPaused) {
-				this.startSearch();
-				return;
-			}
-
-			this.searchProgressState[SearchDirection.Previous].resultCount = 0;
-			this.searchProgressState[SearchDirection.Next].resultCount = 1;
-		}
-
-		if ((!isPaused && !loadMore) || this.currentSearch?.request.type !== this.formType) {
-			this.newSearch({
-				timestamp: moment.utc().valueOf(),
-				request: { type: this.formType, state: this.searchForm, filters: filterParams },
-				results: {},
-				progress: {
-					previous: 0,
-					next: 0,
-				},
-				processedObjectCount: {
-					previous: 0,
-					next: 0,
-				},
-			});
-		}
-
-		const { startTimestamp, searchDirection, resultCountLimit, timeLimits, stream } =
-			this.searchForm;
-
-		const startDirectionalSearch = (direction: SSESearchDirection) => {
-			const endTimestamp = timeLimits[direction];
-			const params =
-				this.formType === 'event'
-					? getEventsSSEParams(
-							filterParams as EventsFilter,
-							startTimestamp || moment().utc().valueOf(),
-							direction,
-							resultCountLimit,
-					  )
-					: getMessagesSSEParams(
-							filterParams as MessagesFilter,
-							{
-								streams: stream,
-								startTimestamp,
-								endTimestamp,
-							},
-							direction,
-							resultCountLimit,
-					  );
-
-			if (isPaused || loadMore) {
-				if (this.formType === 'message') {
-					const messageIdEvent = this.resumeFromMessageIds[direction]?.messageIds;
-					if (messageIdEvent) {
-						(params as MessagesSSEParams).messageId = Object.values(messageIdEvent).map(
-							messageId => messageId.lastId,
-						) as string[];
-					}
-				} else {
-					const resumeFromId = this.searchProgressState[direction].lastEventId;
-					if (resumeFromId) {
-						params.resumeFromId = resumeFromId;
-					}
-				}
-			}
-
-			if (isPaused) {
-				params.resultCountLimit =
-					this.currentSearch!.request.state.resultCountLimit -
-					this.searchProgressState[direction].resultCount;
-			}
-
-			const queryParams: SSEParams =
-				this.formType === 'event'
-					? { ...params, metadataOnly: false }
-					: {
-							...params,
-							stream: stream.flatMap(s => [`${s}:first`, `${s}:second`]),
-							metadataOnly: false,
-					  };
-
-			const searchChannel = this.api.sse.getEventSource({
-				type: this.formType,
-				queryParams,
-			});
-
-			this.searchChannel[direction] = searchChannel;
-
-			if (this.formType === 'event') {
-				this.filtersHistory.onEventFilterSubmit(filterParams as EventsFilter);
-			} else {
-				this.sessionsStore.saveSessions(stream);
-				this.filtersHistory.onMessageFilterSubmit(filterParams as MessagesFilter);
-			}
-
-			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
-			searchChannel.addEventListener('keep_alive', this.onChannelResponse.bind(this, direction));
-			searchChannel.addEventListener('message_ids', this.onMessageIdsEvent.bind(this, direction));
-			searchChannel.addEventListener('close', this.stopSearch.bind(this, direction, undefined));
-			searchChannel.addEventListener('error', this.onError.bind(this, direction));
-		};
-
-		if (searchDirection === SearchDirection.Both) {
-			startDirectionalSearch(SearchDirection.Previous);
-			startDirectionalSearch(SearchDirection.Next);
-		} else if (searchDirection) {
-			startDirectionalSearch(searchDirection);
-		}
+		searchResult.processedObjectsCount = heartbeat.scanCounter;
+		searchResult.currentTimestamp = heartbeat.timestamp;
 	};
 
-	loadMore = this.startSearch.bind(this, true);
-
-	@action pauseSearch = () => {
-		if (this.currentSearch) {
-			const { processedObjectCount } = this.currentSearch;
-			this.searchProgressState.previous.lastProcessedObjectCount = processedObjectCount.previous;
-			this.searchProgressState.next.lastProcessedObjectCount = processedObjectCount.next;
-		}
-
-		this.stopSearch(undefined, true);
-	};
-
-	@action
-	stopSearch = (searchDirection?: SSESearchDirection, pause = false) => {
-		if (!searchDirection) {
-			this.stopSearch(SearchDirection.Next, pause);
-			this.stopSearch(SearchDirection.Previous, pause);
-			return;
-		}
-
-		const searchChannel = this.searchChannel[searchDirection];
-
-		if (!searchChannel) return;
-
-		searchChannel.close();
-		this.searchChannel[searchDirection] = null;
-
-		if (!pause) {
-			this.searchProgressState[searchDirection].completed = true;
-		}
-
-		this.exportChunkToSearchHistory();
-
-		if (
-			!this.isSearching &&
-			this.currentSearch &&
-			Object.values(this.currentSearch.results).some(results => results.length > 0)
-		) {
-			this.saveSearchResults(toJS(this.currentSearch));
-		}
-	};
-
-	onError = (searchDirection: SSESearchDirection, ev: Event) => {
+	private onError = (ev: Event) => {
 		if (ev instanceof MessageEvent) {
 			notificationsStore.handleSSEError(ev);
 		} else {
-			const evSource = toJS(ev).currentTarget as EventSource;
+			const evSource = ev.currentTarget as EventSource;
 			const errorId = nanoid();
 			notificationsStore.addMessage({
 				id: errorId,
@@ -616,125 +255,6 @@ export class SearchStore implements ISearchStore {
 				description: evSource ? `${ev.type} at ${evSource.url}` : `${ev.type}`,
 			});
 		}
-
-		this.stopSearch(searchDirection);
-	};
-
-	private onChannelResponse = (searchDirection: SSESearchDirection, ev: Event) => {
-		if (this.currentSearch) {
-			const data = (ev as MessageEvent).data;
-			const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
-
-			if (isEventNode(parsedEvent)) {
-				this.searchChunk.push({
-					...parsedEvent,
-					startTimestamp: parsedEvent.startTimestamp,
-					endTimestamp: parsedEvent.endTimestamp,
-					searchDirection,
-				});
-			} else if (isEventMessage(parsedEvent)) {
-				this.searchChunk.push({
-					...parsedEvent,
-					timestamp: parsedEvent.timestamp,
-					searchDirection,
-				});
-			} else {
-				this.searchChunk.push({ ...parsedEvent, searchDirection });
-			}
-
-			if (
-				this.searchChunk.length >= SEARCH_CHUNK_SIZE ||
-				(!isEventAction(parsedEvent) && !isEventMessage(parsedEvent))
-			) {
-				this.exportChunkToSearchHistory();
-			}
-		}
-	};
-
-	private onMessageIdsEvent = (searchDirection: SSESearchDirection, ev: Event) => {
-		this.resumeFromMessageIds[searchDirection] =
-			ev instanceof MessageEvent && ev.data ? JSON.parse(ev.data) : null;
-	};
-
-	@action
-	exportChunkToSearchHistory() {
-		this.searchChunk.forEach(eventWithSearchDirection => {
-			if (!this.currentSearch) return;
-
-			const { searchDirection, ...parsedEvent } = eventWithSearchDirection;
-
-			const eventTimestamp =
-				isEventAction(parsedEvent) || isEventMessage(parsedEvent)
-					? getTimestampAsNumber(parsedEvent)
-					: parsedEvent.timestamp;
-
-			if (isEvent(parsedEvent) || isEventMessage(parsedEvent)) {
-				const resultGroupKey = Math.floor(
-					eventTimestamp / 1000 / (SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
-				).toString();
-
-				if (!this.currentSearch.results[resultGroupKey]) {
-					this.currentSearch.results[resultGroupKey] = [];
-				}
-
-				if (
-					!this.currentSearch.results[resultGroupKey].find(
-						entity => getItemId(entity) === getItemId(parsedEvent),
-					)
-				) {
-					this.currentSearch.results[resultGroupKey].push(parsedEvent);
-					this.searchProgressState[searchDirection].lastEventId = getItemId(parsedEvent);
-					this.searchProgressState[searchDirection].resultCount += 1;
-				}
-				this.currentSearch.progress[searchDirection] = eventTimestamp;
-			} else {
-				if (eventTimestamp) {
-					this.currentSearch.progress[searchDirection] = eventTimestamp;
-				}
-
-				this.currentSearch.processedObjectCount[searchDirection] =
-					parsedEvent.scanCounter +
-					this.searchProgressState[searchDirection].lastProcessedObjectCount;
-
-				if (parsedEvent.id) {
-					this.searchProgressState[searchDirection].lastEventId = parsedEvent.id;
-				}
-			}
-		});
-
-		this.searchChunk = [];
-	}
-
-	@action setCompleted(completed: boolean, searchDirection?: SSESearchDirection) {
-		if (!searchDirection) {
-			this.setCompleted(completed, SearchDirection.Next);
-			this.setCompleted(completed, SearchDirection.Previous);
-			return;
-		}
-
-		this.searchProgressState[searchDirection].completed = completed;
-	}
-
-	@action resetSearchProgressState = () => {
-		this.searchProgressState = {
-			previous: {
-				completed: false,
-				lastEventId: null,
-				lastProcessedObjectCount: 0,
-				resultCount: 0,
-			},
-			next: {
-				completed: false,
-				lastEventId: null,
-				lastProcessedObjectCount: 0,
-				resultCount: 0,
-			},
-		};
-
-		this.resumeFromMessageIds = {
-			previous: null,
-			next: null,
-		};
 	};
 
 	private getSearchHistory = async () => {
@@ -742,28 +262,50 @@ export class SearchStore implements ISearchStore {
 			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
 				IndexedDbStores.SEARCH_HISTORY,
 			);
-			runInAction(() => {
-				this.searchHistory = searchHistory;
-			});
+			const lastSearchItem = searchHistory[searchHistory.length - 1];
+			if (lastSearchItem && SearchResult.isValidSearchHistory(lastSearchItem)) {
+				runInAction(() => {
+					if (lastSearchItem.type === 'event') {
+						const state = lastSearchItem as EventsSearchHistory;
+						const eventSearchResult = new EventsSearchResult(state);
+						this.formType = 'event';
+						this.eventsFilterStore.setEventsFilter(state.filter);
+						this.eventsFilterStore.setStartTimestamp(state.startTimestamp);
+						this.eventsFilterStore.setEndTimestamp(state.endTimestamp);
+
+						this.currentSearch = eventSearchResult;
+					} else {
+						const state = lastSearchItem as MessagesSearchHistory;
+						const { filter, startTimestamp, endTimestamp, streams } = state;
+						const messageSearchResult = new MessagesSearchResult(state);
+
+						this.formType = 'message';
+						this.messagesFilterStore.setMessagesFilter(
+							{ endTimestamp, startTimestamp, streams },
+							filter,
+						);
+						this.messagesFilterStore.setStartTimestamp(state.startTimestamp);
+						this.messagesFilterStore.setEndTimestamp(state.endTimestamp);
+
+						this.currentSearch = messageSearchResult;
+					}
+				});
+			}
 		} catch (error) {
 			console.error('Failed to load search history', error);
 		}
 	};
 
-	private saveSearchResults = async (search: SearchHistory) => {
+	private saveSearchResult = async (search: SearchHistory) => {
 		try {
 			const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
 				IndexedDbStores.SEARCH_HISTORY,
 			);
-
-			if (savedSearchResultKeys.includes(search.timestamp)) {
-				await this.api.indexedDb.updateDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
-				return;
-			}
-
-			savedSearchResultKeys.forEach(key =>
-				this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, key),
-			);
+			await Promise.all([
+				savedSearchResultKeys.map(key =>
+					this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SESSIONS_HISTORY, key),
+				),
+			]);
 
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
@@ -778,18 +320,6 @@ export class SearchStore implements ISearchStore {
 					id: nanoid(),
 				});
 			}
-		}
-	};
-
-	@action
-	public syncData = async (unsavedData?: DbData) => {
-		if (this.isSearching) {
-			this.stopSearch();
-		}
-
-		await this.getSearchHistory();
-		if (unsavedData && isSearchHistoryEntity(unsavedData)) {
-			await this.saveSearchResults(unsavedData);
 		}
 	};
 

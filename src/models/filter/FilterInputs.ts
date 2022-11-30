@@ -47,12 +47,8 @@ export type DateTimeInputType = {
 	setValue: (nextValue: number | null) => void;
 	type: TimeInputType;
 	id: string;
-	dateTimeInputMask: (string | RegExp)[];
-	timeInputMask?: (string | RegExp)[];
-	timestampsInputMask?: (string | RegExp)[];
-	dateTimeMask: DateTimeMask;
+	inputMask: (string | RegExp)[];
 	dateMask: DateTimeMask;
-	timeMask: DateTimeMask;
 	placeholder: string;
 	inputClassName?: string;
 	labelClassName?: string;

@@ -194,7 +194,7 @@ export default class MessagesStore implements IMessagesStore {
 			this.highlightedMessageId = new String(message.id);
 			this.hintMessages = [];
 
-			this.filterStore.resetMessagesFilter({
+			this.filterStore.clearFilter({
 				startTimestamp: timestampToNumber(message.timestamp),
 				endTimestamp: null,
 				streams: [...new Set([...streams, message.sessionId])],
@@ -216,7 +216,7 @@ export default class MessagesStore implements IMessagesStore {
 	@action
 	public clearFilters = () => {
 		this.hintMessages = [];
-		this.filterStore.resetMessagesFilter({ streams: this.filterStore.params.streams });
+		this.filterStore.clearFilter({ streams: this.filterStore.params.streams });
 		this.dataStore.stopMessagesLoading();
 		this.dataStore.resetState();
 	};
@@ -267,7 +267,7 @@ export default class MessagesStore implements IMessagesStore {
 		this.highlightedMessageId = new String(targetMessage.id);
 		this.showFilterChangeHint = false;
 
-		this.filterStore.resetMessagesFilter({
+		this.filterStore.clearFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
 			endTimestamp: null,
 			startTimestamp: timestampToNumber(targetMessage.timestamp),

@@ -21,7 +21,6 @@ import { EventsFiltersInfo, EventFilterKeys } from 'api/sse';
 import { getObjectKeys } from 'helpers/object';
 import { TimeRange } from 'models/Timestamp';
 import EventsFilter from 'models/filter/EventsFilter';
-import { calculateTimeRange } from '../helpers/calculateTimeRange';
 
 function getDefaultTimeRange(interval = 15): TimeRange {
 	const timestampTo = moment.utc().valueOf();
@@ -66,14 +65,12 @@ export default class EventsFilterStore {
 		private filterConfigStore: IFilterConfigStore,
 		initialState?: EventsFilterStoreInitialState,
 	) {
+		const [startTimestamp, endTimestamp] = initialState?.range || getDefaultTimeRange();
+
 		if (initialState) {
-			const defaultRange = getDefaultTimeRange();
+			const { filter } = initialState;
 
-			const { range = defaultRange, filter } = initialState;
-
-			const defaultEventFilter = toJS(
-				this.filterConfigStore.eventFilters,
-			) as unknown as EventsFilter;
+			const defaultEventFilter = toJS(this.filterConfigStore.eventFilters);
 			this.setEventsFilter(
 				filter
 					? {
@@ -82,10 +79,10 @@ export default class EventsFilterStore {
 					  }
 					: defaultEventFilter,
 			);
-			this.setRange(range);
 		}
 
-		this.setTimestampFromRange(this.range);
+		this.startTimestamp = startTimestamp;
+		this.endTimestamp = endTimestamp;
 
 		this.sseFilterSubscription = reaction(
 			() => this.filterConfigStore.eventFilters as unknown as EventsFilter,
@@ -104,30 +101,33 @@ export default class EventsFilterStore {
 	public interval = 15;
 
 	@observable
-	public timestamp: Number = new Number(
-		moment
-			.utc()
-			.subtract(this.interval / 2, 'minutes')
-			.valueOf(),
-	);
-
-	@observable
-	public range: TimeRange = calculateTimeRange(
-		moment.utc(this.timestamp.valueOf()).valueOf(),
-		this.interval,
-	);
-
-	@observable
 	public isOpen = false;
 
+	@observable
+	public startTimestamp: number;
+
+	@observable
+	public endTimestamp: number;
+
+	@action
+	public setStartTimestamp = (timestamp: number) => {
+		this.startTimestamp = timestamp;
+	};
+
+	@action
+	public setEndTimestamp = (timestamp: number) => {
+		this.endTimestamp = timestamp;
+	};
+
 	@computed
-	public get timestampFrom(): number {
-		return this.range[0];
+	public get range(): TimeRange {
+		return [this.startTimestamp, this.endTimestamp];
 	}
 
 	@computed
-	public get timestampTo(): number {
-		return this.range[1];
+	public get rangeCenter(): number {
+		const [from, to] = this.range;
+		return Math.floor(from + (to - from) / 2);
 	}
 
 	@observable
@@ -144,24 +144,20 @@ export default class EventsFilterStore {
 		});
 	}
 
+	@computed
+	public get isValid() {
+		return this.endTimestamp > this.startTimestamp;
+	}
+
 	@action
 	public setInterval = (interval: number) => {
 		this.interval = interval;
 	};
 
 	@action
-	public setTimestamp = (timestamp: number) => {
-		this.timestamp = new Number(timestamp);
-	};
-
-	@action
-	public setRange = (range: TimeRange) => {
-		this.range = range;
-	};
-
-	@action
-	public setTimestampFromRange = (range: TimeRange) => {
-		this.timestamp = new Number(range[0] + (range[1] - range[0]) / 2);
+	public setRange = ([startTimestamp, endTimestamp]: TimeRange) => {
+		this.startTimestamp = startTimestamp;
+		this.endTimestamp = endTimestamp;
 	};
 
 	@action
@@ -191,6 +187,12 @@ export default class EventsFilterStore {
 		} else {
 			this.filter = toJS(filterConfig);
 		}
+	};
+
+	@action
+	public clearFilter = () => {
+		const defaultFilter = this.getDefaultEventFilter();
+		this.filter = defaultFilter;
 	};
 
 	public dispose = () => {

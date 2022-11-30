@@ -14,16 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import EventsFilter from 'models/filter/EventsFilter';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import {
-	SSEParamsEvents,
 	EventsFiltersInfo,
 	EventFilterKeys,
 	MessagesFilterInfo,
 	MessageFilterKeys,
-	SSEParams,
+	EventSSEParams,
+	MessagesSSEParams,
 } from './sse';
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
@@ -33,7 +32,7 @@ export type SSEChannelType = 'event' | 'message';
 
 export interface EventSourceConfig {
 	type: SSEChannelType;
-	queryParams: SSEParams;
+	queryParams: EventSSEParams | MessagesSSEParams;
 }
 
 export interface EventApiSchema {
@@ -69,12 +68,6 @@ export interface MessageApiSchema {
 
 export interface SSESchema {
 	getEventSource: (config: EventSourceConfig) => EventSource;
-	getEventsTreeSource: (params: {
-		startTimestamp: number;
-		endTimestamp?: number;
-		filter: EventsFilter | null;
-		sseParams: SSEParamsEvents;
-	}) => EventSource;
 	getFilters: <T>(filterType: 'events' | 'messages') => Promise<T[]>;
 	getEventFilters: () => Promise<EventFilterKeys[]>;
 	getMessagesFilters: () => Promise<MessageFilterKeys[]>;
