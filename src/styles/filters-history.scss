@@ -26,7 +26,8 @@
 	justify-content: flex-start;
 	align-items: center;
 	padding-top: 10px;
-	
+	margin-right: -5px; 
+
 	background-color: var(--background-primary);
 
 	&:disabled {
@@ -38,7 +39,7 @@
 		width: 39px;
 		height: 40px;
 
-		padding-left: 2px;
+		padding-left: 1px;
 		color: var(--text-info);
 	}
 }
