@@ -119,30 +119,6 @@
 	}
 }
 
-.search-datetime-controls {
-	display: grid;
-	grid-template-columns: 1fr 2fr 1fr;
-	align-items: center;
-	padding: 10px 10px 7px;
-	&__previous {
-		justify-self: start;
-	}
-
-	&__next {
-		justify-self: end;
-	}
-
-	&__start {
-		display: flex;
-		justify-content: space-between;
-	}
-
-	&__start-input {
-		flex-grow: 1;
-		margin-right: 20px;
-	}
-}
-
 .search-type-config {
 	display: flex;
 	justify-content: space-between;

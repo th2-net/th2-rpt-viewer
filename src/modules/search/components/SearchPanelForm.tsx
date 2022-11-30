@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import {
@@ -85,6 +85,10 @@ const SearchPanelForm = () => {
 	const [currentStream, setCurrentStream] = useState('');
 	const [sessions, setSessions] = useState<string[]>([]);
 	const sessionsStore = useSessionsHistoryStore();
+
+	useEffect(() => {
+		setSessions(messagesFilterStore.params.streams.slice());
+	}, [messagesFilterStore.params.streams]);
 
 	const sessionsAutocomplete: string[] = React.useMemo(
 		() => [
@@ -157,7 +161,7 @@ const SearchPanelForm = () => {
 	const timestampFromConfig: FilterRowTimeWindowConfig[] = React.useMemo(
 		() => [
 			{
-				id: 'replay-timerange',
+				id: 'search-panel-form-timestamps',
 				inputs: [
 					{
 						dateMask: DateTimeMask.DATE_TIME_MASK,

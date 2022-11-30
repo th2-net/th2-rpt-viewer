@@ -23,9 +23,10 @@ import EventsFilterStore from 'modules/events/stores/EventsFilterStore';
 import MessagesFilterStore from 'modules/messages/stores/MessagesFilterStore';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { timestampToNumber } from 'helpers/date';
+import { SearchHistory } from './SearchStore';
 
 interface SearchResultItem<I, F> {
-	id: number;
+	timestamp: number;
 	type: EntityType;
 	data: I[];
 	startTimestamp: number;
@@ -45,13 +46,13 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 		data,
 		endTimestamp,
 		filter,
-		id,
+		timestamp,
 		processedObjectsCount,
 		streams,
 		startTimestamp,
 		type,
 	}: SearchResultItem<T, F>) {
-		this.id = id;
+		this.timestamp = timestamp;
 		this.type = type;
 		this.currentTimestamp = currentTimestamp;
 		this.startTimestamp = startTimestamp;
@@ -63,7 +64,7 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 	}
 
 	@observable
-	public id: number;
+	public timestamp: number;
 
 	@observable
 	public type: EntityType;
@@ -117,7 +118,7 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 					currentTimestamp: startTimestamp,
 					data: [],
 					filter,
-					id: Date.now(),
+					timestamp: Date.now(),
 					processedObjectsCount: 0,
 					streams,
 					type: ActionType.MESSAGE,
@@ -134,7 +135,7 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 				currentTimestamp: timestampFrom,
 				data: [],
 				filter,
-				id: Date.now(),
+				timestamp: Date.now(),
 				processedObjectsCount: 0,
 				streams: [],
 				type: 'event',
@@ -149,11 +150,14 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 		currentTimestamp: this.currentTimestamp,
 		data: toJS(this.data),
 		filter: toJS(this.filter),
-		id: this.id,
+		timestamp: this.timestamp,
 		processedObjectsCount: this.processedObjectsCount,
 		streams: toJS(this.streams),
 		type: this.type,
 	});
+
+	static isValidSearchHistory = (obj: unknown): obj is SearchHistory =>
+		typeof obj === 'object' && obj !== null && 'data' in obj;
 }
 
 export class EventsSearchResult extends SearchResult<EventAction, EventsFilter> {

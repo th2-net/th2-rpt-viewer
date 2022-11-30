@@ -17,5 +17,4 @@
 export enum SearchDirection {
 	Previous = 'previous',
 	Next = 'next',
-	Both = 'both',
 }

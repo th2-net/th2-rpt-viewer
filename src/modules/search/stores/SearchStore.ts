@@ -15,7 +15,8 @@
  ***************************************************************************** */
 
 import moment from 'moment';
-import { action, computed, IReactionDisposer, observable } from 'mobx';
+import { nanoid } from 'nanoid';
+import { action, computed, IReactionDisposer, observable, runInAction } from 'mobx';
 import { EventMessage } from 'models/EventMessage';
 import { EntityType, EventAction } from 'models/EventAction';
 import { MessagesSSEChannel } from 'stores/SSEChannel/MessagesSSEChannel';
@@ -26,6 +27,7 @@ import FiltersHistoryStore from 'stores/FiltersHistoryStore';
 import { SessionHistoryStore } from 'modules/messages/stores/SessionHistoryStore';
 import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
+import { IndexedDbStores } from 'api/indexedDb';
 import EventsFilterStore from 'modules/events/stores/EventsFilterStore';
 import MessagesFilterStore from 'modules/messages/stores/MessagesFilterStore';
 import { TimeRange } from 'models/Timestamp';
@@ -37,7 +39,7 @@ import {
 	SSEHeartbeat,
 } from 'api/sse';
 import notificationsStore from 'stores/NotificationsStore';
-import { nanoid } from 'nanoid';
+import { isQuotaExceededError } from 'helpers/fetch';
 import {
 	EventsSearchResult,
 	MessagesSearchResult,
@@ -65,7 +67,9 @@ export class SearchStore implements ISearchStore {
 		private filtersHistory: FiltersHistoryStore,
 		private sessionsStore: SessionHistoryStore,
 		private filterConfigStore: IFilterConfigStore,
-	) {}
+	) {
+		this.getSearchHistory();
+	}
 
 	eventsFilterStore = new EventsFilterStore(this.filterConfigStore, {
 		range: defaultRange,
@@ -90,6 +94,16 @@ export class SearchStore implements ISearchStore {
 
 	@action
 	public setFormType = (formType: EntityType) => {
+		if (formType === this.formType) {
+			return;
+		}
+		const stores = [this.eventsFilterStore, this.messagesFilterStore];
+		if (formType === 'event') {
+			stores.reverse();
+		}
+		stores[1].setStartTimestamp(stores[0].startTimestamp as number);
+		stores[1].setEndTimestamp(stores[0].endTimestamp as number);
+
 		this.formType = formType;
 	};
 
@@ -162,6 +176,7 @@ export class SearchStore implements ISearchStore {
 			onClose: messages => {
 				this.onMessagesResponse(messages, searchResult);
 				searchResult.onSearchEnd();
+				this.saveSearchResult(searchResult.toJs());
 			},
 			onKeepAliveResponse: heartbeat => this.onKeepAlive(heartbeat, searchResult),
 		});
@@ -183,6 +198,7 @@ export class SearchStore implements ISearchStore {
 			onClose: events => {
 				this.onEventsResponse(events as unknown as EventAction[], searchResult);
 				searchResult.onSearchEnd();
+				this.saveSearchResult(searchResult.toJs());
 			},
 			onKeepAlive: heartbeat => this.onKeepAlive(heartbeat, searchResult),
 		});
@@ -241,49 +257,71 @@ export class SearchStore implements ISearchStore {
 		}
 	};
 
-	// private getSearchHistory = async () => {
-	// 	try {
-	// 		const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
-	// 			IndexedDbStores.SEARCH_HISTORY,
-	// 		);
-	// 		runInAction(() => {
-	// 			this.searchHistory = searchHistory;
-	// 		});
-	// 	} catch (error) {
-	// 		console.error('Failed to load search history', error);
-	// 	}
-	// };
+	private getSearchHistory = async () => {
+		try {
+			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
+				IndexedDbStores.SEARCH_HISTORY,
+			);
+			const lastSearchItem = searchHistory[searchHistory.length - 1];
+			if (lastSearchItem) {
+				runInAction(() => {
+					if (lastSearchItem.type === 'event') {
+						const state = lastSearchItem as EventsSearchHistory;
+						const eventSearchResult = new EventsSearchResult(state);
+						this.formType = 'event';
+						this.eventsFilterStore.setEventsFilter(state.filter);
+						this.eventsFilterStore.setStartTimestamp(state.startTimestamp);
+						this.eventsFilterStore.setEndTimestamp(state.endTimestamp);
 
-	// private saveSearchResults = async (search: any) => {
-	// 	try {
-	// 		const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
-	// 			IndexedDbStores.SEARCH_HISTORY,
-	// 		);
+						this.currentSearch = eventSearchResult;
+					} else {
+						const state = lastSearchItem as MessagesSearchHistory;
+						const { filter, startTimestamp, endTimestamp, streams } = state;
+						const messageSearchResult = new MessagesSearchResult(state);
 
-	// 		if (savedSearchResultKeys.includes(search.timestamp)) {
-	// 			await this.api.indexedDb.updateDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
-	// 			return;
-	// 		}
+						this.formType = 'message';
+						this.messagesFilterStore.setMessagesFilter(
+							{ endTimestamp, startTimestamp, streams },
+							filter,
+						);
+						this.messagesFilterStore.setStartTimestamp(state.startTimestamp);
+						this.messagesFilterStore.setEndTimestamp(state.endTimestamp);
 
-	// 		savedSearchResultKeys.forEach(key =>
-	// 			this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, key),
-	// 		);
+						this.currentSearch = messageSearchResult;
+					}
+				});
+			}
+		} catch (error) {
+			console.error('Failed to load search history', error);
+		}
+	};
 
-	// 		await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
-	// 	} catch (error) {
-	// 		if (isQuotaExceededError(error)) {
-	// 			this.workspacesStore.onQuotaExceededError(search);
-	// 		} else {
-	// 			notificationsStore.addMessage({
-	// 				notificationType: 'genericError',
-	// 				type: 'error',
-	// 				header: `Failed to save current search result`,
-	// 				description: error instanceof Error ? error.message : `${error}`,
-	// 				id: nanoid(),
-	// 			});
-	// 		}
-	// 	}
-	// };
+	private saveSearchResult = async (search: SearchHistory) => {
+		try {
+			const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
+				IndexedDbStores.SEARCH_HISTORY,
+			);
+			await Promise.all([
+				savedSearchResultKeys.map(key =>
+					this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SESSIONS_HISTORY, key),
+				),
+			]);
+
+			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
+		} catch (error) {
+			if (isQuotaExceededError(error)) {
+				this.workspacesStore.onQuotaExceededError(search);
+			} else {
+				notificationsStore.addMessage({
+					notificationType: 'genericError',
+					type: 'error',
+					header: `Failed to save current search result`,
+					description: error instanceof Error ? error.message : `${error}`,
+					id: nanoid(),
+				});
+			}
+		}
+	};
 
 	public dispose = () => {
 		this.subscriptions.forEach(unsubscribe => unsubscribe());

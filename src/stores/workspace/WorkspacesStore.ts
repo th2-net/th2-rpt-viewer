@@ -19,9 +19,8 @@ import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
 import { IBookmarksStore, IFilterConfigStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
 import { DbData } from 'api/indexedDb';
-import { SearchStore } from 'modules/search/stores/SearchStore';
+import { MessagesSearchResult } from 'modules/search/stores/SearchResult';
 import { SessionHistoryStore } from 'modules/messages/stores/SessionHistoryStore';
-import MessagesFilter from 'models/filter/MessagesFilter';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
@@ -39,8 +38,6 @@ export default class WorkspacesStore {
 
 	public bookmarksStore: IBookmarksStore;
 
-	public searchStore: SearchStore;
-
 	public tabsStore = new TabsStore(this);
 
 	constructor(
@@ -52,14 +49,6 @@ export default class WorkspacesStore {
 		initialState: WorkspacesUrlState | null,
 	) {
 		this.bookmarksStore = new BookmarksStore(this, this.api.indexedDb);
-
-		this.searchStore = new SearchStore(
-			this,
-			api,
-			filtersHistoryStore,
-			sessionsStore,
-			filterConfigStore,
-		);
 
 		this.init(initialState || null);
 	}
@@ -114,11 +103,11 @@ export default class WorkspacesStore {
 		);
 
 	public getInitialWorkspaceByMessage = (
+		currentSearch: MessagesSearchResult,
 		timestamp: number,
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
-		const currentSearch = this.searchStore.currentSearch;
-		const filter = currentSearch?.filter as MessagesFilter;
+		const filter = currentSearch?.filter;
 
 		return {
 			messages: {
