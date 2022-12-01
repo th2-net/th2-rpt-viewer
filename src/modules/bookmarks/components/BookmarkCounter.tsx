@@ -23,7 +23,7 @@ export function BookmarkCounterBase() {
 
 	return (
 		<div className='bookmark-counter'>
-			<span className='bookmarks-num'>{bookmarks.length}</span>/{BOOKMARKS_LIMIT}
+			<span>{bookmarks.length}</span>/{BOOKMARKS_LIMIT}
 		</div>
 	);
 }

@@ -16,6 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { ToastProvider } from 'react-toast-notifications';
+import { TH2Icon } from 'components/icons/TH2Icon';
 import StoresProvider from './StoresProvider';
 import Toast from './notifications/Toast';
 import ToastContainer from './notifications/ToastContainer';
@@ -31,8 +32,8 @@ const AppRootBase = () => (
 			components={{ Toast, ToastContainer }}
 			transitionDuration={400}>
 			<div className='header'>
-				<i className='th2-logo' />
-				{process.env.NODE_ENV === 'development' && <ThemeToggler />}
+				<TH2Icon className='th2-icon' />
+				<ThemeToggler />
 			</div>
 			<div className='app__workspaces'>
 				<WorkspacesLayout />

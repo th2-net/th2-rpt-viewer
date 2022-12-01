@@ -15,8 +15,7 @@
  ***************************************************************************** */
 
 import { Bookmark, EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
-import { SearchPanelType } from 'modules/search/models/Search';
-import { SearchHistory, SearchPanelFormState } from 'modules/search/stores/SearchStore';
+import { SearchHistory } from 'modules/search/stores/SearchStore';
 import { EventStoreURLState } from 'modules/events/stores/EventsStore';
 import { TimeRange } from 'models/Timestamp';
 import EventsFilter from 'models/filter/EventsFilter';
@@ -34,7 +33,7 @@ export interface IBookmarksStore {
 	BOOKMARKS_LIMIT: number;
 	isLoadingBookmarks: boolean;
 	toggleMessagePin: (message: EventMessage) => void;
-	toggleEventPin: (message: EventTreeNode) => void;
+	toggleEventPin: (message: EventAction) => void;
 	syncData: (unsavedData?: DbData) => void;
 }
 
@@ -53,14 +52,8 @@ export interface IFilterConfigStore {
 
 export interface ISearchStore {
 	currentSearch: SearchHistory | null;
-	updateForm: (stateUpdate: Partial<SearchPanelFormState>) => void;
 	dispose: () => void;
-	stopSearch: () => void;
-	setFormType: (type: SearchPanelType) => void;
-
-	pauseSearch: () => void;
 	isSearching: boolean;
-	startSearch: (loadMore?: boolean) => void;
 	filterEventsByParent: (parentId: string, parentTimestamp: number) => void;
 }
 

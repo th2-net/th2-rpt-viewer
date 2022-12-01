@@ -22,6 +22,7 @@ import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
 import { getMessagesSSEParams, MessagesFilterInfo, MessagesSSEParams } from 'api/sse';
 import { SearchDirection } from 'models/SearchDirection';
 import notificationsStore from 'stores/NotificationsStore';
+import { TimeRange } from 'models/Timestamp';
 
 function getDefaultMessagesParams(): MessagesParams {
 	return {
@@ -62,6 +63,16 @@ export default class MessagesFilterStore {
 
 	@observable params: MessagesParams = getDefaultMessagesParams();
 
+	@computed
+	public get startTimestamp() {
+		return this.params.startTimestamp;
+	}
+
+	@computed
+	public get endTimestamp() {
+		return this.params.endTimestamp;
+	}
+
 	@observable filter: MessagesFilter | null = null;
 
 	/*
@@ -72,7 +83,12 @@ export default class MessagesFilterStore {
 
 	@computed
 	public get filterParams(): MessagesSSEParams {
-		return getMessagesSSEParams(this.filter, this.params, SearchDirection.Previous, 15);
+		return getMessagesSSEParams({
+			filter: this.filter,
+			params: this.params,
+			searchDirection: SearchDirection.Previous,
+			resultCountLimit: 15,
+		});
 	}
 
 	@computed
@@ -85,6 +101,22 @@ export default class MessagesFilterStore {
 			resultCountLimit: this.filterParams.resultCountLimit,
 		};
 	}
+
+	@action
+	public setStartTimestamp = (timestamp: number) => {
+		this.params.startTimestamp = timestamp;
+	};
+
+	@action
+	public setEndTimestamp = (timestamp: number) => {
+		this.params.endTimestamp = timestamp;
+	};
+
+	@action
+	public setRange = ([startTimestamp, endTimestamp]: TimeRange) => {
+		this.params.startTimestamp = startTimestamp;
+		this.params.endTimestamp = endTimestamp;
+	};
 
 	@computed
 	public get isMessagesFilterApplied() {
@@ -108,7 +140,12 @@ export default class MessagesFilterStore {
 	}
 
 	@action
-	public resetMessagesFilter = (initialParams: Partial<MessagesParams> = {}) => {
+	public setStreams = (streams: string[]) => {
+		this.params = { ...this.params, streams };
+	};
+
+	@action
+	public clearFilter = (initialParams: Partial<MessagesParams> = {}) => {
 		const filter = toJS(this.filtersStore.messageFilters);
 		const defaultMessagesFilter = getDefaultMessagesParams();
 		this.filter = filter;

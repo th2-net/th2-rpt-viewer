@@ -14,8 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import clsx from 'clsx';
 import React, { useReducer } from 'react';
-import { createBemBlock, createStyleSelector } from 'helpers/styleCreators';
+import { IconButton } from 'components/buttons/IconButton';
+import { ExpandIcon } from 'components/icons/ExpandIcon';
+import { createStyleSelector } from 'helpers/styleCreators';
 import { useEvent } from '../hooks/useEvent';
 import EventBodyCard from './event-card/EventBodyCard';
 
@@ -29,16 +32,15 @@ export const ReferenceCard = (props: Props) => {
 
 	const { event: referencedEvent, isError, isLoading } = useEvent(eventId);
 
-	const body = referencedEvent?.body || [];
+	let body = referencedEvent?.body || [];
+	body = Array.isArray(body) ? body : [body];
 
-	const [isOpen, toggleIsOpen] = useReducer(o => !o, false);
+	const [isExpanded, toggleIsOpen] = useReducer(o => !o, false);
 
 	const referenceName = `Referenced from ${eventId}`;
 	const isCycle = referencedEvent && referenceHistory.includes(eventId);
 
-	const referenceCardClassName = createStyleSelector('reference-card', isOpen ? 'open' : null);
-
-	// TODO: fix toggle button icon
+	const referenceCardClassName = createStyleSelector('reference-card', isExpanded ? 'open' : null);
 
 	return (
 		<div className='reference-card__outline' style={{ padding: referenceHistory.length * 4 }}>
@@ -47,14 +49,12 @@ export const ReferenceCard = (props: Props) => {
 					<div className='reference-card__title' title={referenceName}>
 						{referenceName}
 					</div>
-					<div
-						className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')}
-						onClick={toggleIsOpen}>
-						toggle
-					</div>
+					<IconButton className={clsx({ expanded: isExpanded })} onClick={toggleIsOpen}>
+						<ExpandIcon />
+					</IconButton>
 				</div>
 				{isLoading && <div>Loading event...</div>}
-				{isOpen && (
+				{isExpanded && (
 					<div className='reference-card__body'>
 						{isCycle && (
 							<ReferenceCardError>
@@ -64,7 +64,6 @@ export const ReferenceCard = (props: Props) => {
 						{referencedEvent &&
 							(body.length > 0 ? (
 								<EventBodyCard
-									body={body}
 									event={referencedEvent}
 									referenceHistory={[...referenceHistory, eventId]}
 								/>

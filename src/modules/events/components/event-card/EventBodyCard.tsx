@@ -16,11 +16,7 @@
 
 import { EventAction } from 'models/EventAction';
 import ErrorBoundary from 'components/util/ErrorBoundary';
-import {
-	EventBodyPayload,
-	EventBodyPayloadType,
-	EventActionBody,
-} from '../../models/EventBodyPayload';
+import { EventBodyPayload, EventBodyPayloadType } from '../../models/EventBodyPayload';
 import { getEventStatus } from '../../helpers/event';
 import { keyForVerification } from '../../helpers/keys';
 import { CustomTable } from '../tables/CustomTable';
@@ -96,19 +92,19 @@ export function EventBodyPayloadRenderer({ body, event, referenceHistory = [] }:
 }
 
 interface EventBodyCardProps {
-	body: EventActionBody;
 	event: EventAction;
 	referenceHistory?: Array<string>;
 }
 
 export default function EventBodyCard({
 	event: parentEvent,
-	body,
 	referenceHistory,
 }: EventBodyCardProps) {
+	const body = parentEvent.body;
+	const payload = Array.isArray(body) ? body : [body];
 	return (
 		<div className='event-card__body'>
-			{body.map((eventBodyItem, index) => (
+			{payload.map((eventBodyItem, index) => (
 				<EventBodyPayloadRenderer
 					key={`${eventBodyItem.type}-${index}`}
 					body={eventBodyItem}

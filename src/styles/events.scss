@@ -31,6 +31,7 @@
 
 	.chip {
 		display: block;
+		padding: 6px 8px;
 	}
 
 	&__icons {
@@ -91,6 +92,14 @@
 		@include ellipsis();
 		flex-grow: 1;
 		display: inline-block;
+
+		&.clickable {
+			cursor: pointer;
+
+			&:hover {
+				text-decoration: underline;
+			}
+		}
 	}
 
 	&__elapsed-time {
@@ -201,7 +210,6 @@
 		background-color: var(--background-primary);
 		border-radius: 8px;
 		padding: 8px;
-		flex-grow: 1;
 		flex-shrink: 1;
 		display: flex;
 		flex-direction: column;
@@ -262,12 +270,16 @@
 		display: flex;
 		align-items: center;
 		justify-items: center;
+		font-size: 15px;
 	}
 
 	&__body {
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
+		color: var(--text-secondary);
+		font-size: 11px;
+		line-height: 15px;
 
 		.event-message-card {
 			border-radius: 4px;
@@ -293,6 +305,41 @@
 			display: flex;
 			flex-direction: column;
 			gap: 16px;
+
+			.icon-button {
+				cursor: pointer;
+				align-items: center;
+				background: var(--surface-background);
+				box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+				padding: 4px;
+				border-radius: 20px;
+				width: 24px;
+				height: 24px;
+				font-size: 12px;
+				transition: all 0.2s;
+				position: relative;
+
+				&::before {
+					content: '';
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					display: none;
+					background-color: var(--info-color);
+					opacity: 0.15;
+				}
+
+				&.expanded {
+					color: var(--info-color);
+					transform: rotate(180deg);
+
+					&::before {
+						display: block;
+					}
+				}
+			}
 
 			&.open {
 				padding: 6px;
@@ -424,9 +471,16 @@
 
 		& input {
 			width: 32px;
-			border: 1px solid $controlButtonTextColor;
 			border-radius: 6px;
 			text-align: center;
+			border: 1px solid var(--input-border);
+			background-color: var(--input-background);
+			color: var(--text-input);
+			outline: none;
+
+			&:focus {
+				border: 1px solid var(--info-color);
+			}
 		}
 	}
 
@@ -597,14 +651,20 @@
 		margin-right: 10px;
 	}
 
+	.status-icon {
+		width: 10px;
+		height: 10px;
+	}
+
 	&__item {
-		@include status-card;
 		display: flex;
 		align-items: center;
 		max-width: 100%;
+		color: var(--text-primary);
 
 		&-title {
 			@include ellipsis;
+			margin-left: 8px;
 			cursor: pointer;
 			margin-right: 10px;
 			color: var(--status-primary-color-light);
@@ -626,9 +686,10 @@
 
 		&.root & {
 			&-title {
-				color: $eventTextColorLight;
+				color: var(--events-primary);
 				font-size: 14px;
 				line-height: 16px;
+				margin-left: 0;
 			}
 
 			&-icon {
@@ -653,9 +714,18 @@
 	align-items: center;
 	border-radius: 4px;
 
+	& button {
+		box-shadow: none;
+		padding: 0 8px;
+	}
+
 	&__timestamp {
-		color: var(--timestamp-color);
-		border: 1px solid var(--timestamp-color);
+		@include dark {
+			--info-color: #c6daff;
+		}
+
+		color: var(--info-color);
+		border: 1px solid var(--info-color);
 		border-radius: 8px;
 		padding: 0 10px;
 		font-size: 12px;
@@ -675,12 +745,15 @@
 		width: 16px;
 		height: 16px;
 
-		background: var(--arrow-background);
+		@include light {
+			--surface-background: #fff;
+		}
 
-		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
-		border-radius: 20px;
+		@include dark {
+			--surface-background: #4f5156;
+		}
 
-		.arrow {
+		& > span {
 			color: var(--text-secondary);
 		}
 	}
@@ -695,5 +768,46 @@
 		width: 20px;
 		margin: 9px 10px 11px 2px;
 		color: var(--info-color);
+	}
+}
+
+.event-expandable-card {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	width: 100%;
+	justify-content: stretch;
+	overflow: hidden;
+
+	&.empty {
+		border-radius: 8px;
+	}
+
+	&__header {
+		width: 100%;
+		& > div {
+			border-radius: 8px 8px 0px 0px;
+		}
+	}
+
+	&__footer {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	&__body {
+		background-color: var(--background-secondary);
+		border-radius: 0px 0px 8px 8px;
+		padding: 8px 12px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	& button {
+		background-color: var(--background-primary);
+		border-radius: 20px;
+		border: none;
+		height: 28px;
 	}
 }

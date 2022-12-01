@@ -46,7 +46,7 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 		return (
 			<>
 				<EmbeddedEventHeader event={event} />
-				<EventBodyCard key={eventId} body={event.body} event={event} />
+				<EventBodyCard key={eventId} event={event} />
 			</>
 		);
 	}

@@ -51,4 +51,4 @@ export interface EventAction extends EventBase {
 	type: ActionType.EVENT_ACTION;
 }
 
-export type EventActionBody = EventBodyPayload[];
+export type EventActionBody = EventBodyPayload | EventBodyPayload[];

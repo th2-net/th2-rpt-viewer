@@ -16,6 +16,7 @@
 
 import { MessageIcon } from 'components/icons/MessageIcon';
 import { StatusIcon } from 'components/icons/StatusIcon';
+import { EventStatus } from 'modules/events/models/Status';
 import { ToggleButtonGroup, ToggleButton } from 'components/buttons/ToggleButton';
 import { BookmarkType } from '../models/Bookmarks';
 
@@ -32,21 +33,19 @@ const BookmarkTypeSwitcher = ({ value, setValue }: Props) => {
 	};
 
 	return (
-		<div className='bookmark-panel-header__row'>
-			<ToggleButtonGroup value={selectedType} onChange={setType}>
-				<ToggleButton style={{ padding: '8px 24px' }} value='All'>
-					All
-				</ToggleButton>
-				<ToggleButton value='event'>
-					<StatusIcon />
-					Events
-				</ToggleButton>
-				<ToggleButton value='message'>
-					<MessageIcon />
-					Messages
-				</ToggleButton>
-			</ToggleButtonGroup>
-		</div>
+		<ToggleButtonGroup value={selectedType} onChange={setType}>
+			<ToggleButton style={{ padding: '8px 24px' }} value='All'>
+				All
+			</ToggleButton>
+			<ToggleButton value='event'>
+				<StatusIcon status={EventStatus.PASSED} />
+				Events
+			</ToggleButton>
+			<ToggleButton value='message'>
+				<MessageIcon />
+				Messages
+			</ToggleButton>
+		</ToggleButtonGroup>
 	);
 };
 

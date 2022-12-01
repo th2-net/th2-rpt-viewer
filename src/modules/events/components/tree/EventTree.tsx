@@ -127,7 +127,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					childrenCount={childrenCount}
 					event={eventTreeNode}
 					displayType={CardDisplayType.MINIMAL}
-					onSelect={eventsStore.selectNode}
+					onClick={eventsStore.selectNode}
 					onEventTypeSelect={onEventTypeSelect}
 					isSelected={isSelected}
 					isActive={

@@ -15,12 +15,13 @@
  ******************************************************************************/
 
 :root {
+	--info-color: #4e8aff;
+
 	// text
 	--text-primary: #3a3a3a;
 	--text-secondary: #585858;
-	--text-input: #898989;
 	--text-info: #4e8aff;
-	--text-warning: #FFB84E;
+	--text-warning: #ffb84e;
 
 	// events
 	--events-primary: #f26c0d;
@@ -42,10 +43,20 @@
 	--panel-title: #fff;
 	--tab-background: #4e8aff;
 
+	// input
+	--text-input: #3a3a3a;
+	--input-border: #fbfbfb;
+	--input-background: #fbfbfb;
+	--input-placeholder: #898989;
+
+	// tables
+	--table-passed-row: rgba(157, 255, 148, 0.32);
+	--table-failed-row: #ffdddd;
+	--table-status-passed: var(--events-passed);
+	--table-status-failed: var(--events-failed);
+
 	// rest
-	--info-color: #4e8aff;
-	--timestamp-color: #4e8aff;
-	--arrow-background: #ffffff;
+	--counter-border: #e0e0e0;
 
 	--background-primary: #ffffff;
 	--background-secondary: #fbfbfb;
@@ -57,15 +68,10 @@
 	--text-background: #f8f8f8;
 	--workspace-background: #fbfbfb;
 
-	--input-border: #fbfbfb;
+	--app-background: #bdccdb;
+	--app-header-background: #3d668f;
 
-	--counter-border: #e0e0e0;
-
-	// tables
-	--table-passed-row: rgba(157, 255, 148, 0.32);
-	--table-failed-row: #ffdddd;
-	--table-status-passed: var(--events-passed);
-	--table-status-failed: var(--events-failed);
+	--progress-bar-background: #d0d0d0;
 }
 
 html[data-theme='dark'] {
@@ -82,16 +88,18 @@ html[data-theme='dark'] {
 	--session-text-color: #2d3036;
 
 	// search
-
+	--search-primary: #0df292;
 	// bookmarks
 
 	// workspace
 	--panel-title: #2d3036;
 
-	// rest
-	--timestamp-color: #c6daff;
-	--arrow-background: #4f5156;
+	// input
+	--input-background: #383b41;
+	--text-input: #e0e0e0;
+	--input-border: #4f5156;
 
+	// rest
 	--surface-background: #22262c;
 	--text-background: #383b41;
 
@@ -102,8 +110,11 @@ html[data-theme='dark'] {
 
 	--panel-background: #22262c;
 	--workspace-background: #4f5156;
-	
-	--input-border: #4f5156;
+
 	--counter-border: #22262c;
 
+	--app-background: #33383d;
+	--app-header-background: #18191b;
+
+	--progress-bar-background: #7a7c80;
 }

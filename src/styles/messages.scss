@@ -90,6 +90,8 @@
 }
 
 .mc-header {
+	background-color: var(--background-primary);
+
 	&__icons,
 	&__timestamp {
 		flex-shrink: 0;
@@ -172,40 +174,71 @@
 		justify-content: flex-end;
 		flex-shrink: 0;
 		gap: 8px;
-	}
 
-	&__button {
-		cursor: pointer;
-		align-items: center;
-		background: var(--surface-background);
-		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
-		padding: 4px;
-		border-radius: 20px;
-		width: 24px;
-		height: 24px;
-		font-size: 12px;
-		transition: all 0.2s;
-		position: relative;
-
-		&::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			display: none;
-			background-color: var(--info-color);
-			opacity: 0.15;
-		}
-
-		&.expanded {
-			color: var(--info-color);
-			transform: rotate(180deg);
+		.icon-button {
+			cursor: pointer;
+			align-items: center;
+			background: var(--surface-background);
+			box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+			padding: 4px;
+			border-radius: 20px;
+			width: 24px;
+			height: 24px;
+			font-size: 12px;
+			transition: all 0.2s;
+			position: relative;
 
 			&::before {
-				display: block;
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				display: none;
+				background-color: var(--info-color);
+				opacity: 0.15;
 			}
+
+			&.expanded {
+				color: var(--info-color);
+				transform: rotate(180deg);
+
+				&::before {
+					display: block;
+				}
+			}
+		}
+	}
+
+	&__id {
+		&.clickable {
+			cursor: pointer;
+
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+	}
+}
+
+.message-card-expand-button-wrapper {
+	cursor: pointer;
+	align-items: center;
+	background: #fbfbfb;
+	box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+	padding: 4px;
+	border-radius: 20px;
+
+	&.expanded {
+		background-color: #e3ecff;
+	}
+
+	&__expand-button {
+		@include icon(url(../../resources/icons/message-expand-button-off.svg), 15px, 15px);
+		&.expanded {
+			@include icon(url(../../resources/icons/message-expand-button-on.svg), 15px, 15px);
+			background-color: #e3ecff;
 		}
 	}
 }
@@ -230,6 +263,12 @@
 		top: 8px;
 		right: 8px;
 		color: var(--info-color);
+	}
+
+	&__close-button {
+		&.icon-button {
+			position: absolute;
+		}
 	}
 
 	&__button.active &__ellipsis {
@@ -694,7 +733,7 @@
 		color: #d0d0d0;
 
 		& span:first-child {
-			color: #4e8aff;
+			color: var(--info-color);
 		}
 	}
 }
@@ -716,14 +755,18 @@
 		padding: 0px 10px;
 		gap: 10px;
 		height: 24px;
-		background: #ffffff;
-		border: 1px solid #aac7ff;
+		background: var(--background-primary);
+		border: 1px solid var(--info-color);
 		border-radius: 8px;
 		font-weight: 500;
 		font-size: 12px;
 		line-height: 24px;
 		text-align: center;
 		color: inherit;
+
+		@include dark {
+			border: none
+		}
 	}
 
 	&__tools-list {

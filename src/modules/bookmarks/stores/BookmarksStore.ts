@@ -19,7 +19,7 @@ import { nanoid } from 'nanoid';
 import moment from 'moment';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
 import notificationsStore from 'stores/NotificationsStore';
-import { EventTreeNode } from 'models/EventAction';
+import { EventAction } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
 import { IBookmarksStore } from 'models/Stores';
 import { getItemId, getItemName } from 'helpers/event';
@@ -88,11 +88,12 @@ export class BookmarksStore implements IBookmarksStore {
 	};
 
 	@action
-	public toggleEventPin = async (event: EventTreeNode) => {
+	public toggleEventPin = async (event: EventAction) => {
 		const bookmark = this.events.find(eventBookmark => eventBookmark.id === event.eventId);
 		if (bookmark) {
 			this.removeBookmark(bookmark);
 		} else if (!this.isBookmarksFull) {
+			// TODO: fix event bookmark type
 			const eventBookmark = this.createBookmark(event);
 			this.events = this.events.concat(eventBookmark);
 			this.saveBookmark(eventBookmark);
@@ -151,7 +152,7 @@ export class BookmarksStore implements IBookmarksStore {
 		}
 	};
 
-	private createBookmark = <T extends EventMessage | EventTreeNode>(item: T): Bookmark<T> => ({
+	private createBookmark = <T extends EventMessage | EventAction>(item: T): Bookmark<T> => ({
 		id: getItemId(item),
 		timestamp: moment.utc().valueOf(),
 		item: toJS(item),

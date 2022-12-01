@@ -29,9 +29,9 @@ import 'styles/messages.scss';
 interface MessageCardProps {
 	message: EventMessage;
 	displayType?: CardDisplayType;
-	addMessageToExport?: (msg: EventMessage) => void;
-	isExport?: boolean;
-	isExported?: boolean;
+	showCheckbox?: boolean;
+	checked?: boolean;
+	onSelect?: (msg: EventMessage) => void;
 	isAttached?: boolean;
 	isHighlighted?: boolean;
 	isBookmarked?: boolean;
@@ -42,6 +42,7 @@ interface MessageCardProps {
 	setIsExpanded?: (isExpanded: boolean) => void;
 	viewTypesMap: Map<string, MessageViewType>;
 	setViewType: (id: string, vt: MessageViewType) => void;
+	onIdClick?: (msg: EventMessage) => void;
 }
 
 const MessageCard = (props: MessageCardProps) => {
@@ -55,6 +56,7 @@ const MessageCard = (props: MessageCardProps) => {
 		sortOrderItems = [],
 		viewTypesMap,
 		setViewType,
+		onSelect,
 	} = props;
 
 	const [expanded, setIsExpanded] = useState(isExpandedProp || false);
@@ -91,13 +93,14 @@ const MessageCard = (props: MessageCardProps) => {
 							attached: isAttached,
 						})}
 					/>
-					<div>
+					<div style={{ width: '100%' }}>
 						<MessageCardHeader
 							{...props}
 							viewType={viewTypesMap.get(titleMessage.id)}
 							setViewType={setViewType}
 							setIsExpanded={updateIsExpanded}
 							displayType={displayType}
+							onSelect={onSelect}
 						/>
 						<MessageBodyComponent
 							onlyRawData={onlyRawData}

@@ -25,7 +25,7 @@ import { Chip } from 'components/Chip';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { AttachedMessagesIcon } from 'components/icons/AttachedMessagesIcon';
 import { MessageIcon } from 'components/icons/MessageIcon';
-import { MessageExpandIcon } from 'components/icons/MessageExpandIcon';
+import { ExpandIcon } from 'components/icons/ExpandIcon';
 import { getSubsequence } from '../../../helpers/message';
 import MessageCardTools, { MessageCardToolsProps } from '../menu/MessageCardTools';
 import { Session } from './Session';
@@ -37,14 +37,14 @@ export interface MessageInfoProps {
 	isBookmarked?: boolean;
 	toggleMessagePin?: () => void;
 	isAttached?: boolean;
-	isExport?: boolean;
-	isExported?: boolean;
+	showCheckbox?: boolean;
+	checked?: boolean;
 	isExpanded?: boolean;
 	setIsExpanded?: (state: boolean) => void;
-	addMessageToExport?: (message: EventMessage) => void;
 	displayType?: CardDisplayType;
 	isScreenshotMsg?: boolean;
-	onClick?: (message: EventMessage) => void;
+	onSelect?: (message: EventMessage) => void;
+	onIdClick?: (msg: EventMessage) => void;
 }
 
 export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
@@ -52,16 +52,16 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		message,
 		viewType,
 		setViewType,
-		addMessageToExport,
+		onSelect,
 		isBookmarked = false,
 		isAttached,
-		isExport,
-		isExported,
+		showCheckbox,
+		checked,
 		isExpanded,
 		setIsExpanded,
 		displayType = CardDisplayType.FULL,
 		toggleMessagePin,
-		onClick,
+		onIdClick,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
 
@@ -76,15 +76,15 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		}
 	};
 	const handleClick = () => {
-		if (onClick) {
-			onClick(message);
+		if (onIdClick) {
+			onIdClick(message);
 		}
 	};
 
 	return (
-		<div className='mc-header mc-header__info' onClick={handleClick}>
-			{isExport && isExported !== undefined && addMessageToExport && (
-				<Checkbox checked={isExported} onChange={() => addMessageToExport(message)} />
+		<div className='mc-header mc-header__info'>
+			{showCheckbox && checked !== undefined && onSelect && (
+				<Checkbox checked={checked} onChange={() => onSelect(message)} />
 			)}
 			<Chip className='mc-header__icons'>
 				<MessageIcon />
@@ -97,7 +97,14 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				</Chip>
 			)}
 			<Session sessionId={sessionId} direction={direction} />
-			{displayType === CardDisplayType.FULL && <Chip title={message.id}>{message.id}</Chip>}
+			{displayType === CardDisplayType.FULL && (
+				<Chip
+					onClick={onIdClick ? handleClick : undefined}
+					title={message.id}
+					className={clsx('mc-header__id', { clickable: Boolean(onIdClick) })}>
+					{message.id}
+				</Chip>
+			)}
 
 			{typeof subsequence === 'number' &&
 				displayType === CardDisplayType.FULL &&
@@ -121,7 +128,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 					<IconButton
 						className={clsx('mc-header__button', { expanded: isExpanded })}
 						onClick={changeExpandState}>
-						<MessageExpandIcon />
+						<ExpandIcon />
 					</IconButton>
 				)}
 			</div>

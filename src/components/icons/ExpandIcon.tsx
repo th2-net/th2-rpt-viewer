@@ -1,6 +1,6 @@
 import { Icon, IconProps } from './Icon';
 
-export const MessageExpandIcon = (props: IconProps) => (
+export const ExpandIcon = (props: IconProps) => (
 	<Icon {...props}>
 		<svg width='15' height='15' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'>
 			<path

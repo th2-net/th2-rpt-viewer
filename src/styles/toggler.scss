@@ -35,6 +35,7 @@
 		height: 24px;
 		position: relative;
 		border-radius: 4px;
+		color: var(--text-input);
 
 		& > span {
 			position: relative;
@@ -42,10 +43,9 @@
 		}
 
 		&.active {
-			& svg,
-			path,
-			rect {
-				fill: var(--text-info);
+			& span,
+			~p {
+				color: var(--info-color);
 			}
 
 			&::before {
@@ -55,7 +55,7 @@
 				left: 0;
 				bottom: 0;
 				right: 0;
-				background-color: var(--text-info);
+				background-color: var(--info-color);
 				opacity: 0.2;
 			}
 		}

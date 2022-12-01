@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { StatusIcon } from 'components/icons/StatusIcon';
 import { getEventStatus } from 'helpers/event';
 import { createBemElement } from 'helpers/styleCreators';
 import { EventTreeNode } from 'models/EventAction';
@@ -40,7 +41,11 @@ export default function EventBreadcrumbsItem(props: Props) {
 
 	return (
 		<div className={itemClassName}>
-			{eventNode === 'root' && <i className='event-breadcrumbs__item-icon' />}
+			{eventNode === 'root' ? (
+				<i className='event-breadcrumbs__item-icon' />
+			) : (
+				<StatusIcon status={eventNode.isUnknown ? undefined : getEventStatus(eventNode)} />
+			)}
 			<div className='event-breadcrumbs__item-title' onClick={onSelect} title={title}>
 				{title}
 			</div>

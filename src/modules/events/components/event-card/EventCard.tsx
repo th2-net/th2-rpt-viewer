@@ -46,7 +46,7 @@ function EventCard(props: Props) {
 		showNotification('Copied to clipboard');
 	};
 
-	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;
+	const { startTimestamp, endTimestamp, eventType, eventName, eventId } = event;
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
 
@@ -79,7 +79,7 @@ function EventCard(props: Props) {
 					</div>
 				</div>
 			</div>
-			<EventBodyCard body={body} event={event} />
+			<EventBodyCard event={event} />
 		</div>
 	);
 }

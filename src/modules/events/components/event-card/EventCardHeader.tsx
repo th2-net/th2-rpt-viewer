@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import clsx from 'clsx';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { formatTime } from 'helpers/date';
@@ -25,6 +26,7 @@ import { Chip } from 'components/Chip';
 import { StatusIcon } from 'components/icons/StatusIcon';
 import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { Paper } from 'components/Paper';
+import Checkbox from 'components/util/Checkbox';
 import { getElapsedTime } from '../../helpers/date';
 import SearchableContent from '../search/SearchableContent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -34,7 +36,7 @@ import CardDisplayType from '../../models/CardDisplayType';
 interface EventCardHeaderBaseProps {
 	displayType?: CardDisplayType;
 	event: EventTreeNode;
-	onSelect?: (eventNode: EventTreeNode) => void;
+	onClick?: (eventNode: EventTreeNode) => void;
 	onEventTypeSelect?: (eventType: string) => void;
 	isSelected?: boolean;
 	isActive?: boolean;
@@ -47,13 +49,17 @@ interface EventCardHeaderBaseProps {
 	toggleEventPin?: (event: EventTreeNode) => void;
 	onFilterByParentEvent?: (event: EventTreeNode) => void;
 	hasChildrenToLoad?: boolean;
+	showCheckbox?: boolean;
+	onSelect?: React.ChangeEventHandler<HTMLInputElement>;
+	checked?: boolean;
+	onNameClick?: (eventNode: EventTreeNode) => void;
 }
 
-function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
+export function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 	const {
 		displayType = CardDisplayType.MINIMAL,
 		event,
-		onSelect,
+		onClick,
 		onEventTypeSelect,
 		isSelected = false,
 		isActive = false,
@@ -64,6 +70,10 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		isBookmarked = false,
 		// toggleEventPin,
 		hasChildrenToLoad = false,
+		showCheckbox = true,
+		onSelect,
+		checked = false,
+		onNameClick,
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
 
@@ -78,7 +88,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		displayType,
 		isSelected ? 'selected' : null,
 		isActive ? 'active' : null,
-		onSelect ? null : 'not-selectable',
+		onClick ? null : 'not-selectable',
 		disabled ? 'disabled' : null,
 	);
 
@@ -92,9 +102,15 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 	// 	if (onFilterByParentEvent) onFilterByParentEvent(event);
 	// }
 
-	function onRootClick() {
-		if (!disabled && onSelect) {
-			onSelect(event);
+	function handleRootClick() {
+		if (!disabled && onClick) {
+			onClick(event);
+		}
+	}
+
+	function handleNameClick() {
+		if (!disabled && onNameClick) {
+			onNameClick(event);
 		}
 	}
 
@@ -112,7 +128,8 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		: '';
 
 	return (
-		<Paper className={rootClassName} onClick={onRootClick}>
+		<Paper className={rootClassName} onClick={handleRootClick}>
+			{showCheckbox && onSelect && <Checkbox checked={checked} onChange={onSelect} />}
 			<Chip className='event-header-card__icons'>
 				<StatusIcon status={status} />
 				{/* <div className='search-by-parent' onClick={onFilterClick} /> */}
@@ -120,13 +137,16 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 			</Chip>
 			{displayType !== CardDisplayType.STATUS_ONLY && (
 				<>
-					<div className='event-header-card__title' title={eventName}>
+					<div
+						className={clsx('event-header-card__title', { clickable: Boolean(onNameClick) })}
+						title={eventName}
+						onClick={handleNameClick}>
 						<SearchableContent content={eventName} eventId={eventId} />
 					</div>
 					{eventType && <Chip onClick={handleTypeClick}>{eventType}</Chip>}
 				</>
 			)}
-			{counter && <Counter>{counter}</Counter>}
+			{counter > 0 && <Counter>{counter}</Counter>}
 			<div className='event-header-card__details'>
 				{displayType !== CardDisplayType.STATUS_ONLY && (
 					<>
@@ -190,13 +210,13 @@ const UnknownEventCardHeader = (props: UnknownEventCardHeaderProps) => {
 		: '';
 
 	return (
-		<div className={rootClassName}>
+		<Paper className={rootClassName}>
 			<div className={iconClassName} />
 			<div className='event-header-card__title' title={event.eventName}>
 				<SearchableContent content={event.eventName} eventId={event.eventId} />
 			</div>
 			<Counter>{counter}</Counter>
-		</div>
+		</Paper>
 	);
 };
 
@@ -225,7 +245,6 @@ const EventCardHeader = (props: EventCardHeaderBaseProps) => {
 			onFilterByParentEvent={workspaceStore.onFilterByParentEvent}
 			isBookmarked={isBookmarked}
 			hasChildrenToLoad={hasChildrenToLoad}
-			toggleEventPin={bookmarksStore.toggleEventPin}
 			{...props}
 		/>
 	);

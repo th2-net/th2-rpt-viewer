@@ -138,28 +138,28 @@
 	}
 }
 
-.header {
-	position: relative;
-	height: 100%;
-	width: 100%;
-	background-color: $headerBackground;
-}
-
-.th2-logo {
-	@include icon(url(../../resources/icons/th2-icon.svg), 22px, 60px);
-	display: inline-block;
+.icon.th2-icon {
 	position: absolute;
 	left: 14px;
 	top: 4px;
 	z-index: 5;
+	height: auto;
+	font-size: 64px;
 }
 
 .theme-toggler {
 	position: absolute;
-	top: 6px;
+	top: 4px;
 	right: 10px;
+
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 80px;
+	color: #fff;
+
 	&__label {
-		background-color: #111;
+		background-color: #404040;
 		border-radius: 50px;
 		cursor: pointer;
 		display: flex;

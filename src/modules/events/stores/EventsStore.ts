@@ -27,7 +27,6 @@ import EventsSearchStore from './EventsSearchStore';
 import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../../helpers/event';
 import WorkspaceStore from '../../../stores/workspace/WorkspaceStore';
 import { getRangeFromTimestamp, timestampToNumber } from '../../../helpers/date';
-import { calculateTimeRange } from '../helpers/calculateTimeRange';
 import { TimeRange } from '../../../models/Timestamp';
 import EventsDataStore from './EventsDataStore';
 
@@ -242,7 +241,7 @@ export default class EventsStore implements IEventsStore {
 		this.selectedNode = null;
 		this.workspaceStore.viewStore.activePanel = Panel.Events;
 
-		const timeRange = calculateTimeRange(
+		const timeRange = getRangeFromTimestamp(
 			timestampToNumber(savedEventNode.startTimestamp),
 			this.filterStore.interval,
 		);
@@ -333,14 +332,17 @@ export default class EventsStore implements IEventsStore {
 
 	private onIntervalChange = (interval: number) => {
 		const intervalMs = interval * 60 * 1000;
-		let timestampFrom = this.filterStore.timestamp.valueOf() - intervalMs / 2;
-		let timestampTo = this.filterStore.timestamp.valueOf() + intervalMs / 2;
+		let [startTimestamp, endTimestamp] = getRangeFromTimestamp(
+			this.filterStore.rangeCenter,
+			interval,
+		);
+
 		const now = moment.utc().valueOf();
-		if (timestampTo > now) {
-			timestampTo = now;
-			timestampFrom = timestampTo - intervalMs;
+		if (endTimestamp > now) {
+			endTimestamp = now;
+			startTimestamp = endTimestamp - intervalMs;
 		}
-		const timeRange: TimeRange = [timestampFrom, timestampTo];
+		const timeRange: TimeRange = [startTimestamp, endTimestamp];
 		this.eventDataStore.fetchEventTree({
 			filter: this.filterStore.filter,
 			timeRange,
