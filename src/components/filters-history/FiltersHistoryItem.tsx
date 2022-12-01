@@ -57,6 +57,7 @@ const FiltersHistoryItem = (props: Props) => {
 
 	const pinButtonRef = React.useRef<HTMLButtonElement>(null);
 	const shareButtonRef = React.useRef<HTMLButtonElement>(null);
+	const deleteButtonRef = React.useRef<HTMLButtonElement>(null);
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -191,7 +192,7 @@ const FiltersHistoryItem = (props: Props) => {
 					<button
 						className='filter-history-item__filter-delete-icon'
 						onClick={onDeleteClick}
-						ref={shareButtonRef}
+						ref={deleteButtonRef}
 						title='Delete from history'>
 						<DeleteIcon className='delete-icon' />
 					</button>

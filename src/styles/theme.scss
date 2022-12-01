@@ -50,6 +50,8 @@
 	--background-primary: #ffffff;
 	--background-secondary: #fbfbfb;
 
+	--background-primary-darker: hsl(0, 0%, 90%);
+
 	--surface-background: #fbfbfb;
 	--panel-background: #f1f1f1;
 	--text-background: #f8f8f8;
@@ -95,6 +97,8 @@ html[data-theme='dark'] {
 
 	--background-primary: #2d3036;
 	--background-secondary: #383b41;
+
+	--background-primary-darker: hsl(220, 9%, 17%);
 
 	--panel-background: #22262c;
 	--workspace-background: #4f5156;

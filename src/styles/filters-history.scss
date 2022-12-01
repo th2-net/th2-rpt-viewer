@@ -21,6 +21,7 @@
 	width: 40px;
 	height: 40px;
 	border: none;
+	border-radius: 12px;
 
 	display: flex;
 	justify-content: flex-start;
@@ -39,7 +40,6 @@
 		width: 39px;
 		height: 40px;
 
-		padding-left: 1px;
 		color: var(--text-info);
 	}
 }
@@ -67,9 +67,9 @@
 	padding: 7px;
 	position: relative;
 	transition: background-color 0.15s;	
-	// &.active {
-	// 	background-color: darken($color: #fff, $amount: 10);
-	// }
+	&.active {
+		background-color: var(--background-primary-darker);
+	}
 	&__title {
 		text-decoration: underline;
 		display: flex;
@@ -135,11 +135,19 @@
 		&:hover {
 			background-color: rgba(0, 0, 0, 0.1);
 		}
+
+		&:active {
+			background-color: rgba(0, 0, 0, 0.3);
+		}
 	}
 	&__filter-pin-icon {
 		margin-bottom: 1px;
 		padding-left: 3px;
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.05);
+		}
 		.pin-icon {
+			color: var(--text-secondary);
 			width: 14px;
 			height: 14px;
 			transition: transform 0.15s;
