@@ -26,8 +26,7 @@
 	display: flex;
 	justify-content: flex-start;
 	align-items: center;
-	padding-top: 10px;
-	margin-right: -5px; 
+	padding-top: 12px;
 
 	background-color: var(--background-primary);
 
@@ -78,7 +77,7 @@
 	}
 
 	&__controls {
-		margin-right: -5px;
+		margin-right: -8px;
 		display: flex;
 		align-items: center;
 	}
@@ -117,8 +116,8 @@
 		@include icon(url(../../resources/icons/include.svg), 16px, 16px);
 	}
 
-	&__filter-delete-icon,
-	&__filter-share-icon,
+	&__delete-icon,
+	&__share-icon,
 	&__filter-pin-icon {
 		display: flex;
 		justify-content: center;
@@ -141,36 +140,26 @@
 		}
 	}
 	&__filter-pin-icon {
-		margin-bottom: 1px;
 		padding-left: 3px;
+		transition: transform 0.15s;
+
 		&:hover {
 			background-color: rgba(0, 0, 0, 0.05);
 		}
-		.pin-icon {
-			color: var(--text-secondary);
-			width: 14px;
-			height: 14px;
-			transition: transform 0.15s;
-		}
 		&.pinned {
 			background-color: rgba(0, 0, 0, 0.1);
-			.pin-icon {
-				transform: rotate(-45deg);
-			}
+			transform: rotate(-45deg);
 		}
 	}
-	&__filter-share-icon {
+	&__share-icon {
 		color: var(--text-secondary);
 		opacity: 0.5;
 	}
 
 	
-	&__filter-delete-icon {
-		padding-right: 3px;
-		padding-bottom: 1px;
-		margin-bottom: 3px;
-		margin-right: 5px;
-		margin-left: -1px;
+	&__delete-icon {
+		padding-right: 4px;
+		margin: 0 4px 4px 0;
 		color: var(--text-secondary);
 		opacity: 0.5;
 	}

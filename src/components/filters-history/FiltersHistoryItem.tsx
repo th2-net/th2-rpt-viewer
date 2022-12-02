@@ -180,21 +180,21 @@ const FiltersHistoryItem = (props: Props) => {
 						onClick={onFilterPin}
 						ref={pinButtonRef}
 						title={item.isPinned ? 'Unpin filter' : 'Pin filter'}>
-						<PinIcon className='pin-icon' />
+						<PinIcon />
 					</button>
 					<button
-						className='filter-history-item__filter-share-icon'
+						className='filter-history-item__share-icon'
 						onClick={onShareClick}
 						ref={shareButtonRef}
 						title='Share filters'>
-						<ShareIcon className='share-icon' />
+						<ShareIcon />
 					</button>
 					<button
-						className='filter-history-item__filter-delete-icon'
+						className='filter-history-item__delete-icon'
 						onClick={onDeleteClick}
 						ref={deleteButtonRef}
 						title='Delete from history'>
-						<DeleteIcon className='delete-icon' />
+						<DeleteIcon />
 					</button>
 				</div>
 			</div>
