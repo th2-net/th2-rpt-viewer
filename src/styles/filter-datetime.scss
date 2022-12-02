@@ -100,32 +100,99 @@
 	&-header {
 		display: flex;
 		border: none !important;
+		padding: 0 20px;
 	}
 
 	&-body {
 		padding-top: 0 !important;
 		height: auto !important;
-		font-size: 11px;
+		font-size: 20px !important;
 	}
 
-	&-date {
-		width: 16px !important;
-		height: 16px !important;
-		line-height: 16px !important;
+	&-date:hover {
+		background: #d5e3ff;
+	}
+
+	&-date,
+	&-year-panel-year,
+	&-month-panel-month {
+		width: auto;
+		height: auto;
+		padding: 16px;
+		margin: 4px;
+		font-size: 20px !important;
+		color: #3a3a3a !important;
+		border-radius: 32px !important;
+	}
+
+	&-year-panel-header,
+	&-month-panel-header {
+		font-size: 20px;
+		font-weight: 600 !important;
+		color: #3a3a3a !important;
+		border-bottom: 1px solid #d9d9d9;
+	}
+
+	&-month-panel-year-select-content,
+	&-year-panel-decade-select {
+		&:hover {
+			color: #4e8aff;
+		}
+	}
+
+	&-month-panel-cell .rc-calendar-month-panel-month:hover,
+	&-year-panel-cell .rc-calendar-year-panel-year:hover {
+		background-color: white;
+		&:hover {
+			color: #4e8aff !important;
+		}
+	}
+
+	&-month-panel-selected-cell .rc-calendar-month-panel-month,
+	&-year-panel-selected-cell .rc-calendar-year-panel-year {
+		color: #4e8aff !important;
+		background-color: white;
+
+		&:hover {
+			background-color: white;
+		}
+	}
+
+	&-month-panel-header > a:hover,
+	&-year-panel-header > a:hover {
+		color: #4e8aff;
+	}
+
+	&-today .rc-calendar-date {
+		color: #4e8aff !important;
+		border: none;
+	}
+
+	&-selected-date .rc-calendar-date,
+	&-selected-day .rc-calendar-date {
+		color: #4e8aff !important;
+		background: #d5e3ff !important;
+
+		&:hover {
+			background: #d5e3ff !important;
+		}
 	}
 
 	&-disabled-cell > .rc-calendar-date {
 		width: auto !important;
 	}
 
-	&-column-header {
-		color: #999;
+	&-column-header .rc-calendar-column-header-inner {
+		color: #5c5757;
+		font-weight: 550 !important;
 	}
 
 	&-month-select,
 	&-year-select {
-		font-weight: 400 !important;
-		color: #000 !important;
+		font-size: 20px;
+		padding: 0 12px 0 8px;
+		font-weight: 600 !important;
+		color: #3a3a3a !important;
 	}
 
 	&-prev-month-btn,

@@ -30,7 +30,6 @@ const FilterTimepicker = (props: FilterTimepickerProps) => {
 
 	const selectedHour = time ? currentTime.hour() : null;
 	const selectedMinute = time ? currentTime.minute() : null;
-	const selectedSecond = time ? currentTime.second() : null;
 
 	const today = moment().utc();
 	const isToday = currentTime.isSame(today, 'day');
@@ -43,7 +42,6 @@ const FilterTimepicker = (props: FilterTimepickerProps) => {
 
 	const setHour = setTime.bind(null, 'hour');
 	const setMinutes = setTime.bind(null, 'minutes');
-	const setSeconds = setTime.bind(null, 'seconds');
 
 	const getBlockedMinutes = React.useCallback(
 		(minute: number) => {
@@ -52,17 +50,6 @@ const FilterTimepicker = (props: FilterTimepickerProps) => {
 			const isBlocked = isToday && isCurrentHour ? minute > currentDay.minutes() : false;
 
 			return isBlocked;
-		},
-		[time],
-	);
-
-	const getBlockedSeconds = React.useCallback(
-		(second: number) => {
-			const currentDay = moment().utc();
-			const isCurrentHour = moment(time).utc().hour() === currentDay.hour();
-			const isCurrentMinute = moment(time).utc().minutes() === currentDay.minutes();
-
-			return isToday && isCurrentHour && isCurrentMinute ? second > currentDay.seconds() : false;
 		},
 		[time],
 	);
@@ -78,19 +65,23 @@ const FilterTimepicker = (props: FilterTimepickerProps) => {
 				unit='hour'
 				selectedUnit={selectedHour}
 				getIsBlocked={getBlockedHours}
-				onUnitClick={setHour}
+				onUnitChange={setHour}
 			/>
+			<div
+				style={{
+					color: '#4E8AFF',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					fontSize: '46px',
+				}}>
+				<span style={{ height: '70px' }}>:</span>
+			</div>
 			<TimeUnitList
 				unit='minutes'
 				selectedUnit={selectedMinute}
 				getIsBlocked={getBlockedMinutes}
-				onUnitClick={setMinutes}
-			/>
-			<TimeUnitList
-				unit='seconds'
-				selectedUnit={selectedSecond}
-				getIsBlocked={getBlockedSeconds}
-				onUnitClick={setSeconds}
+				onUnitChange={setMinutes}
 			/>
 		</div>
 	);

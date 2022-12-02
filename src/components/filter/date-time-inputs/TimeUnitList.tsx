@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React, { RefObject } from 'react';
-import { createBemElement } from '../../../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 
 const timeUnitsValues = Object.freeze({
 	hour: [...Array(24).keys()],
@@ -24,14 +24,14 @@ const timeUnitsValues = Object.freeze({
 });
 
 interface TimeUnitListProps {
-	onUnitClick: (unit: number) => void;
+	onUnitChange: (unit: number) => void;
 	unit: 'hour' | 'minutes' | 'seconds';
 	selectedUnit: number | null;
 	getIsBlocked: (unitValue: number) => boolean;
 }
 
 const TimeUnitList = (props: TimeUnitListProps) => {
-	const { onUnitClick, selectedUnit, getIsBlocked, unit } = props;
+	const { onUnitChange, selectedUnit, getIsBlocked, unit } = props;
 
 	const [unitList, setUnitList] = React.useState(
 		timeUnitsValues[unit].map(timeUnit => ({
@@ -40,12 +40,51 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 		})),
 	);
 
+	const [isScrolling, setIsScrolling] = React.useState(false);
+
+	const scrollerRef = React.useRef<HTMLUListElement>(null);
+
 	const unitRefs = React.useRef(
 		timeUnitsValues[unit].reduce<{ [k: number]: RefObject<HTMLLIElement> }>((acc, value) => {
 			acc[value] = React.createRef<HTMLLIElement>();
 			return acc;
 		}, {}),
 	);
+
+	const selectUnit = () => {
+		if (scrollerRef.current) {
+			const parentHeight = scrollerRef.current.clientHeight;
+			const parentOffset = scrollerRef.current.getBoundingClientRect().top;
+
+			unitList.forEach(unitItem => {
+				const boxRect = unitRefs.current[unitItem.value].current?.getBoundingClientRect();
+
+				if (boxRect) {
+					const inViewport =
+						boxRect.top - parentOffset > parentHeight / 2 - boxRect.height &&
+						boxRect.top - parentOffset < parentHeight / 2;
+
+					if (inViewport && !unitItem.isBlocked) {
+						onUnitChange(unitItem.value);
+					}
+				}
+			});
+		}
+	};
+
+	const onScroll = (event: React.UIEvent<HTMLUListElement>) => {
+		event.persist();
+
+		setIsScrolling(true);
+
+		setTimeout(() => {
+			selectUnit();
+		}, 100);
+
+		return setTimeout(() => {
+			selectUnit();
+		}, 700);
+	};
 
 	React.useEffect(() => {
 		const interval = setInterval(() => {
@@ -60,7 +99,7 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 	}, [getIsBlocked]);
 
 	React.useEffect(() => {
-		if (selectedUnit !== null && unitRefs.current[selectedUnit].current) {
+		if (!isScrolling && selectedUnit !== null && unitRefs.current[selectedUnit].current) {
 			unitRefs.current[selectedUnit].current?.scrollIntoView({
 				block: 'center',
 			});
@@ -71,24 +110,39 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 				value: timeUnit,
 			})),
 		);
+		setIsScrolling(false);
 	}, [selectedUnit, getIsBlocked]);
 
 	return (
-		<ul className='filter-timepicker__scroll'>
+		<ul className='filter-timepicker__scroll' onWheel={onScroll} ref={scrollerRef}>
+			<li className={'filter-timepicker__scroll-item empty'} />
 			{unitList.map(unitItem => (
-				<li
-					ref={unitRefs.current[unitItem.value]}
-					key={unitItem.value}
-					className={createBemElement(
-						'filter-timepicker',
-						'scroll-item',
-						selectedUnit === unitItem.value ? 'active' : null,
-						unitItem.isBlocked ? 'blocked' : null,
-					)}
-					onClick={!unitItem.isBlocked ? () => onUnitClick(unitItem.value) : undefined}>
-					{unitItem.value}
-				</li>
+				<>
+					<li
+						ref={unitRefs.current[unitItem.value]}
+						key={unitItem.value}
+						className={createBemElement(
+							'filter-timepicker',
+							'scroll-item',
+							selectedUnit !== null &&
+								!unitItem.isBlocked &&
+								(selectedUnit >= unitItem.value + 2 || selectedUnit <= unitItem.value - 2)
+								? 'far'
+								: null,
+							selectedUnit === unitItem.value ? 'active' : null,
+							unitItem.isBlocked ? 'blocked' : null,
+						)}
+						onClick={!unitItem.isBlocked ? () => onUnitChange(unitItem.value) : undefined}>
+						{unitItem.value}
+					</li>
+				</>
 			))}
+			<li
+				className={createStyleSelector(
+					'filter-timepicker__scroll-item empty',
+					unitList[unitList.length - 1].isBlocked ? 'blocked' : null,
+				)}
+			/>
 		</ul>
 	);
 };
