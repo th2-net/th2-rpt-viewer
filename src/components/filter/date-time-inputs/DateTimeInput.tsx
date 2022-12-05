@@ -37,8 +37,6 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 			id,
 			inputClassName = '',
 			dateTimeInputMask,
-			timeInputMask,
-			timestampsInputMask,
 			placeholder,
 			setValue,
 			value,

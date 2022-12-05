@@ -34,11 +34,7 @@ import FiltersHistory from 'components/filters-history/FiltersHistory';
 import { useSessionsHistoryStore } from 'hooks/useSessionsStore';
 import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
 import { Button } from 'components/buttons/Button';
-import {
-	TIME_INPUT_MASK,
-	DATE_TIME_INPUT_MASK,
-	TIMESTAMPS_INPUT_MASK,
-} from '../../../models/util/filterInputs';
+import { DATE_TIME_INPUT_MASK } from '../../../models/util/filterInputs';
 import { SearchPanelFormState } from '../stores/SearchStore';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
