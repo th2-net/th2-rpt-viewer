@@ -18,6 +18,7 @@ import React from 'react';
 import Calendar from 'rc-calendar';
 import moment, { Moment } from 'moment';
 import 'rc-calendar/assets/index.css';
+import 'styles/filter-datetime.scss';
 import { TimeInputType } from '../../../models/filter/FilterInputs';
 import { useOutsideClickListener } from '../../../hooks';
 import FilterTimepicker from './FilterTimePicker';

@@ -51,8 +51,6 @@ export type DateTimeInputType = {
 	timeInputMask?: (string | RegExp)[];
 	timestampsInputMask?: (string | RegExp)[];
 	dateTimeMask: DateTimeMask;
-	dateMask: DateTimeMask;
-	timeMask: DateTimeMask;
 	placeholder: string;
 	inputClassName?: string;
 	labelClassName?: string;

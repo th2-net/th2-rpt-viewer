@@ -115,7 +115,7 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 
 	return (
 		<ul className='filter-timepicker__scroll' onWheel={onScroll} ref={scrollerRef}>
-			<li className={'filter-timepicker__scroll-item empty'} />
+			<li className='filter-timepicker__scroll-item empty' />
 			{unitList.map(unitItem => (
 				<>
 					<li

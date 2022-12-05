@@ -24,18 +24,9 @@ import { replaceUnfilledDateStringWithMinValues } from 'helpers/stringUtils';
 import { useSearchStore } from 'hooks/useSearchStore';
 import { SearchDirection } from 'models/SearchDirection';
 import FilterDatetimePicker from './FilterDatetimePicker';
-import SearchFilterDatetimePicker from './SearchFilterDatetimePicker';
 
 interface DateTimeInputProps {
 	inputConfig: DateTimeInputType;
-	previousTimeLimit?: {
-		value: number | null;
-		setValue: (value: number | null) => void;
-	};
-	nextTimeLimit?: {
-		value: number | null;
-		setValue: (value: number | null) => void;
-	};
 }
 
 const FilterDatetimeInput = (props: DateTimeInputProps) => {
@@ -43,8 +34,6 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 		inputConfig,
 		inputConfig: {
 			dateTimeMask,
-			dateMask,
-			timeMask,
 			id,
 			inputClassName = '',
 			dateTimeInputMask,
@@ -55,13 +44,11 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 			value,
 			disabled,
 		},
-		previousTimeLimit,
-		nextTimeLimit,
 	} = props;
 
 	const inputRef = React.useRef<MaskedInput>(null);
 
-	const { updateForm, isSearching, startSearch, pauseSearch } = useSearchStore();
+	const { updateForm } = useSearchStore();
 
 	const [showPicker, setShowPicker] = React.useState(false);
 	const [inputValue, setInputValue] = React.useState(formatTimestampValue(value, dateTimeMask));
@@ -115,58 +102,22 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 				name={id}
 				value={inputValue}
 			/>
-			{previousTimeLimit && nextTimeLimit
-				? showPicker && (
-						<SearchFilterDatetimePicker
-							setValue={inputConfig.setValue}
-							value={inputConfig.value}
-							isSearching={isSearching}
-							startSearch={startSearch}
-							pauseSearch={pauseSearch}
-							updateForm={updateForm}
-							type={inputConfig.type}
-							inputValue={inputValue}
-							id={inputConfig.id}
-							inputClassName={inputClassName}
-							disabled={disabled}
-							dateTimeMask={dateTimeMask}
-							dateMask={dateMask}
-							timeMask={timeMask}
-							dateTimeInputMask={dateTimeInputMask}
-							timeInputMask={timeInputMask}
-							timestampsInputMask={timestampsInputMask}
-							dateTimePipe={dateTimePipe}
-							previousTimeLimit={previousTimeLimit}
-							nextTimeLimit={nextTimeLimit}
-							inputChangeHandler={inputChangeHandler}
-							placeholder={placeholder}
-							left={inputRef.current?.inputElement.offsetLeft}
-							top={
-								inputRef.current?.inputElement
-									? inputRef.current.inputElement.offsetTop +
-									  inputRef.current.inputElement.clientHeight +
-									  10
-									: undefined
-							}
-							onClose={() => togglePicker(false)}
-						/>
-				  )
-				: showPicker && (
-						<FilterDatetimePicker
-							setValue={inputConfig.setValue}
-							value={inputConfig.value}
-							type={inputConfig.type}
-							left={inputRef.current?.inputElement.offsetLeft}
-							top={
-								inputRef.current?.inputElement
-									? inputRef.current.inputElement.offsetTop +
-									  inputRef.current.inputElement.clientHeight +
-									  10
-									: undefined
-							}
-							onClose={() => togglePicker(false)}
-						/>
-				  )}
+			{showPicker && (
+				<FilterDatetimePicker
+					setValue={inputConfig.setValue}
+					value={inputConfig.value}
+					type={inputConfig.type}
+					left={inputRef.current?.inputElement.offsetLeft}
+					top={
+						inputRef.current?.inputElement
+							? inputRef.current.inputElement.offsetTop +
+							  inputRef.current.inputElement.clientHeight +
+							  10
+							: undefined
+					}
+					onClose={() => togglePicker(false)}
+				/>
+			)}
 		</>
 	);
 };

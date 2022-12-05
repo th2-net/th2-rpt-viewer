@@ -40,7 +40,7 @@
 	color: var(--text-primary);
 	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 	cursor: pointer;
-	
+
 	&.active {
 		background-color: var(--tab-background);
 		color: white;
@@ -169,7 +169,7 @@
 		cursor: col-resize;
 		width: 10px;
 		position: relative;
-		z-index: 1001;
+		z-index: 2;
 
 		&.disabled {
 			cursor: default;

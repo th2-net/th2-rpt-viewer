@@ -173,12 +173,8 @@ const SearchPanelForm = () => {
 			setValue: getFormStateUpdater('startTimestamp'),
 			type: TimeInputType.DATE_TIME,
 			dateTimeMask: DateTimeMask.DATE_TIME_MASK,
-			dateMask: DateTimeMask.DATE_SECONDARY_MASK,
-			timeMask: DateTimeMask.TIME_MASK,
 			placeholder: '',
-			timestampsInputMask: TIMESTAMPS_INPUT_MASK,
 			dateTimeInputMask: DATE_TIME_INPUT_MASK,
-			timeInputMask: TIME_INPUT_MASK,
 		},
 	};
 
