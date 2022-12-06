@@ -51,13 +51,10 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 		}, {}),
 	);
 
-	const isUnitFar = (unitItemValue: number, isBlocked: boolean) => {
-		return (
-			selectedUnit !== null &&
-			isBlocked &&
-			(selectedUnit >= unitItemValue + 2 || selectedUnit <= unitItemValue - 2)
-		);
-	};
+	const isUnitFar = (unitItemValue: number, isBlocked: boolean) =>
+		selectedUnit !== null &&
+		!isBlocked &&
+		(selectedUnit >= unitItemValue + 2 || selectedUnit <= unitItemValue - 2);
 
 	const selectUnit = () => {
 		if (scrollerRef.current) {
