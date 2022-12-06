@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import { Panel } from 'models/Panel';
-import BookmarkCounter from '../../modules/bookmarks/components/BookmarkCounter';
+
 import { createStyleSelector } from '../../helpers/styleCreators';
 
 const MIN_PANEL_WIDTH = 15;
@@ -32,6 +32,7 @@ function minmax(num: number, min: number, max: number) {
 interface PanelProps {
 	title: string;
 	component: React.ReactNode;
+	header: React.ReactNode;
 	isActive: boolean;
 	color: {
 		default: string;
@@ -330,14 +331,7 @@ function WorkspaceSplitter(props: Props) {
 									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
 								}}
 								onClick={() => togglePanel(panel.panel)}>
-								<i
-									className={
-										'pane__header-icon ' +
-										`workspace-split-view__${panel.title.toLowerCase()}-icon-white`
-									}
-								/>
-								<div className='pane__header-title'>{panel.title}</div>
-								{panel.title.toLowerCase() === 'bookmarks' && <BookmarkCounter />}
+								{panel.header}
 							</div>
 							<div className='pane__main'>{panel.component}</div>
 						</div>

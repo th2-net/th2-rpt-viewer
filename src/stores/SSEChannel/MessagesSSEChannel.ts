@@ -73,7 +73,6 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.clearSchedulersAndTimeouts();
 	};
 
-	@action
 	private _onKeepAliveResponse = (event: Event) => {
 		if (this.eventListeners.onKeepAliveResponse) {
 			const keepAlive = JSON.parse((event as MessageEvent).data) as SSEHeartbeat;

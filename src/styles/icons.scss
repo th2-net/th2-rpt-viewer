@@ -28,22 +28,22 @@
 }
 
 .status-icon {
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	background-color: var(--events-passed);
+	font-size: 16px;
 
-	&.failed {
-		background-color: var(--events-failed);
+	color: var(--events-unknown);
+
+	&.passed {
+		color: var(--events-passed);
 	}
 
-	.unknown {
-		background-color: var(--events-unknown);
+	&.failed {
+		color: var(--events-failed);
 	}
 }
 
 .bookmark-icon {
-	& svg, path {
+	& svg,
+	path {
 		transition: none;
 	}
 
@@ -60,9 +60,6 @@
 }
 
 .message-icon {
-	height: 11px;
-	width: 11px;
-	background-color: var(--messages-primary);
-	transform: rotate(45deg);
+	color: var(--messages-primary);
 	border-radius: 2px;
 }

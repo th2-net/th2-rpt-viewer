@@ -24,6 +24,7 @@ import { useEventsStore } from '../hooks/useEventsStore';
 import useEventsDataStore from '../hooks/useEventsDataStore';
 import { EventTreeNode } from '../models/Event';
 import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
+import { EventsIntervalInput } from './EventsIntervalInput';
 
 function EventsPanelHeader() {
 	const eventsStore = useEventsStore();
@@ -63,6 +64,7 @@ function EventsPanelHeader() {
 					Flat view
 				</ButtonBase>
 				<EventListNavigation />
+				<EventsIntervalInput />
 				{eventDataStore.isLoading && (
 					<div className='event-window-header__loader'>
 						Resolving events<span>.</span>

@@ -76,7 +76,7 @@ export function Session(props: Props) {
 			className='mc-header__session'>
 			<div style={sessionBackgroundStyle} />
 			<SessionDirectionIcon
-				style={{ transform: direction.toLowerCase() === 'first' ? 'scale(-1)' : undefined }}
+				style={{ transform: direction.toLowerCase() === 'first' ? 'scale(-1)' : 'scale(1)' }}
 			/>
 			<span className='mc-header__session-id'>{sessionId}</span>
 		</Chip>

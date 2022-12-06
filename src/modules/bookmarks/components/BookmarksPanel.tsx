@@ -130,6 +130,7 @@ function BookmarksPanel(props: BookmarkPanelProps) {
 								checked={filterStore.selectedBookmarks.has(bookmark.id)}
 								onSelect={togglerSelect}
 								onNameClick={onClick}
+								isBookmarked={true}
 							/>
 						</div>
 					)}

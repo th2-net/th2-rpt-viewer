@@ -65,12 +65,13 @@
 			@include surface;
 			height: 40px;
 			border: 1px solid var(--input-border);
+			background-color: var(--input-background);
+			color: var(--text-input);
 			width: 100%;
 			padding: 3px 5px;
 			border-radius: $bubbleBorderRadius;
 			min-height: 30px;
 			font-size: 13px;
-			color: $primaryTextColor;
 			box-sizing: border-box;
 			min-width: 0;
 			outline: none;
@@ -78,17 +79,6 @@
 
 			&:disabled {
 				opacity: 0.5;
-			}
-			&:focus {
-				background-color: #fff;
-
-				&::placeholder {
-					color: $secondaryTextColor;
-				}
-			}
-
-			&.non-empty {
-				background-color: #fff;
 			}
 		}
 	}
@@ -98,7 +88,6 @@
 	display: flex;
 	justify-content: center;
 	padding: 0px 10px;
-	margin-left: 16px;
 	height: 24px;
 
 	background: var(--surface-background);

@@ -160,7 +160,6 @@
 		display: flex;
 		flex-direction: column;
 		border-radius: 6px;
-		box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.25);
 
 		&__header {
 			align-items: center;
@@ -528,39 +527,33 @@
 		flex-grow: 1;
 		padding: 3px 5px;
 		margin: 0 10px;
-		background-color: var(--text-background);
 		border-radius: $bubbleBorderRadius;
 		min-height: 40px;
 		font-size: 13px;
-		color: $primaryTextColor;
 		box-sizing: border-box;
-		// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
 		min-width: 0;
 		border-radius: 4px;
 		border: 1px solid var(--input-border);
+		background-color: var(--input-background);
+		color: var(--text-input);
+		outline: none;
+
 		&:disabled {
 			opacity: 0.5;
 		}
-		&:focus {
-			background-color: #fff;
 
-			&::placeholder {
-				color: $secondaryTextColor;
-			}
+		&:focus {
+			border: 1px solid var(--info-color);
 		}
 
 		&.active {
-			background-color: #fff;
-		}
-
-		&.non-empty {
-			background-color: #fff;
+			border: 1px solid var(--info-color);
 		}
 
 		&.datetime-picker {
 			margin: 0;
 			outline: none;
-			border: 1px solid #4080bf;
+			border: 1px solid var(--info-color);
 			border-radius: 4px;
 			&.time {
 				width: 95px;
@@ -659,7 +652,7 @@
 		background: transparent;
 		border: none;
 		appearance: none;
-		color: $primaryTextColor;
+		color: var(--text-input);
 
 		&::-webkit-calendar-picker-indicator {
 			display: none;

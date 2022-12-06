@@ -17,26 +17,24 @@
 import React from 'react';
 import MaskedInput from 'react-text-mask';
 import moment from 'moment';
-import { DateTimeInputType } from 'models/filter/FilterInputs';
-import { formatTimestampValue } from 'helpers/date';
-import { createStyleSelector } from 'helpers/styleCreators';
-import { replaceUnfilledDateStringWithMinValues } from 'helpers/stringUtils';
-import { useSearchStore } from 'hooks/useSearchStore';
-import { SearchDirection } from 'models/SearchDirection';
 import FilterDatetimePicker from './FilterDatetimePicker';
+import { DateTimeInputType } from '../../../models/filter/FilterInputs';
+import { formatTimestampValue } from '../../../helpers/date';
+import { createStyleSelector } from '../../../helpers/styleCreators';
+import { replaceUnfilledDateStringWithMinValues } from '../../../helpers/stringUtils';
 
 interface DateTimeInputProps {
 	inputConfig: DateTimeInputType;
 }
 
-const FilterDatetimeInput = (props: DateTimeInputProps) => {
+const DatetimeInput = (props: DateTimeInputProps) => {
 	const {
 		inputConfig,
 		inputConfig: {
-			dateTimeMask,
+			dateMask,
 			id,
 			inputClassName = '',
-			dateTimeInputMask,
+			inputMask,
 			placeholder,
 			setValue,
 			value,
@@ -46,13 +44,11 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 
 	const inputRef = React.useRef<MaskedInput>(null);
 
-	const { updateForm } = useSearchStore();
-
 	const [showPicker, setShowPicker] = React.useState(false);
-	const [inputValue, setInputValue] = React.useState(formatTimestampValue(value, dateTimeMask));
+	const [inputValue, setInputValue] = React.useState(formatTimestampValue(value, dateMask));
 
 	React.useEffect(() => {
-		setInputValue(formatTimestampValue(props.inputConfig.value, dateTimeMask));
+		setInputValue(formatTimestampValue(props.inputConfig.value, dateMask));
 	}, [props.inputConfig.value]);
 
 	const togglePicker = (isShown: boolean) => setShowPicker(isShown);
@@ -63,26 +59,29 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 
 		if (updatedValue) {
 			if (!updatedValue.includes('_')) {
-				setValue(moment.utc(updatedValue, dateTimeMask).valueOf());
-				updateForm({ searchDirection: SearchDirection.Both });
+				setValue(moment.utc(updatedValue, dateMask).valueOf());
 			}
 			return;
 		}
 		setValue(null);
 	};
-	const isValidDateTime = (maskedValue: string): boolean =>
-		moment(
-			replaceUnfilledDateStringWithMinValues(maskedValue, dateTimeMask),
-			dateTimeMask,
-		).isValid();
 
-	const dateTimePipe = (maskedValue: string): string | false => {
-		if (isValidDateTime(maskedValue)) {
+	const isValidDate = (maskedValue: string): boolean => {
+		const dateStr = replaceUnfilledDateStringWithMinValues(maskedValue, dateMask);
+		const date = moment(dateStr, dateMask);
+
+		return date.isValid();
+	};
+
+	const validPipe = (maskedValue: string): string | false => {
+		if (isValidDate(maskedValue)) {
 			return maskedValue;
 		}
 		return false;
 	};
+
 	const maskedInputClassName = createStyleSelector(inputClassName, value ? 'non-empty' : null);
+
 	return (
 		<>
 			<MaskedInput
@@ -90,8 +89,8 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 				id={id}
 				className={`filter-row__input ${maskedInputClassName}`}
 				disabled={disabled}
-				mask={dateTimeInputMask}
-				pipe={dateTimePipe}
+				mask={inputMask}
+				pipe={validPipe}
 				onFocus={() => togglePicker(true)}
 				onChange={inputChangeHandler}
 				placeholder={placeholder}
@@ -120,4 +119,4 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 	);
 };
 
-export default FilterDatetimeInput;
+export default DatetimeInput;

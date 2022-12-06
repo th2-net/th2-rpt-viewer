@@ -26,7 +26,6 @@ import '../../../styles/events.scss';
 
 export const EventListNavigation = observer(() => {
 	const eventsStore = useEventsStore();
-	const timestamp = eventsStore.filterStore.timestampFrom;
 
 	const getNextEvents = eventsStore.eventDataStore.findClosestEvent.bind(
 		eventsStore,
@@ -45,7 +44,13 @@ export const EventListNavigation = observer(() => {
 				</Chip>
 				Show previous
 			</ButtonBase>
-			<span className='events-nav__timestamp'>{formatTimestamp(timestamp)}</span>
+			<span
+				className='events-nav__timestamp'
+				title={`${formatTimestamp(eventsStore.filterStore.startTimestamp)} - ${formatTimestamp(
+					eventsStore.filterStore.endTimestamp,
+				)}`}>
+				{formatTimestamp(eventsStore.filterStore.rangeCenter)}
+			</span>
 			<ButtonBase onClick={getNextEvents}>
 				Show next
 				<Chip className='events-nav__nav-circle'>

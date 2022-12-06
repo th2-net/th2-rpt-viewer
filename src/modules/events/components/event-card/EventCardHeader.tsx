@@ -210,13 +210,13 @@ const UnknownEventCardHeader = (props: UnknownEventCardHeaderProps) => {
 		: '';
 
 	return (
-		<div className={rootClassName}>
+		<Paper className={rootClassName}>
 			<div className={iconClassName} />
 			<div className='event-header-card__title' title={event.eventName}>
 				<SearchableContent content={event.eventName} eventId={event.eventId} />
 			</div>
 			<Counter>{counter}</Counter>
-		</div>
+		</Paper>
 	);
 };
 

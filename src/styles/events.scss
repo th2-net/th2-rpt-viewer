@@ -270,6 +270,7 @@
 		display: flex;
 		align-items: center;
 		justify-items: center;
+		font-size: 15px;
 	}
 
 	&__body {
@@ -317,7 +318,7 @@
 				font-size: 12px;
 				transition: all 0.2s;
 				position: relative;
-		
+
 				&::before {
 					content: '';
 					position: absolute;
@@ -329,11 +330,11 @@
 					background-color: var(--info-color);
 					opacity: 0.15;
 				}
-		
+
 				&.expanded {
 					color: var(--info-color);
 					transform: rotate(180deg);
-		
+
 					&::before {
 						display: block;
 					}
@@ -470,9 +471,16 @@
 
 		& input {
 			width: 32px;
-			border: 1px solid $controlButtonTextColor;
 			border-radius: 6px;
 			text-align: center;
+			border: 1px solid var(--input-border);
+			background-color: var(--input-background);
+			color: var(--text-input);
+			outline: none;
+
+			&:focus {
+				border: 1px solid var(--info-color);
+			}
 		}
 	}
 

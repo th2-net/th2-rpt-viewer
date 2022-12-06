@@ -19,6 +19,7 @@ import moment from 'moment';
 import { useDebouncedCallback } from 'hooks/useDebouncedCallback';
 import { EventTreeNode } from 'models/EventAction';
 import api from 'api/index';
+import { SearchDirection } from 'models/SearchDirection';
 
 // TODO: it should accept queryParams instead of hardcoded name filter
 export const useEventsSearch = (parentEventName: string) => {
@@ -52,7 +53,7 @@ export const useEventsSearch = (parentEventName: string) => {
 				filters: ['name'],
 				'name-values': [trimmedName],
 				startTimestamp: moment.utc().valueOf(),
-				searchDirection: 'previous',
+				searchDirection: SearchDirection.Previous,
 				resultCountLimit: 10,
 			},
 		});

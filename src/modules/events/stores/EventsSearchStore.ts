@@ -17,6 +17,8 @@
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import debounce from 'lodash.debounce';
 import EventsFilter from 'models/filter/EventsFilter';
+import { SearchDirection } from 'models/SearchDirection';
+import { getEventsSSEParams } from 'api/sse';
 import SearchWorker from '../search.worker';
 import SearchToken from '../../../models/search/SearchToken';
 import ApiSchema from '../../../api/ApiSchema';
@@ -187,14 +189,12 @@ export default class EventsSearchStore {
 		const [startTimestamp, endTimestamp] = this.eventsStore.filterStore.range;
 
 		this.channel = new EventsSSEChannel(
-			{
+			getEventsSSEParams({
 				filter: this.getSearchFilter(searchTokens),
-				sseParams: {
-					searchDirection: 'next',
-				},
+				searchDirection: SearchDirection.Next,
 				startTimestamp,
 				endTimestamp,
-			},
+			}),
 			{
 				onError: this.onSearchError,
 				onResponse: this.onSearchResultsResponse,

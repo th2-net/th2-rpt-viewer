@@ -31,6 +31,7 @@ import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
 } from 'modules/messages/stores/MessagesStore';
+import { MessagesSearchResult } from 'modules/search/stores/SearchResult';
 import EventsStore, {
 	EventStoreDefaultStateType,
 	EventStoreURLState,
@@ -178,6 +179,7 @@ export default class WorkspaceStore {
 
 			if (isEventMessage(resultItem)) {
 				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
+					this.searchStore.currentSearch as MessagesSearchResult,
 					timestampToNumber(resultItem.timestamp),
 					resultItem,
 				);
@@ -196,8 +198,6 @@ export default class WorkspaceStore {
 	};
 
 	public onFilterByParentEvent = (parentEvent: EventTreeNode) => {
-		this.searchStore.stopSearch();
-		this.searchStore.setFormType('event');
 		this.searchStore.filterEventsByParent(
 			parentEvent.eventId,
 			timestampToNumber(parentEvent.startTimestamp),
