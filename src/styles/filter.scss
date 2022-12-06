@@ -253,6 +253,14 @@
 		height: 100%;
 		border-left: 1px solid var(--calendar-border);
 
+		&__delimiter {
+			color: var(--info-color);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 46px;
+		}
+
 		&__scroll {
 			@include hidden-scrollbar;
 			display: inline-block;

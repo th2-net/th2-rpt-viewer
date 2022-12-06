@@ -51,6 +51,14 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 		}, {}),
 	);
 
+	const isUnitFar = (unitItemValue: number, isBlocked: boolean) => {
+		return (
+			selectedUnit !== null &&
+			isBlocked &&
+			(selectedUnit >= unitItemValue + 2 || selectedUnit <= unitItemValue - 2)
+		);
+	};
+
 	const selectUnit = () => {
 		if (scrollerRef.current) {
 			const parentHeight = scrollerRef.current.clientHeight;
@@ -124,11 +132,7 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 						className={createBemElement(
 							'filter-timepicker',
 							'scroll-item',
-							selectedUnit !== null &&
-								!unitItem.isBlocked &&
-								(selectedUnit >= unitItem.value + 2 || selectedUnit <= unitItem.value - 2)
-								? 'far'
-								: null,
+							isUnitFar(unitItem.value, unitItem.isBlocked) ? 'far' : null,
 							selectedUnit === unitItem.value ? 'active' : null,
 							unitItem.isBlocked ? 'blocked' : null,
 						)}

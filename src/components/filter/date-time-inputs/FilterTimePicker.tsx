@@ -67,14 +67,7 @@ const FilterTimepicker = (props: FilterTimepickerProps) => {
 				getIsBlocked={getBlockedHours}
 				onUnitChange={setHour}
 			/>
-			<div
-				style={{
-					color: '#4E8AFF',
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'center',
-					fontSize: '46px',
-				}}>
+			<div className='filter-timepicker__delimiter'>
 				<span style={{ height: '70px' }}>:</span>
 			</div>
 			<TimeUnitList
