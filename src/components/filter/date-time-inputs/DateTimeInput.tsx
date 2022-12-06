@@ -107,7 +107,9 @@ const DatetimeInput = (props: DateTimeInputProps) => {
 					left={inputRef.current?.inputElement.offsetLeft}
 					top={
 						inputRef.current?.inputElement
-							? inputRef.current.inputElement.offsetTop + inputRef.current.inputElement.clientHeight
+							? inputRef.current.inputElement.offsetTop +
+							  inputRef.current.inputElement.clientHeight +
+							  4
 							: undefined
 					}
 					onClose={() => togglePicker(false)}

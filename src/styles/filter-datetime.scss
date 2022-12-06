@@ -20,7 +20,7 @@
 
 	&-panel {
 		height: 100%;
-		background-color: var(--surface-background);
+		background-color: var(--background-secondary);
 		color: var(--text-primary);
 	}
 
@@ -45,7 +45,7 @@
 	&-date-panel,
 	&-decade-panel {
 		height: 100%;
-		background-color: var(--surface-background);
+		background-color: var(--background-secondary);
 		color: var(--text-primary);
 	}
 
@@ -89,7 +89,7 @@
 	&-year-panel-cell .rc-calendar-year-panel-year,
 	&-decade-panel-cell .rc-calendar-decade-panel-decade {
 		color: var(--text-primary);
-		background-color: var(--surface-background);
+		background-color: var(--background-secondary);
 	}
 
 	&-month-panel-cell .rc-calendar-month-panel-month:hover,
@@ -97,7 +97,7 @@
 	&-decade-panel-cell .rc-calendar-decade-panel-decade:hover {
 		&:hover {
 			color: var(--info-color) !important;
-			background-color: var(--surface-background);
+			background-color: var(--background-secondary);
 		}
 	}
 
@@ -105,10 +105,10 @@
 	&-year-panel-selected-cell .rc-calendar-year-panel-year,
 	&-decade-panel-selected-cell .rc-calendar-decade-panel-decade {
 		color: var(--info-color) !important;
-		background-color: var(--surface-background);
+		background-color: var(--background-secondary);
 
 		&:hover {
-			background-color: var(--surface-background);
+			background-color: var(--background-secondary);
 		}
 	}
 
