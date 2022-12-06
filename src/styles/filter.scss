@@ -155,7 +155,8 @@
 		left: 0;
 		top: 40px;
 		z-index: 101;
-		background-color: white;
+		background-color: var(--surface-background);
+		color: var(--text-primary);
 		display: flex;
 		flex-direction: column;
 		border-radius: 6px;
@@ -163,17 +164,16 @@
 
 		&__header {
 			align-items: center;
-			color: #3a3a3a;
 			font-weight: 600;
 			font-size: 20px;
 			padding: 12px 16px;
-			border-bottom: 1px solid #d9d9d9;
+			border-bottom: 1px solid var(--calendar-border);
 		}
 
 		&__row {
 			height: 480px;
 			display: flex;
-			border-bottom: 1px solid #d9d9d9;
+			border-bottom: 1px solid var(--calendar-border);
 		}
 
 		&__interval-controls {
@@ -181,7 +181,7 @@
 			flex-direction: column;
 			justify-content: space-between;
 			padding: 0 12px 12px;
-			border-bottom: 1px solid #d9d9d9;
+			border-bottom: 1px solid var(--calendar-border);
 		}
 
 		&__intervals {
@@ -192,23 +192,22 @@
 		&__interval-header {
 			font-size: 20px;
 			font-weight: 600;
-			color: #5c5757;
 			padding: 8px 0 12px 0;
 		}
 
 		&__interval {
 			padding: 8px 18px;
-			background: white;
-			border: 1px solid #d9d9d9;
-			border-radius: 8px;
+			background: var(--text-background);
+			border: 1px solid var(--info-color);
+			border-radius: 12px;
 			font-size: 20px;
 			font-weight: 400;
-			color: $filterPickerControlFontColor;
+			color: var(--info-color);
 			cursor: pointer;
 			outline: none;
 
 			&:hover {
-				background: #d5e3ff;
+				background: var(--date-select-background);
 			}
 		}
 
@@ -221,15 +220,15 @@
 
 			&.button {
 				padding: 8px 24px;
-				border: 1px solid $filterButtonCloseTextColor;
-				border-radius: 4px;
+				border: 1px solid var(--info-color);
+				border-radius: 12px;
 
 				&.reset {
-					background-color: white;
-					color: $filterButtonCloseTextColor;
+					background: var(--text-background);
+					color: var(--info-color);
 				}
 				&.submit {
-					background-color: $filterButtonCloseTextColor;
+					background-color: var(--info-color);
 					color: white;
 				}
 			}
@@ -252,7 +251,7 @@
 		display: grid;
 		grid-template-columns: repeat(3, 96px);
 		height: 100%;
-		border-left: 1px solid #d9d9d9;
+		border-left: 1px solid var(--calendar-border);
 
 		&__scroll {
 			@include hidden-scrollbar;
@@ -276,11 +275,11 @@
 				cursor: pointer;
 				border-radius: 6px;
 				transition: background-color 0.15s ease-in-out;
-				color: $filterPickerScrollItemColor;
+				color: var(--time-unit-near);
 
 				&.active {
 					font-size: 46px;
-					color: $filterButtonCloseTextColor;
+					color: var(--info-color);
 				}
 
 				&.empty {
@@ -293,18 +292,14 @@
 
 				&.far {
 					font-size: 26px;
-					color: #b0b0b0;
+					color: var(--time-unit-far);
 				}
 
 				&.blocked {
-					color: $filterPickerScrollItemBlockedFontColor;
-					background-color: $filterPickerScrollItemBlockedColor;
+					color: var(--time-unit-near);
+					background-color: var(--blocked-time-unit);
 					border-radius: 0;
 					cursor: not-allowed;
-
-					&:hover {
-						background-color: $filterPickerScrollItemBlockedColor;
-					}
 				}
 			}
 		}
