@@ -223,9 +223,13 @@
 				border: 1px solid var(--info-color);
 				border-radius: 12px;
 
-				&.reset {
+				&.cancel {
 					background: var(--text-background);
 					color: var(--info-color);
+
+					&:hover {
+						background: var(--date-select-background);
+					}
 				}
 				&.submit {
 					background-color: var(--info-color);
@@ -249,7 +253,7 @@
 
 	&-timepicker {
 		display: grid;
-		grid-template-columns: repeat(3, 96px);
+		grid-template-columns: repeat(3, 80px);
 		height: 100%;
 		border-left: 1px solid var(--calendar-border);
 
@@ -262,11 +266,15 @@
 		}
 
 		&__scroll {
-			@include hidden-scrollbar;
 			display: inline-block;
 			height: 100%;
-			overflow-y: scroll;
-			scroll-snap-type: y proximity;
+			overflow: hidden;
+
+			&:hover {
+				@include hidden-scrollbar;
+				overflow-y: scroll;
+				scroll-snap-type: y proximity;
+			}
 
 			&::-webkit-scrollbar-track {
 				background-color: transparent;
@@ -281,7 +289,6 @@
 				align-items: center;
 				font-size: 36px;
 				cursor: pointer;
-				border-radius: 6px;
 				transition: background-color 0.15s ease-in-out;
 				color: var(--time-unit-near);
 

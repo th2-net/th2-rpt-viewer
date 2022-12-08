@@ -77,17 +77,15 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 		}
 	};
 
-	const onScroll = (event: React.UIEvent<HTMLUListElement>) => {
-		event.persist();
-
+	const onScroll = () => {
 		setIsScrolling(true);
 
 		setTimeout(() => {
-			selectUnit();
+			if (isScrolling) selectUnit();
 		}, 100);
 
 		return setTimeout(() => {
-			selectUnit();
+			if (isScrolling) selectUnit();
 		}, 700);
 	};
 

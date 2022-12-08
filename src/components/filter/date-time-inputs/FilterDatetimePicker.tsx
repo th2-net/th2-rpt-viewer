@@ -154,8 +154,8 @@ const FilterDatetimePicker = ({
 				</div>
 			</div>
 			<div className='filter-datetime-picker__controls'>
-				<div className='filter-datetime-picker__controls button reset' onClick={onClose}>
-					Reset
+				<div className='filter-datetime-picker__controls button cancel' onClick={onClose}>
+					Cancel
 				</div>
 				<div className='filter-datetime-picker__controls button submit' onClick={onSubmit}>
 					Submit

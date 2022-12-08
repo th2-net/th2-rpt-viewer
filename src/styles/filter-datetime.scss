@@ -62,11 +62,9 @@
 		border-radius: 32px !important;
 	}
 
-	&-year-panel-last-decade-cell .rc-calendar-year-panel-year,
-	&-year-panel-next-decade-cell .rc-calendar-year-panel-year,
-	&-decade-panel-last-century-cell .rc-calendar-decade-panel-decade,
-	&-decade-panel-next-century-cell .rc-calendar-decade-panel-decade {
-		color: var(--text-primary);
+	&-last-month-cell .rc-calendar-date,
+	&-next-month-btn-day .rc-calendar-date {
+		color: var(--date-hidden);
 	}
 
 	&-year-panel-header,
@@ -99,6 +97,13 @@
 			color: var(--info-color) !important;
 			background-color: var(--background-secondary);
 		}
+	}
+
+	&-year-panel-last-decade-cell .rc-calendar-year-panel-year,
+	&-year-panel-next-decade-cell .rc-calendar-year-panel-year,
+	&-decade-panel-last-century-cell .rc-calendar-decade-panel-decade,
+	&-decade-panel-next-century-cell .rc-calendar-decade-panel-decade {
+		color: var(--date-hidden);
 	}
 
 	&-month-panel-selected-cell .rc-calendar-month-panel-month,
@@ -135,11 +140,11 @@
 	&-disabled-cell > .rc-calendar-date {
 		width: auto !important;
 		background: var(--blocked-time-unit);
-		color: var(--time-unit-near);
+		color: var(--date-hidden);
 
 		&:hover {
 			background: var(--blocked-time-unit);
-			color: var(--time-unit-near);
+			color: var(--date-hidden);
 		}
 	}
 
