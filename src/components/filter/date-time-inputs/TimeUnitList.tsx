@@ -81,11 +81,12 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 		setIsScrolling(true);
 
 		setTimeout(() => {
-			if (isScrolling) selectUnit();
+			selectUnit();
 		}, 100);
 
 		return setTimeout(() => {
-			if (isScrolling) selectUnit();
+			selectUnit();
+			setIsScrolling(false);
 		}, 700);
 	};
 
@@ -130,7 +131,9 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 						selectedUnit === unitItem.value ? 'active' : null,
 						unitItem.isBlocked ? 'blocked' : null,
 					)}
-					onClick={!unitItem.isBlocked ? () => onUnitChange(unitItem.value) : undefined}>
+					onClick={
+						!unitItem.isBlocked && !isScrolling ? () => onUnitChange(unitItem.value) : undefined
+					}>
 					{unitItem.value}
 				</li>
 			))}
