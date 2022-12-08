@@ -153,41 +153,93 @@
 		position: absolute;
 		left: 0;
 		top: 40px;
-		z-index: 200;
-		padding: 8px;
-		background-color: white;
+		z-index: 101;
+		background-color: var(--background-secondary);
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		color: var(--text-primary);
 		display: flex;
 		flex-direction: column;
-		border-radius: 6px;
+		margin: 0 10px 10px 10px;
+		border-radius: 16px;
+
+		&__header {
+			align-items: center;
+			font-weight: 600;
+			font-size: 20px;
+			padding: 12px 16px;
+			border-bottom: 1px solid var(--calendar-border);
+		}
 
 		&__row {
-			height: 300px;
+			height: 480px;
 			display: flex;
+			border-bottom: 1px solid var(--calendar-border);
+		}
+
+		&__interval-controls {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			padding: 0 12px 12px;
+			border-bottom: 1px solid var(--calendar-border);
+		}
+
+		&__intervals {
+			display: flex;
+			gap: 8px;
+		}
+
+		&__interval-header {
+			font-size: 20px;
+			font-weight: 600;
+			padding: 8px 0 12px 0;
+		}
+
+		&__interval {
+			padding: 8px 18px;
+			background: var(--text-background);
+			border: 1px solid var(--info-color);
+			border-radius: 12px;
+			font-size: 20px;
+			font-weight: 400;
+			color: var(--info-color);
+			cursor: pointer;
+			outline: none;
+
+			&:hover {
+				background: var(--date-select-background);
+			}
 		}
 
 		&__controls {
-			width: 253px;
 			display: flex;
-			justify-content: space-between;
-			padding: 0 12px;
-		}
-
-		&__control {
-			margin: 0;
-			padding: 4px 5px;
-			width: 50px;
-			border: none;
-			background-color: $filterPickerControlColor;
-			border-radius: 6px;
-			font-size: 14px;
-			color: $filterPickerControlFontColor;
-			cursor: pointer;
+			justify-content: flex-end;
+			gap: 12px;
+			padding: 12px 16px;
 			font-weight: 600;
-			outline: none;
+
+			&.button {
+				padding: 8px 24px;
+				border: 1px solid var(--info-color);
+				border-radius: 12px;
+
+				&.cancel {
+					background: var(--text-background);
+					color: var(--info-color);
+
+					&:hover {
+						background: var(--date-select-background);
+					}
+				}
+				&.submit {
+					background-color: var(--info-color);
+					color: white;
+				}
+			}
 		}
 
 		&__datepicker {
-			margin-right: 10px;
+			width: 450px;
 		}
 	}
 
@@ -201,52 +253,69 @@
 
 	&-timepicker {
 		display: grid;
-		grid-template-columns: repeat(3, 70px);
+		grid-template-columns: repeat(3, 80px);
 		height: 100%;
+		border-left: 1px solid var(--calendar-border);
+
+		&__delimiter {
+			color: var(--info-color);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 46px;
+		}
 
 		&__scroll {
-			@include scrollbar;
 			display: inline-block;
 			height: 100%;
-			overflow-y: scroll;
+			overflow: hidden;
+
+			&:hover {
+				@include hidden-scrollbar;
+				overflow-y: scroll;
+				scroll-snap-type: y proximity;
+			}
 
 			&::-webkit-scrollbar-track {
 				background-color: transparent;
 			}
 
 			&-item {
-				height: 30px;
+				height: 80px;
 				display: flex;
+				scroll-snap-align: center;
+				scroll-snap-stop: normal;
 				justify-content: center;
 				align-items: center;
-				font-size: 18px;
+				font-size: 36px;
 				cursor: pointer;
-				border-radius: 6px;
 				transition: background-color 0.15s ease-in-out;
-				color: $filterPickerScrollItemColor;
+				user-select: none;
+				color: var(--time-unit-near);
 
 				&.active {
-					background-color: $filterPickerScrollItemActiveColor;
-					color: white;
+					font-size: 46px;
+					color: var(--info-color);
+				}
 
-					&:hover {
-						background-color: $filterPickerScrollItemActiveColor;
+				&.empty {
+					height: 200px;
+
+					&.blocked {
+						display: none;
 					}
+				}
+
+				&.far {
+					font-size: 26px;
+					color: var(--time-unit-far);
 				}
 
 				&.blocked {
-					color: $filterPickerScrollItemBlockedFontColor;
-					background-color: $filterPickerScrollItemBlockedColor;
+					color: var(--time-unit-near);
+					background-color: var(--blocked-time-unit);
 					border-radius: 0;
 					cursor: not-allowed;
-
-					&:hover {
-						background-color: $filterPickerScrollItemBlockedColor;
-					}
-				}
-
-				&:hover {
-					background-color: $filterPickerScrollItemHoverColor;
 				}
 			}
 		}
@@ -481,7 +550,7 @@
 		&:disabled {
 			opacity: 0.5;
 		}
-	
+
 		&:focus {
 			border: 1px solid var(--info-color);
 		}
