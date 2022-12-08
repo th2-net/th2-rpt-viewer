@@ -24,7 +24,9 @@ interface FilterTimepickerProps {
 }
 
 const FilterTimepicker = (props: FilterTimepickerProps) => {
-	const { value: time, setValue } = props;
+	const { value, setValue } = props;
+
+	const time = moment.utc(value).set('seconds', 0).set('milliseconds', 0).valueOf();
 
 	const currentTime = moment(time).utc();
 
@@ -34,7 +36,7 @@ const FilterTimepicker = (props: FilterTimepickerProps) => {
 	const today = moment().utc();
 	const isToday = currentTime.isSame(today, 'day');
 
-	const setTime = (unit: 'hour' | 'minutes' | 'seconds', unitValue: number) => {
+	const setTime = (unit: 'hour' | 'minutes' | 'seconds' | 'milliseconds', unitValue: number) => {
 		const timestamp = time || moment.utc().valueOf();
 		const updatedDate = moment(timestamp).utc().set(unit, unitValue);
 		setValue(updatedDate.valueOf());

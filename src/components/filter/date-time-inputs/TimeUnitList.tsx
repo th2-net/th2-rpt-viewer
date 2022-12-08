@@ -120,21 +120,19 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 		<ul className='filter-timepicker__scroll' onWheel={onScroll} ref={scrollerRef}>
 			<li className='filter-timepicker__scroll-item empty' />
 			{unitList.map(unitItem => (
-				<>
-					<li
-						ref={unitRefs.current[unitItem.value]}
-						key={unitItem.value}
-						className={createBemElement(
-							'filter-timepicker',
-							'scroll-item',
-							isUnitFar(unitItem.value, unitItem.isBlocked) ? 'far' : null,
-							selectedUnit === unitItem.value ? 'active' : null,
-							unitItem.isBlocked ? 'blocked' : null,
-						)}
-						onClick={!unitItem.isBlocked ? () => onUnitChange(unitItem.value) : undefined}>
-						{unitItem.value}
-					</li>
-				</>
+				<li
+					ref={unitRefs.current[unitItem.value]}
+					key={unitItem.value}
+					className={createBemElement(
+						'filter-timepicker',
+						'scroll-item',
+						isUnitFar(unitItem.value, unitItem.isBlocked) ? 'far' : null,
+						selectedUnit === unitItem.value ? 'active' : null,
+						unitItem.isBlocked ? 'blocked' : null,
+					)}
+					onClick={!unitItem.isBlocked ? () => onUnitChange(unitItem.value) : undefined}>
+					{unitItem.value}
+				</li>
 			))}
 			<li
 				className={createStyleSelector(
