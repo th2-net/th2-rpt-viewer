@@ -15,15 +15,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, toJS, when } from 'mobx';
-import moment from 'moment';
+import { action, when } from 'mobx';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
-import { getArrayOfUniques } from '../../helpers/array';
 import { isEventMessage } from '../../helpers/event';
-import { getSession, isInvalidResumeId } from '../../helpers/message';
-import { extractMessageIds } from '../../helpers/streamInfo';
+import { isInvalidResumeId } from '../../helpers/message';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
