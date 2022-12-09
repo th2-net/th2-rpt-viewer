@@ -303,9 +303,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				newMessagesList = newMessagesList.slice(-this.messagesLimit);
 			}
 
-			this.messages = newMessagesList.sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = [
+				...new Map(
+					newMessagesList
+						.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp))
+						.map(item => [item.messageId, item]),
+				).values(),
+			];
 		}
 	};
 
@@ -357,9 +361,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
 			}
-			this.messages = newMessagesList.sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = [
+				...new Map(
+					newMessagesList
+						.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp))
+						.map(item => [item.messageId, item]),
+				).values(),
+			];
 		}
 	};
 
