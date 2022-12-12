@@ -29,6 +29,7 @@ import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
 import { isEventMessage } from '../../helpers/event';
 import { timestampToNumber } from '../../helpers/date';
+import { isPreviousMessageTimestampEquals } from '../../helpers/message';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
@@ -200,19 +201,11 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				...nextMessages.filter(
 					(val, idx) =>
 						val.messageId !== message?.messageId &&
-						!(
-							message &&
-							timestampToNumber(val.timestamp) === timestampToNumber(message.timestamp) &&
-							idx === nextMessages.length - 1
-						),
+						!isPreviousMessageTimestampEquals(val, idx, nextMessages.length, message),
 				),
 				...[message].filter(isEventMessage),
-				...nextMessages.filter(
-					(val, idx) =>
-						message &&
-						timestampToNumber(val.timestamp) === timestampToNumber(message.timestamp) &&
-						idx === nextMessages.length - 1 &&
-						val.messageId !== message?.messageId,
+				...nextMessages.filter((val, idx) =>
+					isPreviousMessageTimestampEquals(val, idx, nextMessages.length, message),
 				),
 				...prevMessages,
 			].sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
