@@ -71,17 +71,11 @@ export default class MessagesUpdateStore {
 	};
 
 	private loadNextMessages = async () => {
-		this.nextMessages = await this.messagesDataStore.getNextMessages();
-		const prevMessages = await this.messagesDataStore.getPreviousMessages();
+		const nextMessages = await this.messagesDataStore.getNextMessages();
 		if (this.isFirstUpdate) {
-			this.messagesDataStore.onNextChannelResponse(this.nextMessages, true);
-			this.messagesDataStore.onPrevChannelResponse(prevMessages);
+			this.messagesDataStore.onNextChannelResponse(nextMessages, true);
 			this.isFirstUpdate = false;
-		} else {
-			if (this.nextMessages.length > 0)
-				this.messagesDataStore.onNextChannelResponse(this.nextMessages, true);
-
-			if (prevMessages.length > 0) this.messagesDataStore.onPrevChannelResponse(prevMessages);
-		}
+		} else if (nextMessages.length > 0)
+			this.messagesDataStore.onNextChannelResponse(nextMessages, true);
 	};
 }
