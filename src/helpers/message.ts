@@ -73,10 +73,6 @@ export function normalizeField(field: MessageBodyField): string | object {
 	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
 }
 
-export function isInvalidResumeId(messageId: string): boolean {
-	return messageId.slice(-2) === '-1';
-}
-
 export function getSession(messageId: string): string {
 	const firstSlice = messageId.slice(0, messageId.lastIndexOf(':'));
 	return firstSlice.slice(0, firstSlice.lastIndexOf(':'));

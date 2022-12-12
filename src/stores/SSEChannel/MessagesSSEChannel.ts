@@ -20,7 +20,6 @@ import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
-import { isInvalidResumeId } from '../../helpers/message';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
@@ -155,7 +154,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		const messagesIdsEvent: MessageIdsEvent =
 			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
 		const newIds = Object.values(messagesIdsEvent.messageIds).filter(
-			id => id && !isInvalidResumeId,
+			id => id && id.slice(-2) !== '-1',
 		) as string[];
 		this.messageIds = [
 			...newIds,
