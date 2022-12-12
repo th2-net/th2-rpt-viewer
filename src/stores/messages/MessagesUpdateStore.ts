@@ -56,7 +56,7 @@ export default class MessagesUpdateStore {
 				this.messagesDataStore.onNextChannelResponse(chunk);
 
 				if (this.isActive) {
-					this.timer = setTimeout(this.loadNextMessages, 1000);
+					this.timer = setTimeout(this.loadNextMessages, 5000);
 				}
 			},
 		});
