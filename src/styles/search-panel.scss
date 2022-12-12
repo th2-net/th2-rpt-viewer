@@ -55,6 +55,11 @@
 		margin-bottom: 4px;
 	}
 
+	& > .filter-row:first-child {
+		box-shadow: none;
+		justify-content: center;
+	}
+
 	.toggler-wrapper {
 		flex-grow: 0;
 		gap: 6px;

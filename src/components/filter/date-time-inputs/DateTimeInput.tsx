@@ -87,7 +87,7 @@ const DatetimeInput = (props: DateTimeInputProps) => {
 			<MaskedInput
 				ref={inputRef}
 				id={id}
-				className={`filter-row__input ${maskedInputClassName}`}
+				className={`filter-row__input date-time-input ${maskedInputClassName}`}
 				disabled={disabled}
 				mask={inputMask}
 				pipe={validPipe}

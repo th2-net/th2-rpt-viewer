@@ -198,7 +198,7 @@
 		&__interval {
 			padding: 8px 18px;
 			background: var(--text-background);
-			border: 1px solid var(--info-color);
+			border: 1px solid var(--counter-border);
 			border-radius: 12px;
 			font-size: 20px;
 			font-weight: 400;
@@ -239,23 +239,16 @@
 		}
 
 		&__datepicker {
-			width: 450px;
-		}
-	}
-
-	&-datetime-input {
-		&-wrapper {
-			width: 100%;
-			min-width: 70px;
-			position: relative;
+			width: 400px;
 		}
 	}
 
 	&-timepicker {
 		display: grid;
-		grid-template-columns: repeat(3, 80px);
+		grid-template-columns: 80px 25px 80px;
 		height: 100%;
 		border-left: 1px solid var(--calendar-border);
+		padding: 0 16px;
 
 		&__delimiter {
 			color: var(--info-color);
@@ -542,6 +535,24 @@
 		background-color: var(--input-background);
 		color: var(--text-input);
 		outline: none;
+		position: relative;
+
+		&.date-time-input {
+			margin: 0;
+			max-width: 350px;
+
+			&:first-child {
+				&::after {
+					content: "";
+					width: 1px;
+					height: 4px;
+					position: absolute;
+					top: 0;
+					right: 0;
+					background-color: red;
+				}
+			}
+		}
 
 		&:disabled {
 			opacity: 0.5;

@@ -17,6 +17,7 @@
 .rc-calendar {
 	border: none;
 	box-shadow: none;
+	font-family: Open Sans;
 
 	&-panel {
 		height: 100%;
@@ -28,6 +29,7 @@
 		display: flex;
 		border: none !important;
 		padding: 0 20px;
+		margin-bottom: 16px;
 	}
 
 	&-body {
@@ -53,13 +55,18 @@
 	&-year-panel-year,
 	&-month-panel-month,
 	&-decade-panel-decade {
-		width: auto;
-		height: auto;
-		padding: 16px;
+		width: 44px;
+		height: 44px;
+		line-height: 42px;
 		margin: 4px;
 		color: var(--text-primary);
 		font-size: 20px !important;
-		border-radius: 32px !important;
+		border-radius: 50%;
+	}
+
+	&-year-panel-year {
+		width: auto;
+		height: auto;
 	}
 
 	&-last-month-cell .rc-calendar-date,
@@ -138,9 +145,12 @@
 	}
 
 	&-disabled-cell > .rc-calendar-date {
-		width: auto !important;
+		width: 44px;
+		height: 44px;
+		line-height: 42px;
 		background: var(--blocked-time-unit);
 		color: var(--date-hidden);
+		border-radius: 50%;
 
 		&:hover {
 			background: var(--blocked-time-unit);
