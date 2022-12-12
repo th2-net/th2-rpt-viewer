@@ -72,10 +72,6 @@ export default class MessagesUpdateStore {
 
 	private loadNextMessages = async () => {
 		const nextMessages = await this.messagesDataStore.getNextMessages();
-		if (this.isFirstUpdate) {
-			this.messagesDataStore.onNextChannelResponse(nextMessages, true);
-			this.isFirstUpdate = false;
-		} else if (nextMessages.length > 0)
-			this.messagesDataStore.onNextChannelResponse(nextMessages, true);
+		this.messagesDataStore.onNextChannelResponse(nextMessages);
 	};
 }
