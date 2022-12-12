@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useActivePanel } from 'hooks/index';
 import { Panel } from 'models/Panel';
@@ -32,6 +33,26 @@ interface SearchPanelProps {
 const SearchPanel = (props: SearchPanelProps) => {
 	const searchStore = useSearchStore();
 	const { ref: searchPanelRef } = useActivePanel(Panel.Search);
+
+	const scrolledId = useRef<number | null>(null);
+
+	useLayoutEffect(() => {
+		const search = searchStore.currentSearch;
+
+		if (search && searchPanelRef.current) {
+			if (
+				search.timestamp !== searchStore.initialSearchId &&
+				search.data.length > 0 &&
+				scrolledId.current !== search.timestamp
+			) {
+				searchPanelRef.current.scrollTo({
+					top: searchPanelRef.current.scrollHeight,
+					behavior: 'smooth',
+				});
+				scrolledId.current = search.timestamp;
+			}
+		}
+	}, [searchStore.currentSearch?.data]);
 
 	return (
 		<div className='search-panel window' ref={searchPanelRef}>

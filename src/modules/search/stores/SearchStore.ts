@@ -257,6 +257,8 @@ export class SearchStore implements ISearchStore {
 		}
 	};
 
+	public initialSearchId: null | number = null;
+
 	private getSearchHistory = async () => {
 		try {
 			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
@@ -289,6 +291,7 @@ export class SearchStore implements ISearchStore {
 
 						this.currentSearch = messageSearchResult;
 					}
+					this.initialSearchId = this.currentSearch.timestamp;
 				});
 			}
 		} catch (error) {
