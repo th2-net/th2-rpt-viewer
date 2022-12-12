@@ -14,13 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import FilterConfig from 'components/filter/FilterConfig';
 import FilterButton from 'components/filter/FilterButton';
 import { useFilterConfig } from 'hooks/useFilterConfig';
+import { useFiltersHistoryStore } from 'hooks/useFiltersHistoryStore';
 import useViewMode from 'hooks/useViewMode';
 import { ActionFilterConfig, FilterRowConfig } from 'models/filter/FilterInputs';
 import { MessageFilterKeys } from 'api/sse';
@@ -51,6 +52,8 @@ const MessagesFilterPanel = () => {
 	const [sessions, setSessions] = React.useState<Array<string>>([]);
 	const filtersAutocomplete = useMessageFiltersAutocomplete();
 
+	const { onMessageFilterSubmit } = useFiltersHistoryStore();
+
 	const { config, filter, setFilter } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
 		filter: filterStore.filter,
@@ -74,7 +77,7 @@ const MessagesFilterPanel = () => {
 		);
 
 		if (filter) {
-			messagesStore.saveFilter(filter);
+			onMessageFilterSubmit(filter);
 		}
 
 		if (sessions.length) {
@@ -112,6 +115,15 @@ const MessagesFilterPanel = () => {
 		[config, sseFiltersErrorConfig],
 	);
 
+	const onFilterHistoryClick = useCallback(
+		(partialFilter: Partial<MessagesFilter>) => {
+			if (filter) {
+				setFilter({ ...filter, ...partialFilter });
+			}
+		},
+		[filter, setFilter],
+	);
+
 	return (
 		<>
 			<FilterConfig
@@ -121,7 +133,7 @@ const MessagesFilterPanel = () => {
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
 				filter={filter}
-				setFilter={setFilter as any}
+				setFilter={onFilterHistoryClick}
 				type='message'
 			/>
 			{viewMode === ViewMode.Full && <FilterWarning />}

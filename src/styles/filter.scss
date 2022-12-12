@@ -435,10 +435,6 @@
 	gap: 12px;
 	font-size: 14px;
 
-	.filters-history-open {
-		@include improved-clickable(#fff, 10px);
-	}
-
 	&__counts {
 		flex: auto;
 		width: 100%;

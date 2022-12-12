@@ -19,6 +19,7 @@ import { observer } from 'mobx-react-lite';
 import EventsFilter from 'models/filter/EventsFilter';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { EntityType } from 'models/EventAction';
+import { IconButton } from 'components/buttons/IconButton';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener, useFiltersHistoryStore } from '../../hooks';
 import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
@@ -26,6 +27,7 @@ import { raf } from '../../helpers/raf';
 import FiltersHistoryItem from './FiltersHistoryItem';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import '../../styles/filters-history.scss';
+import { FilterHistoryIcon } from '../icons/FilterHistoryIcon';
 
 interface Props {
 	type: EntityType;
@@ -56,9 +58,10 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 		if (isOpen) {
 			raf(() => {
 				if (historyRef.current && buttonRef.current) {
-					const { left, bottom } = buttonRef.current.getBoundingClientRect();
-					historyRef.current.style.left = `${left}px`;
-					historyRef.current.style.top = `${bottom - 45 - historyRef.current.clientHeight}px`;
+					const { left, bottom, width } = buttonRef.current.getBoundingClientRect();
+					historyRef.current.style.position = 'absolute';
+					historyRef.current.style.left = `${left + width}px`;
+					historyRef.current.style.top = `${bottom - width / 2}px`;
 				}
 			}, 2);
 		}
@@ -66,13 +69,10 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 
 	useOutsideClickListener(historyRef, (e: MouseEvent) => {
 		const target = e.target as Element;
-		if (target.closest('.filter-history-item')) {
-			e.stopImmediatePropagation();
+		if (buttonRef.current && buttonRef.current.contains(target)) {
 			return;
 		}
-		if (target !== buttonRef.current) {
-			setIsOpen(false);
-		}
+		setIsOpen(false);
 	});
 
 	const onFilterPin = React.useCallback(
@@ -91,17 +91,16 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 
 	return toShow.length ? (
 		<>
-			<button
+			<IconButton
 				ref={buttonRef}
 				className='filters-history-open'
-				onClick={() => {
-					setIsOpen(o => !o);
-				}}
-				title={'Filters history'}
-				disabled={disabled}
-			/>
-			<ModalPortal isOpen={isOpen}>
-				<div ref={historyRef} className='filters-history'>
+				onClick={() => setIsOpen(o => !o)}
+				title='Filters history'
+				disabled={disabled}>
+				<FilterHistoryIcon className='history-icon' />
+			</IconButton>
+			<ModalPortal isOpen={isOpen} ref={historyRef}>
+				<div className='filters-history'>
 					{filter &&
 						toShow.map((item, index) => (
 							<React.Fragment key={item.timestamp}>
@@ -121,12 +120,13 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 			</ModalPortal>
 		</>
 	) : (
-		<button
+		<IconButton
 			ref={buttonRef}
 			className='filters-history-open'
 			title={'Filters history'}
-			disabled={true}
-		/>
+			disabled={true}>
+			<FilterHistoryIcon className='filters-history-open history-icon' />
+		</IconButton>
 	);
 };
 

@@ -50,10 +50,6 @@
 	border-radius: 0 0 5px 5px;
 	flex-shrink: 0;
 
-	.filters-history-open {
-		@include improved-clickable($searchPanelColor, 10px);
-	}
-
 	.filter-row {
 		flex-grow: 1;
 		margin-bottom: 4px;
@@ -331,7 +327,9 @@
 
 	&__timestamp {
 		margin: 0;
+		margin-left: 10px;
 		font-size: 12px;
+		color: var(--text-primary);
 	}
 
 	&__list {

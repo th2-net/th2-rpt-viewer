@@ -75,7 +75,7 @@ const SearchPanelForm = () => {
 
 	const disabled = isSearching;
 
-	const { config, filter } = useFilterConfig({
+	const { config, filter, setFilter } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
 		filter: filterStore.filter,
 		disabled,
@@ -192,7 +192,6 @@ const SearchPanelForm = () => {
 		<div className='search-panel-form'>
 			<FilterRows config={timestampFromConfig} />
 			<div className='search-panel__fields'>
-				<FiltersHistory disabled={disabled} type={formType as EntityType} />
 				<div className='filter-row'>
 					<div className='search-type-config'>
 						<SearchTypeSwitcher formType={formType as EntityType} setFormType={setFormType} />
@@ -204,6 +203,18 @@ const SearchPanelForm = () => {
 				<FilterRows config={config} />
 			</div>
 			<div className='search-panel-form__footer'>
+				{filter && (
+					<FiltersHistory
+						disabled={disabled}
+						type={formType as EntityType}
+						filter={{
+							state: filter,
+							setState: (partialFilter: any) => {
+								setFilter({ ...filter, ...partialFilter });
+							},
+						}}
+					/>
+				)}
 				{!disabled && (
 					<Button
 						variant='outlined'
