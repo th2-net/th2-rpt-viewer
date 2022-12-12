@@ -72,8 +72,3 @@ export function normalizeField(field: MessageBodyField): string | object {
 	}
 	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
 }
-
-export function getSession(messageId: string): string {
-	const firstSlice = messageId.slice(0, messageId.lastIndexOf(':'));
-	return firstSlice.slice(0, firstSlice.lastIndexOf(':'));
-}
