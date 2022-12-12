@@ -1,0 +1,170 @@
+/******************************************************************************
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+.rc-calendar {
+	border: none;
+	box-shadow: none;
+
+	&-panel {
+		height: 100%;
+		background-color: var(--background-secondary);
+		color: var(--text-primary);
+	}
+
+	&-header {
+		display: flex;
+		border: none !important;
+		padding: 0 20px;
+	}
+
+	&-body {
+		padding-top: 0 !important;
+		height: auto !important;
+		font-size: 20px !important;
+	}
+
+	&-date:hover {
+		background: var(--date-select-background);
+	}
+
+	&-year-panel,
+	&-month-panel,
+	&-date-panel,
+	&-decade-panel {
+		height: 100%;
+		background-color: var(--background-secondary);
+		color: var(--text-primary);
+	}
+
+	&-date,
+	&-year-panel-year,
+	&-month-panel-month,
+	&-decade-panel-decade {
+		width: auto;
+		height: auto;
+		padding: 16px;
+		margin: 4px;
+		color: var(--text-primary);
+		font-size: 20px !important;
+		border-radius: 32px !important;
+	}
+
+	&-last-month-cell .rc-calendar-date,
+	&-next-month-btn-day .rc-calendar-date {
+		color: var(--date-hidden);
+	}
+
+	&-year-panel-header,
+	&-month-panel-header,
+	&-decade-panel-header {
+		font-size: 20px;
+		font-weight: 600 !important;
+		color: var(--text-primary) !important;
+		border-bottom: 1px solid var(--calendar-border);
+	}
+
+	&-month-panel-year-select-content,
+	&-year-panel-decade-select {
+		&:hover {
+			color: var(--info-color);
+		}
+	}
+
+	&-month-panel-cell .rc-calendar-month-panel-month,
+	&-year-panel-cell .rc-calendar-year-panel-year,
+	&-decade-panel-cell .rc-calendar-decade-panel-decade {
+		color: var(--text-primary);
+		background-color: var(--background-secondary);
+	}
+
+	&-month-panel-cell .rc-calendar-month-panel-month:hover,
+	&-year-panel-cell .rc-calendar-year-panel-year:hover,
+	&-decade-panel-cell .rc-calendar-decade-panel-decade:hover {
+		&:hover {
+			color: var(--info-color) !important;
+			background-color: var(--background-secondary);
+		}
+	}
+
+	&-year-panel-last-decade-cell .rc-calendar-year-panel-year,
+	&-year-panel-next-decade-cell .rc-calendar-year-panel-year,
+	&-decade-panel-last-century-cell .rc-calendar-decade-panel-decade,
+	&-decade-panel-next-century-cell .rc-calendar-decade-panel-decade {
+		color: var(--date-hidden);
+	}
+
+	&-month-panel-selected-cell .rc-calendar-month-panel-month,
+	&-year-panel-selected-cell .rc-calendar-year-panel-year,
+	&-decade-panel-selected-cell .rc-calendar-decade-panel-decade {
+		color: var(--info-color) !important;
+		background-color: var(--background-secondary);
+
+		&:hover {
+			background-color: var(--background-secondary);
+		}
+	}
+
+	&-month-panel-header > a:hover,
+	&-year-panel-header > a:hover {
+		color: var(--info-color);
+	}
+
+	&-today .rc-calendar-date {
+		color: var(--info-color) !important;
+		border: none;
+	}
+
+	&-selected-date .rc-calendar-date,
+	&-selected-day .rc-calendar-date {
+		color: var(--info-color) !important;
+		background: var(--date-select-background) !important;
+
+		&:hover {
+			background: var(--date-select-background) !important;
+		}
+	}
+
+	&-disabled-cell > .rc-calendar-date {
+		width: auto !important;
+		background: var(--blocked-time-unit);
+		color: var(--date-hidden);
+
+		&:hover {
+			background: var(--blocked-time-unit);
+			color: var(--date-hidden);
+		}
+	}
+
+	&-column-header .rc-calendar-column-header-inner {
+		color: var(--text-secondary);
+		font-weight: 550 !important;
+	}
+
+	&-month-select,
+	&-year-select {
+		font-size: 20px;
+		padding: 0 12px 0 8px;
+		font-weight: 600 !important;
+		color: var(--text-primary) !important;
+	}
+
+	&-prev-month-btn,
+	&-next-month-btn,
+	&-prev-year-btn,
+	&-next-year-btn {
+		display: none !important;
+	}
+}

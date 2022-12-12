@@ -72,6 +72,14 @@
 	--app-header-background: #3d668f;
 
 	--progress-bar-background: #d0d0d0;
+
+	--blocked-time-unit: #e0e0e0;
+	--time-unit-near: #898989;
+	--time-unit-far: #b0b0b0;
+
+	--calendar-border: #d9d9d9;
+	--date-select-background: #d5e3ff;
+	--date-hidden: #898989;
 }
 
 html[data-theme='dark'] {
@@ -117,4 +125,12 @@ html[data-theme='dark'] {
 	--app-header-background: #18191b;
 
 	--progress-bar-background: #7a7c80;
+
+	--blocked-time-unit: #585858;
+	--time-unit-near: #a7a8ab;
+	--time-unit-far: #d0d0d0;
+
+	--calendar-border: #4f5156;
+	--date-select-background: #354666;
+	--date-hidden: #a7a8ab;
 }
