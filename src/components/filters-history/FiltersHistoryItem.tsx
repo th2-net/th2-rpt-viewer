@@ -16,13 +16,13 @@
 
 import React from 'react';
 import moment from 'moment';
+import clsx from 'clsx';
 import { FilterState } from 'modules/search/models/Search';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import { FiltersState } from './FiltersHistory';
 import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
 import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../../helpers/search';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
-import { createBemElement } from '../../helpers/styleCreators';
 import { useDebouncedCallback } from '../../hooks';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { showNotification } from '../../helpers/showNotification';
@@ -159,12 +159,6 @@ const FiltersHistoryItem = (props: Props) => {
 		deleteHistoryItem(item);
 	}
 
-	const pinButtonClassname = createBemElement(
-		'filter-history-item',
-		'filter-pin-icon',
-		item.isPinned ? 'pinned' : null,
-	);
-
 	return (
 		<div
 			className='filter-history-item'
@@ -176,7 +170,7 @@ const FiltersHistoryItem = (props: Props) => {
 				{moment.utc(item.timestamp).format(FILTER_HISTORY_DATE_FORMAT)}
 				<div className='filter-history-item__controls'>
 					<button
-						className={pinButtonClassname}
+						className={clsx('filter-history-item__pin-icon', { pinned: item.isPinned })}
 						onClick={onFilterPin}
 						ref={pinButtonRef}
 						title={item.isPinned ? 'Unpin filter' : 'Pin filter'}>

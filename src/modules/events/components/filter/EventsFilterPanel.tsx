@@ -14,13 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useFiltersHistoryStore } from 'hooks/useFiltersHistoryStore';
 import { useFilterConfig } from 'hooks/useFilterConfig';
 import { EventFilterKeys } from 'api/sse';
 import FilterConfig from 'components/filter/FilterConfig';
 import FilterButton from 'components/filter/FilterButton';
+import EventsFilter from 'models/filter/EventsFilter';
 import { useEventsFilterStore } from '../../hooks/useEventsFilterStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -72,6 +73,15 @@ function EventsFilterPanel() {
 		}
 	}, [filter]);
 
+	const onFilterHistoryClick = useCallback(
+		(partialFilter: Partial<EventsFilter>) => {
+			if (filter) {
+				setFilter({ ...filter, ...partialFilter });
+			}
+		},
+		[filter, setFilter],
+	);
+
 	return (
 		<>
 			<FilterButton
@@ -87,7 +97,7 @@ function EventsFilterPanel() {
 				onClearAll={eventsStore.clearFilter}
 				config={config}
 				filter={filter}
-				setFilter={setFilter as any}
+				setFilter={onFilterHistoryClick}
 				type='event'
 			/>
 		</>

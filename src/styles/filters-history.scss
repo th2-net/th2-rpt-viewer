@@ -17,29 +17,18 @@
 @import './common/vars';
 
 .filters-history-open {
-	@include clickable;
-	width: 40px;
-	height: 40px;
-	border: none;
-	border-radius: 12px;
-
 	display: flex;
-	justify-content: flex-start;
 	align-items: center;
-	padding-top: 12px;
 
-	background-color: var(--background-primary);
+	& span {
+		font-size: 24px;
+		position: relative;
+		left: 2px;
+	}
 
 	&:disabled {
 		opacity: 0.5;
 		cursor: default;
-	}
-
-	.history-icon {
-		width: 39px;
-		height: 40px;
-
-		color: var(--text-info);
 	}
 }
 
@@ -65,7 +54,10 @@
 	cursor: pointer;
 	padding: 7px;
 	position: relative;
-	transition: background-color 0.15s;	
+	transition: background-color 0.15s;
+	width: 100%;
+	overflow: hidden;
+
 	&.active {
 		background-color: var(--background-primary-darker);
 	}
@@ -118,7 +110,8 @@
 
 	&__delete-icon,
 	&__share-icon,
-	&__filter-pin-icon {
+	&__pin-icon {
+		color: var(--text-input);
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -139,7 +132,7 @@
 			background-color: rgba(0, 0, 0, 0.3);
 		}
 	}
-	&__filter-pin-icon {
+	&__pin-icon {
 		padding-left: 3px;
 		transition: transform 0.15s;
 
@@ -149,6 +142,9 @@
 		&.pinned {
 			background-color: rgba(0, 0, 0, 0.1);
 			transform: rotate(-45deg);
+			& span {
+				color: var(--info-color);
+			}
 		}
 	}
 	&__share-icon {
@@ -156,7 +152,6 @@
 		opacity: 0.5;
 	}
 
-	
 	&__delete-icon {
 		padding-right: 4px;
 		margin: 0 4px 4px 0;
