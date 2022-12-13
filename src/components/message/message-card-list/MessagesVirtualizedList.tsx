@@ -104,7 +104,12 @@ const MessagesVirtualizedList = (props: Props) => {
 		const scroller = event.target;
 		if (scroller instanceof Element) {
 			const isStartReached = scroller.scrollTop === 0;
-			if (isStartReached && searchChannelNext && !searchChannelNext.isLoading) {
+			if (
+				isStartReached &&
+				searchChannelNext &&
+				!searchChannelNext.isLoading &&
+				!updateStore.isActive
+			) {
 				loadNextMessages().then(messages => onNextChannelResponse(messages));
 			}
 		}
