@@ -115,11 +115,11 @@ const MessagesVirtualizedList = (props: Props) => {
 		}
 	}, 100);
 
-	const onEndReached = useDebouncedCallback(() => {
+	const onEndReached = () => {
 		if (searchChannelPrev && !searchChannelPrev.isLoading && !searchChannelPrev.isEndReached) {
 			loadPrevMessages().then(messages => onPrevChannelResponse(messages));
 		}
-	}, 100);
+	};
 
 	const onScroll = (event: React.UIEvent<'div'>) => {
 		event.persist();
@@ -140,6 +140,8 @@ const MessagesVirtualizedList = (props: Props) => {
 		<Virtuoso
 			data={messageList}
 			firstItemIndex={startIndex}
+			atBottomStateChange={onEndReached}
+			atBottomThreshold={20}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}

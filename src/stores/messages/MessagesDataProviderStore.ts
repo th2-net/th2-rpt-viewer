@@ -349,7 +349,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
 
 		if (prevMessages.length > 0 || nextMessages.length > 0) {
-			this.startIndex -= nextMessages.length;
+			this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
 
 			let newMessagesList = prevMessages.length
 				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
