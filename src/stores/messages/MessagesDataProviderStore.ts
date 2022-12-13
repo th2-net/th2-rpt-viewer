@@ -293,10 +293,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length) {
-			let newMessagesList = [
-				...this.messages,
-				...messages.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp)),
-			];
+			let newMessagesList = [...this.messages, ...messages];
 
 			this.startIndex += messages.length;
 
@@ -327,12 +324,22 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.lastNextChannelResponseTimestamp = null;
 
 		const nextMessages = messages
-			.filter(msg => !this.messages.map(msg => msg.messageId).includes(msg.messageId))
+			.filter(message => !this.messages.map(msg => msg.messageId).includes(message.messageId))
 			.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
 
 		this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
 
-		this.messages = [...nextMessages, ...this.messages];
+		if (nextMessages.length) {
+			let newMessagesList = [...nextMessages, ...this.messages];
+
+			this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
+
+			if (newMessagesList.length > this.messagesLimit) {
+				newMessagesList = newMessagesList.slice(-this.messagesLimit);
+			}
+
+			this.messages = newMessagesList;
+		}
 	};
 
 	@action
