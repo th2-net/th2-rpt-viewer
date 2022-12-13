@@ -109,7 +109,6 @@ const MessagesVirtualizedList = (props: Props) => {
 			const scroller = event.target;
 			if (scroller instanceof Element) {
 				const isStartReached = scroller.scrollTop === 0;
-				const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
 				if (
 					isStartReached &&
 					searchChannelNext &&
@@ -122,23 +121,16 @@ const MessagesVirtualizedList = (props: Props) => {
 				) {
 					loadNextMessages().then(messages => onNextChannelResponse(messages));
 				}
-
-				if (
-					isEndReached &&
-					searchChannelPrev &&
-					!searchChannelPrev.isLoading &&
-					!searchChannelPrev.isEndReached &&
-					!isHorizontal &&
-					((wheelScrollDirection === undefined &&
-						scroller.parentElement?.className === 'messages-list') ||
-						wheelScrollDirection === 'previous')
-				) {
-					loadPrevMessages().then(messages => onPrevChannelResponse(messages));
-				}
 			}
 		},
 		100,
 	);
+
+	const onEndReached = useDebouncedCallback(() => {
+		if (searchChannelPrev && !searchChannelPrev.isLoading && !searchChannelPrev.isEndReached) {
+			loadPrevMessages().then(messages => onPrevChannelResponse(messages));
+		}
+	}, 100);
 
 	const onScroll = (event: React.UIEvent<'div'>) => {
 		event.persist();
@@ -166,6 +158,7 @@ const MessagesVirtualizedList = (props: Props) => {
 			className={className}
 			itemsRendered={onMessagesRendered}
 			onScroll={onScroll}
+			endReached={onEndReached}
 			components={{
 				Header: function MessagesListSpinnerNext() {
 					return (
