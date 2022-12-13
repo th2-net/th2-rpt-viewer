@@ -294,6 +294,10 @@ export default class EventsStore {
 			filter: this.filterStore.filter,
 			targetEventId: savedEventNode.eventId,
 		});
+
+		if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
+			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
+		}
 	};
 
 	@action
