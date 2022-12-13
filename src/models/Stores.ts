@@ -24,7 +24,7 @@ export interface MessagesDataStore {
 		nextChannelListeners?: Partial<MessageSSEEventListeners>,
 		prevChannelListeners?: Partial<MessageSSEEventListeners>,
 	) => Promise<void>;
-	onNextChannelResponse: (messages: EventMessage[], isAutoUpdate?: boolean) => void;
+	onNextChannelResponse: (messages: EventMessage[]) => void;
 	onPrevChannelResponse: (messages: EventMessage[]) => void;
 	resetState: () => void;
 	getFilterParams: () => MessagesSSEParams;

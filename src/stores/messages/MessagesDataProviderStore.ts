@@ -297,15 +297,16 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length) {
-			let newMessagesList = [...this.messages, ...messages];
+			let newMessagesList = [
+				...this.messages,
+				...messages.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp)),
+			];
 
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(-this.messagesLimit);
 			}
 
-			this.messages = newMessagesList.sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = [...new Map(newMessagesList.map(item => [item.messageId, item])).values()];
 		}
 	};
 
@@ -357,9 +358,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
 			}
-			this.messages = newMessagesList.sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = [...new Map(newMessagesList.map(item => [item.messageId, item])).values()];
 		}
 	};
 
