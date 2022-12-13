@@ -100,31 +100,15 @@ const MessagesVirtualizedList = (props: Props) => {
 		firstNextChunkIsLoaded,
 	]);
 
-	const debouncedScrollHandler = useDebouncedCallback(
-		(
-			event: React.UIEvent<'div'>,
-			isHorizontal?: boolean,
-			wheelScrollDirection?: 'next' | 'previous',
-		) => {
-			const scroller = event.target;
-			if (scroller instanceof Element) {
-				const isStartReached = scroller.scrollTop === 0;
-				if (
-					isStartReached &&
-					searchChannelNext &&
-					!searchChannelNext.isLoading &&
-					!isHorizontal &&
-					!updateStore.isActive &&
-					((wheelScrollDirection === undefined &&
-						scroller.parentElement?.className === 'messages-list') ||
-						wheelScrollDirection === 'next')
-				) {
-					loadNextMessages().then(messages => onNextChannelResponse(messages));
-				}
+	const debouncedScrollHandler = useDebouncedCallback((event: React.UIEvent<'div'>) => {
+		const scroller = event.target;
+		if (scroller instanceof Element) {
+			const isStartReached = scroller.scrollTop === 0;
+			if (isStartReached && searchChannelNext && !searchChannelNext.isLoading) {
+				loadNextMessages().then(messages => onNextChannelResponse(messages));
 			}
-		},
-		100,
-	);
+		}
+	}, 100);
 
 	const onEndReached = useDebouncedCallback(() => {
 		if (searchChannelPrev && !searchChannelPrev.isLoading && !searchChannelPrev.isEndReached) {
