@@ -118,7 +118,15 @@
 	}
 
 	& input {
+		outline: none;
 		flex-grow: 1;
+		border: 1px solid var(--input-border);
+		background-color: var(--input-background);
+		color: var(--text-input);
+
+		&:focus {
+			border-color: var(--info-color);
+		}
 	}
 
 	.chip {
@@ -136,7 +144,6 @@
 	grid-template-rows: auto 1fr;
 	flex-grow: 1;
 }
-
 
 .rules-select {
 	&__button {

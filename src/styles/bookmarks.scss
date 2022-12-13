@@ -80,6 +80,10 @@
 			&:disabled {
 				opacity: 0.5;
 			}
+
+			&:focus {
+				border-color: var(--info-color);
+			}
 		}
 	}
 }
