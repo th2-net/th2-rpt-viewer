@@ -21,23 +21,25 @@ import Empty from '../../util/Empty';
 import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { raf } from '../../../helpers/raf';
-import { EventAction } from '../../../models/EventAction';
 import EventTree from './EventTree';
-import { useExperimentalApiEventStore } from './ExperimentalAPIEventStore';
+import {
+	useExperimentalApiEventStore,
+	ExperimentalAPIEventStore,
+} from './ExperimentalAPIEventStore';
 import '../../../styles/action.scss';
 
 interface Props {
-	selectedNode: EventAction | null;
+	store: ExperimentalAPIEventStore;
 }
 
 const START_INDEX = 100_000;
 
 function EventTreeListBase(props: Props) {
-	const { selectedNode } = props;
-
-	const eventStore = useExperimentalApiEventStore();
+	const eventStore = props.store;
+	const { selectedEvent } = eventStore;
 
 	const nodes = eventStore.tree;
+	console.log(nodes);
 
 	const eventsInViewport = React.useRef<ListItem<string>[]>([]);
 
@@ -69,7 +71,10 @@ function EventTreeListBase(props: Props) {
 		}
 		let adjustedIndex = firstItemIndex;
 
-		if (selectedNode && expandedMapChanges.some(([eventId]) => eventId === selectedNode.eventId)) {
+		if (
+			selectedEvent &&
+			expandedMapChanges.some(([eventId]) => eventId === selectedEvent.eventId)
+		) {
 			isExpandedMapChanged = false;
 		}
 
@@ -77,11 +82,11 @@ function EventTreeListBase(props: Props) {
 			let originalIndex = -1;
 			let relativeEventId: string | null;
 			if (
-				selectedNode &&
-				eventsInViewport.current.find(event => event?.data === selectedNode.eventId)
+				selectedEvent &&
+				eventsInViewport.current.find(event => event?.data === selectedEvent.eventId)
 			) {
-				relativeEventId = selectedNode.eventId;
-				originalIndex = currentNodes.findIndex(eventId => eventId === selectedNode.eventId);
+				relativeEventId = selectedEvent.eventId;
+				originalIndex = currentNodes.findIndex(eventId => eventId === selectedEvent.eventId);
 			} else {
 				const firstListItem = eventsInViewport.current[0];
 				relativeEventId = firstListItem?.data || null;
@@ -96,11 +101,9 @@ function EventTreeListBase(props: Props) {
 
 			setFirstItemIndex(adjustedIndex);
 		}
-
-		if (currentNodes.length !== nodes.length) {
-			setCurrentNodes(nodes.slice());
-		}
-	}, [nodes, selectedNode, currentNodes, firstItemIndex]);
+		console.log(currentNodes.length, nodes.length);
+		setCurrentNodes(nodes.slice());
+	}, [nodes, selectedEvent, firstItemIndex]);
 
 	React.useEffect(() => {
 		try {
@@ -146,6 +149,8 @@ const EventTreeList = observer(EventTreeListBase);
 function EventTreeListWrapper() {
 	const store = useExperimentalApiEventStore();
 
+	console.log(store.rootIds);
+
 	if (store.rootIds.length === 0) {
 		if (store.isLoadingRootIds) {
 			return <SplashScreen />;
@@ -161,7 +166,7 @@ function EventTreeListWrapper() {
 		);
 	}
 
-	return <EventTreeList selectedNode={store.selectedEvent} />;
+	return <EventTreeList store={store} />;
 }
 
 export default observer(EventTreeListWrapper);

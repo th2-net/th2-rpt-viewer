@@ -18,7 +18,6 @@ import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import EventsFilter from '../models/filter/EventsFilter';
 import MessagesFilter from '../models/filter/MessagesFilter';
-import { TimeRange } from '../models/Timestamp';
 import {
 	SSEParamsEvents,
 	EventsFiltersInfo,
@@ -30,6 +29,7 @@ import {
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
 import { DirectionalStreamInfo } from '../models/StreamInfo';
+import { MultipleStringFilter } from '../components/search-panel/SearchPanelFilters';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -52,6 +52,8 @@ export interface EventApiSchema {
 			offset?: number;
 			parentId?: string;
 			probe?: boolean;
+			name?: string[];
+			type?: string[];
 		},
 		signal?: AbortSignal,
 	) => Promise<string[]>;
@@ -107,11 +109,7 @@ export interface MessageApiSchema {
 
 export interface SSESchema {
 	getEventSource: (config: EventSourceConfig) => EventSource;
-	getEventsTreeSource: (
-		timeRange: TimeRange,
-		filter: EventsFilter | null,
-		sseParams: SSEParamsEvents,
-	) => EventSource;
+	getEventsTreeSource: (filter: EventsFilter | null, sseParams: SSEParamsEvents) => EventSource;
 	getFilters: <T>(filterType: 'events' | 'messages') => Promise<T[]>;
 	getEventFilters: () => Promise<EventSSEFilters[]>;
 	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;

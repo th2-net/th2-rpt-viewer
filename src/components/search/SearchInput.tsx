@@ -22,9 +22,9 @@ import SearchToken from '../../models/search/SearchToken';
 import Bubble from '../util/Bubble';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
 import { raf } from '../../helpers/raf';
-import { useWorkspaceEventStore } from '../../hooks/useEventWindowStore';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import '../../styles/search.scss';
+import { useExperimentalApiEventStore } from '../event/experimental-api/ExperimentalAPIEventStore';
 
 export const REACTIVE_SEARCH_DELAY = 500;
 const INPUT_PLACEHOLDER = 'Use Space to separate different words & Tab to finish';
@@ -310,7 +310,7 @@ interface SearchInputProps {
 }
 
 const SearchInput = (props: SearchInputProps) => {
-	const { searchStore } = useWorkspaceEventStore();
+	const { searchStore } = useExperimentalApiEventStore();
 
 	return (
 		<SearchInputBase

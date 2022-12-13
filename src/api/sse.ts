@@ -46,7 +46,7 @@ export interface SSEFilterParameter {
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
-export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status' | 'text';
+export type EventSSEFilters = 'type' | 'name';
 export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body' | 'text';
 
 export interface EventsFiltersInfo {
@@ -96,7 +96,7 @@ export interface SSEParamsEvents {
 	resultCountLimit?: number;
 	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
-	limitForParent?: number;
+	limit?: number;
 }
 
 export interface MessageIdsEvent {
@@ -109,35 +109,22 @@ export interface MessageIdsEvent {
 
 export type SSEParams = EventSSEParams | MessagesSSEParams;
 
-type ParamsFromFilter = Record<string, string | string[] | boolean>;
+type ParamsFromFilter = Record<string, string[]>;
 
 function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
-	const filters = getObjectKeys(filter).filter(filterName =>
-		filterName === 'status'
-			? filter[filterName].values !== 'any'
-			: filter[filterName].values.length > 0,
-	);
-	return filters.reduce(
-		(params, filterName) => {
-			const currentFilter = filter[filterName];
-			const currentFilterParams: ParamsFromFilter = {};
+	const filters = getObjectKeys(filter).filter(filterName => filter[filterName].values.length > 0);
 
-			currentFilterParams[`${filterName}-${filterName === 'status' ? 'value' : 'values'}`] =
-				currentFilter.values;
-			if ('negative' in currentFilter) {
-				currentFilterParams[`${filterName}-negative`] = currentFilter.negative;
-			}
-			if ('conjunct' in currentFilter) {
-				currentFilterParams[`${filterName}-conjunct`] = currentFilter.conjunct;
-			}
+	return filters.reduce((params, filterName) => {
+		const currentFilter = filter[filterName];
+		const currentFilterParams: ParamsFromFilter = {};
 
-			return {
-				...params,
-				...currentFilterParams,
-			};
-		},
-		{ filters },
-	);
+		currentFilterParams[`${filterName}`] = currentFilter.values;
+
+		return {
+			...params,
+			...currentFilterParams,
+		};
+	}, {});
 }
 
 export function getMessagesSSEParamsFromFilter(
@@ -189,15 +176,13 @@ const sseApi: SSESchema = {
 		const params = createURLSearchParams({ ...queryParams });
 		return new EventSource(`backend/search/sse/${type}s/?${params}`);
 	},
-	getEventsTreeSource: (timeRange, filter, sseParams) => {
+	getEventsTreeSource: (filter, sseParams) => {
 		const paramFromFilter = filter ? getEventsSSEParamsFromFilter(filter) : {};
 		const params = createURLSearchParams({
-			startTimestamp: timeRange[0],
-			endTimestamp: timeRange[1],
 			...paramFromFilter,
 			...sseParams,
 		});
-		return new EventSource(`backend/search/sse/events/?${params}`);
+		return new EventSource(`backend/eventChildre?${params}`);
 	},
 	getFilters: async <T>(filterType: 'events' | 'messages'): Promise<T[]> => {
 		const res = await fetch(`backend/filters/sse-${filterType}`);
@@ -221,18 +206,6 @@ const sseApi: SSESchema = {
 		);
 
 		return eventFilterInfo.map(filterInfo => {
-			if (filterInfo.name === 'status') {
-				// eslint-disable-next-line no-param-reassign
-				filterInfo.parameters = [
-					{
-						type: { value: 'switcher' },
-						name: 'value',
-						defaultValue: 'any',
-						hint: 'passed, failed, any',
-					},
-				];
-			}
-
 			return filterInfo;
 		});
 	},

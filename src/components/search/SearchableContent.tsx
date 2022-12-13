@@ -16,10 +16,10 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useWorkspaceEventStore } from '../../hooks';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import { createBemBlock } from '../../helpers/styleCreators';
 import '../../styles/search.scss';
+import { useExperimentalApiEventStore } from '../event/experimental-api/ExperimentalAPIEventStore';
 
 type Props = {
 	content: string;
@@ -27,7 +27,7 @@ type Props = {
 };
 
 function SearchableContent({ content, eventId }: Props) {
-	const { searchStore } = useWorkspaceEventStore();
+	const { searchStore } = useExperimentalApiEventStore();
 
 	if (!searchStore.results.includes(eventId)) {
 		return <>{content}</>;

@@ -75,9 +75,7 @@ export default class EventsStore {
 			flattenedListView: initialState.flattenedListView,
 			panelArea: initialState.panelArea,
 		});
-		this.searchStore = new EventsSearchStore(this.api, this, {
-			searchPatterns: initialState.search,
-		});
+
 		this.eventDataStore = new EventsDataStore(this, this.filterStore, this.api);
 
 		this.init(defaultState);
@@ -134,10 +132,7 @@ export default class EventsStore {
 		if (this.eventDataStore.targetNodeParents.length) {
 			const rootNode = this.eventDataStore.targetNodeParents[0];
 
-			if (
-				(isRootEvent(rootNode) || rootNode.isUnknown) &&
-				!this.eventDataStore.rootEventIds.includes(rootNode.eventId)
-			) {
+			if (rootNode.isUnknown && !this.eventDataStore.rootEventIds.includes(rootNode.eventId)) {
 				rootIds.push(rootNode.eventId);
 			}
 		}
@@ -162,10 +157,7 @@ export default class EventsStore {
 		if (this.eventDataStore.targetNodeParents.length) {
 			const rootNode = this.eventDataStore.targetNodeParents[0];
 
-			if (
-				(isRootEvent(rootNode) || rootNode.isUnknown) &&
-				!this.eventDataStore.rootEventIds.includes(rootNode.eventId)
-			) {
+			if (rootNode.isUnknown && !this.eventDataStore.rootEventIds.includes(rootNode.eventId)) {
 				rootIds.push(rootNode.eventId);
 			}
 		}

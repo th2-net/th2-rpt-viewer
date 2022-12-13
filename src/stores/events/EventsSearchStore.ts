@@ -14,18 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction, runInAction } from 'mobx';
 import debounce from 'lodash.debounce';
 import SearchWorker from '../../search.worker';
 import SearchToken from '../../models/search/SearchToken';
 import ApiSchema from '../../api/ApiSchema';
-import EventsStore from './EventsStore';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import { COLORS as SearchTokenColors } from '../../components/search/SearchInput';
 import { nextCyclicItemByIndex } from '../../helpers/array';
 import EventsFilter from '../../models/filter/EventsFilter';
-import { EventTreeNode } from '../../models/EventAction';
-import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
+import { ExperimentalAPIEventStore } from '../../components/event/experimental-api/ExperimentalAPIEventStore';
 
 const defaultState = {
 	tokens: [],
@@ -43,7 +41,7 @@ type initialState = Partial<{
 export default class EventsSearchStore {
 	constructor(
 		private api: ApiSchema,
-		private eventsStore: EventsStore,
+		private eventsStore: ExperimentalAPIEventStore,
 		initialState?: initialState,
 	) {
 		this.init(initialState);
@@ -163,16 +161,12 @@ export default class EventsSearchStore {
 		return filter;
 	};
 
-	private channel: EventsSSEChannel | null = null;
-
 	private searchResultsUpdateReaction: IReactionDisposer | null = null;
 
 	private worker: typeof SearchWorker | null = null;
 
 	@action
-	public fetchSearchResults = (searchTokens: SearchToken[]) => {
-		this.channel?.stop();
-		this.worker?.terminate();
+	public fetchSearchResults = async (searchTokens: SearchToken[]) => {
 		this.rawResults = [];
 		this.scrolledIndex = null;
 
@@ -182,67 +176,31 @@ export default class EventsSearchStore {
 
 		if (searchTokens.length === 0) return;
 
-		this.isLoadingSearchResults = true;
+		runInAction(() => (this.isLoadingSearchResults = true));
+		try {
+			const ids = await this.api.events.getChildrenIds({
+				limit: 1000,
+				name: this.getSearchFilter(searchTokens)?.name.values,
+			});
+			runInAction(() => {
+				this.rawResults = ids || [];
+				this.isLoadingSearchResults = false;
+			});
+		} catch (error) {
+			runInAction(() => {
+				this.isLoadingSearchResults = false;
+				this.resetState();
+			});
+		}
 
-		this.channel = new EventsSSEChannel(
-			{
-				filter: this.getSearchFilter(searchTokens),
-				sseParams: {
-					searchDirection: 'next',
-				},
-				timeRange: this.eventsStore.filterStore.range,
-			},
-			{
-				onError: this.onSearchError,
-				onResponse: this.onSearchResultsResponse,
-				onClose: this.onClose,
-			},
-		);
+		const results = this.eventsStore.tree.filter(node => this.rawResults.includes(node));
 
-		this.worker = new SearchWorker();
+		const currentIndex = this.currentEventId ? results.indexOf(this.currentEventId) : null;
 
-		this.worker.onmessage = this.onSearchResultsUpdateWorker;
-
-		this.searchResultsUpdateReaction = reaction(
-			() =>
-				[
-					this.rawResults,
-					this.eventsStore.viewStore.flattenedListView
-						? this.eventsStore.flattenedEventList
-						: this.eventsStore.flatExpandedList,
-				] as [string[], EventTreeNode[]],
-			([rawResults, nodes]) => {
-				this.isProccessingSearchResults = Boolean(rawResults.length > 0 && nodes.length > 0);
-
-				this.onSearchDataUpdate(rawResults, nodes);
-			},
-		);
-
-		this.channel.subscribe();
-	};
-
-	@action
-	private onSearchResultsResponse = (events: EventTreeNode[]) => {
-		this.rawResults = [...this.rawResults, ...events.map(event => event.eventId)];
-	};
-
-	private onSearchError = () => {
-		this.resetState();
-	};
-
-	@action
-	private onSearchResultsUpdateWorker = (e: MessageEvent) => {
-		const { results, currentIndex } = e.data;
 		this.scrolledIndex = currentIndex;
 		this.results = results;
 
 		this.isProccessingSearchResults = false;
-	};
-
-	@action
-	private onClose = (events: EventTreeNode[]) => {
-		this.onSearchResultsResponse(events);
-		this.isLoadingSearchResults = false;
 	};
 
 	public dispose = () => {
@@ -257,9 +215,6 @@ export default class EventsSearchStore {
 		this.currentEventId = null;
 		this.results = [];
 		this.rawResults = [];
-
-		this.channel?.stop();
-		this.channel = null;
 
 		if (this.searchResultsUpdateReaction) {
 			this.searchResultsUpdateReaction();
@@ -285,12 +240,4 @@ export default class EventsSearchStore {
 		this.resetState();
 		this.fetchSearchResults(this.tokens);
 	};
-
-	private onSearchDataUpdate = debounce((rawResults: string[], nodes: EventTreeNode[]) => {
-		this.worker?.postMessage({
-			rawResults: rawResults.slice(),
-			nodes: nodes.slice(),
-			currentEventId: this.currentEventId,
-		});
-	}, 600);
 }

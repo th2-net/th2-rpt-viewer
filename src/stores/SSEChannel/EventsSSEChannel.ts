@@ -45,7 +45,6 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 		this.clearFetchedChunkSubscription();
 
 		this.channel = api.sse.getEventsTreeSource(
-			this.searchParams.timeRange,
 			this.searchParams.filter,
 			this.searchParams.sseParams,
 		);

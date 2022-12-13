@@ -351,8 +351,18 @@ export class SearchStore {
 	getEventFilters = async () => {
 		this.isEventsFilterLoading = true;
 		try {
-			const filters = await this.api.sse.getEventFilters();
-			const filtersInfo = await this.api.sse.getEventsFiltersInfo(filters);
+			const filtersInfo = [
+				{
+					name: 'name',
+					hint: '',
+					parameters: [{ name: 'values', defaultValue: null, type: { value: 'string[]' } }],
+				},
+				{
+					name: 'type',
+					hint: '',
+					parameters: [{ name: 'values', defaultValue: null, type: { value: 'string[]' } }],
+				},
+			] as EventsFiltersInfo[];
 			runInAction(() => {
 				this.eventFilterInfo = filtersInfo;
 				this.eventsFilter = getDefaultEventsFiltersState(filtersInfo);

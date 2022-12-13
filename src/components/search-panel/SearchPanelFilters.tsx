@@ -53,12 +53,8 @@ export type SwitcherFilter = {
 export type Filter = StringFilter | MultipleStringFilter | SwitcherFilter;
 
 export type EventFilterState = {
-	attachedMessageId: StringFilter;
 	type: MultipleStringFilter;
-	body: MultipleStringFilter;
 	name: MultipleStringFilter;
-	status: SwitcherFilter;
-	text: MultipleStringFilter;
 };
 
 export type MessageFilterState = {

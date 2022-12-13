@@ -76,9 +76,6 @@ export default class RootStore {
 		if (activeWorkspace && isWorkspaceStore(activeWorkspace)) {
 			const clearFilter = (filter: Partial<MessageFilterState> | Partial<EventsFilter>) => {
 				const tempFilter = toJS(filter);
-				if ('status' in tempFilter && tempFilter?.status?.values === 'any') {
-					delete tempFilter.status;
-				}
 				getObjectKeys(tempFilter).forEach(filterKey => {
 					if (tempFilter[filterKey]?.values.length === 0) delete tempFilter[filterKey];
 				});

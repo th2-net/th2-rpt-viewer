@@ -18,8 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
-import { useWorkspaceEventStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
-import { EventSSEFilters } from '../../api/sse';
+import { useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
 import { Filter, EventFilterState } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
@@ -28,9 +27,11 @@ import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
+import { useExperimentalApiEventStore } from '../event/experimental-api/ExperimentalAPIEventStore';
+import { EventFilters } from '../../api/event';
 
 type CurrentFilterValues = {
-	[key in EventSSEFilters]: string;
+	[key in EventFilters]: string;
 };
 
 function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
@@ -45,10 +46,10 @@ function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
 		: null;
 }
 
-const priority = ['attachedMessageId', 'type', 'body', 'name', 'status', 'text'];
+const priority = ['name', 'type'];
 
 function EventsFilterPanel() {
-	const eventsStore = useWorkspaceEventStore();
+	const eventsStore = useExperimentalApiEventStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
 	const { eventsHistory } = useFiltersHistoryStore();
@@ -71,7 +72,7 @@ function EventsFilterPanel() {
 	}, [filter]);
 
 	const getToggler = React.useCallback(
-		(filterName: EventSSEFilters, paramName: keyof Filter) => {
+		(filterName: EventFilters, paramName: keyof Filter) => {
 			return function toggler() {
 				if (filter) {
 					const filterValue = filter[filterName];
@@ -89,7 +90,7 @@ function EventsFilterPanel() {
 	);
 
 	const getValuesUpdater = React.useCallback(
-		<T extends 'string' | 'string[]' | 'switcher'>(name: EventSSEFilters) => {
+		<T extends 'string' | 'string[]' | 'switcher'>(name: EventFilters) => {
 			return function valuesUpdater(values: T extends 'string[]' ? string[] : string) {
 				if (filter) {
 					setFilter({ [name]: { ...filter[name], values } });
@@ -100,7 +101,7 @@ function EventsFilterPanel() {
 	);
 
 	const setCurrentValue = React.useCallback(
-		(filterName: EventSSEFilters) => {
+		(filterName: EventFilters) => {
 			return function setValue(value: string) {
 				if (currentFilterValues) {
 					setCurrentFilterValues({
@@ -162,16 +163,6 @@ function EventsFilterPanel() {
 
 			let filterInput: FilterRowConfig | null = null;
 			switch (filterValues.type) {
-				case 'string':
-					filterInput = {
-						id: filterName,
-						type: 'string',
-						value: filterValues.values,
-						setValue: getValuesUpdater(filterName),
-						autocompleteList,
-						hint: filterValues.hint,
-					};
-					break;
 				case 'string[]':
 					filterInput = {
 						id: filterName,
@@ -184,19 +175,6 @@ function EventsFilterPanel() {
 						hint: filterValues.hint,
 					};
 					break;
-				case 'switcher':
-					filterInput = {
-						id: filterName,
-						disabled: false,
-						label,
-						type: 'switcher',
-						value: filterValues.values,
-						setValue: getValuesUpdater(filterName),
-						possibleValues: ['passed', 'failed', 'any'],
-						defaultValue: 'any',
-						labelClassName: 'event-filters-panel-label',
-					};
-					break;
 				default:
 					break;
 			}
@@ -206,6 +184,7 @@ function EventsFilterPanel() {
 		});
 	}, [filter, eventsHistory, currentFilterValues, setCurrentValue, getValuesUpdater, getToggler]);
 
+	console.log(filterConfig);
 	return (
 		<FilterPanel
 			isLoading={eventDataStore.isLoading}

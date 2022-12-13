@@ -42,12 +42,7 @@ function getFilterFromInitialState(eventsFilter: Partial<EventsFilter> | null) {
 			...filterWithTypes,
 			[currentFilter]: {
 				...filter,
-				type:
-					currentFilter === 'status'
-						? 'switcher'
-						: typeof filter.values === 'string'
-						? 'string'
-						: 'string[]',
+				type: typeof filter.values === 'string' ? 'string' : 'string[]',
 			},
 		};
 	}, {} as EventsFilter);
@@ -114,9 +109,6 @@ export default class EventsFilterStore {
 	public get isEventsFilterApplied(): boolean {
 		if (!this.filter) return false;
 		return getObjectKeys(this.filter).some((filterName: EventSSEFilters) => {
-			if (filterName === 'status') {
-				return this.filter && this.filter[filterName].values !== 'any';
-			}
 			return this.filter !== null && this.filter[filterName].values.length > 0;
 		});
 	}

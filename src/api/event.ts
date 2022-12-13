@@ -19,9 +19,18 @@ import { createURLSearchParams } from '../helpers/url';
 import { EventAction } from '../models/EventAction';
 import { getEventParentId } from '../helpers/event';
 
+export type EventFilters = 'type' | 'name';
+
 const eventHttpApi: EventApiSchema = {
-	getChildrenIds: async ({ limit, offset, parentId, probe = false }, signal) => {
-		const params = createURLSearchParams({ id: parentId, limit, offset, probe });
+	getChildrenIds: async ({ limit, offset, parentId, probe, name, type }, signal) => {
+		const params = createURLSearchParams({
+			id: parentId,
+			limit,
+			offset,
+			probe,
+			'name-values': name,
+			type,
+		});
 		const res = await fetch(`backend/eventChildren?${params}`, {
 			signal,
 		});

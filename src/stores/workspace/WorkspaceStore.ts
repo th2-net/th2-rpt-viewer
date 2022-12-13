@@ -96,7 +96,11 @@ export default class WorkspaceStore {
 			this.workspacesStore.filtersHistoryStore,
 			initialState.events,
 		);
-		this.experimentalAPIEventsStore = new ExperimentalAPIEventStore(initialState.events);
+		this.experimentalAPIEventsStore = new ExperimentalAPIEventStore(
+			initialState.events,
+			this.graphStore,
+			this.searchStore,
+		);
 		this.messagesStore = new MessagesStore(
 			this,
 			this.graphStore,

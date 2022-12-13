@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from 'react';
-import { observable, runInAction, computed, action } from 'mobx';
+import { observable, runInAction, computed, action, reaction } from 'mobx';
 import { EventAction } from '../../../models/EventAction';
 import api from '../../../api';
 import eventHttpApi from '../../../api/event';
@@ -7,9 +7,21 @@ import { isAbortError } from '../../../helpers/fetch';
 import { useWorkspaceStore } from '../../../hooks';
 import { isEventAction } from '../../../helpers/event';
 import { EventStoreDefaultStateType } from '../../../stores/events/EventsStore';
+import { EventFilterState } from '../../search-panel/SearchPanelFilters';
+import EventsSearchStore from '../../../stores/events/EventsSearchStore';
+import ViewStore from '../../../stores/workspace/WorkspaceViewStore';
+import EventsFilterStore from '../../../stores/events/EventsFilterStore';
+import { GraphStore } from '../../../stores/GraphStore';
+import { SearchStore } from '../../../stores/SearchStore';
 
 export class ExperimentalAPIEventStore {
 	private CHILDREN_COUNT_LIMIT = 5;
+
+	public filterStore!: EventsFilterStore;
+
+	public searchStore!: EventsSearchStore;
+
+	public viewStore!: ViewStore;
 
 	@observable rootIds: string[] = [];
 
@@ -31,7 +43,21 @@ export class ExperimentalAPIEventStore {
 
 	@observable scrolledIndex: null | Number = null;
 
-	constructor(initialState: EventStoreDefaultStateType) {
+	@observable filter: EventFilterState | null = null;
+
+	constructor(
+		initialState: EventStoreDefaultStateType,
+		private graphStore: GraphStore,
+		private searchPanelStore: SearchStore,
+	) {
+		this.filterStore = new EventsFilterStore(this.graphStore, this.searchPanelStore);
+
+		this.viewStore = new ViewStore();
+
+		this.searchStore = new EventsSearchStore(api, this, {
+			searchPatterns: initialState?.search as string[],
+		});
+
 		this.getRootIds();
 
 		if (initialState) {
@@ -42,6 +68,8 @@ export class ExperimentalAPIEventStore {
 				this.loadTargetEvent(targetEventId);
 			}
 		}
+
+		reaction(() => this.filter, this.getRootIds);
 	}
 
 	@action
@@ -118,9 +146,15 @@ export class ExperimentalAPIEventStore {
 	getRootIds = async () => {
 		runInAction(() => (this.isLoadingRootIds = true));
 		try {
-			const ids = await api.events.getChildrenIds({});
+			const ids = await api.events.getChildrenIds({
+				limit: 51,
+				probe: false,
+				name: this.filter?.name.values,
+				type: this.filter?.type.values,
+			});
 			runInAction(() => {
 				this.rootIds = ids || [];
+				console.log(this.rootIds);
 				this.isLoadingRootIds = false;
 			});
 		} catch (error) {
@@ -183,6 +217,14 @@ export class ExperimentalAPIEventStore {
 
 	getChildrenNodes(parentId: string): string[] {
 		return this.parentsChildrenMap.get(parentId) || [];
+	}
+
+	applyFilter(filter: EventFilterState) {
+		this.filter = filter;
+	}
+
+	clearFilter() {
+		this.filter = null;
 	}
 }
 

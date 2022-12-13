@@ -42,7 +42,7 @@ module.exports = webpackMerge(commonConfig, {
 		historyApiFallback: true,
 		proxy: {
 			'/': {
-				target: 'http://localhost:8080/',
+				target: 'http://10.100.166.33:8080/',
 				changeOrigin: true,
 				secure: false,
 				pathRewrite: {
