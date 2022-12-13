@@ -195,9 +195,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			this.messages = [...nextMessages, ...prevMessages].sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = [...nextMessages, ...prevMessages];
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
