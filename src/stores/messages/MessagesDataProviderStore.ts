@@ -27,9 +27,7 @@ import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
-import { isEventMessage } from '../../helpers/event';
 import { timestampToNumber } from '../../helpers/date';
-import { isPreviousMessageTimestampEquals } from '../../helpers/message';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
@@ -197,19 +195,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			const messages = [
-				...nextMessages.filter(
-					(val, idx) =>
-						val.messageId !== message?.messageId &&
-						!isPreviousMessageTimestampEquals(val, idx, nextMessages.length, message),
-				),
-				...[message].filter(isEventMessage),
-				...nextMessages.filter((val, idx) =>
-					isPreviousMessageTimestampEquals(val, idx, nextMessages.length, message),
-				),
-				...prevMessages,
-			].sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
-			this.messages = messages;
+			this.messages = Array.from(new Set([...nextMessages, ...prevMessages])).sort(
+				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+			);
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
@@ -311,9 +299,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				newMessagesList = newMessagesList.slice(-this.messagesLimit);
 			}
 
-			this.messages = newMessagesList.sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = newMessagesList;
 		}
 	};
 
@@ -353,6 +339,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		const nextMessages = messages
 			.slice(0, messages.length - prevMessages.length)
+			.filter(msg => !this.messages.map(msg => msg.messageId).includes(msg.messageId))
 			.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
 
 		if (prevMessages.length > 0 || nextMessages.length > 0) {
@@ -365,9 +352,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
 			}
-			this.messages = newMessagesList.sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = newMessagesList;
 		}
 	};
 

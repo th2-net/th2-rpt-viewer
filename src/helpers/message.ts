@@ -47,19 +47,6 @@ export const isMessage = (object: unknown): object is EventMessage => {
 	);
 };
 
-export function isPreviousMessageTimestampEquals(
-	val: EventMessage,
-	index: number,
-	nextMessagesLength: number,
-	message: EventMessage | null,
-) {
-	return (
-		message &&
-		timestampToNumber(val.timestamp) === timestampToNumber(message.timestamp) &&
-		index === nextMessagesLength - 1
-	);
-}
-
 export function normalizeFields(fields: MessageBodyFields) {
 	return Object.entries(fields).reduce((acc, [name, field]) => {
 		return {
