@@ -195,7 +195,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			this.messages = Array.from(new Set([...nextMessages, ...prevMessages])).sort(
+			this.messages = [...nextMessages, ...prevMessages].sort(
 				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
 			);
 		});
@@ -295,6 +295,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		if (messages.length) {
 			let newMessagesList = [...this.messages, ...messages];
 
+			this.startIndex += messages.length;
+
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(-this.messagesLimit);
 			}
@@ -326,31 +328,17 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			msg => msg.messageId !== this.messagesStore.selectedMessageId?.valueOf(),
 		);
 
-		const prevMessages =
-			this.messages.length > 0
-				? messages
-						.filter(
-							message =>
-								timestampToNumber(message.timestamp) <
-								timestampToNumber(this.messages[0].timestamp),
-						)
-						.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp))
-				: [];
-
 		const nextMessages = messages
-			.slice(0, messages.length - prevMessages.length)
 			.filter(msg => !this.messages.map(msg => msg.messageId).includes(msg.messageId))
 			.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
 
-		if (prevMessages.length > 0 || nextMessages.length > 0) {
+		if (nextMessages.length) {
+			let newMessagesList = [...nextMessages, ...this.messages];
+
 			this.startIndex -= nextMessages.length;
 
-			let newMessagesList = prevMessages.length
-				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
-				: [...nextMessages, ...this.messages];
-
 			if (newMessagesList.length > this.messagesLimit) {
-				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
+				newMessagesList = newMessagesList.slice(-this.messagesLimit);
 			}
 			this.messages = newMessagesList;
 		}
