@@ -208,6 +208,10 @@ export default class MessagesStore {
 				streams: [...new Set([...streams, message.sessionId])],
 			});
 		}
+
+		if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
+			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
+		}
 	};
 
 	@action
