@@ -18,7 +18,7 @@ import { observable, action, computed } from 'mobx';
 import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
 import { IBookmarksStore, IFilterConfigStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
-import { DbData } from 'api/indexedDb';
+import { DbData, IndexedDbStores, SavedWorkspaceState } from 'api/indexedDb';
 import { MessagesSearchResult } from 'modules/search/stores/SearchResult';
 import { SessionHistoryStore } from 'modules/messages/stores/SessionHistoryStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
@@ -28,6 +28,7 @@ import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import { EventMessage } from '../../models/EventMessage';
 import { EventTreeNode, EventAction } from '../../models/EventAction';
+import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 
 const SEARCH_INTERVAL = 15;
 
@@ -64,21 +65,30 @@ export default class WorkspacesStore {
 	}
 
 	@action
-	private init(initialState: WorkspacesUrlState | null) {
+	private async init(initialState: WorkspacesUrlState | null) {
 		if (initialState !== null) {
 			initialState.forEach(async workspaceState =>
 				this.addWorkspace(await this.createWorkspace(workspaceState)),
 			);
 		} else {
-			this.createWorkspace({
-				layout: [0, 100, 0, 0],
-			}).then(workspace => this.addWorkspace(workspace));
+			const workspaces = await this.getWorkspaces();
+			workspaces.forEach(workspaceState =>
+				this.createWorkspace(workspaceState).then(this.addWorkspace),
+			);
 		}
+
+		const savedWorkspaces = await this.api.indexedDb.getStoreKeys<string>(
+			IndexedDbStores.WORKSPACES_STATE,
+		);
+
+		savedWorkspaces
+			.filter(workspaceId => !this.workspaces.find(workspace => workspace.id === workspaceId))
+			.forEach(this.removeSavedWorkspaceState);
 	}
 
-	@action
-	public deleteWorkspace = (workspace: WorkspaceStore) => {
-		this.workspaces.splice(this.workspaces.indexOf(workspace), 1);
+	private removeSavedWorkspaceState = (workspaceId: string) => {
+		this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.WORKSPACES_STATE, workspaceId);
+		this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, workspaceId);
 	};
 
 	@action
@@ -144,6 +154,7 @@ export default class WorkspacesStore {
 		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
 
 		closedWorkspace.dispose();
+		this.removeSavedWorkspaceState(closedWorkspace.id);
 	};
 
 	public syncData = async (unsavedData?: DbData) => {
@@ -162,5 +173,23 @@ export default class WorkspacesStore {
 
 	public onQuotaExceededError = (unsavedData?: DbData) => {
 		this.rootStore.handleQuotaExceededError(unsavedData);
+	};
+
+	private getWorkspaces = async (): Promise<WorkspaceInitialState[]> => {
+		const defaultWorkspace = [
+			{
+				layout: [0, 100, 0, 0] as WorkspacePanelsLayout,
+			},
+		];
+
+		const savedWorkspaces = await this.api.indexedDb.getStoreValues<SavedWorkspaceState>(
+			IndexedDbStores.WORKSPACES_STATE,
+		);
+
+		if (savedWorkspaces && savedWorkspaces.length > 0) {
+			return savedWorkspaces;
+		}
+
+		return defaultWorkspace;
 	};
 }

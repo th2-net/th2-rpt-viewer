@@ -62,6 +62,7 @@ export class SearchStore implements ISearchStore {
 	private subscriptions: IReactionDisposer[] = [];
 
 	constructor(
+		private workspaceId: string,
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
 		private filtersHistory: FiltersHistoryStore,
@@ -97,6 +98,7 @@ export class SearchStore implements ISearchStore {
 		if (formType === this.formType) {
 			return;
 		}
+		// sync timestamps between filter stores
 		const stores = [this.eventsFilterStore, this.messagesFilterStore];
 		if (formType === 'event') {
 			stores.reverse();
@@ -109,10 +111,7 @@ export class SearchStore implements ISearchStore {
 
 	@computed
 	public get isSearching() {
-		if (this.formType === 'event') {
-			return Boolean(this.eventsLoader?.isLoading);
-		}
-		return Boolean(this.messagesLoader?.isLoading);
+		return Boolean(this.messagesLoader?.isLoading || this.eventsLoader?.isLoading);
 	}
 
 	@action
@@ -120,6 +119,7 @@ export class SearchStore implements ISearchStore {
 		if (this.formType === 'message') {
 			let searchResult = SearchResult.fromFilterStore(
 				this.messagesFilterStore,
+				this.workspaceId,
 			) as MessagesSearchResult | null;
 
 			if (searchResult) {
@@ -143,6 +143,7 @@ export class SearchStore implements ISearchStore {
 		} else {
 			let searchResult = SearchResult.fromFilterStore(
 				this.eventsFilterStore,
+				this.workspaceId,
 			) as EventsSearchResult | null;
 
 			if (searchResult) {
@@ -261,14 +262,14 @@ export class SearchStore implements ISearchStore {
 
 	private getSearchHistory = async () => {
 		try {
-			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
+			const searchHistory = await this.api.indexedDb.getData<SearchHistory>(
 				IndexedDbStores.SEARCH_HISTORY,
+				this.workspaceId,
 			);
-			const lastSearchItem = searchHistory[searchHistory.length - 1];
-			if (lastSearchItem && SearchResult.isValidSearchHistory(lastSearchItem)) {
+			if (searchHistory && SearchResult.isValidSearchHistory(searchHistory)) {
 				runInAction(() => {
-					if (lastSearchItem.type === 'event') {
-						const state = lastSearchItem as EventsSearchHistory;
+					if (searchHistory.type === 'event') {
+						const state = searchHistory as EventsSearchHistory;
 						const eventSearchResult = new EventsSearchResult(state);
 						this.formType = 'event';
 						this.eventsFilterStore.setEventsFilter(state.filter);
@@ -277,7 +278,7 @@ export class SearchStore implements ISearchStore {
 
 						this.currentSearch = eventSearchResult;
 					} else {
-						const state = lastSearchItem as MessagesSearchHistory;
+						const state = searchHistory as MessagesSearchHistory;
 						const { filter, startTimestamp, endTimestamp, streams } = state;
 						const messageSearchResult = new MessagesSearchResult(state);
 
@@ -301,16 +302,7 @@ export class SearchStore implements ISearchStore {
 
 	private saveSearchResult = async (search: SearchHistory) => {
 		try {
-			const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
-				IndexedDbStores.SEARCH_HISTORY,
-			);
-			await Promise.all([
-				savedSearchResultKeys.map(key =>
-					this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SESSIONS_HISTORY, key),
-				),
-			]);
-
-			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
+			await this.api.indexedDb.updateDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
 			if (isQuotaExceededError(error)) {
 				this.workspacesStore.onQuotaExceededError(search);

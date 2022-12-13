@@ -58,7 +58,13 @@ export default class RootStore {
 			if (window.location.search.split('&').length > 1) {
 				throw new Error('Only one query parameter expected.');
 			}
+
+			if (!window.location.search) {
+				return null;
+			}
+
 			const searchParams = new URLSearchParams(window.location.search);
+
 			const filtersToPin = searchParams.get('filters');
 			const workspacesUrlState = searchParams.get('workspaces');
 			const timestamp = searchParams.get('timestamp');

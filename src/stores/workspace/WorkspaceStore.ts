@@ -14,9 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, reaction, toJS } from 'mobx';
+import { action, computed, observable, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
+import debounce from 'lodash.debounce';
+import { copyTextToClipboard } from 'helpers/copyHandler';
+import { showNotification } from 'helpers/showNotification';
 import { SearchStore } from 'modules/search/stores/SearchStore';
+import { IndexedDbStores, SavedWorkspaceState } from 'api/indexedDb';
 import {
 	IBookmarksStore,
 	IEventsStore,
@@ -42,7 +46,7 @@ import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/message';
 import { TimeRange } from '../../models/Timestamp';
-import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
+import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { timestampToNumber } from '../../helpers/date';
 import { getObjectKeys } from '../../helpers/object';
@@ -60,18 +64,19 @@ export type WorkspaceInitialState = Partial<{
 	timeRange?: TimeRange;
 	interval: number | null;
 	layout: WorkspacePanelsLayout;
+	id: string;
 }>;
 
 export default class WorkspaceStore {
-	public eventsStore: IEventsStore;
+	public readonly id = nanoid();
 
-	public messagesStore: IMessagesStore;
+	public readonly searchStore: ISearchStore;
 
-	public viewStore: WorkspaceViewStore;
+	public readonly eventsStore: IEventsStore;
 
-	public searchStore: ISearchStore;
+	public readonly messagesStore: IMessagesStore;
 
-	public id = nanoid();
+	public readonly viewStore: WorkspaceViewStore;
 
 	constructor(
 		private workspacesStore: WorkspacesStore,
@@ -81,7 +86,12 @@ export default class WorkspaceStore {
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
+		if (initialState.id) {
+			this.id = initialState.id;
+		}
+
 		this.searchStore = new SearchStore(
+			this.id,
 			this.workspacesStore,
 			api,
 			this.workspacesStore.filtersHistoryStore,
@@ -111,45 +121,51 @@ export default class WorkspaceStore {
 		reaction(() => this.sessionsStore.sessions, this.onSessionHistoryChange, {
 			fireImmediately: true,
 		});
+
+		reaction(() => this.state, this.saveWorkspaceState);
 	}
 
 	@computed
-	public get isActive(): boolean {
-		return this.workspacesStore.activeWorkspace === this;
+	public get state(): WorkspaceUrlState {
+		return observable({
+			events: this.eventsStore.urlState,
+			timeRange: this.eventsStore.urlState.range,
+			messages: {
+				startTimestamp: this.messagesStore.filterStore.params.startTimestamp,
+				endTimestamp: this.messagesStore.filterStore.params.endTimestamp,
+				streams: this.messagesStore.filterStore.params.streams,
+				isSoftFilter: this.messagesStore.filterStore.isSoftFilter,
+				sse: this.messagesStore.filterStore.filter,
+			},
+			layout: this.viewStore.panelsLayout,
+		});
 	}
 
-	public getWorkspaceState = (): WorkspacesUrlState => {
-		const eventStoreState = toJS(this.eventsStore.urlState);
+	public copyWorkspaceURL = () => {
+		const urlState: WorkspaceUrlState = toJS(this.state, { recurseEverything: true });
 
-		const messagesStoreState: MessagesStoreURLState = {
-			startTimestamp: this.messagesStore.filterStore.params.startTimestamp,
-			endTimestamp: this.messagesStore.filterStore.params.endTimestamp,
-			streams: this.messagesStore.filterStore.params.streams,
-			isSoftFilter: this.messagesStore.filterStore.isSoftFilter,
-			sse: this.messagesStore.filterStore.filter,
-		};
+		// TODO: remove filter metadata from url
 
-		getObjectKeys(eventStoreState).forEach(key => {
-			if (eventStoreState[key] === undefined) {
-				delete eventStoreState[key];
+		getObjectKeys(urlState.events).forEach(key => {
+			if (urlState.events[key] === undefined) {
+				delete urlState.events[key];
 			}
 		});
 
-		getObjectKeys(messagesStoreState).forEach(key => {
-			if (messagesStoreState[key] === undefined) {
-				delete messagesStoreState[key];
+		getObjectKeys(urlState.messages).forEach(key => {
+			if (urlState.messages[key] === undefined) {
+				delete urlState.messages[key];
 			}
 		});
 
-		return [
-			toJS({
-				events: eventStoreState,
-				messages: messagesStoreState,
-				timeRange: eventStoreState.range,
-				interval: eventStoreState.interval,
-				layout: this.viewStore.panelsLayout,
-			}),
-		];
+		const searchString = new URLSearchParams({
+			workspaces: window.btoa(JSON.stringify([urlState])),
+		});
+
+		copyTextToClipboard(
+			[window.location.origin, window.location.pathname, `?${searchString}`].join(''),
+		);
+		showNotification('Workspace link copied to clipboard');
 	};
 
 	@action
@@ -220,6 +236,15 @@ export default class WorkspaceStore {
 	public dispose = () => {
 		this.messagesStore.dispose();
 		this.eventsStore.dispose();
-		this.searchStore.dispose();
+		this.saveWorkspaceState.cancel();
 	};
+
+	private saveWorkspaceState = debounce(() => {
+		const stateToSave: SavedWorkspaceState = {
+			id: this.id,
+			timestamp: Date.now(),
+			...toJS(this.state, { recurseEverything: true }),
+		};
+		this.api.indexedDb.updateDbStoreItem(IndexedDbStores.WORKSPACES_STATE, stateToSave);
+	}, 3000);
 }

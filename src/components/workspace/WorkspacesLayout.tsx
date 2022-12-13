@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { Observer, observer } from 'mobx-react-lite';
-import { showNotification } from 'helpers/showNotification';
 import { MessagesStoreProvider } from 'modules/messages/components/MessagesStoreProvider';
 import { WorkspaceLinkIcon } from 'components/icons/WorkspaceLinkIcon';
 import MessagesStore from 'modules/messages/stores/MessagesStore';
@@ -25,7 +24,6 @@ import { useWorkspaces } from '../../hooks';
 import Tabs, { Tab, TabListRenderProps } from '../Tabs';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
-import { copyTextToClipboard } from '../../helpers/copyHandler';
 import '../../styles/root.scss';
 
 const WorkspacesLayout = () => {
@@ -56,16 +54,7 @@ const WorkspacesLayout = () => {
 									title='Copy workspace link'
 									onClick={e => {
 										e.stopPropagation();
-										const appState = workspace.getWorkspaceState();
-										const searchString = appState
-											? new URLSearchParams({ workspaces: window.btoa(JSON.stringify(appState)) })
-											: null;
-										copyTextToClipboard(
-											[window.location.origin, window.location.pathname, `?${searchString}`].join(
-												'',
-											),
-										);
-										showNotification('Workspace link copied to clipboard');
+										workspace.copyWorkspaceURL();
 									}}>
 									<WorkspaceLinkIcon />
 								</div>

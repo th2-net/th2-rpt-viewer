@@ -113,7 +113,7 @@ export default class EventsStore implements IEventsStore {
 
 	@computed
 	public get urlState(): EventStoreURLState {
-		return {
+		return observable({
 			filter: this.filterStore.filter || undefined,
 			range: this.filterStore.range,
 			panelArea: this.viewStore.eventsPanelArea,
@@ -124,7 +124,7 @@ export default class EventsStore implements IEventsStore {
 			selectedEventId: this.selectedNode?.eventId,
 			flattenedListView: this.viewStore.flattenedListView,
 			interval: this.filterStore.interval,
-		};
+		});
 	}
 
 	@computed

@@ -26,6 +26,7 @@ import { timestampToNumber } from 'helpers/date';
 import { SearchHistory } from './SearchStore';
 
 interface SearchResultItem<I, F> {
+	workspaceId: string;
 	timestamp: number;
 	type: EntityType;
 	data: I[];
@@ -51,6 +52,7 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 		streams,
 		startTimestamp,
 		type,
+		workspaceId,
 	}: SearchResultItem<T, F>) {
 		this.timestamp = timestamp;
 		this.type = type;
@@ -61,7 +63,10 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 		this.processedObjectsCount = processedObjectsCount;
 		this.streams = streams;
 		this.data = data;
+		this.workspaceId = workspaceId;
 	}
+
+	public readonly workspaceId: string;
 
 	@observable
 	public timestamp: number;
@@ -107,12 +112,16 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 		this.currentTimestamp = this.endTimestamp;
 	};
 
-	static fromFilterStore(filterStore: EventsFilterStore | MessagesFilterStore) {
+	static fromFilterStore(
+		filterStore: EventsFilterStore | MessagesFilterStore,
+		workspaceId: string,
+	) {
 		if (filterStore instanceof MessagesFilterStore) {
 			const { startTimestamp, endTimestamp, streams } = filterStore.params;
 			const filter = filterStore.filter;
 			if (startTimestamp && endTimestamp && filter) {
 				return new MessagesSearchResult({
+					workspaceId,
 					startTimestamp,
 					endTimestamp,
 					currentTimestamp: startTimestamp,
@@ -130,6 +139,7 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 
 		if (timestampFrom && timestampTo && filter) {
 			return new EventsSearchResult({
+				workspaceId,
 				startTimestamp: timestampFrom,
 				endTimestamp: timestampTo,
 				currentTimestamp: timestampFrom,
@@ -145,6 +155,7 @@ export class SearchResult<T extends EventAction | EventMessage, F> {
 	}
 
 	toJs = (): SearchResultItem<T, F> => ({
+		workspaceId: this.workspaceId,
 		startTimestamp: this.startTimestamp,
 		endTimestamp: this.endTimestamp,
 		currentTimestamp: this.currentTimestamp,
