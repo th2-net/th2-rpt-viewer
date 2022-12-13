@@ -293,7 +293,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length) {
-			let newMessagesList = [...this.messages, ...messages];
+			let newMessagesList = [
+				...this.messages,
+				...messages.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp)),
+			];
 
 			this.startIndex += messages.length;
 
@@ -323,25 +326,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
 
-		// eslint-disable-next-line no-param-reassign
-		messages = messages.filter(
-			msg => msg.messageId !== this.messagesStore.selectedMessageId?.valueOf(),
-		);
-
 		const nextMessages = messages
 			.filter(msg => !this.messages.map(msg => msg.messageId).includes(msg.messageId))
 			.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
 
-		if (nextMessages.length) {
-			let newMessagesList = [...nextMessages, ...this.messages];
+		this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
 
-			this.startIndex -= nextMessages.length;
-
-			if (newMessagesList.length > this.messagesLimit) {
-				newMessagesList = newMessagesList.slice(-this.messagesLimit);
-			}
-			this.messages = newMessagesList;
-		}
+		this.messages = [...nextMessages, ...this.messages];
 	};
 
 	@action
