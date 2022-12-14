@@ -27,14 +27,10 @@ import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
-import { isEventMessage } from '../../helpers/event';
-import { timestampToNumber } from '../../helpers/date';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore implements MessagesDataStore {
-	private readonly messagesLimit = 250;
-
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
@@ -196,12 +192,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			const messages = [
-				...nextMessages.filter(val => val.messageId !== message?.messageId),
-				...[message].filter(isEventMessage),
-				...prevMessages,
-			].sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
-			this.messages = messages;
+			this.messages = [...nextMessages, ...prevMessages];
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
@@ -297,16 +288,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length) {
-			let newMessagesList = [
-				...this.messages,
-				...messages.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp)),
-			];
+			this.startIndex += messages.length;
 
-			if (newMessagesList.length > this.messagesLimit) {
-				newMessagesList = newMessagesList.slice(-this.messagesLimit);
-			}
-
-			this.messages = [...new Map(newMessagesList.map(item => [item.messageId, item])).values()];
+			this.messages = [...this.messages, ...messages];
 		}
 	};
 
@@ -328,37 +312,14 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
 
-		// eslint-disable-next-line no-param-reassign
-		messages = messages.filter(
-			msg => msg.messageId !== this.messagesStore.selectedMessageId?.valueOf(),
+		const nextMessages = messages.filter(
+			message => !this.messages.find(msg => msg.messageId === message.messageId),
 		);
 
-		const prevMessages =
-			this.messages.length > 0
-				? messages
-						.filter(
-							message =>
-								timestampToNumber(message.timestamp) <
-								timestampToNumber(this.messages[0].timestamp),
-						)
-						.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp))
-				: [];
-
-		const nextMessages = messages
-			.slice(0, messages.length - prevMessages.length)
-			.sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
-
-		if (prevMessages.length > 0 || nextMessages.length > 0) {
+		if (nextMessages.length) {
 			this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
 
-			let newMessagesList = prevMessages.length
-				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
-				: [...nextMessages, ...this.messages];
-
-			if (newMessagesList.length > this.messagesLimit) {
-				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
-			}
-			this.messages = [...new Map(newMessagesList.map(item => [item.messageId, item])).values()];
+			this.messages = [...nextMessages, ...this.messages];
 		}
 	};
 
