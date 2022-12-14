@@ -31,8 +31,6 @@ import { extractMessageIds } from '../../helpers/streamInfo';
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore implements MessagesDataStore {
-	private readonly messagesLimit = 250;
-
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
