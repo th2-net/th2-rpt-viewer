@@ -290,15 +290,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length) {
-			let newMessagesList = [...this.messages, ...messages];
-
 			this.startIndex += messages.length;
 
-			if (newMessagesList.length > this.messagesLimit) {
-				newMessagesList = newMessagesList.slice(-this.messagesLimit);
-			}
-
-			this.messages = newMessagesList;
+			this.messages = [...this.messages, ...messages];
 		}
 	};
 
