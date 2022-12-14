@@ -27,7 +27,6 @@ import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
-import { timestampToNumber } from '../../helpers/date';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
