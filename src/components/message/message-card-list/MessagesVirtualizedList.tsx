@@ -72,10 +72,13 @@ const MessagesVirtualizedList = (props: Props) => {
 		[boolean, boolean]
 	>([false, false]);
 
+	const scrollToTop = () => {
+		if (updateStore.isActive && virtuoso.current) virtuoso.current.scrollToIndex(0);
+	};
+
 	React.useEffect(() => {
-		if (updateStore.isActive && virtuoso.current) {
-			virtuoso.current.scrollToIndex(0);
-		}
+		scrollToTop();
+		raf(scrollToTop, 3);
 	}, [updateStore.isActive, messageList]);
 
 	React.useEffect(() => {
