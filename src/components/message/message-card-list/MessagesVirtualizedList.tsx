@@ -144,7 +144,6 @@ const MessagesVirtualizedList = (props: Props) => {
 			data={messageList}
 			firstItemIndex={startIndex}
 			atBottomStateChange={onEndReached}
-			atBottomThreshold={20}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}
