@@ -19,6 +19,7 @@ import moment from 'moment';
 import { IEventsStore, IFilterConfigStore } from 'models/Stores';
 import { Panel } from 'models/Panel';
 import EventsFilter from 'models/filter/EventsFilter';
+import { getEventsUrlState } from 'helpers/url';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../../../stores/workspace/WorkspaceViewStore';
 import ApiSchema from '../../../api/ApiSchema';
@@ -32,12 +33,12 @@ import EventsDataStore from './EventsDataStore';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
-	filter: Partial<EventsFilter>;
 	range: TimeRange;
-	selectedEventId: string;
+	selectedEventId: string | null;
 	search: string[];
 	flattenedListView: boolean;
 	interval: number;
+	filter?: Partial<EventsFilter> | null;
 }>;
 
 type EventStoreDefaultState = EventStoreURLState & {
@@ -113,15 +114,12 @@ export default class EventsStore implements IEventsStore {
 
 	@computed
 	public get urlState(): EventStoreURLState {
-		return observable({
-			filter: this.filterStore.filter || undefined,
+		return getEventsUrlState({
+			filter: this.filterStore.filter,
 			range: this.filterStore.range,
 			panelArea: this.viewStore.eventsPanelArea,
-			search:
-				this.searchStore.tokens.length > 0
-					? this.searchStore.tokens.map(t => t.pattern)
-					: undefined,
-			selectedEventId: this.selectedNode?.eventId,
+			search: this.searchStore.tokens.map(t => t.pattern),
+			selectedEventId: this.selectedNode && this.selectedNode?.eventId,
 			flattenedListView: this.viewStore.flattenedListView,
 			interval: this.filterStore.interval,
 		});

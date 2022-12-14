@@ -23,6 +23,7 @@ import { getMessagesSSEParams, MessagesFilterInfo, MessagesSSEParams } from 'api
 import { SearchDirection } from 'models/SearchDirection';
 import notificationsStore from 'stores/NotificationsStore';
 import { TimeRange } from 'models/Timestamp';
+import { MessagesStoreURLState } from './MessagesStore';
 
 function getDefaultMessagesParams(): MessagesParams {
 	return {
@@ -32,10 +33,10 @@ function getDefaultMessagesParams(): MessagesParams {
 	};
 }
 
-export type MessagesFilterStoreInitialState = {
-	sse?: Partial<MessagesFilter> | null;
-	isSoftFilter?: boolean;
-} & Partial<MessagesParams>;
+export type MessagesFilterStoreInitialState = Pick<
+	MessagesStoreURLState,
+	'filter' | 'startTimestamp' | 'endTimestamp' | 'streams'
+>;
 
 export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
@@ -77,7 +78,7 @@ export default class MessagesFilterStore {
 
 	/*
 		When isSoftFilter is applied messages that don't match filter are not excluded,
-		instead we highlight messages that matched filter
+		instead we highlight messages that matched the filter
 	*/
 	@observable isSoftFilter = false;
 
@@ -165,12 +166,12 @@ export default class MessagesFilterStore {
 				streams = defaultMessagesFilter.streams,
 				startTimestamp = defaultMessagesFilter.startTimestamp,
 				endTimestamp = defaultMessagesFilter.endTimestamp,
-				sse = {},
+				filter = {},
 			} = initialState;
 
 			const appliedSSEFilter = {
 				...toJS(this.filtersStore.messageFilters || {}),
-				...sse,
+				...filter,
 			} as MessagesFilter;
 			this.setMessagesFilter(
 				{

@@ -102,7 +102,6 @@ export default class RootStore {
 						startTimestamp: timestamp ? parseInt(timestamp) : null,
 						endTimestamp: null,
 					},
-					timeRange,
 					layout: messageId ? [0, 0, 100, 0] : defaultPanelsLayout,
 				},
 			];

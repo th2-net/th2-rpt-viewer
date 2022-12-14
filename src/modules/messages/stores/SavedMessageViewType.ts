@@ -24,12 +24,17 @@ export class SavedMessageViewType {
 	constructor(
 		private message: EventMessage,
 		private messageDisplayRulesStore?: MessageDisplayRulesStore,
+		private initialValues: Record<string, MessageViewType> = {},
 	) {
 		this.message = message;
 
 		this.messageDisplayRulesStore = messageDisplayRulesStore;
+		this.viewTypes = new Map([
+			...getDefaultViewTypesMap(this.message, this.displayRule),
+			...Object.entries(initialValues),
+		]);
 
-		reaction(() => this.displayRule, this.onDisplayRuleChange, { fireImmediately: true });
+		reaction(() => this.displayRule, this.onDisplayRuleChange);
 	}
 
 	@computed
@@ -57,10 +62,7 @@ export class SavedMessageViewType {
 	}
 
 	@observable
-	public viewTypes: Map<string, MessageViewType> = getDefaultViewTypesMap(
-		this.message,
-		this.displayRule,
-	);
+	public viewTypes: Map<string, MessageViewType>;
 
 	@action
 	private onDisplayRuleChange = (vt: MessageViewType) => {

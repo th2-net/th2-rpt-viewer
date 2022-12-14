@@ -14,6 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { getObjectKeys } from 'helpers/object';
+import { toJS } from 'mobx';
+import { MessagesStoreURLState } from 'modules/messages/stores/MessagesStore';
+import { EventStoreURLState } from 'modules/events/stores/EventsStore';
+import { MultipleStringFilter } from 'models/filter/Filter';
+
 export function createURLSearchParams(
 	_params: Record<string, string | number | boolean | null | string[] | undefined>,
 ) {
@@ -30,4 +36,55 @@ export function createURLSearchParams(
 	}
 
 	return params;
+}
+
+function clearEmptyParams<T extends Record<string, unknown>>(obj: T) {
+	getObjectKeys(obj).forEach((key: string) => {
+		const value = obj[key];
+
+		if (value == null || value === false || (Array.isArray(value) && value.length === 0)) {
+			// eslint-disable-next-line no-param-reassign
+			delete obj[key];
+		}
+
+		if (typeof value === 'object' && value !== null) {
+			if ('values' in value) {
+				const filter = value as MultipleStringFilter;
+				if (Array.isArray(filter.values) && filter.values.length === 0) {
+					// eslint-disable-next-line no-param-reassign
+					delete obj[key];
+				}
+			}
+
+			if (Object.keys(value).length === 0) {
+				// eslint-disable-next-line no-param-reassign
+				delete obj[key];
+			}
+		}
+	});
+
+	return obj;
+}
+
+export function getEventsUrlState(state: EventStoreURLState): EventStoreURLState {
+	const urlState: EventStoreURLState = toJS(state, { recurseEverything: true });
+
+	if (urlState.filter?.status && urlState.filter.status.values === 'All') {
+		// eslint-disable-next-line no-param-reassign
+		delete urlState.filter.status;
+	}
+
+	clearEmptyParams(urlState);
+	clearEmptyParams(urlState.filter || {});
+
+	return urlState;
+}
+
+export function getMessagesUrlState(state: MessagesStoreURLState): MessagesStoreURLState {
+	const urlState: MessagesStoreURLState = toJS(state, { recurseEverything: true });
+
+	clearEmptyParams(urlState);
+	clearEmptyParams(urlState.filter || {});
+
+	return urlState;
 }

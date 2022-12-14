@@ -17,6 +17,7 @@
 import { Bookmark, EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
 import { SearchHistory } from 'modules/search/stores/SearchStore';
 import { EventStoreURLState } from 'modules/events/stores/EventsStore';
+import { MessagesStoreURLState } from 'modules/messages/stores/MessagesStore';
 import { TimeRange } from 'models/Timestamp';
 import EventsFilter from 'models/filter/EventsFilter';
 import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
@@ -65,6 +66,7 @@ export interface IMessagesStore {
 	dispose: () => void;
 	onSelectedEventChange: (event: EventTreeNode | null) => void;
 	messagesInView: EventMessage[];
+	urlState: MessagesStoreURLState;
 }
 
 interface IMessageFilterStore {

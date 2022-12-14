@@ -36,7 +36,7 @@ import { timestampToNumber } from '../../../helpers/date';
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
 	filter: EventsFilter | null;
-	targetEventId?: string;
+	targetEventId?: string | null;
 }
 
 interface ChildrenData {

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, toJS } from 'mobx';
+import { action, computed, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import debounce from 'lodash.debounce';
 import { copyTextToClipboard } from 'helpers/copyHandler';
@@ -45,24 +45,19 @@ import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/message';
-import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { timestampToNumber } from '../../helpers/date';
-import { getObjectKeys } from '../../helpers/object';
 
-export interface WorkspaceUrlState {
-	events: Partial<EventStoreURLState>;
+export type WorkspaceUrlState = Partial<{
+	events: EventStoreURLState;
 	messages: Partial<MessagesStoreURLState>;
-	timeRange?: TimeRange;
 	layout: WorkspacePanelsLayout;
-}
+}>;
 
 export type WorkspaceInitialState = Partial<{
 	events: EventStoreDefaultStateType;
 	messages: MessagesStoreDefaultStateType;
-	timeRange?: TimeRange;
-	interval: number | null;
 	layout: WorkspacePanelsLayout;
 	id: string;
 }>;
@@ -127,36 +122,19 @@ export default class WorkspaceStore {
 
 	@computed
 	public get state(): WorkspaceUrlState {
-		return observable({
+		return {
 			events: this.eventsStore.urlState,
-			timeRange: this.eventsStore.urlState.range,
-			messages: {
-				startTimestamp: this.messagesStore.filterStore.params.startTimestamp,
-				endTimestamp: this.messagesStore.filterStore.params.endTimestamp,
-				streams: this.messagesStore.filterStore.params.streams,
-				isSoftFilter: this.messagesStore.filterStore.isSoftFilter,
-				sse: this.messagesStore.filterStore.filter,
-			},
+			messages: this.messagesStore.urlState,
 			layout: this.viewStore.panelsLayout,
-		});
+		};
 	}
 
 	public copyWorkspaceURL = () => {
-		const urlState: WorkspaceUrlState = toJS(this.state, { recurseEverything: true });
-
-		// TODO: remove filter metadata from url
-
-		getObjectKeys(urlState.events).forEach(key => {
-			if (urlState.events[key] === undefined) {
-				delete urlState.events[key];
-			}
-		});
-
-		getObjectKeys(urlState.messages).forEach(key => {
-			if (urlState.messages[key] === undefined) {
-				delete urlState.messages[key];
-			}
-		});
+		const { viewTypeMap, ...messagesState } = this.state.messages || {};
+		const urlState: WorkspaceUrlState = toJS(
+			{ ...this.state, messages: messagesState },
+			{ recurseEverything: true },
+		);
 
 		const searchString = new URLSearchParams({
 			workspaces: window.btoa(JSON.stringify([urlState])),
@@ -245,6 +223,7 @@ export default class WorkspaceStore {
 			timestamp: Date.now(),
 			...toJS(this.state, { recurseEverything: true }),
 		};
+		console.log(stateToSave);
 		this.api.indexedDb.updateDbStoreItem(IndexedDbStores.WORKSPACES_STATE, stateToSave);
 	}, 3000);
 }

@@ -16,11 +16,15 @@
 
 import { action, observable } from 'mobx';
 import { EventMessage } from 'models/EventMessage';
+import { MessagesStoreURLState } from './MessagesStore';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import { SavedMessageViewType } from './SavedMessageViewType';
 
 class MessagesViewTypeStore {
-	constructor(private messageDisplayRulesStore?: MessageDisplayRulesStore) {}
+	constructor(
+		private messageDisplayRulesStore?: MessageDisplayRulesStore,
+		private initialValues: MessagesStoreURLState['viewTypeMap'] = {},
+	) {}
 
 	@observable
 	public savedViewTypes = new Map<string, SavedMessageViewType>();
@@ -30,7 +34,14 @@ class MessagesViewTypeStore {
 		let savedViewType = this.savedViewTypes.get(message.id);
 
 		if (!savedViewType) {
-			savedViewType = new SavedMessageViewType(message, this.messageDisplayRulesStore);
+			savedViewType = new SavedMessageViewType(
+				message,
+				this.messageDisplayRulesStore,
+				this.initialValues ? this.initialValues[message.id] : undefined,
+			);
+			if (this.initialValues) {
+				delete this.initialValues[message.id];
+			}
 			this.savedViewTypes.set(message.id, savedViewType);
 		}
 
@@ -40,6 +51,7 @@ class MessagesViewTypeStore {
 	@action
 	public resetSavedViewTypes = () => {
 		this.savedViewTypes.clear();
+		this.initialValues = {};
 	};
 }
 

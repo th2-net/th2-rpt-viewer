@@ -21,6 +21,7 @@ import { EventsFiltersInfo, EventFilterKeys } from 'api/sse';
 import { getObjectKeys } from 'helpers/object';
 import { TimeRange } from 'models/Timestamp';
 import EventsFilter from 'models/filter/EventsFilter';
+import { EventStoreURLState } from './EventsStore';
 
 function getDefaultTimeRange(interval = 15): TimeRange {
 	const timestampTo = moment.utc().valueOf();
@@ -51,10 +52,7 @@ function getFilterFromInitialState(eventsFilter: Partial<EventsFilter> | null) {
 	}, {} as EventsFilter);
 }
 
-export type EventsFilterStoreInitialState = Partial<{
-	range: TimeRange;
-	filter: Partial<EventsFilter>;
-}>;
+export type EventsFilterStoreInitialState = Pick<EventStoreURLState, 'filter' | 'range'>;
 
 export default class EventsFilterStore {
 	private sseFilterSubscription: IReactionDisposer;

@@ -18,7 +18,7 @@ import { action, computed, observable, reaction, runInAction } from 'mobx';
 import { IFilterConfigStore, IMessagesStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
 import { nanoid } from 'nanoid';
-import { EventMessage } from 'models/EventMessage';
+import { EventMessage, MessageViewType } from 'models/EventMessage';
 import { EventTreeNode } from 'models/EventAction';
 import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
 import { sortMessagesByTimestamp, isEventMessage } from 'helpers/message';
@@ -27,14 +27,21 @@ import { timestampToNumber } from 'helpers/date';
 import { isAbortError } from 'helpers/fetch';
 import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
 import notificationsStore from 'stores/NotificationsStore';
+import { getMessagesUrlState } from 'helpers/url';
 import MessageBodySortOrderStore from './MessageBodySortStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
-import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
+import MessagesFilterStore from './MessagesFilterStore';
 import MessagesExportStore from './MessagesExportStore';
 import MessagesViewTypeStore from './MessagesViewTypeStore';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 
-export type MessagesStoreURLState = MessagesFilterStoreInitialState;
+type ViewTypesMap = Record<string, Record<string, MessageViewType>>;
+
+export type MessagesStoreURLState = Partial<MessagesParams> & {
+	filter?: Partial<MessagesFilter> | null;
+	isSoftFilter?: boolean;
+	viewTypeMap?: ViewTypesMap;
+};
 
 type MessagesStoreDefaultState = MessagesStoreURLState & {
 	targetMessage?: EventMessage;
@@ -93,7 +100,11 @@ export default class MessagesStore implements IMessagesStore {
 		this.dataStore = new MessagesDataProviderStore(this, this.api);
 		this.messageDisplayRulesStore = MessageDisplayRulesStore.getInstance(this.api.indexedDb);
 		this.messageBodySortStore = MessageBodySortOrderStore.getInstance(this.api.indexedDb);
-		this.messageViewStore = new MessagesViewTypeStore(this.messageDisplayRulesStore);
+		console.log(defaultState?.viewTypeMap);
+		this.messageViewStore = new MessagesViewTypeStore(
+			this.messageDisplayRulesStore,
+			defaultState?.viewTypeMap,
+		);
 
 		this.init(defaultState, Boolean(options.isLive));
 
@@ -106,6 +117,24 @@ export default class MessagesStore implements IMessagesStore {
 				this.messageViewStore.resetSavedViewTypes();
 			},
 		);
+	}
+
+	@computed
+	get urlState(): MessagesStoreURLState {
+		return getMessagesUrlState({
+			startTimestamp: this.filterStore.params.startTimestamp,
+			endTimestamp: this.filterStore.params.endTimestamp,
+			streams: this.filterStore.params.streams,
+			isSoftFilter: this.filterStore.isSoftFilter,
+			filter: this.filterStore.filter,
+			viewTypeMap: [...this.messageViewStore.savedViewTypes.entries()].reduce(
+				(acc, [messageId, viewTypeMap]) => ({
+					...acc,
+					[messageId]: Object.fromEntries(viewTypeMap.viewTypes.entries()),
+				}),
+				{} as Record<string, Record<string, MessageViewType>>,
+			),
+		});
 	}
 
 	@observable

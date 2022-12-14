@@ -120,16 +120,18 @@ export default class WorkspacesStore {
 		const filter = currentSearch?.filter;
 
 		return {
+			events: {
+				range: getRangeFromTimestamp(timestamp, SEARCH_INTERVAL),
+				interval: SEARCH_INTERVAL,
+			},
 			messages: {
-				sse: filter,
+				filter,
 				streams: currentSearch?.streams || [],
 				startTimestamp: timestamp,
 				endTimestamp: null,
 				targetMessage,
 			},
-			interval: SEARCH_INTERVAL,
 			layout: [0, 0, 100, 0],
-			timeRange: getRangeFromTimestamp(timestamp, SEARCH_INTERVAL),
 		};
 	};
 
@@ -143,10 +145,9 @@ export default class WorkspacesStore {
 			events: {
 				range: [timestampFrom, timestampTo],
 				targetEvent,
+				interval: SEARCH_INTERVAL,
 			},
 			layout: [0, 100, 0, 0],
-			interval: SEARCH_INTERVAL,
-			timeRange: [timestampFrom, timestampTo],
 		};
 	};
 

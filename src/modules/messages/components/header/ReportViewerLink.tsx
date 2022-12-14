@@ -14,28 +14,21 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { toJS } from 'mobx';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { MessagesStoreURLState } from '../../stores/MessagesStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 
 const ReportViewerLink = observer(() => {
 	const messagesStore = useMessagesStore();
 
 	const reportURL = useMemo(() => {
-		const messagesStoreState: MessagesStoreURLState = {
-			startTimestamp: messagesStore.filterStore.params.startTimestamp,
-			endTimestamp: messagesStore.filterStore.params.endTimestamp,
-			streams: messagesStore.filterStore.params.streams,
-			sse: messagesStore.filterStore.filter,
-			isSoftFilter: false,
-		};
-
+		const { viewTypeMap, ...state } = messagesStore.urlState;
 		const searchString = new URLSearchParams({
 			workspaces: window.btoa(
 				JSON.stringify([
 					{
-						messages: messagesStoreState,
+						messages: toJS(state, { recurseEverything: true }),
 					},
 				]),
 			),
