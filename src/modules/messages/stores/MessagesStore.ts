@@ -100,7 +100,6 @@ export default class MessagesStore implements IMessagesStore {
 		this.dataStore = new MessagesDataProviderStore(this, this.api);
 		this.messageDisplayRulesStore = MessageDisplayRulesStore.getInstance(this.api.indexedDb);
 		this.messageBodySortStore = MessageBodySortOrderStore.getInstance(this.api.indexedDb);
-		console.log(defaultState?.viewTypeMap);
 		this.messageViewStore = new MessagesViewTypeStore(
 			this.messageDisplayRulesStore,
 			defaultState?.viewTypeMap,

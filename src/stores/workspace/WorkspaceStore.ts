@@ -223,7 +223,6 @@ export default class WorkspaceStore {
 			timestamp: Date.now(),
 			...toJS(this.state, { recurseEverything: true }),
 		};
-		console.log(stateToSave);
 		this.api.indexedDb.updateDbStoreItem(IndexedDbStores.WORKSPACES_STATE, stateToSave);
 	}, 3000);
 }
