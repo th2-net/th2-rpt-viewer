@@ -25,7 +25,7 @@ import {
 import DateTimeInput from '../date-time-inputs/DateTimeInput';
 import IntervalInput from '../date-time-inputs/IntervalInput';
 
-const TimeWindow = ({ config }: { config: FilterRowTimeWindowConfig }) => {
+const DateTimeRangePicker = ({ config }: { config: FilterRowTimeWindowConfig }) => {
 	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
 
 	return (
@@ -49,4 +49,4 @@ const TimeWindow = ({ config }: { config: FilterRowTimeWindowConfig }) => {
 	);
 };
 
-export default TimeWindow;
+export default DateTimeRangePicker;

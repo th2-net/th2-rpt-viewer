@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import {
@@ -24,7 +24,6 @@ import {
 	FitlerRowItem,
 } from 'models/filter/FilterInputs';
 import { DATE_TIME_INPUT_MASK } from 'models/util/filterInputs';
-import FilterRow from 'components/filter/row';
 import { EventFilterKeys, MessageFilterKeys } from 'api/sse';
 import EventsFilter from 'models/filter/EventsFilter';
 import { useFilterConfig } from 'hooks/useFilterConfig';
@@ -33,11 +32,11 @@ import FiltersHistory from 'components/filters-history/FiltersHistory';
 import { useSessionsHistoryStore } from 'hooks/useSessionsStore';
 import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
 import { Button } from 'components/buttons/Button';
-import { EntityType } from 'models/EventAction';
+import DateTimeRangePicker from 'components/filter/row/DateTimeRangePicker';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
-import SearchSubmit, { SearchSubmitConfig } from './search-form/SearchSubmit';
+import SearchSubmit from './search-form/SearchSubmit';
 
 const eventFilterOrder: EventFilterKeys[] = [
 	'status',
@@ -107,19 +106,22 @@ const SearchPanelForm = () => {
 		[sessions, filterConfigStore.messageSessions],
 	);
 
-	const sessionsConfig: FitlerRowItem = {
-		type: 'multiple-strings',
-		id: 'stream',
-		label: 'Session',
-		values: sessions,
-		setValues: setSessions,
-		currentValue: currentStream,
-		setCurrentValue: setCurrentStream,
-		autocompleteList: sessionsAutocomplete,
-		isInvalid: areSessionInvalid,
-		required: true,
-		validateBubbles: true,
-	};
+	const sessionsConfig: FitlerRowItem = useMemo(
+		() => ({
+			type: 'multiple-strings',
+			id: 'stream',
+			label: 'Session',
+			values: sessions,
+			setValues: setSessions,
+			currentValue: currentStream,
+			setCurrentValue: setCurrentStream,
+			autocompleteList: sessionsAutocomplete,
+			isInvalid: areSessionInvalid,
+			required: true,
+			validateBubbles: true,
+		}),
+		[sessions, currentStream, setCurrentStream, sessionsAutocomplete, areSessionInvalid],
+	);
 
 	const onSearchStart = useCallback(() => {
 		if (formType === 'event') {
@@ -132,13 +134,6 @@ const SearchPanelForm = () => {
 		}
 		startSearch();
 	}, [filterStore, startSearch, sessions, filter]);
-
-	const searchSubmitConfig: SearchSubmitConfig = {
-		isSearching,
-		disabled: formType === 'message' && sessions.length === 0,
-		startSearch: onSearchStart,
-		stopSearch,
-	};
 
 	const setStartTimestamp = useCallback(
 		(timestamp: number | null) => {
@@ -158,55 +153,51 @@ const SearchPanelForm = () => {
 		[filterStore],
 	);
 
-	const timestampFromConfig: FilterRowTimeWindowConfig[] = React.useMemo(
-		() => [
-			{
-				id: 'search-panel-form-timestamps',
-				inputs: [
-					{
-						dateMask: DateTimeMask.DATE_TIME_MASK,
-						inputMask: DATE_TIME_INPUT_MASK,
-						id: 'search-startTimestamp',
-						placeholder: '',
-						value: filterStore.startTimestamp,
-						setValue: setStartTimestamp,
-						type: TimeInputType.DATE_TIME,
-					},
-					{
-						dateMask: DateTimeMask.DATE_TIME_MASK,
-						inputMask: DATE_TIME_INPUT_MASK,
-						id: 'search-endTimestamp',
-						placeholder: '',
-						value: filterStore.endTimestamp,
-						setValue: setEndTimestamp,
-						type: TimeInputType.DATE_TIME,
-					},
-				],
-				type: 'time-window',
-			},
-		],
+	const dateTimeRangeConfig: FilterRowTimeWindowConfig = React.useMemo(
+		() => ({
+			id: 'search-panel-form-timestamps',
+			inputs: [
+				{
+					dateMask: DateTimeMask.DATE_TIME_MASK,
+					inputMask: DATE_TIME_INPUT_MASK,
+					id: 'search-startTimestamp',
+					placeholder: '',
+					value: filterStore.startTimestamp,
+					setValue: setStartTimestamp,
+					type: TimeInputType.DATE_TIME,
+				},
+				{
+					dateMask: DateTimeMask.DATE_TIME_MASK,
+					inputMask: DATE_TIME_INPUT_MASK,
+					id: 'search-endTimestamp',
+					placeholder: '',
+					value: filterStore.endTimestamp,
+					setValue: setEndTimestamp,
+					type: TimeInputType.DATE_TIME,
+				},
+			],
+			type: 'time-window',
+		}),
 		[setStartTimestamp, setEndTimestamp, filterStore.startTimestamp, filterStore.endTimestamp],
 	);
 
+	const filterConfig = useMemo(() => {
+		if (formType === 'event') return config;
+
+		return [sessionsConfig, ...config];
+	}, [formType, config, sessionsConfig]);
+
 	return (
 		<div className='search-panel-form'>
-			<FilterRows config={timestampFromConfig} />
-			<div className='search-panel__fields'>
-				<div className='filter-row'>
-					<div className='search-type-config'>
-						<SearchTypeSwitcher formType={formType as EntityType} setFormType={setFormType} />
-					</div>
-				</div>
-				{formType === 'message' ? <FilterRow rowConfig={sessionsConfig} /> : null}
-			</div>
-			<div className='filter'>
-				<FilterRows config={config} />
-			</div>
+			<DateTimeRangePicker config={dateTimeRangeConfig} />
+			<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
+			<FilterRows config={filterConfig} />
 			<div className='search-panel-form__footer'>
+				{/* TODO: fix filter history generic types */}
 				{filter && (
 					<FiltersHistory
 						disabled={disabled}
-						type={formType as EntityType}
+						type={formType}
 						filter={{
 							state: filter,
 							setState: (partialFilter: any) => {
@@ -215,16 +206,19 @@ const SearchPanelForm = () => {
 						}}
 					/>
 				)}
-				{!disabled && (
-					<Button
-						variant='outlined'
-						className={clsx({ disabled: isSearching })}
-						onClick={() => clearFilter()}
-						disabled={isSearching}>
-						Clear All
-					</Button>
-				)}
-				<SearchSubmit {...searchSubmitConfig} />
+				<Button
+					variant='outlined'
+					className={clsx({ disabled })}
+					onClick={() => clearFilter()}
+					disabled={disabled}>
+					Clear All
+				</Button>
+				<SearchSubmit
+					isSearching={isSearching}
+					disabled={formType === 'message' && sessions.length === 0}
+					startSearch={onSearchStart}
+					stopSearch={stopSearch}
+				/>
 			</div>
 		</div>
 	);

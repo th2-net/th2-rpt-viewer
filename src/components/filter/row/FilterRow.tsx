@@ -17,7 +17,7 @@
 import { ActionFilterRow, FitlerRowItem } from 'models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
 import MultipleStringFilterRow from './MultipleStringFIlterRow';
-import TimeWindow from './TimeWindow';
+import DateTimeRangePicker from './DateTimeRangePicker';
 import DatetimeFilterRow from './DateTimeFilterRow';
 import TogglerRow from './TogglerRow';
 import ActionRow from './ActionRow';
@@ -32,7 +32,7 @@ export default function FilterRow({ rowConfig }: Props) {
 		case 'datetime-range':
 			return <DatetimeFilterRow config={rowConfig} />;
 		case 'time-window':
-			return <TimeWindow config={rowConfig} />;
+			return <DateTimeRangePicker config={rowConfig} />;
 		case 'string':
 			return <StringFilterRow config={rowConfig} />;
 		case 'multiple-strings':

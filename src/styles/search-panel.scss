@@ -20,17 +20,6 @@
 	@include scrollbar();
 	gap: 10px;
 	height: 100%;
-
-	&__fields {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-
-		.filter-row {
-			box-shadow: none;
-			background: none;
-		}
-	}
 }
 
 .search-panel.window {
@@ -45,15 +34,10 @@
 	width: 100%;
 	min-width: 350px;
 	flex-direction: column;
-	gap: 5px;
+	gap: 16px;
 	color: #666666;
 	border-radius: 0 0 5px 5px;
 	flex-shrink: 0;
-
-	.filter-row {
-		flex-grow: 1;
-		margin-bottom: 4px;
-	}
 
 	& > .filter-row:first-child {
 		box-shadow: none;
@@ -118,19 +102,6 @@
 		flex-direction: column;
 		gap: 5px;
 	}
-}
-
-.search-type-config {
-	display: flex;
-	justify-content: space-between;
-	width: 100%;
-	height: 100%;
-	align-items: center;
-}
-
-.search-type-switcher {
-	display: flex;
-	flex-direction: column;
 }
 
 .search-time-limit {
