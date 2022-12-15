@@ -249,6 +249,19 @@
 		height: 100%;
 		border-left: 1px solid var(--calendar-border);
 		padding: 0 16px;
+		position: relative;
+
+		&__selected-area {
+			position: absolute;
+			border: 1px solid var(--calendar-border);
+			height: 80px;
+			width: 100%;
+			top: 201px;
+			border-left: none;
+			border-right: none;
+			user-select: none;
+			pointer-events: none;
+		}
 
 		&__delimiter {
 			color: var(--info-color);

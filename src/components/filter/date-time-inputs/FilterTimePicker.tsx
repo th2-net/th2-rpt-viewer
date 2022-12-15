@@ -78,6 +78,7 @@ const FilterTimepicker = (props: FilterTimepickerProps) => {
 				getIsBlocked={getBlockedMinutes}
 				onUnitChange={setMinutes}
 			/>
+			<div className='filter-timepicker__selected-area' />
 		</div>
 	);
 };
