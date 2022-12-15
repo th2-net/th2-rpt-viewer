@@ -27,6 +27,7 @@ import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
+import { timestampToNumber } from '../../helpers/date';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
@@ -192,7 +193,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			this.messages = [...nextMessages, ...prevMessages];
+			this.messages = [...nextMessages, ...prevMessages].sort(
+				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+			);
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
@@ -290,7 +293,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		if (messages.length) {
 			this.startIndex += messages.length;
 
-			this.messages = [...this.messages, ...messages];
+			this.messages = [...this.messages, ...messages].sort(
+				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+			);
 		}
 	};
 
@@ -319,7 +324,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		if (nextMessages.length) {
 			this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
 
-			this.messages = [...nextMessages, ...this.messages];
+			this.messages = [...nextMessages, ...this.messages].sort(
+				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+			);
 		}
 	};
 
