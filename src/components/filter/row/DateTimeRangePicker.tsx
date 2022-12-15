@@ -14,37 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import { Fragment } from 'react';
 import { createBemBlock } from '../../../helpers/styleCreators';
-import {
-	DateTimeInputType,
-	FilterRowTimeWindowConfig,
-	IntervalInputType,
-	TimeInputType,
-} from '../../../models/filter/FilterInputs';
+import { DateTimeInputType, FilterRowTimeWindowConfig } from '../../../models/filter/FilterInputs';
 import DateTimeInput from '../date-time-inputs/DateTimeInput';
-import IntervalInput from '../date-time-inputs/IntervalInput';
 
 const DateTimeRangePicker = ({ config }: { config: FilterRowTimeWindowConfig }) => {
 	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
-
 	return (
 		<div className={wrapperClassName}>
-			{config.inputs.map((inputConfig: DateTimeInputType | IntervalInputType) => [
-				inputConfig.label && (
-					<label
-						key={`${inputConfig.id}-label`}
-						htmlFor={inputConfig.id}
-						className={inputConfig.labelClassName}>
-						{inputConfig.label}
-					</label>
-				),
-				inputConfig.type === TimeInputType.DATE_TIME ? (
-					<DateTimeInput inputConfig={inputConfig as DateTimeInputType} key={inputConfig.id} />
-				) : (
-					<IntervalInput inputConfig={inputConfig as IntervalInputType} key={inputConfig.id} />
-				),
-			])}
+			<div className='date-time-range'>
+				{config.inputs.map((inputConfig, index) => (
+					<Fragment key={inputConfig.id}>
+						<DateTimeInput inputConfig={inputConfig as DateTimeInputType} />
+						{index === 0 && <span className='date-time-range__separator' />}
+					</Fragment>
+				))}
+			</div>
 		</div>
 	);
 };

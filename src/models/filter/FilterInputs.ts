@@ -55,18 +55,6 @@ export type DateTimeInputType = {
 	disabled?: boolean;
 };
 
-export type IntervalInputType = {
-	label?: string;
-	value: number | null;
-	setValue: (nextValue: number) => void;
-	type: TimeInputType;
-	id: string;
-	inputMask: RegExp;
-	placeholder: string;
-	inputClassName?: string;
-	labelClassName?: string;
-};
-
 export enum TimeInputType {
 	DATE_TIME,
 	DATE,
@@ -87,7 +75,7 @@ export type FilterRowBaseConfig = {
 
 export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
 	type: 'time-window';
-	inputs: Array<DateTimeInputType | IntervalInputType>;
+	inputs: [DateTimeInputType, DateTimeInputType];
 };
 
 export type FilterRowStringConfig = FilterRowBaseConfig & {

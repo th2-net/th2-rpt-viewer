@@ -112,6 +112,7 @@ const SearchPanelForm = () => {
 			id: 'stream',
 			label: 'Session',
 			values: sessions,
+			wrapperClassName: 'sessions-row',
 			setValues: setSessions,
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
@@ -165,6 +166,7 @@ const SearchPanelForm = () => {
 					value: filterStore.startTimestamp,
 					setValue: setStartTimestamp,
 					type: TimeInputType.DATE_TIME,
+					label: 'Start',
 				},
 				{
 					dateMask: DateTimeMask.DATE_TIME_MASK,
@@ -174,6 +176,7 @@ const SearchPanelForm = () => {
 					value: filterStore.endTimestamp,
 					setValue: setEndTimestamp,
 					type: TimeInputType.DATE_TIME,
+					label: 'End',
 				},
 			],
 			type: 'time-window',

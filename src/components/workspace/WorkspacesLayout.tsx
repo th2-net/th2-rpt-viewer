@@ -18,6 +18,7 @@ import { Observer, observer } from 'mobx-react-lite';
 import { MessagesStoreProvider } from 'modules/messages/components/MessagesStoreProvider';
 import { WorkspaceLinkIcon } from 'components/icons/WorkspaceLinkIcon';
 import MessagesStore from 'modules/messages/stores/MessagesStore';
+import SplashScreen from 'components/SplashScreen';
 import Workspace from './Workspace';
 import { WorkspaceContextProvider } from '../WorkspaceStoreProvider';
 import { useWorkspaces } from '../../hooks';
@@ -87,6 +88,10 @@ const WorkspacesLayout = () => {
 
 	function addWorkspace() {
 		workspacesStore.createWorkspace().then(workspace => workspacesStore.addWorkspace(workspace));
+	}
+
+	if (workspacesStore.workspaces.length === 0) {
+		return <SplashScreen />;
 	}
 
 	return (

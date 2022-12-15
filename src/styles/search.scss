@@ -217,3 +217,19 @@
 		@include round-button(url(../../resources/icons/next-search-result.svg));
 	}
 }
+
+.search-type-switcher {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.filter-row.sessions-row {
+	box-shadow: none;
+	display: flex;
+	flex-direction: column;
+
+	& label {
+		align-self: start;
+	}
+}

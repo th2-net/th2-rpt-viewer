@@ -541,18 +541,6 @@
 		&.date-time-input {
 			margin: 0;
 			max-width: 350px;
-
-			&:first-child {
-				&::after {
-					content: "";
-					width: 1px;
-					height: 4px;
-					position: absolute;
-					top: 0;
-					right: 0;
-					background-color: red;
-				}
-			}
 		}
 
 		&:disabled {
@@ -622,7 +610,6 @@
 
 		&.status {
 			align-self: flex-start;
-			margin-bottom: 12px;
 		}
 	}
 
@@ -737,4 +724,58 @@
 
 .event-filters-panel-label {
 	width: 145px;
+}
+
+.date-time-range {
+	display: flex;
+	align-items: center;
+	background-color: var(--input-background);
+	border-radius: 4px;
+
+	& input {
+		border: none;
+		background-color: transparent;
+		width: 180px;
+
+		&:focus {
+			border: none;
+		}
+	}
+
+	& label {
+		color: var(--text-secondary);
+	}
+
+	&__separator {
+		height: 18px;
+		width: 1px;
+		background-color: var(--input-border);
+	}
+}
+
+.date-time-input {
+	display: flex;
+	align-items: center;
+	border: 1px solid transparent;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding-left: 16px;
+
+	& button {
+		box-shadow: none;
+		background-color: transparent;
+	}
+
+	&.active {
+		border-color: var(--info-color);
+	}
+
+	&:first-child {
+		padding-right: 24px;
+	}
+
+	&:last-child {
+		padding-left: 40px;
+	}
 }
