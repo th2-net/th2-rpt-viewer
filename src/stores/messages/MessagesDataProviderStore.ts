@@ -292,10 +292,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		if (messages.length) {
 			this.startIndex += messages.length;
-
-			this.messages = [...this.messages, ...messages].sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = [...this.messages, ...messages];
 		}
 	};
 
@@ -323,10 +320,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		if (nextMessages.length) {
 			this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
-
-			this.messages = [...nextMessages, ...this.messages].sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = [...nextMessages, ...this.messages];
 		}
 	};
 
