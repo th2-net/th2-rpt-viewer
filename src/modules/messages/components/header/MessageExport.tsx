@@ -14,10 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MessageViewType } from 'models/EventMessage';
+import { IconButton } from 'components/buttons/IconButton';
 import { ButtonBase } from 'components/buttons/ButtonBase';
+import { CrossIcon } from 'components/icons/CrossIcon';
+import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
 import { ViewTypesList } from '../message-card/ViewTypesList';
 
 interface Props {
@@ -39,6 +42,18 @@ const MessageExport = (props: Props) => {
 		exportedCount: exportAmount,
 	} = props;
 	const [isOpen, setIsOpen] = React.useState(false);
+
+	const menuRef = useRef<HTMLDivElement>(null);
+
+	useOutsideClickListener(menuRef, event => {
+		if (
+			menuRef.current &&
+			event.target instanceof Element &&
+			!menuRef.current.contains(event.target)
+		) {
+			setIsOpen(false);
+		}
+	});
 
 	const exportMessages = (messageViewType: MessageViewType) => {
 		setIsOpen(false);
@@ -69,7 +84,12 @@ const MessageExport = (props: Props) => {
 				Export
 				{isExporting && <span className='messages-export__counter'>{exportAmount}</span>}
 			</ButtonBase>
-			<div className='messages-export__export'>
+			{isExporting && (
+				<IconButton title='Cancel export' className='cancel-button' onClick={closeExport}>
+					<CrossIcon />
+				</IconButton>
+			)}
+			<div className='messages-export__export' ref={menuRef}>
 				<AnimatePresence>
 					{isOpen && (
 						<motion.div

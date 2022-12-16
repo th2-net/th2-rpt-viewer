@@ -26,6 +26,7 @@
 	flex-grow: 1;
 	width: 100%;
 	border: 2px solid transparent;
+	border-radius: 16px;
 
 	&__status {
 		width: 4px;
@@ -738,12 +739,19 @@
 	}
 }
 
+.icon-button {
+	&.cancel-button {
+		font-size: 20px;
+		color: var(--info-color);
+		background-color: var(--surface-background);
+	}
+}
+
 .messages-export {
 	&__button {
 		width: auto;
 		gap: 8px;
 		padding: 0 10px;
-		color: var(--info-color);
 	}
 
 	&__icon {
@@ -765,7 +773,7 @@
 		color: inherit;
 
 		@include dark {
-			border: none
+			border: none;
 		}
 	}
 
@@ -786,7 +794,6 @@
 		padding: 2px 4px;
 		cursor: pointer;
 		font-size: 13px;
-		color: $primaryTextColor;
 
 		&:hover {
 			background-color: #00000012;
