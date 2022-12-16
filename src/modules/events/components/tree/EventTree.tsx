@@ -115,7 +115,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	return (
 		<>
-			<div className='event-tree-card'>
+			<div className='event-list-item event-tree-card'>
 				<Paper className='event-tree-card__indent' style={{ width: nestingLevel }}>
 					<ExpandButton
 						status={expandIconStatus}

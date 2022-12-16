@@ -32,7 +32,7 @@ function FlatEventListItem(props: FlatEventListItemProps) {
 	const { node } = props;
 
 	return (
-		<div style={{ padding: '1px 5px' }}>
+		<div className='event-list-item'>
 			<EventCardHeader
 				childrenCount={0}
 				event={node}

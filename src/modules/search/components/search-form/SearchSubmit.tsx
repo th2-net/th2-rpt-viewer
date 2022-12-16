@@ -26,7 +26,7 @@ export type SearchSubmitConfig = {
 const SearchSubmit = ({ isSearching, disabled, startSearch, stopSearch }: SearchSubmitConfig) => {
 	const buttonText = isSearching ? 'Stop' : 'Search';
 
-	const handleClick = isSearching ? () => stopSearch() : () => startSearch();
+	const handleClick = isSearching ? stopSearch : startSearch;
 
 	return (
 		<div className='search-panel-form__submit'>

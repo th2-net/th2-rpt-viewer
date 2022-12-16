@@ -92,18 +92,3 @@ function EventDetailedCard(props: Props) {
 }
 
 export default EventDetailedCard;
-
-/* <div className='event-detail-info'> */
-// {parentNodes.length > 0 && (
-// 	<div className='event-detail-info__parents'>
-// 		{parentNodes.map(eventNode => (
-// 			<EventCardHeader
-// 				key={eventNode.eventId}
-// 				event={eventNode}
-// 				onSelect={!eventNode.isUnknown ? e => setSelectedNode(e) : undefined}
-// 				isActive={selectedNode === eventNode}
-// 			/>
-// 		))}
-// 		<EventCardHeader key={node.eventId} event={node} onSelect={setSelectedNode} />
-// 	</div>
-// )}

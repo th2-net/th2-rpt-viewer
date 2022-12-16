@@ -18,7 +18,7 @@
 
 .event-header-card {
 	width: 100%;
-	border-radius: 0px 8px 8px 0px;
+	border-radius: 8px;
 	padding: 12px;
 	display: flex;
 	align-items: center;
@@ -534,12 +534,15 @@
 	}
 }
 
+.event-list-item {
+	padding: 4px 16px;
+}
+
 .event-tree-card {
 	display: flex;
 	gap: 4px;
 	flex-direction: row;
 	align-items: center;
-	padding: 4px 16px;
 
 	&__indent {
 		background-color: var(--background-secondary);
@@ -614,6 +617,10 @@
 				animation-delay: 660ms;
 			}
 		}
+	}
+
+	.event-header-card {
+		border-radius: 0px 8px 8px 0px;
 	}
 
 	&__footer {
@@ -785,9 +792,6 @@
 
 	&__header {
 		width: 100%;
-		& > div {
-			border-radius: 8px 8px 0px 0px;
-		}
 	}
 
 	&__footer {
