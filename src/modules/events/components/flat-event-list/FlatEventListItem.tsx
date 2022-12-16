@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventTreeNode } from 'models/EventAction';
 import { useEventsStore } from '../../hooks/useEventsStore';
@@ -29,11 +30,20 @@ function FlatEventListItem(props: FlatEventListItemProps) {
 	const eventsStore = useEventsStore();
 	const eventsDataStore = useEventsDataStore();
 
+	const onEventTypeSelect = useCallback((eventType: string) => {
+		const defaultFilter = eventsStore.filterStore.getDefaultEventFilter();
+		if (!defaultFilter) return;
+		defaultFilter.type.values.push(eventType);
+		eventsStore.filterStore.setEventsFilter(defaultFilter);
+		eventsStore.filterStore.setIsOpen(true);
+	}, []);
+
 	const { node } = props;
 
 	return (
 		<div className='event-list-item'>
 			<EventCardHeader
+				onEventTypeSelect={onEventTypeSelect}
 				childrenCount={0}
 				event={node}
 				displayType={CardDisplayType.MINIMAL}

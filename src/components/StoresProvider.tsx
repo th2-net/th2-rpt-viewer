@@ -16,14 +16,19 @@
 
 import React, { useState } from 'react';
 import RootStore from '../stores/RootStore';
-import apiSchema from '../api';
+import api from '../api';
 
 export const RootStoreContext = React.createContext<RootStore | null>(null);
 
-const createRootStore = () => new RootStore(apiSchema);
+const createRootStore = () => new RootStore(api);
 
 function RootStoreProvider({ children }: React.PropsWithChildren<{}>) {
 	const [rootStore] = useState(createRootStore);
+
+	React.useEffect(() => {
+		if (api.indexedDb.getError()) throw api.indexedDb.getError();
+	}, [api.indexedDb.getError()]);
+
 	return <RootStoreContext.Provider value={rootStore}>{children}</RootStoreContext.Provider>;
 }
 

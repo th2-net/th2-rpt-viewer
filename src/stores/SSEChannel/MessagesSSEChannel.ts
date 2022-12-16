@@ -63,6 +63,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		if (this.fetchedChunkSubscription == null || this.eventListeners.onClose) {
 			const chunk = this.getNextChunk();
 			(this.eventListeners.onClose || this.eventListeners.onResponse)(chunk);
+
 			this.resetSSEState({ isEndReached });
 		} else {
 			this.isEndReached = isEndReached;
@@ -115,7 +116,6 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
 		this.messageIds = resumeMessageIds || this.messageIds;
-
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
@@ -152,9 +152,17 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private _onMessageIdsEvent = (e: Event) => {
 		const messagesIdsEvent: MessageIdsEvent =
 			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-		this.messageIds = Object.values(messagesIdsEvent.messageIds).map(
-			messageId => messageId.lastId,
-		) as string[];
+
+		const newIds = Object.values(messagesIdsEvent.messageIds)
+			.map(messageId => messageId.lastId)
+			.filter(id => id && id.slice(-2) !== '-1') as string[];
+		this.messageIds = [
+			...newIds,
+			...this.messageIds.filter(
+				messageId =>
+					!newIds.find(id => id.includes(messageId.slice(0, messageId.lastIndexOf(':')))),
+			),
+		];
 		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
 			this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
 		}

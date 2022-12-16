@@ -102,6 +102,16 @@
 		flex-direction: column;
 		gap: 5px;
 	}
+
+	.sessions-row {
+		box-shadow: none;
+		flex-direction: column;
+		gap: 12px;
+		& label {
+			align-self: flex-start;
+			font-size: 16px;
+		}
+	}
 }
 
 .search-time-limit {
@@ -400,3 +410,4 @@
 		transition: all 0.2s;
 	}
 }
+

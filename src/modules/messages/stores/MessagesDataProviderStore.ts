@@ -17,7 +17,7 @@
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { action, reaction, observable, computed, runInAction, toJS } from 'mobx';
-import { sortByTimestamp, timestampToNumber } from 'helpers/date';
+import { timestampToNumber } from 'helpers/date';
 import { SearchDirection } from 'models/SearchDirection';
 import { MessageSSEEventListeners, MessagesSSEChannel } from 'stores/SSEChannel/MessagesSSEChannel';
 import ApiSchema from '../../../api/ApiSchema';
@@ -30,13 +30,10 @@ import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../../models/Stores';
 import { DirectionalStreamInfo } from '../../../models/StreamInfo';
 import { extractMessageIds } from '../../../helpers/streamInfo';
-import { isEventMessage } from '../../../helpers/message';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore implements MessagesDataStore {
-	private readonly messagesLimit = 250;
-
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
@@ -98,6 +95,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	@computed
 	public get isLoading(): boolean {
 		return this.isLoadingNextMessages || this.isLoadingPreviousMessages || this.isLoadingMessageIds;
+	}
+
+	@computed
+	public get sortedMessages() {
+		return this.messages.sort(
+			(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+		);
 	}
 
 	private messageAC: AbortController | null = null;
@@ -180,14 +184,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			]);
 
 			runInAction(() => {
-				const messages = sortByTimestamp([
-					...nextMessages.filter(msg => msg.id !== messageId),
-					...[message].filter(isEventMessage),
-					...prevMessages,
-				]);
-				this.messages = messages;
+				this.messages = [...nextMessages, ...prevMessages];
 			});
-
 			if (!messageId) {
 				message = prevMessages[0] || nextMessages[nextMessages.length - 1];
 				if (message) this.messagesStore.selectedMessageId = new String(message.id);
@@ -288,13 +286,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length) {
-			let newMessagesList = [...this.messages, ...messages];
-
-			if (newMessagesList.length > this.messagesLimit) {
-				newMessagesList = newMessagesList.slice(-this.messagesLimit);
-			}
-
-			this.messages = newMessagesList;
+			this.startIndex += messages.length;
+			this.messages = [...this.messages, ...messages];
 		}
 	};
 
@@ -318,29 +311,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
 
-		// eslint-disable-next-line no-param-reassign
-		messages = messages.filter(msg => msg.id !== this.messagesStore.selectedMessageId?.valueOf());
+		const nextMessages = messages.filter(
+			message => !this.messages.find(msg => msg.id === message.id),
+		);
 
-		const prevMessages =
-			this.messages.length > 0
-				? messages.filter(
-						message =>
-							timestampToNumber(message.timestamp) < timestampToNumber(this.messages[0].timestamp),
-				  )
-				: [];
-		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
-
-		if (prevMessages.length > 0 || nextMessages.length > 0) {
-			this.startIndex -= nextMessages.length;
-
-			let newMessagesList = prevMessages.length
-				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
-				: [...nextMessages, ...this.messages];
-
-			if (newMessagesList.length > this.messagesLimit) {
-				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
-			}
-			this.messages = newMessagesList;
+		if (nextMessages.length) {
+			this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
+			this.messages = [...nextMessages, ...this.messages];
 		}
 	};
 

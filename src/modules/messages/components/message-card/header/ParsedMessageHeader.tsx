@@ -49,8 +49,12 @@ export const ParsedMessageHeader = memo((props: ParsedMessageHeaderProps) => {
 					{typeof subsequence === 'number' && <Chip>{subsequence}</Chip>}
 					<Chip
 						className='mc-header__value'
-						title={`Name: ${parsedMessage.message.metadata.messageType}`}>
-						{parsedMessage.message.metadata.messageType}
+						title={
+							parsedMessage
+								? `Type: ${parsedMessage.message.metadata.messageType}`
+								: 'Type: RawMessage'
+						}>
+						{parsedMessage?.message.metadata.messageType}
 					</Chip>
 				</>
 			)}

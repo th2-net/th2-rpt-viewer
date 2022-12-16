@@ -248,6 +248,10 @@ export default class EventsStore implements IEventsStore {
 			filter: this.filterStore.filter,
 			targetEventId: savedEventNode.eventId,
 		});
+
+		if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
+			// TODO: expand panel if it's closed
+		}
 	};
 
 	@action
