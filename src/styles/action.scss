@@ -399,7 +399,7 @@
 		&__title {
 			margin: 10px 0 0;
 			font: bold 12px 'Open Sans', sans-serif;
-			color: $alternativeTextColor
+			color: $alternativeTextColor;
 		}
 		&__list {
 			@include scrollbar;

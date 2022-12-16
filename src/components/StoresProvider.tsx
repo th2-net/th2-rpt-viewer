@@ -19,6 +19,10 @@ import RootStoreContext, { createRootStore } from '../contexts/rootStoreContext'
 import api from '../api';
 
 function RootStoreProvider({ children }: React.PropsWithChildren<{}>) {
+	React.useEffect(() => {
+		if (api.indexedDb.getError()) throw api.indexedDb.getError();
+	}, [api.indexedDb.getError()]);
+
 	return (
 		<RootStoreContext.Provider value={createRootStore(api)}>{children}</RootStoreContext.Provider>
 	);

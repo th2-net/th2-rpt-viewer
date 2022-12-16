@@ -57,8 +57,8 @@ export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) 
 						className='mc-header__value'
 						title={
 							parsedMessage
-								? `Name: ${parsedMessage.message.metadata.messageType}`
-								: 'Name: RawMessage'
+								? `Type: ${parsedMessage.message.metadata.messageType}`
+								: 'Type: RawMessage'
 						}>
 						{parsedMessage?.message.metadata.messageType}
 					</Chip>

@@ -50,7 +50,7 @@ interface Props {
 const MessagesVirtualizedList = (props: Props) => {
 	const messageStore = useMessagesWorkspaceStore();
 	const {
-		messages,
+		sortedMessages: messageList,
 		searchChannelNext,
 		searchChannelPrev,
 		startIndex,
@@ -84,12 +84,14 @@ const MessagesVirtualizedList = (props: Props) => {
 				: CardDisplayType.FULL,
 		[messagesListWidth],
 	);
+	const scrollToTop = () => {
+		if (updateStore.isActive && virtuoso.current) virtuoso.current.scrollToIndex(0);
+	};
 
 	React.useEffect(() => {
-		if (updateStore.isActive && virtuoso.current) {
-			virtuoso.current.scrollToIndex(0);
-		}
-	}, [updateStore.isActive]);
+		scrollToTop();
+		raf(scrollToTop, 3);
+	}, [updateStore.isActive, messageList]);
 
 	React.useEffect(() => {
 		if (!searchChannelNext?.isLoading) setLoadedChunks(loadedChunks => [true, loadedChunks[1]]);
@@ -100,7 +102,9 @@ const MessagesVirtualizedList = (props: Props) => {
 		const selectedMessageId = messageStore.selectedMessageId?.valueOf();
 		if (selectedMessageId) {
 			raf(() => {
-				const index = messageStore.dataStore.messages.findIndex(m => m.id === selectedMessageId);
+				const index = messageStore.dataStore.sortedMessages.findIndex(
+					m => m.id === selectedMessageId,
+				);
 				if (index !== -1) virtuoso.current?.scrollToIndex({ index, align: 'center' });
 			}, 3);
 		}
@@ -111,44 +115,30 @@ const MessagesVirtualizedList = (props: Props) => {
 		firstNextChunkIsLoaded,
 	]);
 
-	const debouncedScrollHandler = useDebouncedCallback(
-		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
-			const scroller = event.target;
-			if (scroller instanceof Element) {
-				const isStartReached = scroller.scrollTop === 0;
-				const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
-				if (
-					isStartReached &&
-					searchChannelNext &&
-					!searchChannelNext.isLoading &&
-					!searchChannelNext.isEndReached &&
-					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
-				) {
-					loadNextMessages().then(nextMessages => onNextChannelResponse(nextMessages));
-				}
-
-				if (
-					isEndReached &&
-					searchChannelPrev &&
-					!searchChannelPrev.isLoading &&
-					!searchChannelPrev.isEndReached &&
-					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
-				) {
-					loadPrevMessages().then(prevMessages => onPrevChannelResponse(prevMessages));
-				}
+	const debouncedScrollHandler = useDebouncedCallback((event: React.UIEvent<'div'>) => {
+		const scroller = event.target;
+		if (scroller instanceof Element) {
+			const isStartReached = scroller.scrollTop === 0;
+			if (
+				isStartReached &&
+				searchChannelNext &&
+				!searchChannelNext.isLoading &&
+				!updateStore.isActive
+			) {
+				loadNextMessages().then(onNextChannelResponse);
 			}
-		},
-		100,
-	);
+		}
+	}, 100);
+
+	const onEndReached = () => {
+		if (searchChannelPrev && !searchChannelPrev.isLoading && !searchChannelPrev.isEndReached) {
+			loadPrevMessages().then(onPrevChannelResponse);
+		}
+	};
 
 	const onScroll = (event: React.UIEvent<'div'>) => {
 		event.persist();
 		debouncedScrollHandler(event);
-	};
-
-	const onWheel: React.WheelEventHandler<'div'> = event => {
-		event.persist();
-		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
@@ -167,8 +157,9 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	return (
 		<Virtuoso
-			data={messages}
+			data={messageList}
 			firstItemIndex={startIndex}
+			atBottomStateChange={onEndReached}
 			ref={virtuoso}
 			scrollerRef={handleScrollerRef}
 			overscan={overscan}
@@ -177,7 +168,7 @@ const MessagesVirtualizedList = (props: Props) => {
 			className={className}
 			itemsRendered={onMessagesRendered}
 			onScroll={onScroll}
-			onWheel={onWheel}
+			endReached={onEndReached}
 			components={{
 				Header: function MessagesListSpinnerNext() {
 					return (

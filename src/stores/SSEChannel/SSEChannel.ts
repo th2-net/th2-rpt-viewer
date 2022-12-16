@@ -113,7 +113,6 @@ export default abstract class SSEChannel<T> implements ISSEChannel {
 	): void => {
 		const { isLoading = false, isError = false, isEndReached = false } = initialState;
 		this.clearSchedulersAndTimeouts();
-
 		this.accumulatedData = [];
 		this.isLoading = isLoading;
 		this.isError = isError;

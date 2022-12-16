@@ -198,14 +198,18 @@ export default class EventsDataStore {
 		this.parentsToLoad.clear();
 	};
 
+	@observable
+	public mainSourceEvents: Map<string, true> = new Map();
+
 	@action
 	private handleIncomingEventTreeNodes = (events: EventTreeNode[]) => {
 		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
-		const eventsMap: Map<string, EventTreeNode> = observable.map(
-			new Map([...this.eventsCache, ...newEntries]),
-			{ deep: false },
-		);
-		this.eventsCache = eventsMap;
+		const idsUpdate: [string, true][] = events.map(event => [event.eventId, true]);
+
+		this.mainSourceEvents = observable.map(new Map([...this.mainSourceEvents, ...idsUpdate]));
+		this.eventsCache = observable.map(new Map([...this.eventsCache, ...newEntries]), {
+			deep: false,
+		});
 
 		const eventsByParentId: { [parentEventId: string]: EventTreeNode[] } = {};
 		const rootEvents: EventTreeNode[] = [];
@@ -391,9 +395,8 @@ export default class EventsDataStore {
 						}
 						this.rootEventIds.push(rootNode.eventId);
 					}
-				} else {
-					this.loadedParentNodes.push(parentNodes);
 				}
+				this.loadedParentNodes.push(parentNodes);
 			}
 		}
 	};
@@ -687,6 +690,7 @@ export default class EventsDataStore {
 		this.isPreloadingTargetEventsChildren.clear();
 		this.parentsToLoad.clear();
 		this.childrenData.clear();
+		this.mainSourceEvents.clear();
 	};
 
 	private isPreloadingTargetEventsChildren: Map<string, boolean> = new Map();

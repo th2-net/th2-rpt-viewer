@@ -127,8 +127,8 @@ export default class MessagesStore {
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
-		const messageTo = getItemAt(this.dataStore.messages, startIndex);
-		const messageFrom = getItemAt(this.dataStore.messages, endIndex);
+		const messageTo = getItemAt(this.dataStore.sortedMessages, startIndex);
+		const messageFrom = getItemAt(this.dataStore.sortedMessages, endIndex);
 
 		if (messageFrom && messageTo) {
 			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
@@ -208,11 +208,15 @@ export default class MessagesStore {
 				streams: [...new Set([...streams, message.sessionId])],
 			});
 		}
+
+		if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
+			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
+		}
 	};
 
 	@action
 	public selectAttachedMessage = (message: EventMessage) => {
-		const messageIndex = this.dataStore.messages.findIndex(m => m.id === message.id);
+		const messageIndex = this.dataStore.sortedMessages.findIndex(m => m.id === message.id);
 		if (messageIndex !== -1) {
 			this.selectedMessageId = new String(message.id);
 			this.highlightedMessageId = new String(message.id);

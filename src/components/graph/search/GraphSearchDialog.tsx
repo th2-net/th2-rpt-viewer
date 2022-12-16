@@ -31,6 +31,13 @@ import { SearchDirection } from '../../../models/search/SearchDirection';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
 import { EventMessage } from '../../../models/EventMessage';
 
+const isTimestamp = (searchValue: string) => {
+	return (
+		moment(searchValue, DateTimeMask.TIME_MASK, true).isValid() ||
+		moment(searchValue, DateTimeMask.DATE_TIME_MASK, true).isValid()
+	);
+};
+
 interface Props {
 	value: string;
 	onSearchResultSelect: (savedItem: GraphSearchResult) => void;
@@ -53,6 +60,8 @@ const GraphSearchDialog = (props: Props) => {
 		isIdMode,
 		submittedTimestamp,
 	} = props;
+
+	const initialValue = React.useRef(value);
 
 	const rootStore = useRootStore();
 
@@ -83,12 +92,19 @@ const GraphSearchDialog = (props: Props) => {
 		const uniqueSortedSearchHistory = sortedSearchHistory.filter(
 			(historyItem, index) => onlyIdFromHistory.indexOf(getItemId(historyItem.item)) === index,
 		);
-		return uniqueSortedSearchHistory.filter(
+
+		const filteredData = uniqueSortedSearchHistory.filter(
 			historyItem =>
-				getItemId(historyItem.item).includes(value) ||
-				getItemName(historyItem.item)?.includes(value) ||
+				getItemId(historyItem.item).toLowerCase().includes(value.toLowerCase()) ||
+				getItemName(historyItem.item).toLowerCase().includes(value.toLowerCase()) ||
 				(foundId && getItemId(historyItem.item).includes(foundId)),
 		);
+
+		if (!filteredData.length && value === initialValue.current && isTimestamp(value)) {
+			return sortedSearchHistory;
+		}
+
+		return filteredData;
 	}, [sortedSearchHistory, value, foundId]);
 
 	async function getGraphSearchHistory() {
@@ -251,13 +267,6 @@ const GraphSearchDialog = (props: Props) => {
 			document.removeEventListener('keydown', onKeyDown);
 		};
 	}, [onKeyDown]);
-
-	const isTimestamp = (searchValue: string) => {
-		return (
-			moment(searchValue, DateTimeMask.TIME_MASK, true).isValid() ||
-			moment(searchValue, DateTimeMask.DATE_TIME_MASK, true).isValid()
-		);
-	};
 
 	const onValueChange = (searchValue: string, abortController: AbortController) => {
 		if (!isIdMode || !searchValue || filteredSearchHistory.length > 1 || isTimestamp(searchValue))
