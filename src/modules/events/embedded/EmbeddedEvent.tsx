@@ -17,9 +17,11 @@
 import { useEffect, useState } from 'react';
 import EventBodyCard from 'modules/events/components/event-card/EventBodyCard';
 import fetch from 'helpers/fetchRetry';
+import { EventCardHeaderBase } from '../components/event-card/EventCardHeader';
 import { EventAction } from '../../../models/EventAction';
 import SplashScreen from '../../../components/SplashScreen';
-import EmbeddedEventHeader from './EmbeddedEventHeader';
+import { toEventTreeNode } from '../helpers/event';
+import 'styles/events.scss';
 
 function EmbeddedEvent({ eventId }: { eventId: string }) {
 	const [event, setEvent] = useState<EventAction | null>(null);
@@ -44,10 +46,10 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 
 	if (event) {
 		return (
-			<>
-				<EmbeddedEventHeader event={event} />
+			<div className='event-card'>
+				<EventCardHeaderBase event={toEventTreeNode(event)} />
 				<EventBodyCard key={eventId} event={event} />
-			</>
+			</div>
 		);
 	}
 	return <SplashScreen />;

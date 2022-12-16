@@ -120,6 +120,7 @@ function ReplayModal() {
 						setValue: setStartTimestamp,
 						value: startTimestamp,
 						type: TimeInputType.DATE_TIME,
+						label: 'Start',
 					},
 					{
 						dateMask: DateTimeMask.DATE_TIME_MASK,
@@ -129,6 +130,7 @@ function ReplayModal() {
 						setValue: setEndTimestamp,
 						value: endTimestamp,
 						type: TimeInputType.DATE_TIME,
+						label: 'End',
 					},
 				],
 				type: 'time-window',

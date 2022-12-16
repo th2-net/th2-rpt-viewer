@@ -28,7 +28,6 @@ import { BookmarkIcon } from 'components/icons/BookmarkIcon';
 import { Paper } from 'components/Paper';
 import Checkbox from 'components/util/Checkbox';
 import { getElapsedTime } from '../../helpers/date';
-import SearchableContent from '../search/SearchableContent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { Counter } from './Counter';
 import CardDisplayType from '../../models/CardDisplayType';
@@ -75,7 +74,7 @@ export function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		checked = false,
 		onNameClick,
 	} = props;
-	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
+	const { eventName, eventType, startTimestamp, endTimestamp } = event;
 
 	const status = getEventStatus(event);
 
@@ -141,7 +140,7 @@ export function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 						className={clsx('event-header-card__title', { clickable: Boolean(onNameClick) })}
 						title={eventName}
 						onClick={handleNameClick}>
-						<SearchableContent content={eventName} eventId={eventId} />
+						{eventName}
 					</div>
 					{eventType && <Chip onClick={handleTypeClick}>{eventType}</Chip>}
 				</>
@@ -213,7 +212,7 @@ const UnknownEventCardHeader = (props: UnknownEventCardHeaderProps) => {
 		<Paper className={rootClassName}>
 			<div className={iconClassName} />
 			<div className='event-header-card__title' title={event.eventName}>
-				<SearchableContent content={event.eventName} eventId={event.eventId} />
+				{event.eventName}
 			</div>
 			<Counter>{counter}</Counter>
 		</Paper>

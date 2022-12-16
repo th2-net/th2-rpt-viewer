@@ -26,6 +26,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
 	const [viewType, setViewType] = useState<Map<string, MessageViewType>>(new Map());
+	const [isExpanded, setIsExpanded] = useState(true);
 
 	const updateViewType = useCallback((id: string, newViewType: MessageViewType) => {
 		setViewType(vt => new Map(vt.set(id, newViewType)));
@@ -68,13 +69,15 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 
 	if (message) {
 		return (
-			<div className='embedded-wrapper' ref={handleWrapperRef}>
+			<div className='embedded-message' ref={handleWrapperRef}>
 				<MessageCard
 					message={message}
 					displayType={displayType}
 					setViewType={updateViewType}
 					viewTypesMap={viewType}
 					isEmbedded={true}
+					isExpanded={isExpanded}
+					setIsExpanded={setIsExpanded}
 				/>
 			</div>
 		);

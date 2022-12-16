@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { useState } from 'react';
 import api from 'api/index';
 import { FilterConfigStore } from 'stores/FilterConfigStore';
 import MessagesStore from '../stores/MessagesStore';
@@ -21,20 +22,23 @@ import { MessagesPanelBase } from '../components/MessagesPanel';
 import { MessagesStoreProvider } from '../components/MessagesStoreProvider';
 import 'styles/workspace.scss';
 
-const searchParams = new URLSearchParams(window.location.search);
+const EmbeddedMessages = () => {
+	const [store] = useState(() => {
+		const searchParams = new URLSearchParams(window.location.search);
 
-const messagesUrlState = searchParams.get('messages');
+		const messagesUrlState = searchParams.get('messages');
 
-if (!messagesUrlState) throw new Error("The query parameter 'Messages' was not passed");
-
-const state = JSON.parse(window.atob(messagesUrlState));
-
-const store = new MessagesStore(new FilterConfigStore(api), api, state, { isLive: true });
-
-const EmbeddedMessages = () => (
-	<MessagesStoreProvider value={store}>
-		<MessagesPanelBase />
-	</MessagesStoreProvider>
-);
+		if (!messagesUrlState) {
+			throw new Error("The query parameter 'Messages' was not passed");
+		}
+		const state = JSON.parse(window.atob(messagesUrlState));
+		return new MessagesStore(new FilterConfigStore(api), api, state, { isLive: true });
+	});
+	return (
+		<MessagesStoreProvider value={store}>
+			<MessagesPanelBase />
+		</MessagesStoreProvider>
+	);
+};
 
 export default EmbeddedMessages;

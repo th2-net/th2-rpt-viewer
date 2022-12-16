@@ -20,6 +20,7 @@ import 'regenerator-runtime/runtime';
 import 'core-js/stable';
 import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
+import { ThemeProvider } from 'components/ThemeProvider';
 import ErrorBoundary from './components/util/ErrorBoundary';
 import { ViewMode, ViewModeProvider } from './components/ViewModeProvider';
 import './styles/root.scss';
@@ -46,7 +47,9 @@ ReactDOM.render(
 				</div>
 			}>
 			<ViewModeProvider value={viewMode}>
-				<App />
+				<ThemeProvider>
+					<App />
+				</ThemeProvider>
 			</ViewModeProvider>
 		</Suspense>
 	</ErrorBoundary>,

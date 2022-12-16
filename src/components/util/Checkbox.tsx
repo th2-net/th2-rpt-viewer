@@ -14,7 +14,6 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import '../../styles/checkbox.scss';
 import { createBemBlock } from '../../helpers/styleCreators';
 

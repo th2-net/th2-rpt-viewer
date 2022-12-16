@@ -126,7 +126,6 @@
 
 	.counter {
 		@include unselectable;
-		@include status-card;
 
 		border: 1px solid var(--counter-border);
 		border-radius: 8px;
@@ -191,7 +190,6 @@
 }
 
 .event-card {
-	@include status-card;
 	@include scrollbar;
 
 	display: flex;
@@ -786,8 +784,14 @@
 	justify-content: stretch;
 	overflow: hidden;
 
+	.event-header-card {
+		border-radius: 8px 8px 0px 0px;
+	}
+
 	&.empty {
-		border-radius: 8px;
+		.event-header-card {
+			border-radius: 8px;
+		}
 	}
 
 	&__header {
