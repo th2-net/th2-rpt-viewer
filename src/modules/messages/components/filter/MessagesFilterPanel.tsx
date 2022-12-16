@@ -21,7 +21,6 @@ import MessagesFilter from 'models/filter/MessagesFilter';
 import FilterConfig from 'components/filter/FilterConfig';
 import FilterButton from 'components/filter/FilterButton';
 import { useFilterConfig } from 'hooks/useFilterConfig';
-import { useFiltersHistoryStore } from 'hooks/useFiltersHistoryStore';
 import useViewMode from 'hooks/useViewMode';
 import { ActionFilterConfig, FilterRowConfig } from 'models/filter/FilterInputs';
 import { MessageFilterKeys } from 'api/sse';
@@ -52,8 +51,6 @@ const MessagesFilterPanel = () => {
 	const [sessions, setSessions] = React.useState<Array<string>>([]);
 	const filtersAutocomplete = useMessageFiltersAutocomplete();
 
-	const { onMessageFilterSubmit } = useFiltersHistoryStore();
-
 	const { config, filter, setFilter } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
 		filter: filterStore.filter,
@@ -75,14 +72,6 @@ const MessagesFilterPanel = () => {
 			},
 			filter as MessagesFilter,
 		);
-
-		if (filter) {
-			onMessageFilterSubmit(filter);
-		}
-
-		if (sessions.length) {
-			messagesStore.saveSessions(sessions.slice(0, filterStore.SESSIONS_LIMIT));
-		}
 	}, [filter, filterStore, sessions]);
 
 	const isMessageListLoading = computed(

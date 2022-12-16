@@ -107,6 +107,7 @@ export default class WorkspacesStore {
 			this,
 			this.rootStore.sessionsStore,
 			this.filterConfigStore,
+			this.filtersHistoryStore,
 			this.bookmarksStore,
 			this.api,
 			workspaceInitialState,

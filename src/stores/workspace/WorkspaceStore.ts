@@ -35,6 +35,7 @@ import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
 } from 'modules/messages/stores/MessagesStore';
+import FiltersHistoryStore from 'stores/FiltersHistoryStore';
 import { MessagesSearchResult } from 'modules/search/stores/SearchResult';
 import EventsStore, {
 	EventStoreDefaultStateType,
@@ -77,6 +78,7 @@ export default class WorkspaceStore {
 		private workspacesStore: WorkspacesStore,
 		private sessionsStore: SessionHistoryStore,
 		private filterConfigStore: IFilterConfigStore,
+		private filtersHistoryStore: FiltersHistoryStore,
 		private bookmarksStore: IBookmarksStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
@@ -104,6 +106,7 @@ export default class WorkspaceStore {
 			{
 				onSessionsSubmit: this.sessionsStore.saveSessions,
 				toggleBookmark: this.bookmarksStore.toggleMessagePin,
+				onFilterSubmit: this.filtersHistoryStore.onMessageFilterSubmit,
 			},
 		);
 

@@ -199,6 +199,14 @@ export default class MessagesStore implements IMessagesStore {
 		this.showFilterChangeHint = false;
 		this.highlightedMessageId = null;
 		this.filterStore.setMessagesFilter(params, filter);
+
+		if (this.options.onFilterSubmit && this.filterStore.filter) {
+			this.options.onFilterSubmit(this.filterStore.filter);
+		}
+
+		if (this.options.onSessionsSubmit) {
+			this.options.onSessionsSubmit(this.filterStore.params.streams);
+		}
 	};
 
 	private init = async (defaultState: MessagesStoreDefaultStateType, isLive: boolean) => {

@@ -881,10 +881,10 @@
 
 	.report-viewer-link {
 		@include clickable;
+		color: var(--info-color);
 
 		padding: 4px 5px;
 		background-color: transparent;
-		color: $primaryTextColor;
 		font-size: 14px;
 		line-height: 15px;
 		font-weight: bold;

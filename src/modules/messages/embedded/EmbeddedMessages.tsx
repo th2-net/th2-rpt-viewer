@@ -17,7 +17,7 @@
 import { useState } from 'react';
 import api from 'api/index';
 import { FilterConfigStore } from 'stores/FilterConfigStore';
-import MessagesStore from '../stores/MessagesStore';
+import MessagesStore, { MessagesStoreDefaultStateType } from '../stores/MessagesStore';
 import { MessagesPanelBase } from '../components/MessagesPanel';
 import { MessagesStoreProvider } from '../components/MessagesStoreProvider';
 import 'styles/workspace.scss';
@@ -31,9 +31,10 @@ const EmbeddedMessages = () => {
 		if (!messagesUrlState) {
 			throw new Error("The query parameter 'Messages' was not passed");
 		}
-		const state = JSON.parse(window.atob(messagesUrlState));
+		const state: MessagesStoreDefaultStateType = JSON.parse(window.atob(messagesUrlState));
 		return new MessagesStore(new FilterConfigStore(api), api, state, { isLive: true });
 	});
+
 	return (
 		<MessagesStoreProvider value={store}>
 			<MessagesPanelBase />
