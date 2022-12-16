@@ -98,6 +98,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		return this.isLoadingNextMessages || this.isLoadingPreviousMessages || this.isLoadingMessageIds;
 	}
 
+	@computed
+	public get sortedMessages() {
+		return this.messages.sort(
+			(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+		);
+	}
+
 	private messageAC: AbortController | null = null;
 
 	@action
@@ -193,9 +200,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			this.messages = [...nextMessages, ...prevMessages].sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = [...nextMessages, ...prevMessages];
 		});
 
 		if (!this.messagesStore.selectedMessageId) {

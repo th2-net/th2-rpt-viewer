@@ -48,7 +48,7 @@ interface Props {
 const MessagesVirtualizedList = (props: Props) => {
 	const messageStore = useMessagesWorkspaceStore();
 	const {
-		messages: messageList,
+		sortedMessages: messageList,
 		searchChannelNext,
 		searchChannelPrev,
 		startIndex,
@@ -90,7 +90,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		const selectedMessageId = messageStore.selectedMessageId?.valueOf();
 		if (selectedMessageId) {
 			raf(() => {
-				const index = messageStore.dataStore.messages.findIndex(
+				const index = messageStore.dataStore.sortedMessages.findIndex(
 					m => m.messageId === selectedMessageId,
 				);
 				if (index !== -1) virtuoso.current?.scrollToIndex({ index, align: 'center' });
