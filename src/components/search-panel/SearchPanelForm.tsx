@@ -155,6 +155,7 @@ const SearchPanelForm = () => {
 		setCurrentValue: setCurrentStream,
 		autocompleteList: sessionsAutocomplete,
 		isInvalid: areSessionInvalid,
+		wrapperClassName: 'sessions-row',
 		required: true,
 		validateBubbles: true,
 	};
@@ -262,7 +263,9 @@ const SearchPanelForm = () => {
 				<SearchSubmit {...searchSubmitConfig} />
 				<div className='search-panel__fields'>
 					<FiltersHistory disabled={disabled} />
-					<div className='filter-row'>
+				</div>
+				<div className='filter'>
+					<div>
 						<div className='search-type-config'>
 							<SearchTypeSwitcher
 								formType={formType}
@@ -273,8 +276,6 @@ const SearchPanelForm = () => {
 						</div>
 					</div>
 					{formType === 'message' ? <FilterRow rowConfig={sessionsConfig} /> : null}
-				</div>
-				<div className='filter'>
 					<FilterRows config={config} />
 				</div>
 				{!disabled && (

@@ -734,3 +734,13 @@
 .search-result-single-item {
 	margin-left: 22px;
 }
+
+.sessions-row {
+	box-shadow: none;
+	flex-direction: column;
+	gap: 12px;
+	& label {
+		align-self: flex-start;
+		font-size: 16px;
+	}
+}
