@@ -83,7 +83,7 @@ export class BookmarksStore {
 			.filter(
 				bookmark =>
 					getItemId(bookmark.item).toLowerCase().includes(search) ||
-					getItemName(bookmark.item).toLowerCase().includes(search),
+					getItemName(bookmark.item)?.toLowerCase().includes(search),
 			);
 	}
 
@@ -132,9 +132,7 @@ export class BookmarksStore {
 
 	@action
 	public toggleMessagePin = (message: EventMessage) => {
-		const bookmark = this.messages.find(
-			messageBookmark => messageBookmark.id === message.messageId,
-		);
+		const bookmark = this.messages.find(messageBookmark => messageBookmark.id === message.id);
 		if (bookmark) {
 			this.removeBookmark(bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
@@ -223,7 +221,7 @@ export class BookmarksStore {
 
 	private createMessageBookmark = (message: EventMessage): MessageBookmark => {
 		return {
-			id: message.messageId,
+			id: message.id,
 			timestamp: moment.utc().valueOf(),
 			item: toJS(message),
 		};

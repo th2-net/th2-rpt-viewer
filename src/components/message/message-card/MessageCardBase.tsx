@@ -15,122 +15,189 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createBemBlock } from '../../../helpers/styleCreators';
-import { MessageScreenshotZoom } from './MessageScreenshot';
-import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../models/EventMessage';
-import MessageCardViewTypeRenderer, {
-	MessageCardViewTypeRendererProps,
-} from './MessageCardViewTypeRenderer';
-import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
+import { EventMessage, MessageViewTypeConfig } from '../../../models/EventMessage';
+import { MessageCardViewTypeRendererProps } from './MessageCardViewTypeRenderer';
+import { MessageCardToolsProps } from './MessageCardTools';
 import '../../../styles/messages.scss';
-import { MessageHeader } from './MessageHeader';
+import { MessageCardHeader, MessageInfoProps } from './header/MessageCardHeader';
+import { ParsedMessageComponent, ParsedMessageProps } from './MessageCardParsedMessage';
+import { defineViewTypeConfig } from '../../../helpers/message';
+import { MessageCardRaw } from './raw/MessageCardRaw';
+import { createBemBlock } from '../../../helpers/styleCreators';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 export interface MessageCardBaseProps {
 	message: EventMessage;
+	displayType: CardDisplayType;
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
-	isAttached?: boolean;
-	isBookmarked?: boolean;
-	isHighlighted?: boolean;
-	isSoftFiltered?: boolean;
-	isContentBeautified?: boolean;
-	toogleMessagePin?: () => void;
-	isEmbedded?: boolean;
-	isExported?: boolean;
-	isExport?: boolean;
-	sortOrderItems?: string[];
-	viewType: MessageViewType;
-	setViewType: (viewType: MessageViewType) => void;
 	addMessageToExport?: () => void;
+	isExport?: boolean;
+	isExported?: boolean;
+	viewTypeConfig: Map<string, MessageViewTypeConfig>;
+	isAttached?: boolean;
+	isHighlighted?: boolean;
+	isBookmarked?: boolean;
+	toogleMessagePin?: () => void;
+	sortOrderItems?: string[];
+	isExpanded: boolean;
+	setIsExpanded: (state: boolean) => void;
+	isDisplayRuleRaw: boolean;
 }
 
 const MessageCardBase = React.memo(
 	({
 		message,
-		viewType,
-		setViewType,
 		hoverMessage,
 		unhoverMessage,
+		viewTypeConfig,
+		isDisplayRuleRaw,
+		isExpanded,
+		setIsExpanded,
 		isAttached,
-		isBookmarked,
 		isHighlighted,
-		isSoftFiltered,
+		isBookmarked,
 		toogleMessagePin,
-		isEmbedded,
-		isExported,
-		isExport,
+		displayType,
 		sortOrderItems,
 		addMessageToExport,
+		isExport,
+		isExported,
 	}: MessageCardBaseProps) => {
-		const { messageId, bodyBase64, body } = message;
-
-		const rootClass = createBemBlock(
-			'message-card-wrapper',
-			isAttached ? 'attached' : null,
-			isBookmarked ? 'pinned' : null,
-			isHighlighted ? 'highlighted' : null,
-			isSoftFiltered ? 'soft-filtered' : null,
-			isExport ? 'export-mode' : null,
-			isExported ? 'exported' : null,
-		);
-
-		const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
-
-		const toggleViewType = (v: MessageViewType) => {
-			setViewType(v);
-		};
-
-		const isScreenshotMsg = isScreenshotMessage(message);
+		const { id, rawMessageBase64 } = message;
 
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
-			viewType,
-			messageId,
-			messageBody: body,
-			isBeautified: viewType === MessageViewType.FORMATTED,
-			rawContent: bodyBase64,
+			messageId: id,
+			rawContent: rawMessageBase64,
 			isSelected: isAttached || false,
 			sortOrderItems: sortOrderItems || [],
 		};
 
-		const messageCardToolsConfig: MessageCardToolsConfig = {
+		const messageCardToolsConfig: MessageCardToolsProps = {
 			message,
-			messageViewType: viewType,
-			toggleViewType,
-			isBookmarked: isBookmarked || false,
-			toggleMessagePin: toogleMessagePin || (() => null),
-			isScreenshotMsg,
-			isEmbedded,
+			isBookmarked,
+			toggleMessagePin: toogleMessagePin,
 		};
 
+		const messageInfoProps: MessageInfoProps = {
+			message,
+			viewType: defineViewTypeConfig(
+				viewTypeConfig,
+				message.parsedMessages && !isDisplayRuleRaw ? message.parsedMessages[0].id : message.id,
+			).viewType,
+			setViewType: defineViewTypeConfig(
+				viewTypeConfig,
+				message.parsedMessages && !isDisplayRuleRaw ? message.parsedMessages[0].id : message.id,
+			).setViewType,
+			onTimestampMouseEnter: hoverMessage,
+			onTimestampMouseLeave: unhoverMessage,
+			addMessageToExport,
+			isBookmarked,
+			isAttached,
+			isHighlighted,
+			isExport,
+			isExported,
+			isExpanded,
+			setIsExpanded,
+			displayType,
+			isScreenshotMsg: false,
+			isDisplayRuleRaw,
+			messageCardToolsConfig,
+		};
+
+		const parsedMessageProps: ParsedMessageProps = {
+			displayType,
+			isDisplayRuleRaw,
+			isHighlighted,
+			messageCardToolsConfig,
+			messageViewTypeRendererProps,
+			displayHeader: true,
+		};
+
+		const indicatorClass = createBemBlock(
+			'messages-list__item-indicator',
+			isBookmarked && !isAttached ? 'bookmarked' : null,
+			isAttached && !isBookmarked ? 'attached' : null,
+			isBookmarked && isAttached ? 'bookmarked-attached' : null,
+		);
+
 		return (
-			<div className={rootClass} onClick={addMessageToExport}>
-				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
-				<div className='message-card'>
-					<div className='mc__mc-body mc-body'>
-						<MessageHeader
-							message={message}
-							onTimestampMouseEnter={hoverMessage}
-							onTimestampMouseLeave={unhoverMessage}
-						/>
-						{isScreenshotMsg ? (
-							<div className='mc-body__screenshot'>
-								<MessageScreenshotZoom
-									src={
-										typeof bodyBase64 === 'string'
-											? `data:${message.messageType};base64,${message.bodyBase64}`
-											: ''
-									}
-									alt={message.messageId}
-								/>
-							</div>
+			<div className='messages-list__item-info'>
+				{(isBookmarked || isAttached) && <div className={indicatorClass} />}
+				<div className='message-card-wrapper'>
+					<div className='message-card'>
+						<MessageCardHeader {...messageInfoProps} />
+						{!isDisplayRuleRaw ? (
+							<>
+								{message.parsedMessages
+									?.slice(0, isExpanded ? undefined : 1)
+									.map((parsedMessage, index) => (
+										<ParsedMessageComponent
+											{...parsedMessageProps}
+											key={parsedMessage.id}
+											parsedMessage={parsedMessage}
+											viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
+											setViewType={
+												defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType
+											}
+											displayHeader={index > 0}
+											isLastParsedMessage={
+												message.parsedMessages
+													? index === message.parsedMessages?.length - 1 && !isExpanded
+													: false
+											}
+										/>
+									))}
+								{(!message.parsedMessages || isExpanded) && (
+									<MessageCardRaw
+										message={message}
+										viewType={defineViewTypeConfig(viewTypeConfig, message.id).viewType}
+										setViewType={defineViewTypeConfig(viewTypeConfig, message.id).setViewType}
+										displayType={displayType}
+										isScreenshotMsg={false}
+										isHighlighted={isHighlighted}
+										isDisplayRuleRaw={isDisplayRuleRaw}
+										isLastMessageRaw={true}
+										messageCardToolsConfig={messageCardToolsConfig}
+										messageViewTypeRendererProps={messageViewTypeRendererProps}
+									/>
+								)}
+							</>
 						) : (
-							<div className='mc-body__human'>
-								<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} />
-							</div>
+							<>
+								<MessageCardRaw
+									message={message}
+									viewType={defineViewTypeConfig(viewTypeConfig, message.id).viewType}
+									setViewType={defineViewTypeConfig(viewTypeConfig, message.id).setViewType}
+									displayType={displayType}
+									isScreenshotMsg={false}
+									isHighlighted={isHighlighted}
+									isDisplayRuleRaw={isDisplayRuleRaw}
+									isLastMessageRaw={message.parsedMessages ? !isExpanded : false}
+									messageCardToolsConfig={messageCardToolsConfig}
+									messageViewTypeRendererProps={messageViewTypeRendererProps}
+								/>
+								{isExpanded &&
+									message.parsedMessages?.map((parsedMessage, index) => (
+										<ParsedMessageComponent
+											{...parsedMessageProps}
+											key={parsedMessage.id}
+											parsedMessage={parsedMessage}
+											isLastParsedMessage={
+												message.parsedMessages
+													? index === message.parsedMessages?.length - 1
+													: false
+											}
+											viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
+											setViewType={
+												defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType
+											}
+										/>
+									))}
+							</>
 						)}
 					</div>
 				</div>
-				<MessageCardTools {...messageCardToolsConfig} />
 			</div>
 		);
 	},

@@ -17,7 +17,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessageCardSkeleton from '../message-card/MessageCardSkeleton';
-import MessageCard from '../message-card/MessageCard';
 import { useMessagesDataStore } from '../../../hooks';
 import ErrorMessageFallback from '../message-card/MessageErrorFallback';
 
@@ -55,7 +54,8 @@ function SkeletonedMessageCardListItem({ id }: Props) {
 		return <MessageCardSkeleton />;
 	}
 
-	return <MessageCard key={message.messageId} message={message} />;
+	// return <MessageCard key={message.id} message={message} />;
+	return null;
 }
 
 export default observer(SkeletonedMessageCardListItem);

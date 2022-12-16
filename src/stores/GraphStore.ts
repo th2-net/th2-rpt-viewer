@@ -177,11 +177,9 @@ export class GraphStore {
 				? GraphItemType.PASSED
 				: GraphItemType.FAILED;
 		}
-		return item.messageId === this.selectedStore.hoveredMessage?.messageId
+		return item.id === this.selectedStore.hoveredMessage?.id
 			? GraphItemType.HOVERED_MESSAGE
-			: this.selectedStore.attachedMessages.findIndex(
-					attMsg => attMsg.messageId === item.messageId,
-			  ) !== -1
+			: this.selectedStore.attachedMessages.findIndex(attMsg => attMsg.id === item.id) !== -1
 			? GraphItemType.ATTACHED_MESSAGE
 			: GraphItemType.PINNED_MESSAGE;
 	};

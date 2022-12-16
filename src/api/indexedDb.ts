@@ -22,9 +22,9 @@ import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
-import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { Session } from '../stores/messages/SessionsStore';
 import { EventBookmark, MessageBookmark } from '../models/Bookmarks';
+import { FilterState } from '../models/search/Search';
 import notificationsStore from '../stores/NotificationsStore';
 
 export enum IndexedDbStores {

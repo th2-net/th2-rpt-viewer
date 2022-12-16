@@ -21,13 +21,13 @@ import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './Work
 import TabsStore from './TabsStore';
 import SearchWorkspaceStore, { SEARCH_STORE_INTERVAL } from './SearchWorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
-import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { DbData, IndexedDbStores, Settings } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
+import MessagesFilter from '../../models/filter/MessagesFilter';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -121,7 +121,7 @@ export default class WorkspacesStore {
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
-		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
+		const filters: MessagesFilter | null = (requestInfo?.filters as MessagesFilter) || null;
 
 		return {
 			messages: {

@@ -22,6 +22,7 @@ import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
 import { useEventWindowViewStore, useWorkspaceEventStore, useActivePanel } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import '../../styles/events.scss';
+import EventWindowHeader from './EventWindowHeader';
 
 function EventWindow() {
 	const eventWindowViewStore = useEventWindowViewStore();
@@ -45,6 +46,7 @@ function EventWindow() {
 					onSelect={onBreadcrumbItemClick}
 				/>
 			</div>
+			<EventWindowHeader />
 			<div className='window__body'>
 				{eventWindowViewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}
 			</div>

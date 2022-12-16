@@ -120,6 +120,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
+				stream: this.queryParams.stream.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
 				messageId: this.messageIds,
 			},
 			type: this.type,
@@ -153,9 +154,10 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private _onMessageIdsEvent = (e: Event) => {
 		const messagesIdsEvent: MessageIdsEvent =
 			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-		const newIds = Object.values(messagesIdsEvent.messageIds).filter(
-			id => id && id.slice(-2) !== '-1',
-		) as string[];
+
+		const newIds = Object.values(messagesIdsEvent.messageIds)
+			.map(messageId => messageId.lastId)
+			.filter(id => id && id.slice(-2) !== '-1') as string[];
 		this.messageIds = [
 			...newIds,
 			...this.messageIds.filter(

@@ -16,17 +16,21 @@
 import React from 'react';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 import { FilterRowSwitcherConfig } from '../../../models/filter/FilterInputs';
+import { changeStatusName } from '../../../helpers/stringUtils';
 
 const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 	const { value, setValue, possibleValues, disabled, defaultValue } = config;
 
 	const setType = (type: string) => {
 		if (!disabled) {
-			setValue(type);
+			setValue(changeStatusName(type));
 		}
 	};
 
-	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
+	const labelClassName = createStyleSelector(
+		'filter-row__label',
+		config.label === 'Status' ? 'status' : null,
+	);
 
 	return (
 		<div className='search-type-switcher'>
@@ -35,30 +39,36 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 					{config.label}
 				</label>
 			)}
-			{possibleValues.map(val => {
-				const buttonClassName = createBemElement(
-					'search-type-switcher',
-					'switch-search-type-button',
-					'switch-search-type-button',
-					val,
-					value === val || (value === '' && defaultValue === val) ? 'active' : null,
-					disabled ? 'disabled' : null,
-				);
+			<div className='search-type-switcher__togglers'>
+				{possibleValues.map(val => {
+					const buttonClassName = createBemElement(
+						'search-type-switcher',
+						'button',
+						'switch-search-type-button',
+						val,
+						changeStatusName(value) === val || (value === '' && defaultValue === val)
+							? 'active'
+							: null,
+						disabled ? 'disabled' : null,
+					);
 
-				const iconClassName = createBemElement(
-					'switch-search-type-button',
-					'icon',
-					val,
-					value === val || (value === '' && defaultValue === val) ? 'active' : null,
-				);
+					const iconClassName = createBemElement(
+						'switch-search-type-button',
+						'icon',
+						val,
+						changeStatusName(value) === val || (value === '' && defaultValue === val)
+							? 'active'
+							: null,
+					);
 
-				return (
-					<button key={val} className={buttonClassName} onClick={() => setType(val)}>
-						<i className={iconClassName} />
-						<div className='switch-search-type-button__label'>{val}</div>
-					</button>
-				);
-			})}
+					return (
+						<button key={val} className={buttonClassName} onClick={() => setType(val)}>
+							<i className={iconClassName} />
+							<div className='switch-search-type-button__label'>{val}</div>
+						</button>
+					);
+				})}
+			</div>
 		</div>
 	);
 };

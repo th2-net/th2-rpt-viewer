@@ -205,7 +205,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		if (!this.messagesStore.selectedMessageId) {
 			message = prevMessages[0] || nextMessages[nextMessages.length - 1];
-			if (message) this.messagesStore.selectedMessageId = new String(message.messageId);
+			if (message) this.messagesStore.selectedMessageId = new String(message.id);
 		}
 	};
 
@@ -288,10 +288,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.lastPreviousChannelResponseTimestamp = null;
 		const firstPrevMessage = messages[0];
 
-		if (
-			firstPrevMessage &&
-			firstPrevMessage.messageId === this.messages[this.messages.length - 1]?.messageId
-		) {
+		if (firstPrevMessage && firstPrevMessage.id === this.messages[this.messages.length - 1]?.id) {
 			messages.shift();
 		}
 
@@ -320,7 +317,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.lastNextChannelResponseTimestamp = null;
 
 		const nextMessages = messages.filter(
-			message => !this.messages.find(msg => msg.messageId === message.messageId),
+			message => !this.messages.find(msg => msg.id === message.id),
 		);
 
 		if (nextMessages.length) {
@@ -453,10 +450,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			this.noMatchingMessagesPrev = false;
 			const idsMap = this.messages
 				.slice(Math.max(0, this.messages.length - 20))
-				.reduce((map, m) => ({ ...map, [m.messageId]: true }), {} as Record<string, boolean>);
+				.reduce((map, m) => ({ ...map, [m.id]: true }), {} as Record<string, boolean>);
 			this.searchChannelPrev.refetch({
-				onResponse: messages =>
-					this.onPrevChannelResponse(messages.filter(m => !idsMap[m.messageId])),
+				onResponse: messages => this.onPrevChannelResponse(messages.filter(m => !idsMap[m.id])),
 				onError: this.onLoadingError,
 				onKeepAliveResponse: heartbeat => this.onKeepAliveMessagePrevious(heartbeat),
 			});
@@ -464,10 +460,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			this.noMatchingMessagesNext = false;
 			const idsMap = this.messages
 				.slice(0, 20)
-				.reduce((map, m) => ({ ...map, [m.messageId]: true }), {} as Record<string, boolean>);
+				.reduce((map, m) => ({ ...map, [m.id]: true }), {} as Record<string, boolean>);
 			this.searchChannelNext.refetch({
-				onResponse: messages =>
-					this.onNextChannelResponse(messages.filter(m => !idsMap[m.messageId])),
+				onResponse: messages => this.onNextChannelResponse(messages.filter(m => !idsMap[m.id])),
 				onError: this.onLoadingError,
 				onKeepAliveResponse: heartbeat => this.onKeepAliveMessageNext(heartbeat),
 			});

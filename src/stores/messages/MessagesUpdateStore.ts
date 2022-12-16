@@ -18,7 +18,6 @@ import { action, computed, observable } from 'mobx';
 import MessagesStore from './MessagesStore';
 import EmbeddedMessagesStore from '../../components/embedded/embedded-stores/EmbeddedMessagesStore';
 import { MessagesDataStore } from '../../models/Stores';
-import { EventMessage } from '../../models/EventMessage';
 
 export default class MessagesUpdateStore {
 	constructor(
@@ -31,12 +30,6 @@ export default class MessagesUpdateStore {
 	@observable
 	public isActive = false;
 
-	@observable
-	public isFirstUpdate = true;
-
-	@observable
-	public nextMessages: EventMessage[] = [];
-
 	@computed
 	public get canActivate() {
 		return this.messagesStore.filterStore.filter.streams.length > 0;
@@ -46,14 +39,13 @@ export default class MessagesUpdateStore {
 	public subscribeOnChanges = () => {
 		if (!this.canActivate) return;
 		this.isActive = true;
-		this.isFirstUpdate = true;
 		this.messagesDataStore.resetState();
 		this.messagesStore.selectedMessageId = null;
 		this.messagesStore.filterStore.filter.timestampTo = Date.now();
 
 		this.messagesDataStore.loadMessages({
-			onClose: async chunk => {
-				this.messagesDataStore.onNextChannelResponse(chunk);
+			onClose: async messages => {
+				this.messagesDataStore.onNextChannelResponse(messages);
 
 				if (this.isActive) {
 					this.timer = setTimeout(this.loadNextMessages, 5000);

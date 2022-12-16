@@ -15,15 +15,36 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { observer } from 'mobx-react-lite';
+import { EventMessage } from '../../models/EventMessage';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
+import MessageCardWarning from '../message/MessageCardWarning';
+import useElementSize from '../../hooks/useElementSize';
+import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../util/CardDisplayType';
+import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
 import fetch from '../../helpers/fetchRetry';
+import { getViewTypesConfig } from '../../helpers/message';
+
+const viewStore = new EmbeddedMessagesViewTypeStore();
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
+	const [isExpanded, setIsExpanded] = React.useState(true);
+	const [wrapperContent, setWrapperContent] = React.useState<HTMLDivElement | null>(null);
+
+	const { getSavedViewType } = viewStore;
+
+	const wrapperWidth = useElementSize(wrapperContent)?.width;
+
+	const displayType = React.useMemo(
+		() =>
+			wrapperWidth && wrapperWidth < COLLAPSED_MESSAGES_WIDTH
+				? CardDisplayType.MINIMAL
+				: CardDisplayType.FULL,
+		[wrapperWidth],
+	);
 
 	useEffect(() => {
 		getMessage();
@@ -38,19 +59,30 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 		}
 	}
 
+	const handleWrapperRef = React.useCallback(ref => {
+		setWrapperContent(ref);
+	}, []);
+
 	if (errorStatus) {
 		throw new Error(errorStatus);
 	}
 
 	if (message) {
+		const viewTypesConfig = getViewTypesConfig(message, getSavedViewType);
+
 		return (
-			<div className='embedded-wrapper'>
-				<MessageCardBase
-					isEmbedded
-					message={message}
-					setViewType={setViewType}
-					viewType={viewType}
-				/>
+			<div className='embedded-wrapper' ref={handleWrapperRef}>
+				<div className='messages-list__item'>
+					<MessageCardBase
+						message={message}
+						displayType={displayType}
+						viewTypeConfig={viewTypesConfig}
+						isExpanded={isExpanded}
+						setIsExpanded={setIsExpanded}
+						isDisplayRuleRaw={false}
+					/>
+					{!message.parsedMessages && <MessageCardWarning isScreenshotMsg={false} />}
+				</div>
 			</div>
 		);
 	}
@@ -58,4 +90,4 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	return <SplashScreen />;
 }
 
-export default EmbeddedMessage;
+export default observer(EmbeddedMessage);

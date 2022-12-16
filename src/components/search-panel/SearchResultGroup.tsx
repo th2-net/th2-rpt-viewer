@@ -46,19 +46,24 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 	function computeKey(index: number) {
 		const item = results[index];
 
-		return isEventNode(item) ? item.eventId : item.messageId;
+		return isEventNode(item) ? item.eventId : item.id;
 	}
 
 	const namesEncountersMap = new Map<string, number>();
 	results
-		.map(result => (isEventMessage(result) ? result.messageType : result.eventName))
+		.map(result =>
+			isEventMessage(result)
+				? result.parsedMessages?.[0].message.metadata.messageType
+				: result.eventName,
+		)
 		.forEach(name => {
-			if (namesEncountersMap.has(name)) {
-				let counter = namesEncountersMap.get(name);
-				if (counter) namesEncountersMap.set(name, ++counter);
-			} else {
-				namesEncountersMap.set(name, 1);
-			}
+			if (name)
+				if (namesEncountersMap.has(name)) {
+					let counter = namesEncountersMap.get(name);
+					if (counter) namesEncountersMap.set(name, ++counter);
+				} else {
+					namesEncountersMap.set(name, 1);
+				}
 		});
 	const mostPopularNames = Array.from(namesEncountersMap)
 		.sort((a, b) => b[1] - a[1])

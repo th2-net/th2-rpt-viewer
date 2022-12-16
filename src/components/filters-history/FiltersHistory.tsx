@@ -23,8 +23,9 @@ import { raf } from '../../helpers/raf';
 import { SearchPanelType } from '../search-panel/SearchPanel';
 import FiltersHistoryItem from './FiltersHistoryItem';
 import { useSearchStore } from '../../hooks/useSearchStore';
-import { EventFilterState, MessageFilterState } from '../search-panel/SearchPanelFilters';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
+import EventsFilter from '../../models/filter/EventsFilter';
+import MessagesFilter from '../../models/filter/MessagesFilter';
 
 interface Props {
 	type?: SearchPanelType;
@@ -33,10 +34,8 @@ interface Props {
 }
 
 export type FiltersState = {
-	state: EventFilterState | MessageFilterState;
-	setState:
-		| ((patch: Partial<EventFilterState>) => void)
-		| ((patch: Partial<MessageFilterState>) => void);
+	state: EventsFilter | MessagesFilter;
+	setState: ((patch: Partial<EventsFilter>) => void) | ((patch: Partial<MessagesFilter>) => void);
 } | null;
 
 const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
@@ -44,12 +43,17 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
 
-	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
+	const {
+		eventsHistory,
+		messagesHistory,
+		toggleFilterPin,
+		deleteHistoryItem,
+	} = useFiltersHistoryStore();
 	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
 
 	const toShow: (
-		| FiltersHistoryType<EventFilterState>
-		| FiltersHistoryType<MessageFilterState>
+		| FiltersHistoryType<EventsFilter>
+		| FiltersHistoryType<MessagesFilter>
 	)[] = useMemo(() => {
 		const fType = type || formType;
 		return fType === 'event' ? eventsHistory : messagesHistory;
@@ -73,7 +77,7 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 				if (historyRef.current && buttonRef.current) {
 					const { left, bottom } = buttonRef.current?.getBoundingClientRect();
 					historyRef.current.style.left = `${left}px`;
-					historyRef.current.style.top = `${bottom}px`;
+					historyRef.current.style.top = `${bottom - 45 - historyRef.current.clientHeight}px`;
 				}
 			}, 2);
 		}
@@ -91,7 +95,7 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 	});
 
 	const onFilterPin = React.useCallback(
-		(filter: FiltersHistoryType<EventFilterState | MessageFilterState>) => {
+		(filter: FiltersHistoryType<EventsFilter | MessagesFilter>) => {
 			const isPinnedUpdated = !filter.isPinned;
 			toggleFilterPin(filter);
 			if (isPinnedUpdated) {
@@ -114,7 +118,8 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 					setIsOpen(o => !o);
 				}}
 				title={'Filters history'}
-				disabled={disabled}></button>
+				disabled={disabled}
+			/>
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
 					{toShow.map((item, index) => (
@@ -126,6 +131,7 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 								messagesFilterInfo={messagesFilterInfo}
 								closeHistory={closeHistory}
 								toggleFilterPin={onFilterPin}
+								deleteHistoryItem={deleteHistoryItem}
 							/>
 							{toShow.length - 1 > index && <hr />}
 						</React.Fragment>
@@ -138,7 +144,8 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 			ref={buttonRef}
 			className='filters-history-open'
 			title={'Filters history'}
-			disabled={true}></button>
+			disabled={true}
+		/>
 	);
 };
 

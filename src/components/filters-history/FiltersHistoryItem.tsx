@@ -17,7 +17,7 @@
 import React from 'react';
 import moment from 'moment';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
-import { FilterState } from '../search-panel/SearchPanelFilters';
+import { FilterState } from '../../models/search/Search';
 import { FiltersState } from './FiltersHistory';
 import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
 import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../../helpers/search';
@@ -36,6 +36,7 @@ interface Props {
 	messagesFilterInfo: MessagesFilterInfo[];
 	closeHistory: () => void;
 	toggleFilterPin: (filter: FiltersHistoryType<FilterState>) => void;
+	deleteHistoryItem: (filter: FiltersHistoryType<FilterState>) => void;
 }
 
 const FiltersHistoryItem = (props: Props) => {
@@ -46,6 +47,7 @@ const FiltersHistoryItem = (props: Props) => {
 		messagesFilterInfo,
 		closeHistory,
 		toggleFilterPin,
+		deleteHistoryItem,
 	} = props;
 
 	const bubblesContainerRef = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -148,6 +150,11 @@ const FiltersHistoryItem = (props: Props) => {
 		showNotification('Copied to clipboard');
 	}
 
+	function onDeleteClick(e: React.MouseEvent<HTMLButtonElement>) {
+		e.stopPropagation();
+		deleteHistoryItem(item);
+	}
+
 	const pinButtonClassname = createBemElement(
 		'filter-history-item',
 		'pin-icon',
@@ -176,6 +183,13 @@ const FiltersHistoryItem = (props: Props) => {
 						onClick={onShareClick}
 						ref={shareButtonRef}
 						title='Share filters'>
+						<i></i>
+					</button>
+					<button
+						className='filter-history-item__delete-icon'
+						onClick={onDeleteClick}
+						ref={shareButtonRef}
+						title='Delete from history'>
 						<i></i>
 					</button>
 				</div>

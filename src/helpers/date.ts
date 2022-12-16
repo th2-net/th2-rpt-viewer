@@ -18,12 +18,12 @@ import moment, { Moment } from 'moment';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { DateTimeMask } from '../models/filter/FilterInputs';
-import { TimeRange, Timestamp } from '../models/Timestamp';
+import { TimeRange } from '../models/Timestamp';
 import { isEventMessage } from './event';
 
 export function getElapsedTime(
-	startTimestamp: Timestamp,
-	endTimestamp: Timestamp,
+	startTimestamp: string,
+	endTimestamp: string,
 	withMiliseconds = true,
 ) {
 	const diff = timestampToNumber(endTimestamp) - timestampToNumber(startTimestamp);
@@ -39,11 +39,11 @@ export function formatTime(time: string | number) {
 	if (time == null) {
 		return '';
 	}
-	return moment.utc(time).format(DateTimeMask.DATE_TIME_MASK);
+	return moment.utc(new Date(time).getTime()).format(DateTimeMask.DATE_TIME_MASK);
 }
 
-export function timestampToNumber(timestamp: Timestamp): number {
-	return Math.floor(timestamp.epochSecond * 1000 + timestamp.nano / 1_000_000);
+export function timestampToNumber(timestamp: string): number {
+	return new Date(timestamp).getTime();
 }
 
 export function getTimestampAsNumber(entity: EventAction | EventTreeNode | EventMessage): number {
@@ -112,7 +112,7 @@ export function getRangeFromTimestamp(timestamp: number, interval: number): Time
 	];
 }
 
-export function sortByTimestamp<T extends { timestamp: number | Timestamp }>(
+export function sortByTimestamp<T extends { timestamp: number | string }>(
 	array: T[],
 	order: 'desc' | 'asc' = 'desc',
 ) {

@@ -35,8 +35,8 @@ import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplit
 import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
-import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
+import MessagesViewTypeStore from '../messages/MessagesViewTypeStore';
 import { IndexedDbStores, Settings } from '../../api/indexedDb';
 import notificationsStore from '../NotificationsStore';
 import { getArrayOfUniques } from '../../helpers/array';
@@ -62,7 +62,7 @@ export default class WorkspaceStore {
 
 	public messagesStore: MessagesStore;
 
-	public messageViewTypesStore: MessagesViewTypesStore;
+	public messageViewStore: MessagesViewTypeStore;
 
 	public viewStore: WorkspaceViewStore;
 
@@ -103,7 +103,7 @@ export default class WorkspaceStore {
 			initialState.messages,
 		);
 
-		this.messageViewTypesStore = new MessagesViewTypesStore(
+		this.messageViewStore = new MessagesViewTypeStore(
 			this.messageDisplayRulesStore,
 			this.messagesStore,
 		);
@@ -164,10 +164,10 @@ export default class WorkspaceStore {
 		this.attachedMessagesAC = new AbortController();
 		try {
 			const cachedMessages = this.attachedMessages.filter(message =>
-				attachedMessagesIds.includes(message.messageId),
+				attachedMessagesIds.includes(message.id),
 			);
 			const messagesToLoad = attachedMessagesIds.filter(
-				messageId => cachedMessages.findIndex(message => message.messageId === messageId) === -1,
+				messageId => cachedMessages.findIndex(message => message.id === messageId) === -1,
 			);
 			const messages = await Promise.all(
 				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),

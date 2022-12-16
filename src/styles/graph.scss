@@ -82,7 +82,8 @@
 			flex-shrink: 0;
 
 			&.pinned-message {
-				@include icon(url(../../resources/icons/bookmark-added-hover.svg), 14px, 14px);
+				margin: 0 6px;
+				@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
 			}
 
 			&.attached-message {
@@ -354,7 +355,8 @@
 		}
 
 		&.pinned-message-icon {
-			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
+			margin-left: 2px;
+			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 11px);
 		}
 
 		&.bookmarked-failed-icon,

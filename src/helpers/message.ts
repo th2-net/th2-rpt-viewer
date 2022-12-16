@@ -15,7 +15,12 @@
  ***************************************************************************** */
 
 import { ActionType } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
+import {
+	EventMessage,
+	MessageViewTypeConfig,
+	MessageViewType,
+	ParsedMessage,
+} from '../models/EventMessage';
 import {
 	isMessageValue,
 	isNullValue,
@@ -24,6 +29,7 @@ import {
 	MessageBodyFields,
 } from '../models/MessageBody';
 import { timestampToNumber } from './date';
+import { SavedMessageViewType } from '../stores/messages/SavedMessageViewType';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
@@ -71,4 +77,40 @@ export function normalizeField(field: MessageBodyField): string | object {
 		);
 	}
 	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
+}
+
+export function getViewTypesConfig(
+	message: EventMessage,
+	getSavedViewType: (message: EventMessage) => SavedMessageViewType,
+) {
+	const viewTypes = getSavedViewType(message).viewTypes;
+	const config = new Map<string, MessageViewTypeConfig>();
+
+	config.set(message.id, {
+		viewType: viewTypes.get(message.id) as MessageViewType,
+		setViewType: getSavedViewType(message).setViewType,
+	});
+
+	if (message.parsedMessages) {
+		message.parsedMessages.forEach(parsedMessage => {
+			config.set(parsedMessage.id, {
+				viewType: viewTypes.get(parsedMessage.id) as MessageViewType,
+				setViewType: getSavedViewType(message).setViewType,
+			});
+		});
+	}
+
+	return config;
+}
+
+export function defineViewTypeConfig(
+	viewTypeConfig: Map<string, MessageViewTypeConfig>,
+	id: string,
+) {
+	return viewTypeConfig.get(id) as MessageViewTypeConfig;
+}
+
+export function getSubsequence(parsedMessage: ParsedMessage): null | number {
+	const subsequence = parsedMessage.message.metadata.id.subsequence;
+	return subsequence ? subsequence[0] : null;
 }

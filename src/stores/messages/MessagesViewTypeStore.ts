@@ -21,7 +21,7 @@ import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 import MessagesStore from './MessagesStore';
 import { SavedMessageViewType } from './SavedMessageViewType';
 
-class MessagesViewTypesStore {
+class MessagesViewTypeStore {
 	messageDisplayRulesStore: MessageDisplayRulesStore;
 
 	messagesStore: MessagesStore;
@@ -42,12 +42,12 @@ class MessagesViewTypesStore {
 
 	@action
 	public getSavedViewType = (message: EventMessage): SavedMessageViewType => {
-		const { messageId } = message;
-		const key = keyForMessage(messageId);
+		const key = keyForMessage(message.id);
 		if (this.savedViewTypes.has(key)) {
 			return this.savedViewTypes.get(key) as SavedMessageViewType;
 		}
 		this.savedViewTypes.set(key, new SavedMessageViewType(message, this.messageDisplayRulesStore));
+
 		return this.savedViewTypes.get(key) as SavedMessageViewType;
 	};
 
@@ -57,4 +57,4 @@ class MessagesViewTypesStore {
 	};
 }
 
-export default MessagesViewTypesStore;
+export default MessagesViewTypeStore;

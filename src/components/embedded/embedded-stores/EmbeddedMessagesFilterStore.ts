@@ -16,13 +16,12 @@
 
 import { action, computed, IReactionDisposer, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
-import MessagesFilter from '../../../models/filter/MessagesFilter';
+import MessagesFilter, { MessagesParams } from '../../../models/filter/MessagesFilter';
 import { getDefaultMessagesFiltersState } from '../../../helpers/search';
 import { MessagesFilterInfo, MessagesSSEParams } from '../../../api/sse';
-import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import ApiSchema from '../../../api/ApiSchema';
 
-function getDefaultMessagesFilter(): MessagesFilter {
+function getDefaultMessagesParams(): MessagesParams {
 	return {
 		timestampFrom: null,
 		timestampTo: moment.utc().valueOf(),
@@ -34,7 +33,7 @@ export type EmbeddedMessagesFilterInitialState = {
 	timestampFrom: number | null;
 	timestampTo: number | null;
 	streams: string[];
-	sse: MessageFilterState;
+	sse: MessagesFilter;
 };
 
 export default class EmbeddedMessagesFilterStore {
@@ -46,25 +45,25 @@ export default class EmbeddedMessagesFilterStore {
 		this.sseFilterSubscription = reaction(() => this.messagesFilterInfo, this.initSSEFilter);
 	}
 
-	@observable filter: MessagesFilter = getDefaultMessagesFilter();
+	@observable filter: MessagesParams = getDefaultMessagesParams();
 
-	@observable sseMessagesFilter: MessageFilterState | null = null;
+	@observable sseMessagesFilter: MessagesFilter | null = null;
 
 	@observable isMessageFiltersLoading = false;
 
 	@observable messagesFilterInfo: MessagesFilterInfo[] = [];
 
-	@observable messagesFilter: MessageFilterState | null = null;
+	@observable messagesFilter: MessagesFilter | null = null;
 
 	@computed
 	public get filterParams(): MessagesSSEParams {
 		const sseFilters = this.sseMessagesFilter;
 
-		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
+		const filtersToAdd: Array<keyof MessagesFilter> = !sseFilters
 			? []
 			: Object.entries(sseFilters)
 					.filter(([_, filter]) => filter.values.length > 0)
-					.map(([filterName]) => filterName as keyof MessageFilterState);
+					.map(([filterName]) => filterName as keyof MessagesFilter);
 
 		const filterValues = filtersToAdd
 			.map(filterName =>
@@ -84,6 +83,12 @@ export default class EmbeddedMessagesFilterStore {
 				: [],
 		);
 
+		const filterStrict = filtersToAdd.map(filterName =>
+			sseFilters && sseFilters[filterName].strict
+				? [`${filterName}-strict`, sseFilters[filterName].strict]
+				: [],
+		);
+
 		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
@@ -93,7 +98,12 @@ export default class EmbeddedMessagesFilterStore {
 			searchDirection: 'previous',
 			resultCountLimit: 15,
 			filters: filtersToAdd,
-			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
+			...Object.fromEntries([
+				...filterValues,
+				...filterInclusion,
+				...filterConjunct,
+				...filterStrict,
+			]),
 		};
 
 		return queryParams;
@@ -115,15 +125,15 @@ export default class EmbeddedMessagesFilterStore {
 	}
 
 	@action
-	public setMessagesFilter(filter: MessagesFilter, sseFilters: MessageFilterState | null = null) {
+	public setMessagesFilter(filter: MessagesParams, sseFilters: MessagesFilter | null = null) {
 		this.sseMessagesFilter = sseFilters;
 		this.filter = filter;
 	}
 
 	@action
-	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
+	public resetMessagesFilter = (initFilter: Partial<MessagesParams> = {}) => {
 		const filter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
-		const defaultMessagesFilter = getDefaultMessagesFilter();
+		const defaultMessagesFilter = getDefaultMessagesParams();
 		this.sseMessagesFilter = filter;
 		this.filter = {
 			...defaultMessagesFilter,
@@ -154,7 +164,7 @@ export default class EmbeddedMessagesFilterStore {
 
 	private init = (initialState: EmbeddedMessagesFilterInitialState) => {
 		this.getMessagesFilters();
-		const defaultMessagesFilter = getDefaultMessagesFilter();
+		const defaultMessagesFilter = getDefaultMessagesParams();
 		const {
 			streams = defaultMessagesFilter.streams,
 			timestampFrom = defaultMessagesFilter.timestampFrom,
@@ -165,7 +175,7 @@ export default class EmbeddedMessagesFilterStore {
 		const appliedSSEFilter = {
 			...(getDefaultMessagesFiltersState(this.messagesFilterInfo) || {}),
 			...sse,
-		} as MessageFilterState;
+		} as MessagesFilter;
 		this.setMessagesFilter(
 			{
 				streams,

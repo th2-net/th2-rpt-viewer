@@ -17,28 +17,41 @@
 import * as React from 'react';
 import { createStyleSelector } from '../helpers/styleCreators';
 
-interface Props {
-	text: string | number;
-	title?: string;
+interface Props
+	extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
+	additionalClassName?: string;
 	isSelected?: boolean;
 	isLoading?: boolean;
-	onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	children?: React.ReactNode;
 }
 
 export function Chip(props: Props) {
-	const { text, isSelected, onClick, title, isLoading } = props;
+	const {
+		className = '',
+		isSelected,
+		onClick,
+		title,
+		isLoading,
+		onMouseEnter,
+		onMouseLeave,
+		children,
+	} = props;
 	const rootClass = createStyleSelector(
 		'chip',
 		isSelected ? 'selected' : null,
 		onClick ? 'clickable' : null,
 		isLoading ? 'loading' : null,
+		className,
 	);
 
 	return (
-		<div className={rootClass} title={title} onClick={e => onClick && onClick(e)}>
-			<div className='chip__title'>
-				<p>{text}</p>
-			</div>
+		<div
+			className={rootClass}
+			title={title}
+			onClick={onClick}
+			onMouseEnter={onMouseEnter}
+			onMouseLeave={onMouseLeave}>
+			{children}
 		</div>
 	);
 }

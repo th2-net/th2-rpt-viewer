@@ -16,59 +16,72 @@
 
 import * as React from 'react';
 import { MessageViewType } from '../../../models/EventMessage';
-import MessageBody from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import SimpleMessageRaw from './raw/SimpleMessageRaw';
 import DetailedMessageRaw from './raw/DetailedMessageRaw';
+import MessageBody from '../../../models/MessageBody';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 export type MessageCardViewTypeRendererProps = {
-	viewType: MessageViewType;
 	messageId: string;
 	rawContent: string | null;
-	isBeautified: boolean;
 	isSelected: boolean;
-	messageBody: MessageBody | null;
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
 	sortOrderItems: string[];
 };
 
+type OwnProps = {
+	messageBody?: MessageBody;
+	viewType: MessageViewType;
+	displayType: CardDisplayType;
+};
+
 const MessageCardViewTypeRenderer = ({
-	viewType,
 	rawContent,
-	isBeautified,
 	isSelected,
+	displayType,
+	viewType,
 	messageBody,
 	sortOrderItems,
-}: MessageCardViewTypeRendererProps) => {
-	switch (viewType) {
-		case MessageViewType.FORMATTED:
-		case MessageViewType.JSON:
-			return (
-				<ErrorBoundary
-					fallback={
-						<MessageBodyCardFallback
-							isBeautified={isBeautified}
-							isSelected={isSelected}
+}: MessageCardViewTypeRendererProps & OwnProps) => {
+	if (messageBody) {
+		switch (viewType) {
+			case MessageViewType.FORMATTED:
+			case MessageViewType.JSON:
+				return (
+					<ErrorBoundary
+						fallback={
+							<MessageBodyCardFallback
+								isBeautified={viewType === MessageViewType.FORMATTED}
+								isSelected={isSelected}
+								body={messageBody}
+								sortOrderItems={sortOrderItems}
+							/>
+						}>
+						<MessageBodyCard
+							isBeautified={viewType === MessageViewType.FORMATTED}
 							body={messageBody}
+							isSelected={isSelected}
 							sortOrderItems={sortOrderItems}
 						/>
-					}>
-					<MessageBodyCard
-						isBeautified={isBeautified}
-						body={messageBody}
-						isSelected={isSelected}
-						sortOrderItems={sortOrderItems}
-					/>
-				</ErrorBoundary>
-			);
-		case MessageViewType.ASCII:
-			return rawContent ? <SimpleMessageRaw rawContent={rawContent} /> : null;
-		case MessageViewType.BINARY:
-			return rawContent ? <DetailedMessageRaw rawContent={rawContent} /> : null;
-		default:
-			return null;
+					</ErrorBoundary>
+				);
+			default:
+				return null;
+		}
+	} else {
+		switch (viewType) {
+			case MessageViewType.ASCII:
+				return rawContent ? <SimpleMessageRaw rawContent={rawContent} /> : null;
+			case MessageViewType.BINARY:
+				return rawContent ? (
+					<DetailedMessageRaw rawContent={rawContent} displayType={displayType} />
+				) : null;
+			default:
+				return null;
+		}
 	}
 };
 

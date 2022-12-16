@@ -15,13 +15,11 @@
  ***************************************************************************** */
 
 import { observable, toJS } from 'mobx';
-import {
-	EventFilterState,
-	FilterState,
-	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
+import { FilterState } from '../models/search/Search';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { notEmpty } from './object';
+import EventsFilter from '../models/filter/EventsFilter';
+import MessagesFilter from '../models/filter/MessagesFilter';
 
 export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	return Object.fromEntries(
@@ -41,19 +39,17 @@ export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	);
 }
 
-export function isEventsFilterHistory(
-	filter: unknown,
-): filter is FiltersHistoryType<EventFilterState> {
-	return notEmpty(filter) && (filter as FiltersHistoryType<EventFilterState>).type === 'event';
+export function isEventsFilterHistory(filter: unknown): filter is FiltersHistoryType<EventsFilter> {
+	return notEmpty(filter) && (filter as FiltersHistoryType<EventsFilter>).type === 'event';
 }
 
 export function isMessagesFilterHistory(
 	filter: unknown,
-): filter is FiltersHistoryType<MessageFilterState> {
-	return notEmpty(filter) && (filter as FiltersHistoryType<MessageFilterState>).type === 'message';
+): filter is FiltersHistoryType<MessagesFilter> {
+	return notEmpty(filter) && (filter as FiltersHistoryType<MessagesFilter>).type === 'message';
 }
 
-export function isEmptyFilter(filter: Partial<EventFilterState>) {
+export function isEmptyFilter(filter: Partial<EventsFilter>) {
 	return !Object.values(filter)
 		.filter(notEmpty)
 		.some(filterValues => filterValues.values.length > 0);

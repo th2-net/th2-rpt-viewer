@@ -21,6 +21,7 @@ export default interface MessageBody {
 				sessionAlias: string;
 			};
 			sequence: string;
+			subsequence?: [number];
 		};
 		timestamp: string;
 		messageType: string;

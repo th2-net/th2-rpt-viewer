@@ -14,11 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	MultipleStringFilter,
-	StringFilter,
-	SwitcherFilter,
-} from '../../components/search-panel/SearchPanelFilters';
+import { StringFilter, MultipleStringFilter, SwitcherFilter } from './Filter';
 
 export default interface EventsFilter {
 	attachedMessageId: StringFilter;
@@ -26,6 +22,7 @@ export default interface EventsFilter {
 	body: MultipleStringFilter;
 	name: MultipleStringFilter;
 	status: SwitcherFilter;
+	event_generic: MultipleStringFilter;
 	text: MultipleStringFilter;
 	parentId: MultipleStringFilter;
 }

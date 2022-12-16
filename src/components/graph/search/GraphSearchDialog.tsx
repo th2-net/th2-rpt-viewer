@@ -21,7 +21,6 @@ import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
 import { getItemId, getItemName } from '../../../helpers/event';
 import { EventAction } from '../../../models/EventAction';
-import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../bookmarks/BookmarksPanel';
 import Empty from '../../util/Empty';
 import { useDebouncedCallback, useRootStore } from '../../../hooks';
@@ -30,6 +29,7 @@ import { indexedDbLimits, IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
 import { SearchDirection } from '../../../models/search/SearchDirection';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
+import { EventMessage } from '../../../models/EventMessage';
 
 const isTimestamp = (searchValue: string) => {
 	return (

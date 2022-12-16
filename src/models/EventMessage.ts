@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { Timestamp } from './Timestamp';
 import MessageBody from './MessageBody';
 import { ActionType } from './EventAction';
 import { notEmpty } from '../helpers/object';
@@ -26,6 +25,11 @@ export enum MessageViewType {
 	ASCII = 'ASCII',
 	BINARY = 'binary',
 }
+
+export type MessageViewTypeConfig = {
+	setViewType: (vt: MessageViewType, id: string) => void;
+	viewType: MessageViewType;
+};
 
 export interface MessageSortOrderItem {
 	id: string;
@@ -46,17 +50,19 @@ export interface MessageDisplayRule {
 
 export interface EventMessage {
 	type: ActionType.MESSAGE;
-	messageType: string;
-	messageId: string;
-	timestamp: Timestamp;
+	sequence: string;
+	id: string;
+	timestamp: string;
 	direction: string;
 	sessionId: string;
-	body: MessageBody | null;
-	bodyBase64: string | null;
+	rawMessageBase64: string | null;
+	parsedMessages: ParsedMessage[] | null;
 }
 
-export function isScreenshotMessage(message: EventMessage): boolean {
-	return /image\/\w+/gi.test(message.messageType);
+export interface ParsedMessage {
+	match: boolean;
+	id: string;
+	message: MessageBody;
 }
 
 export function isMessageDisplayRule(obj: unknown): obj is MessageDisplayRule {

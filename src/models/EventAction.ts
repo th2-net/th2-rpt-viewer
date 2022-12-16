@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { Timestamp } from './Timestamp';
 import { EventBodyPayload } from './EventActionPayload';
 
 export type EventTree = Array<EventTreeNode>;
@@ -29,8 +28,8 @@ interface EventBase {
 	eventId: string;
 	eventName: string;
 	eventType: string;
-	startTimestamp: Timestamp;
-	endTimestamp?: Timestamp | null;
+	startTimestamp: string;
+	endTimestamp?: string | null;
 	successful: boolean;
 }
 

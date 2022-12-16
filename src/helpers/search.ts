@@ -15,11 +15,9 @@
  ***************************************************************************** */
 
 import { EventsFiltersInfo, MessagesFilterInfo, SSEFilterParameter } from '../api/sse';
-import {
-	EventFilterState,
-	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
 import { SearchHistory } from '../stores/SearchStore';
+import MessagesFilter from '../models/filter/MessagesFilter';
+import EventsFilter from '../models/filter/EventsFilter';
 
 export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 	if (param.defaultValue === null) {
@@ -37,7 +35,7 @@ export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 	return param.defaultValue;
 }
 
-export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventFilterState | null {
+export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventsFilter | null {
 	if (!info.length) return null;
 	const state = info.reduce((prev, curr) => {
 		return {
@@ -53,27 +51,27 @@ export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventFi
 				};
 			}, {}),
 		};
-	}, {} as EventFilterState);
+	}, {} as EventsFilter);
 	return state;
 }
 
-export function getDefaultMessagesFiltersState(
-	info: MessagesFilterInfo[],
-): MessageFilterState | null {
+export function getDefaultMessagesFiltersState(info: MessagesFilterInfo[]): MessagesFilter | null {
 	if (!info.length) return null;
-	const state = info.reduce((prev, curr) => {
-		return {
+	const state = info.reduce(
+		(prev, curr) => ({
 			...prev,
-			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
-				return {
+			[curr.name]: curr.parameters.reduce(
+				(prevParams, currParam) => ({
 					hint: curr.hint,
 					...prevParams,
 					type: currParam.type.value,
 					values: getFilterParameterDefaultValue(currParam),
-				};
-			}, {}),
-		};
-	}, {} as MessageFilterState);
+				}),
+				{},
+			),
+		}),
+		{} as MessagesFilter,
+	);
 
 	return state;
 }

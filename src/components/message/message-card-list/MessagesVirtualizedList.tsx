@@ -27,11 +27,13 @@ import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
 import { formatTime } from '../../../helpers/date';
+import useElementSize from '../../../hooks/useElementSize';
+import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../../util/CardDisplayType';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
-	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
+	itemRenderer: (message: EventMessage, displayType: CardDisplayType) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -65,6 +67,7 @@ const MessagesVirtualizedList = (props: Props) => {
 	} = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
+	const scrollerRef = React.useRef<HTMLDivElement | null>(null);
 
 	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
 
@@ -72,6 +75,15 @@ const MessagesVirtualizedList = (props: Props) => {
 		[boolean, boolean]
 	>([false, false]);
 
+	const messagesListWidth = useElementSize(scrollerRef.current)?.width;
+
+	const displayType = React.useMemo(
+		() =>
+			messagesListWidth && messagesListWidth < COLLAPSED_MESSAGES_WIDTH
+				? CardDisplayType.MINIMAL
+				: CardDisplayType.FULL,
+		[messagesListWidth],
+	);
 	const scrollToTop = () => {
 		if (updateStore.isActive && virtuoso.current) virtuoso.current.scrollToIndex(0);
 	};
@@ -91,7 +103,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		if (selectedMessageId) {
 			raf(() => {
 				const index = messageStore.dataStore.sortedMessages.findIndex(
-					m => m.messageId === selectedMessageId,
+					m => m.id === selectedMessageId,
 				);
 				if (index !== -1) virtuoso.current?.scrollToIndex({ index, align: 'center' });
 			}, 3);
@@ -113,14 +125,14 @@ const MessagesVirtualizedList = (props: Props) => {
 				!searchChannelNext.isLoading &&
 				!updateStore.isActive
 			) {
-				loadNextMessages().then(messages => onNextChannelResponse(messages));
+				loadNextMessages().then(onNextChannelResponse);
 			}
 		}
 	}, 100);
 
 	const onEndReached = () => {
 		if (searchChannelPrev && !searchChannelPrev.isLoading && !searchChannelPrev.isEndReached) {
-			loadPrevMessages().then(messages => onPrevChannelResponse(messages));
+			loadPrevMessages().then(onPrevChannelResponse);
 		}
 	};
 
@@ -137,7 +149,11 @@ const MessagesVirtualizedList = (props: Props) => {
 		};
 	}, 100);
 
-	const computeItemKey = React.useCallback((index: number, msg: EventMessage) => msg.messageId, []);
+	const handleScrollerRef = React.useCallback(ref => {
+		scrollerRef.current = ref;
+	}, []);
+
+	const computeItemKey = React.useCallback((index: number, msg: EventMessage) => msg.id, []);
 
 	return (
 		<Virtuoso
@@ -145,8 +161,9 @@ const MessagesVirtualizedList = (props: Props) => {
 			firstItemIndex={startIndex}
 			atBottomStateChange={onEndReached}
 			ref={virtuoso}
+			scrollerRef={handleScrollerRef}
 			overscan={overscan}
-			itemContent={itemRenderer}
+			itemContent={(index, message) => itemRenderer(message, displayType)}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
 			itemsRendered={onMessagesRendered}

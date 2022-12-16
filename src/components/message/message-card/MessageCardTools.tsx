@@ -17,7 +17,7 @@
 import React, { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createBemElement } from '../../../helpers/styleCreators';
-import { EventMessage, MessageViewType } from '../../../models/EventMessage';
+import { EventMessage, MessageViewType, ParsedMessage } from '../../../models/EventMessage';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { decodeBase64RawContent, getAllRawContent } from '../../../helpers/rawFormatter';
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
@@ -31,26 +31,29 @@ const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 const JSON_COPY_OPTIONS = ['body', 'fields'] as const;
 
-export type MessageCardToolsConfig = {
+export type MessageCardToolsProps = {
 	message: EventMessage;
-	messageViewType: MessageViewType;
-	toggleViewType: (viewType: MessageViewType) => void;
-	isBookmarked: boolean;
-	toggleMessagePin: () => void;
+	isBookmarked?: boolean;
+	toggleMessagePin?: () => void;
+};
+
+type OwnProps = {
+	viewType: MessageViewType;
+	setViewType: (vt: MessageViewType, id: string) => void;
+	parsedMessage?: ParsedMessage;
 	isScreenshotMsg: boolean;
-	isEmbedded?: boolean;
 };
 
 const MessageCardTools = ({
 	message,
-	messageViewType,
-	toggleViewType,
+	parsedMessage,
 	isBookmarked,
 	toggleMessagePin,
+	viewType,
+	setViewType,
 	isScreenshotMsg,
-	isEmbedded,
-}: MessageCardToolsConfig) => {
-	const { messageId, messageType } = message;
+}: MessageCardToolsProps & OwnProps) => {
+	const { id } = message;
 
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
@@ -62,32 +65,30 @@ const MessageCardTools = ({
 		}
 	});
 
-	const viewTypes = message.body
-		? [
-				MessageViewType.JSON,
-				MessageViewType.FORMATTED,
-				MessageViewType.BINARY,
-				MessageViewType.ASCII,
-		  ]
-		: [MessageViewType.BINARY, MessageViewType.ASCII];
+	const isRawViewType = viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
+
+	const viewTypes =
+		parsedMessage && !isRawViewType
+			? [MessageViewType.JSON, MessageViewType.FORMATTED]
+			: [MessageViewType.BINARY, MessageViewType.ASCII];
 
 	function onCopy(jsonObjectToCopy: 'body' | 'fields' = 'body') {
 		let content: string;
 
 		const jsonToCopy =
 			jsonObjectToCopy === 'fields'
-				? message.body?.fields
-					? normalizeFields(message.body.fields)
+				? parsedMessage?.message.fields
+					? normalizeFields(parsedMessage.message.fields)
 					: null
-				: message.body;
+				: parsedMessage;
 
-		switch (messageViewType) {
+		switch (viewType) {
 			case MessageViewType.ASCII:
-				content = message.bodyBase64 ? atob(message.bodyBase64) : '';
+				content = message.rawMessageBase64 ? atob(message.rawMessageBase64) : '';
 				break;
 			case MessageViewType.BINARY:
-				content = message.bodyBase64
-					? getAllRawContent(decodeBase64RawContent(message.bodyBase64))
+				content = message.rawMessageBase64
+					? getAllRawContent(decodeBase64RawContent(message.rawMessageBase64))
 					: '';
 				break;
 			case MessageViewType.FORMATTED:
@@ -106,8 +107,9 @@ const MessageCardTools = ({
 		}
 	}
 
-	const isRawViewType =
-		messageViewType === MessageViewType.ASCII || messageViewType === MessageViewType.BINARY;
+	const toggleViewType = (v: MessageViewType) => {
+		setViewType(v, parsedMessage && !isRawViewType ? parsedMessage.id : message.id);
+	};
 
 	return (
 		<div className='message-card-tools' ref={rootRef}>
@@ -121,54 +123,55 @@ const MessageCardTools = ({
 				<div className='message-card-tools__ellipsis' />
 			</div>
 			<MessagePopup isOpen={isViewMenuOpen}>
-				{!isEmbedded && (
+				<div className='message-card-tools__header'>
+					{!isScreenshotMsg ? <span>View</span> : <span>Action</span>}
+					<div
+						className='message-card-tools__header-close'
+						onClick={() => setIsViewMenuOpen(false)}
+					/>
+				</div>
+				{!isScreenshotMsg && (
+					<div className='message-card-tools__controls-group'>
+						{viewTypes.map(currentViewType => {
+							const iconClassName = createBemElement('message-card-tools', 'icon', currentViewType);
+							const indicatorClassName = createBemElement(
+								'message-card-tools',
+								'indicator',
+								currentViewType === viewType ? 'active' : null,
+							);
+
+							return (
+								<div
+									title={currentViewType}
+									className='message-card-tools__item'
+									key={currentViewType}
+									onClick={() => toggleViewType(currentViewType)}>
+									<div className={iconClassName} />
+									<span className='message-card-tools__item-title'>{currentViewType}</span>
+									<div className={indicatorClassName} />
+								</div>
+							);
+						})}
+					</div>
+				)}
+				{!isScreenshotMsg ? <div className='message-card-tools__line' /> : null}
+				<div className='message-card-tools__header'>
+					{!isScreenshotMsg ? <span>Action</span> : null}
+				</div>
+				{toggleMessagePin && (
 					<div className='message-card-tools__controls-group'>
 						<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
-							<span className='message-card-tools__item-title'>
-								{isBookmarked ? 'Remove bookmark' : 'Bookmark'}
-							</span>
 							<div
 								className={createBemElement(
 									'message-card-tools',
 									'icon',
 									'bookmark',
+									'action',
 									isBookmarked ? 'pinned' : null,
 								)}
 							/>
-
-							<div
-								className={createBemElement(
-									'message-card-tools',
-									'indicator',
-									'bookmark',
-									isBookmarked ? 'active' : null,
-								)}
-							/>
+							<span className='message-card-tools__item-title'>Bookmark</span>
 						</div>
-					</div>
-				)}
-				{!isScreenshotMsg && (
-					<div className='message-card-tools__controls-group'>
-						{viewTypes.map(viewType => {
-							const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
-							const indicatorClassName = createBemElement(
-								'message-card-tools',
-								'indicator',
-								viewType === messageViewType ? 'active' : null,
-							);
-
-							return (
-								<div
-									title={viewType}
-									className='message-card-tools__item'
-									key={viewType}
-									onClick={() => toggleViewType(viewType)}>
-									<span className='message-card-tools__item-title'>{viewType}</span>
-									<div className={iconClassName} />
-									<div className={indicatorClassName} />
-								</div>
-							);
-						})}
 					</div>
 				)}
 				{!isScreenshotMsg && (
@@ -178,8 +181,8 @@ const MessageCardTools = ({
 								title='Copy content to clipboard'
 								className='message-card-tools__item'
 								onClick={() => onCopy()}>
-								<span className='message-card-tools__item-title'>Copy</span>
 								<div className='message-card-tools__copy-icon' />
+								<span className='message-card-tools__item-title'>Copy</span>
 								<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
 							</div>
 						) : (
@@ -192,10 +195,10 @@ const MessageCardTools = ({
 										onCopy(copyOption);
 										setIsViewMenuOpen(false);
 									}}>
+									<div className='message-card-tools__copy-icon' />
 									<span className='message-card-tools__item-title'>
 										{copyOption === 'body' ? 'Copy full' : 'Copy simplified'}
 									</span>
-									<div className='message-card-tools__copy-icon' />
 									<div
 										className={createBemElement('message-card-tools', 'indicator', 'bookmark')}
 									/>
@@ -205,40 +208,51 @@ const MessageCardTools = ({
 					</div>
 				)}
 				{isScreenshotMsg && (
-					<a
-						className='message-card-tools__item'
-						download={`${messageId}.${messageType.replace('image/', '')}`}
-						href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}>
-						<div className='message-card-tools__icon download' />
-					</a>
+					<div className='message-card-tools__item'>
+						<a
+							download={`${id}.${parsedMessage?.message.metadata.messageType.replace(
+								'image/',
+								'',
+							)}`}
+							href={`data:${parsedMessage?.message.metadata.messageType};base64,${
+								message.rawMessageBase64 || ''
+							}`}>
+							<div className='message-card-tools__icon download' />
+						</a>
+						<span className='message-card-tools__item-title'>Download</span>
+					</div>
 				)}
 				{appViewMode === ViewMode.EmbeddedMessages && (
 					<div className='message-card-tools__controls-group'>
-						<div
-							title='Send to history'
-							className='message-card-tools__item'
-							onClick={() => {
-								const isDev = process.env.NODE_ENV === 'development';
+						{parsedMessage && (
+							<div
+								title='Send to history'
+								className='message-card-tools__item'
+								onClick={() => {
+									const isDev = process.env.NODE_ENV === 'development';
 
-								window.parent.postMessage(
-									{
-										payload: {
-											...message,
-											jsonBody:
-												message.body &&
-												JSON.stringify(normalizeFields(message.body?.fields), null, '    '),
-										} as unknown,
-										action: 'replayMessage',
-										publisher: Apps.ReportViewer,
-									} as CrossOriginMessage,
-									isDev ? 'http://localhost:9002' : window.location.origin,
-								);
-								setIsViewMenuOpen(false);
-							}}>
-							<span className='message-card-tools__item-title'>Send to replay</span>
-							<div className='message-card-tools__copy-icon' />
-							<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
-						</div>
+									window.parent.postMessage(
+										{
+											payload: {
+												...message,
+												jsonBody: JSON.stringify(
+													normalizeFields(parsedMessage.message.fields),
+													null,
+													'    ',
+												),
+											} as unknown,
+											action: 'replayMessage',
+											publisher: Apps.ReportViewer,
+										} as CrossOriginMessage,
+										isDev ? 'http://localhost:9002' : window.location.origin,
+									);
+									setIsViewMenuOpen(false);
+								}}>
+								<div className='message-card-tools__copy-icon' />
+								<span className='message-card-tools__item-title'>Send to replay</span>
+								<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
+							</div>
+						)}
 					</div>
 				)}
 			</MessagePopup>

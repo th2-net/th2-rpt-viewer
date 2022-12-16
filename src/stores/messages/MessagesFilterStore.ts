@@ -17,14 +17,13 @@
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import MessagesFilter from '../../models/filter/MessagesFilter';
-import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
+import MessagesFilter, { MessagesParams } from '../../models/filter/MessagesFilter';
 import { SearchStore } from '../SearchStore';
 import { getDefaultMessagesFiltersState } from '../../helpers/search';
 import { MessagesFilterInfo, MessagesSSEParams } from '../../api/sse';
 import notificationsStore from '../NotificationsStore';
 
-function getDefaultMessagesFilter(): MessagesFilter {
+function getDefaultMessagesParams(): MessagesParams {
 	return {
 		timestampFrom: null,
 		timestampTo: moment.utc().valueOf(),
@@ -33,9 +32,9 @@ function getDefaultMessagesFilter(): MessagesFilter {
 }
 
 export type MessagesFilterStoreInitialState = {
-	sse?: Partial<MessageFilterState> | null;
+	sse?: Partial<MessagesFilter> | null;
 	isSoftFilter?: boolean;
-} & Partial<MessagesFilter>;
+} & Partial<MessagesParams>;
 
 export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
@@ -43,12 +42,16 @@ export default class MessagesFilterStore {
 	constructor(private searchStore: SearchStore, initialState?: MessagesFilterStoreInitialState) {
 		this.init(initialState);
 
-		this.sseFilterSubscription = reaction(() => searchStore.messagesFilterInfo, this.initSSEFilter);
+		this.sseFilterSubscription = reaction(
+			() => searchStore.messagesFilterInfo,
+			this.initSSEFilter,
+			{ fireImmediately: true },
+		);
 	}
 
-	@observable filter: MessagesFilter = getDefaultMessagesFilter();
+	@observable filter: MessagesParams = getDefaultMessagesParams();
 
-	@observable sseMessagesFilter: MessageFilterState | null = null;
+	@observable sseMessagesFilter: MessagesFilter | null = null;
 
 	/*
 		When isSoftFilter is applied messages that don't match filter are not excluded,
@@ -60,11 +63,11 @@ export default class MessagesFilterStore {
 	public get filterParams(): MessagesSSEParams {
 		const sseFilters = this.sseMessagesFilter;
 
-		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
+		const filtersToAdd: Array<keyof MessagesFilter> = !sseFilters
 			? []
 			: Object.entries(sseFilters)
 					.filter(([_, filter]) => filter.values.length > 0)
-					.map(([filterName]) => filterName as keyof MessageFilterState);
+					.map(([filterName]) => filterName as keyof MessagesFilter);
 
 		const filterValues = filtersToAdd
 			.map(filterName =>
@@ -84,6 +87,12 @@ export default class MessagesFilterStore {
 				: [],
 		);
 
+		const filterStrict = filtersToAdd.map(filterName =>
+			sseFilters && sseFilters[filterName].strict
+				? [`${filterName}-strict`, sseFilters[filterName].strict]
+				: [],
+		);
+
 		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
@@ -94,7 +103,7 @@ export default class MessagesFilterStore {
 			resultCountLimit: 15,
 			filters: filtersToAdd,
 			...Object.fromEntries(
-				[...filterValues, ...filterInclusion, ...filterConjunct].filter(
+				[...filterValues, ...filterInclusion, ...filterConjunct, ...filterStrict].filter(
 					filtersArr => filtersArr.length,
 				),
 			),
@@ -123,12 +132,7 @@ export default class MessagesFilterStore {
 	public SESSIONS_LIMIT = 5;
 
 	@action
-	public setMessagesFilter(
-		filter: MessagesFilter,
-		sseFilters: MessageFilterState | null = null,
-		isSoftFilterApplied: boolean,
-	) {
-		this.isSoftFilter = isSoftFilterApplied;
+	public setMessagesFilter(filter: MessagesParams, sseFilters: MessagesFilter | null = null) {
 		this.sseMessagesFilter = sseFilters;
 		filter.streams.slice(this.SESSIONS_LIMIT).forEach(session =>
 			notificationsStore.addMessage({
@@ -146,9 +150,9 @@ export default class MessagesFilterStore {
 	}
 
 	@action
-	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
+	public resetMessagesFilter = (initFilter: Partial<MessagesParams> = {}) => {
 		const filter = getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo);
-		const defaultMessagesFilter = getDefaultMessagesFilter();
+		const defaultMessagesFilter = getDefaultMessagesParams();
 		this.sseMessagesFilter = filter;
 		this.isSoftFilter = false;
 		this.filter = {
@@ -161,19 +165,18 @@ export default class MessagesFilterStore {
 
 	public init = (initialState?: MessagesFilterStoreInitialState) => {
 		if (initialState) {
-			const defaultMessagesFilter = getDefaultMessagesFilter();
+			const defaultMessagesFilter = getDefaultMessagesParams();
 			const {
 				streams = defaultMessagesFilter.streams,
 				timestampFrom = defaultMessagesFilter.timestampFrom,
 				timestampTo = defaultMessagesFilter.timestampTo,
 				sse = {},
-				isSoftFilter = false,
 			} = initialState;
 
 			const appliedSSEFilter = {
 				...(getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo) || {}),
 				...sse,
-			} as MessageFilterState;
+			} as MessagesFilter;
 			this.setMessagesFilter(
 				{
 					streams,
@@ -181,7 +184,6 @@ export default class MessagesFilterStore {
 					timestampTo,
 				},
 				Object.keys(appliedSSEFilter).length > 0 ? appliedSSEFilter : null,
-				isSoftFilter,
 			);
 		} else {
 			this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
@@ -193,8 +195,12 @@ export default class MessagesFilterStore {
 		this.sseMessagesFilter = getDefaultMessagesFiltersState(messagesFilterInfo);
 	};
 
+	@observable.ref
+	public filterInfo: MessagesFilterInfo[] = [];
+
 	@action
 	private initSSEFilter = (filterInfo: MessagesFilterInfo[]) => {
+		this.filterInfo = filterInfo;
 		if (this.sseMessagesFilter) {
 			const defaultState = getDefaultMessagesFiltersState(filterInfo) || {};
 			this.sseMessagesFilter = {

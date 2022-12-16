@@ -21,7 +21,7 @@ import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
-import { Chip } from '../Chip';
+import { Counter } from '../util/Counter';
 import SearchableContent from '../search/SearchableContent';
 import { useWorkspaceEventStore, useBookmarksStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
@@ -63,7 +63,6 @@ function EventCardHeader(props: Props) {
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
-	const startTimestampValue = timestampToNumber(startTimestamp);
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
@@ -97,7 +96,7 @@ function EventCardHeader(props: Props) {
 
 	function onSearchClicked(e: React.MouseEvent) {
 		e.stopPropagation();
-		filterEventsByParent(eventId, startTimestampValue);
+		filterEventsByParent(eventId, timestampToNumber(startTimestamp));
 	}
 
 	function onMouseEnter() {
@@ -138,11 +137,11 @@ function EventCardHeader(props: Props) {
 					{eventType}
 				</span>
 			)}
-			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
+			{isFlatView && parentsCount > 0 ? <Counter text={parentsCount.toString()} /> : null}
 			{displayType !== CardDisplayType.STATUS_ONLY &&
 				childrenCount !== undefined &&
 				childrenCount > 0 && (
-					<Chip
+					<Counter
 						text={childrenCount
 							.toString()
 							.concat(eventStore.eventDataStore.hasMoreChildren.get(event.eventId) ? '+' : '')}
@@ -157,7 +156,7 @@ function EventCardHeader(props: Props) {
 							onMouseEnter={onMouseEnter}
 							onMouseLeave={onMouseLeave}>
 							<span className='event-header-card__time-label-full'>
-								{formatTime(startTimestampValue)}
+								{formatTime(startTimestamp)}
 							</span>
 						</div>
 						{eventType && (

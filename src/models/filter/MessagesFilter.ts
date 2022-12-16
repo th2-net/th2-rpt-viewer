@@ -14,7 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { MultipleStringFilter } from './Filter';
+
 export default interface MessagesFilter {
+	attachedEventIds: MultipleStringFilter;
+	type: MultipleStringFilter;
+	body: MultipleStringFilter;
+	bodyBinary: MultipleStringFilter;
+	message_generic: MultipleStringFilter;
+}
+
+export interface MessagesParams {
 	timestampFrom: null | number;
 	timestampTo: null | number;
 	streams: Array<string>;

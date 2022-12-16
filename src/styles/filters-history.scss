@@ -17,18 +17,12 @@
 @import './common/vars';
 
 .filters-history-open {
-	padding: 5px;
-	margin: 0 10px 0 0;
-	border: none;
-	outline: none;
-	color: #fff;
-	font: bold 14px 'Open Sans', sans-serif;
+	@include clickable;
 	background-image: url(../../resources/icons/filters-history-open.svg);
-	background-repeat: no-repeat;
-	background-position: center center;
-	background-size: cover;
-	width: 25px;
+	width: 24px;
 	height: 25px;
+	border: none;
+
 	&:disabled {
 		opacity: 0.5;
 		cursor: default;
@@ -105,9 +99,10 @@
 	}
 
 	&__excluded-icon {
-		@include icon(url(../../resources/icons/cross-icon-dark.svg), 16px, 16px);
+		@include icon(url(../../resources/icons/include.svg), 16px, 16px);
 	}
 
+	&__delete-icon,
 	&__share-icon,
 	&__pin-icon {
 		width: 18px;
@@ -145,6 +140,17 @@
 			transform: translate(-50%, -50%);
 			opacity: 0.5;
 			@include icon(url(../../resources/icons/share-option.svg), 14px, 14px);
+		}
+	}
+
+	
+	&__delete-icon {
+		position: relative;
+		& i {
+			position: absolute;
+			transform: translate(-50%, -50%);
+			opacity: 0.5;
+			@include icon(url(../../resources/icons/cross-icon-dark.svg), 16px, 16px);
 		}
 	}
 }

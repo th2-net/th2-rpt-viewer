@@ -14,13 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { EventMessage } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
-import MessageCardBase from '../message/message-card/MessageCardBase';
 import '../../styles/embedded.scss';
 import api from '../../api';
 import StateSaverProvider from '../util/StateSaverProvider';
@@ -30,38 +29,103 @@ import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import MessagesUpdateButton from '../message/MessagesUpdateButton';
 import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
+import { getViewTypesConfig } from '../../helpers/message';
+import StateSaver from '../util/StateSaver';
+import MessageCardBase from '../message/message-card/MessageCardBase';
+import MessageCardWarning from '../message/MessageCardWarning';
+import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
+import FilterConfig from '../filter/FilterConfig';
+import { FilterRowConfig, ActionFilterConfig } from '../../models/filter/FilterInputs';
+import { MessageFilterKeys } from '../../api/sse';
+import useElementSize from '../../hooks/useElementSize';
+import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../util/CardDisplayType';
+import { useFilterConfig } from '../../hooks/useFilterConfig';
+import MessagesFilter from '../../models/filter/MessagesFilter';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
-const getViewType = (viewTypes: Map<string, MessageViewType>, message: EventMessage) => {
-	const vt = viewTypes.get(message.messageId);
-	if (vt) return vt;
+const viewStore = new EmbeddedMessagesViewTypeStore();
 
-	return message.body ? MessageViewType.JSON : MessageViewType.ASCII;
-};
+const EmbeddedMessageCard = observer(
+	(props: { message: EventMessage; displayType: CardDisplayType }) => {
+		const { getSavedViewType } = viewStore;
+		const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
+
+		return (
+			<StateSaver stateKey={props.message.id}>
+				{(isExpanded: boolean, setIsExpanded) => (
+					<div className='messages-list__item'>
+						<MessageCardBase
+							viewTypeConfig={viewTypesConfig}
+							message={props.message}
+							displayType={props.displayType}
+							isExpanded={isExpanded}
+							setIsExpanded={setIsExpanded}
+							isDisplayRuleRaw={false}
+						/>
+						{!props.message.parsedMessages && <MessageCardWarning isScreenshotMsg={false} />}
+					</div>
+				)}
+			</StateSaver>
+		);
+	},
+);
+
+const filterOrder: MessageFilterKeys[] = [
+	'attachedEventIds',
+	'type',
+	'body',
+	'bodyBinary',
+	'message_generic',
+];
 
 const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
+	const { filterStore } = messagesStore;
 
-	const [viewTypes, setViewTypes] = useState<Map<string, MessageViewType>>(new Map());
+	const { config, filter } = useFilterConfig({
+		filterInfo: filterStore.messagesFilterInfo,
+		filter: filterStore.sseMessagesFilter,
+		order: filterOrder,
+	});
+	const [showFilter, setShowFilter] = React.useState(false);
+	const [streams, setStreams] = React.useState<Array<string>>([]);
+
+	React.useEffect(() => {
+		setStreams(filterStore.filter.streams);
+	}, [filterStore.filter.streams]);
+
+	const submitChanges = React.useCallback(() => {
+		messagesStore.applyFilter(
+			{
+				...filterStore.filter,
+				streams,
+			},
+			filter as MessagesFilter,
+		);
+	}, [filter, filterStore.filter, streams]);
+
+	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
+		return {
+			type: 'action',
+			id: 'sse-filtler-error',
+			message: 'Failed to load sse filters',
+			actionButtonText: 'Try again',
+			action: () => null,
+			isLoading: false,
+		};
+	}, []);
+
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
+		return config.length ? config : [sseFiltersErrorConfig];
+	}, [config, sseFiltersErrorConfig]);
 
 	const renderMsg = useCallback(
-		(index: number, message: EventMessage) => {
-			const setViewType = (viewType: MessageViewType) => {
-				setViewTypes(vt => new Map(vt.set(message.messageId, viewType)));
-			};
-
-			return (
-				<MessageCardBase
-					isEmbedded
-					message={message}
-					setViewType={setViewType}
-					viewType={getViewType(viewTypes, message)}
-				/>
-			);
-		},
-		[viewTypes, setViewTypes],
+		(message: EventMessage, displayType: CardDisplayType) => (
+			<EmbeddedMessageCard message={message} displayType={displayType} key={message.id} />
+		),
+		[],
 	);
 
 	const reportURL = React.useMemo(() => {
@@ -112,10 +176,27 @@ const EmbeddedMessages = () => {
 					subscribeOnChanges={updateStore.subscribeOnChanges}
 					stopSubscription={updateStore.stopSubscription}
 				/>
-				<EmbeddedMessagesFilterPanel messagesStore={messagesStore} />
+				<EmbeddedMessagesFilterPanel
+					submitChanges={submitChanges}
+					showFilter={showFilter}
+					setShowFilter={setShowFilter}
+					messagesStore={messagesStore}
+					streams={streams}
+					setStreams={setStreams}
+				/>
 				<a href={reportURL} target='_black' className='report-viewer-link'>
 					Report viewer
 				</a>
+			</div>
+			<div className='messages-list__filter'>
+				<FilterConfig
+					config={filterConfig}
+					setShowFilter={setShowFilter}
+					showFilter={showFilter}
+					onSubmit={submitChanges}
+					onClearAll={messagesStore.clearFilters}
+					isEmbedded={true}
+				/>
 			</div>
 			{isLoading && <SplashScreen />}
 			{isEmpty && (
@@ -128,8 +209,8 @@ const EmbeddedMessages = () => {
 				<StateSaverProvider>
 					<MessagesVirtualizedList
 						className='messages-list__items'
-						scrolledIndex={scrolledIndex}
 						itemRenderer={renderMsg}
+						scrolledIndex={scrolledIndex}
 						loadNextMessages={dataStore.getNextMessages}
 						loadPrevMessages={dataStore.getPreviousMessages}
 						isLive={dataStore.updateStore.isActive}
@@ -143,13 +224,23 @@ const EmbeddedMessages = () => {
 EmbeddedMessages.displayName = 'EmbeddedMessages';
 
 const EmbeddedMessagesApp = observer(EmbeddedMessages);
+
 export default function MessagesApp() {
 	return <EmbeddedMessagesApp />;
 }
 
+interface SpinnerProps {
+	isLoading: boolean;
+}
+const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
+	if (!isLoading) return null;
+
+	return <div className='messages-list__spinner' />;
+};
+
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
-	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
+	itemRenderer: (message: EventMessage, displayType: CardDisplayType) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -171,12 +262,24 @@ const MessagesVirtualizedList = observer((props: Props) => {
 	const {
 		className,
 		overscan = 3,
-		itemRenderer,
 		loadPrevMessages,
 		loadNextMessages,
 		scrolledIndex,
 		isLive,
+		itemRenderer,
 	} = props;
+
+	const scrollerRef = React.useRef<HTMLDivElement | null>(null);
+
+	const messagesListWidth = useElementSize(scrollerRef.current)?.width;
+
+	const displayType = React.useMemo(
+		() =>
+			messagesListWidth && messagesListWidth < COLLAPSED_MESSAGES_WIDTH
+				? CardDisplayType.MINIMAL
+				: CardDisplayType.FULL,
+		[messagesListWidth],
+	);
 
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
@@ -226,13 +329,18 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
+	const handleScrollerRef = React.useCallback(ref => {
+		scrollerRef.current = ref;
+	}, []);
+
 	return (
 		<Virtuoso
 			data={messagesStore.dataStore.messages}
 			firstItemIndex={messagesStore.dataStore.startIndex}
 			ref={virtuoso}
+			scrollerRef={handleScrollerRef}
 			overscan={overscan}
-			itemContent={itemRenderer}
+			itemContent={(index, message) => itemRenderer(message, displayType)}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
 			onScroll={onScroll}
@@ -292,14 +400,3 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		/>
 	);
 });
-
-export { MessagesVirtualizedList };
-
-interface SpinnerProps {
-	isLoading: boolean;
-}
-const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
-	if (!isLoading) return null;
-
-	return <div className='messages-list__spinner' />;
-};

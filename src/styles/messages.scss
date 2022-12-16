@@ -19,70 +19,19 @@
 .message-card-wrapper {
 	@include scrollbar();
 	@include bookmark-button($showOnHoverOverParent: true);
-	overflow: auto;
+	overflow: hidden;
+	width: 100%;
 	align-items: flex-start;
-	border-radius: 5px;
-	padding: 1px 3px;
 	display: flex;
+	border-radius: 16px 16px 0 0;
 	justify-content: space-between;
 
-	&.highlighted {
-		@keyframes highlight {
-			from {
-				background: $highlightedMessageCardBackground;
-			}
-
-			50% {
-				background: rgba($highlightedMessageCardBackground, 0);
-			}
-			to {
-				background: $highlightedMessageCardBackground;
-			}
-		}
-		animation: highlight 1s infinite ease-in-out;
-	}
-
-	&.soft-filtered {
-		border: 1px solid $filterPrimaryColor;
-
-		&:hover {
-			background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
-		}
-	}
-
-	&.attached {
-		border: 2px solid $attachedMessageCardBorderColor;
-
-		&:hover {
-			border-color: $attachedMessageCardHoverBorderColor;
-			background-color: $attachedMessageCardHoverBackground;
-		}
-	}
-
-	&.exported {
-		background-color: $exportedMessageCardBackground;
-		&:hover {
-			background-color: $exportedMessageCardHoverBackground;
-		}
-	}
-
-	&.export-mode {
-		cursor: pointer;
-	}
-
-	&:hover {
+	&:hover .parsed-message,
+	&:hover .mc-header__info {
 		background-color: $messageCardHoverBackground;
 	}
 
-	&:hover .message-card-tools__ellipsis {
-		display: block;
-	}
-
 	&:hover .mc-header {
-		&__value {
-			font-weight: bold;
-		}
-
 		&__is-attached-icon {
 			opacity: 1;
 		}
@@ -93,7 +42,50 @@
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
-	padding: 0 2px;
+	width: 100%;
+}
+
+.message-card-warning-wrapper {
+	display: flex;
+	background-color: #fbfbfb;
+	border-radius: 0 0 16px 16px;
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 16px;
+	padding: 12px 8px;
+
+	&__warning {
+		display: flex;
+		flex-direction: row;
+		color: #ffb84e;
+		gap: 10px;
+		padding: 6px 16px;
+
+		&-icon {
+			@include icon(url(../../resources/icons/raw-data-warning.svg), 13px, 13px);
+		}
+	}
+}
+
+.message-card-expand-button-wrapper {
+	cursor: pointer;
+	align-items: center;
+	background: #fbfbfb;
+	box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+	padding: 4px;
+	border-radius: 20px;
+
+	&.expanded {
+		background-color: #e3ecff;
+	}
+
+	&__expand-button {
+		@include icon(url(../../resources/icons/message-expand-button-off.svg), 15px, 15px);
+		&.expanded {
+			@include icon(url(../../resources/icons/message-expand-button-on.svg), 15px, 15px);
+			background-color: #e3ecff;
+		}
+	}
 }
 
 .message-card-tools {
@@ -105,31 +97,54 @@
 	align-items: center;
 	min-width: 17px;
 
+	&__wrapper {
+		display: flex;
+		flex-grow: 1;
+		flex-direction: row-reverse;
+	}
+
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		color: #acacac;
+
+		&-close {
+			cursor: pointer;
+			@include icon(url(../../resources/icons/message-tools-close.svg), 9px, 9px);
+		}
+	}
+
 	&__button {
 		display: flex;
 		align-items: center;
 		cursor: pointer;
+		padding: 4px;
+		&.active {
+			background-color: #fcfcfc;
+			border-radius: 20px;
+		}
 	}
 
 	&__button.active &__ellipsis {
-		display: block;
+		visibility: visible;
 	}
 
 	&__ellipsis {
-		display: none;
-		margin-left: 2px;
+		visibility: hidden;
+		border: none;
 		flex-shrink: 0;
 		@include icon(url(../../resources/icons/ellipsis.svg), 15px, 15px);
 	}
 
 	&__controls {
 		position: absolute;
-		right: 11px;
+		right: 50px;
 		background-color: white;
-		box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		border-radius: 8px;
 		display: flex;
-		padding: 4px 0;
-		gap: 4px;
+		padding: 12px;
 		flex-direction: column;
 		z-index: 2;
 
@@ -140,13 +155,13 @@
 	}
 
 	&__item {
-		display: flex;
-		justify-content: flex-end;
+		display: grid;
+		grid-template-columns: 29px 1fr auto;
+		height: 36px;
 		align-items: center;
-		gap: 4px;
-		padding: 2px 4px 2px 10px;
+		gap: 8px;
+		padding: 4px 8px;
 		cursor: pointer;
-		font-size: 11px;
 		color: $primaryTextColor;
 
 		&-title {
@@ -162,13 +177,22 @@
 		width: 15px;
 		height: 15px;
 		flex-shrink: 0;
+		margin-left: 6px;
 
 		&.bookmark {
-			@include icon(url(../../resources/icons/bookmark-add-hover.svg));
+			@include icon(url(../../resources/icons/bookmark-add-icon.svg), 24px, 24px);
 			background-size: auto;
 
 			&.pinned {
-				background-image: url(../../resources/icons/bookmark-added-hover.svg);
+				@include icon(url(../../resources/icons/bookmark-icon.svg), 24px, 24px);
+				background-size: auto;
+			}
+			&.action {
+				background-color: #fcfcfc;
+				background-size: 60%;
+				margin: 2px;
+				border-radius: 20px;
+				box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.3);
 			}
 		}
 
@@ -181,11 +205,11 @@
 		}
 
 		&.binary {
-			@include icon(url(../../resources/icons/binar.svg));
-			opacity: 0.7;
+			@include icon(url(../../resources/icons/binar.svg), 10px, 7px);
 		}
 
 		&.ascii {
+			padding-right: 2px;
 			@include icon(url(../../resources/icons/ascii.svg));
 		}
 
@@ -233,11 +257,16 @@
 	}
 
 	&__copy-icon {
-		height: 16px;
-		width: 16px;
-		@include icon(url(../../resources/icons/clipboard.svg), 16px, 16px);
-		background-size: 80%;
-		filter: opacity(0.6);
+		background-color: #fcfcfc;
+		@include icon(url(../../resources/icons/clipboard.svg), 24px, 24px);
+		background-size: 60%;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.3);
+		margin: 2px;
+		border-radius: 20px;
+	}
+	&__line {
+		border: 1px solid #dedede;
+		margin: 4px 0;
 	}
 }
 
@@ -281,9 +310,24 @@
 
 	&__info {
 		display: inline-flex;
+		background-color: #fbfbfb;
+		font-size: 12px;
+		color: #5c5757;
+		width: 100%;
 		align-items: center;
+		padding: 12px 16px 16px 16px;
 		flex-grow: 1;
 		overflow: hidden;
+		gap: 10px;
+
+		&:hover .message-card-tools__ellipsis {
+			visibility: visible;
+		}
+		&:hover .message-card-tools {
+			background-color: #fcfcfc;
+			border-radius: 20px;
+			box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		}
 	}
 
 	&__item {
@@ -302,10 +346,23 @@
 	&__direction-icon {
 		background-image: url('../../resources/icons/session-icon.svg');
 		background-size: 100%;
-
-		&.in {
+		z-index: 1;
+		&.first {
 			transform: scale(-1);
 		}
+	}
+
+	&__message-icon {
+		@include icon(url(../../resources/icons/message-icon.svg), 12px, 12px);
+	}
+	&__attached-icon {
+		flex-shrink: 0;
+		@include icon(url(../../resources/icons/attached-icon.svg), 12px, 12px);
+	}
+	&__session-id {
+		z-index: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	&__key,
@@ -320,8 +377,6 @@
 	&__key,
 	&__key-minified,
 	&__value {
-		font-size: 9px;
-		line-height: 15px;
 		margin: 0 5px;
 	}
 
@@ -331,45 +386,88 @@
 	}
 
 	&__value {
+		@include ellipsis();
+		background-color: #fcfcfc;
 		display: inline-block;
-		color: $messageCardValueColor;
 		vertical-align: middle;
-		font-weight: bold;
-
-		&.messageType {
-			@include ellipsis();
-		}
+		padding: 4px 8px;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		border-radius: 20px;
 	}
 
 	&__icon {
 		width: 15px;
 		height: 15px;
+		min-width: 15px;
+		min-height: 15px;
 		vertical-align: middle;
 	}
 
 	&__timestamp {
 		transition: all 0.15s;
 		border: 1px solid transparent;
-		border-radius: 4px;
 		margin-left: 0;
 		text-align: center;
+		white-space: nowrap;
+		flex-shrink: 0;
 
 		&:hover {
 			color: $graphTextColor;
 			border: 1px solid $graphTextColor;
 		}
 	}
+
+	&__sessionid {
+		position: relative;
+		color: #fff;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		gap: 5px;
+	}
+}
+
+.parsed-message-wrapper {
+	&:hover .message-card-tools__ellipsis {
+		visibility: visible;
+	}
+	&:hover .message-card-tools {
+		background-color: #fcfcfc;
+		border-radius: 20px;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+	}
+}
+
+.parsed-message {
+	background-color: #fbfbfb;
+	margin-bottom: 1px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+
+	&.last {
+		border-radius: 0 0 16px 16px;
+	}
+	&.warning {
+		margin-bottom: 0;
+	}
 }
 
 .mc-body {
-	font-size: 11px;
+	width: 100%;
+	font-size: 12px;
+	font-weight: 400;
 	border-radius: 5px;
+	padding: 0 16px 12px 16px;
+	display: flex;
+	flex-direction: column;
 
 	&__human {
 		display: inline;
 		font-family: inherit;
 		line-height: 16px;
 		margin: 0;
+		padding: 2px 0 2px 0;
 		white-space: pre-wrap;
 		word-break: break-all;
 		color: $alternativeTextColor;
@@ -385,7 +483,6 @@
 
 	&__field-label {
 		display: inline-block;
-		height: 100%;
 	}
 
 	&__field-border {
@@ -418,6 +515,14 @@
 		width: auto;
 		height: 100px;
 		padding: 5px 0;
+	}
+
+	&:hover .message-card-tools__ellipsis {
+		visibility: visible;
+	}
+	&:hover .message-card-tools {
+		border-radius: 20px;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
 	}
 }
 
@@ -455,7 +560,6 @@
 		font-family: monospace;
 		line-height: 15px;
 		letter-spacing: 0.5px;
-		overflow-x: auto;
 	}
 
 	&__column {
@@ -526,6 +630,7 @@
 }
 
 .messages-list {
+	background-color: #f1f1f1;
 	display: inline-block;
 	height: 100%;
 	width: 100%;
@@ -534,6 +639,59 @@
 	&__items {
 		height: 100%;
 		@include scrollbar;
+	}
+
+	&__item {
+		margin: 2px 5px;
+		border-radius: 16px;
+		border: 2px solid transparent;
+
+		&-info {
+			position: relative;
+			display: flex;
+		}
+
+		&-indicator {
+			position: absolute;
+			margin: 12px 8px;
+			width: 4px;
+			height: calc(100% - 24px);
+			border-radius: 2px;
+
+			&.bookmarked {
+				background: #a65cd6;
+			}
+
+			&.attached {
+				background: #f26c0d;
+			}
+
+			&.bookmarked-attached {
+				background: linear-gradient(to bottom, #a65cd6 50%, #f26c0d 50%);
+			}
+		}
+
+		&.soft-filtered {
+			border: 1px solid $filterPrimaryColor;
+
+			&:hover {
+				background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
+			}
+		}
+
+		&.attached {
+			border: 2px solid $attachedMessageCardBorderColor;
+
+			& .parsed-message,
+			& .mc-header__info {
+				background-color: $messageCardHoverBackground;
+			}
+		}
+
+		&.exported {
+			border: 2px solid $exportedMessageCardBackground;
+			padding: 0;
+		}
 	}
 
 	&__spinner {
@@ -659,6 +817,22 @@
 	}
 }
 
+.highlighted {
+	@keyframes highlight {
+		from {
+			background: $highlightedMessageCardBackground;
+		}
+
+		50% {
+			background: rgba($highlightedMessageCardBackground, 0);
+		}
+		to {
+			background: $highlightedMessageCardBackground;
+		}
+	}
+	animation: highlight 1s infinite ease-in-out;
+}
+
 .mc-skeleton {
 	@include skeleton-pulse;
 	margin-bottom: 5px;
@@ -732,13 +906,8 @@
 	width: 100%;
 	display: flex;
 	justify-content: space-between;
-
-	&__group {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
+	align-items: center;
+	gap: 10px;
 
 	&__realtime-button {
 		@include clickable;
@@ -969,15 +1138,15 @@
 
 .replay {
 	display: grid;
-	row-gap: 5px;
+	row-gap: 8px;
 	position: absolute;
-	top: calc(50% - 200px);
+	top: calc(50% - 400px);
 	left: calc(50% - 400px);
 	width: 800px;
-	background-color: #0bc;
+	background-color: white;
+	border: 3px solid #0bc;
 	padding: 0px 20px 20px 20px;
 	border-radius: 6px;
-	color: white;
 	z-index: 300;
 	margin: 10px;
 
@@ -998,6 +1167,10 @@
 		}
 	}
 
+	&__compound-header {
+		margin-bottom: 12px;
+	}
+
 	.filter-row {
 		margin-bottom: 0;
 		margin-left: 0;
@@ -1008,7 +1181,6 @@
 	}
 
 	.filter-row__label {
-		color: #fff;
 		font-size: 14px;
 	}
 
@@ -1021,7 +1193,7 @@
 	}
 
 	&__generated-text {
-		background-color: rgba(255, 255, 255, 0.8);
+		background-color: #f1f1f1;
 		padding: 3px 15px;
 		position: relative;
 		color: #4d4d4d;
@@ -1059,7 +1231,7 @@
 		border: none;
 		background-color: transparent;
 
-		@include round-button(url(../../resources/icons/cross-icon-white.svg));
+		@include round-button(url(../../resources/icons/cross-icon.svg));
 	}
 
 	.dragable-area {

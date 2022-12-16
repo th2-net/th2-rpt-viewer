@@ -32,7 +32,7 @@ const SearchTypeSwitcher = ({ formType, setFormType, disabled }: Props) => {
 	};
 
 	return (
-		<div className='search-type-switcher'>
+		<div className='search-type-switcher__togglers'>
 			{['event' as typeof formType, 'message' as typeof formType].map(type => {
 				const buttonClassName = createBemElement(
 					'search-type-switcher',
@@ -53,7 +53,9 @@ const SearchTypeSwitcher = ({ formType, setFormType, disabled }: Props) => {
 				return (
 					<button key={type} className={buttonClassName} onClick={() => setType(type)}>
 						<i className={iconClassName} />
-						<div className='switch-search-type-button__label'>{type}</div>
+						<div className='switch-search-type-button__label'>
+							{type.charAt(0).toUpperCase().concat(type.slice(1))}
+						</div>
 					</button>
 				);
 			})}

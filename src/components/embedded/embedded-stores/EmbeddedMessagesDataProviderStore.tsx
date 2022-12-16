@@ -124,6 +124,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				...queryParams,
 				searchDirection: 'previous',
 			},
+			FIFTEEN_SECONDS,
 			prevListeners,
 		);
 		this.createNextMessageChannelEventSource(
@@ -131,6 +132,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				...queryParams,
 				searchDirection: 'next',
 			},
+			FIFTEEN_SECONDS,
 			nextListeners,
 		);
 
@@ -181,16 +183,16 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 		const [nextMessages, prevMessages] = await Promise.all([
 			this.searchChannelNext.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(messageIds.previous),
+				resumeMessageIds: extractMessageIds(messageIds.next),
 			}),
 			this.searchChannelPrev.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(messageIds.next),
+				resumeMessageIds: extractMessageIds(messageIds.previous),
 			}),
 		]);
 
 		runInAction(() => {
 			const messages = [
-				...nextMessages.filter(val => val.messageId !== message?.messageId),
+				...nextMessages.filter(val => val.id !== message?.id),
 				...[message].filter(isEventMessage),
 				...prevMessages,
 			].sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
@@ -202,7 +204,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		} else {
 			const firstPrevMessage = prevMessages[0];
 			if (firstPrevMessage) {
-				this.messagesStore.scrollToMessage(firstPrevMessage.messageId);
+				this.messagesStore.scrollToMessage(firstPrevMessage.id);
 			}
 		}
 	};
@@ -227,10 +229,9 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
+		requestTimeoutMs?: number,
 		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
-		this.prevLoadEndTimestamp = null;
-
 		this.searchChannelPrev = new MessagesSSEChannel(query, {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
@@ -260,10 +261,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.lastPreviousChannelResponseTimestamp = null;
 		const firstPrevMessage = messages[0];
 
-		if (
-			firstPrevMessage &&
-			firstPrevMessage.messageId === this.messages[this.messages.length - 1]?.messageId
-		) {
+		if (firstPrevMessage && firstPrevMessage.id === this.messages[this.messages.length - 1]?.id) {
 			messages.shift();
 		}
 
@@ -277,7 +275,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			this.messages = newMessagesList;
 
 			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
-			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
+			if (selectedMessageId && messages.find(m => m.id === selectedMessageId)) {
 				this.messagesStore.scrollToMessage(selectedMessageId);
 			}
 		}
@@ -286,6 +284,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public createNextMessageChannelEventSource = (
 		query: MessagesSSEParams,
+		requestTimeoutMs?: number,
 		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
 		this.searchChannelNext = new MessagesSSEChannel(query, {
@@ -304,15 +303,14 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				? messages.filter(
 						message =>
 							timestampToNumber(message.timestamp) <
-								timestampToNumber(this.messages[0].timestamp) ||
-							message.messageId === this.messages[0].messageId,
+								timestampToNumber(this.messages[0].timestamp) || message.id === this.messages[0].id,
 				  )
 				: [];
 		const firstNextMessage = messages[this.messages.length - 1];
 
 		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
 
-		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
+		if (firstNextMessage && firstNextMessage.id === this.messages[0]?.id) {
 			prevMessages.shift();
 		}
 
@@ -329,7 +327,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			this.messages = newMessagesList;
 
 			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
-			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
+			if (selectedMessageId && messages.find(m => m.id === selectedMessageId)) {
 				this.messagesStore.scrollToMessage(selectedMessageId);
 			}
 		}

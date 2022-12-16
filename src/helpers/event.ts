@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-
 import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { EventStatus } from '../models/Status';
@@ -101,13 +100,19 @@ export const sortByTimestamp = (
 };
 
 export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
-	if (isEventMessage(item)) return item.messageId;
+	if (isEventMessage(item)) return item.id;
 	return item.eventId;
 }
 
 export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
-	if (isEventMessage(item)) return item.messageType;
-	return item.eventName;
+	if (isEventMessage(item) && item.parsedMessages) {
+		return item.parsedMessages.reduce((previous, current) => {
+			return previous + current.message.metadata.messageType.concat(',');
+		}, '');
+	}
+	if (isEventAction(item) || isEventNode(item)) return item.eventName;
+
+	return 'unknown type';
 }
 
 export const convertEventActionToEventTreeNode = (event: EventAction): EventTreeNode => {
@@ -131,14 +136,8 @@ export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
 		eventName: eventId,
 		eventType: 'eventTreeNode',
 		parentId: 'unknown-root',
-		startTimestamp: {
-			nano: 0,
-			epochSecond: 0,
-		},
-		endTimestamp: {
-			nano: 0,
-			epochSecond: 0,
-		},
+		startTimestamp: '',
+		endTimestamp: '',
 		successful: false,
 	};
 };
@@ -150,10 +149,7 @@ export const unknownRoot: EventTreeNode = {
 	eventName: 'Unknown Events',
 	eventType: 'eventTreeNode',
 	parentId: null,
-	startTimestamp: {
-		nano: 0,
-		epochSecond: 0,
-	},
+	startTimestamp: '',
 	successful: false,
 };
 

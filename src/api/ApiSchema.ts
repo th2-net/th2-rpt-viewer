@@ -17,14 +17,14 @@
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import EventsFilter from '../models/filter/EventsFilter';
-import MessagesFilter from '../models/filter/MessagesFilter';
+import { MessagesParams } from '../models/filter/MessagesFilter';
 import { TimeRange } from '../models/Timestamp';
 import {
 	SSEParamsEvents,
 	EventsFiltersInfo,
-	EventSSEFilters,
+	EventFilterKeys,
 	MessagesFilterInfo,
-	MessagesSSEFilters,
+	MessageFilterKeys,
 	SSEParams,
 } from './sse';
 import { IndexedDB } from './indexedDb';
@@ -64,7 +64,7 @@ export interface MessageApiSchema {
 			messageId: string;
 			idsOnly: true;
 		},
-		filter: MessagesFilter,
+		filter: MessagesParams,
 		abortSignal?: AbortSignal,
 	): Promise<string[]>;
 	getMessages(
@@ -74,7 +74,7 @@ export interface MessageApiSchema {
 			messageId: string;
 			idsOnly: false;
 		},
-		filter: MessagesFilter,
+		filter: MessagesParams,
 		abortSignal?: AbortSignal,
 	): Promise<EventMessage[]>;
 	getMessage: (
@@ -104,8 +104,8 @@ export interface SSESchema {
 		sseParams: SSEParamsEvents,
 	) => EventSource;
 	getFilters: <T>(filterType: 'events' | 'messages') => Promise<T[]>;
-	getEventFilters: () => Promise<EventSSEFilters[]>;
-	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;
-	getEventsFiltersInfo: (filters: EventSSEFilters[]) => Promise<EventsFiltersInfo[]>;
-	getMessagesFiltersInfo: (filters: MessagesSSEFilters[]) => Promise<MessagesFilterInfo[]>;
+	getEventFilters: () => Promise<EventFilterKeys[]>;
+	getMessagesFilters: () => Promise<MessageFilterKeys[]>;
+	getEventsFiltersInfo: (filters: EventFilterKeys[]) => Promise<EventsFiltersInfo[]>;
+	getMessagesFiltersInfo: (filters: MessageFilterKeys[]) => Promise<MessagesFilterInfo[]>;
 }

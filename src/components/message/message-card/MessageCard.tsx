@@ -21,26 +21,36 @@ import {
 	useMessagesWorkspaceStore,
 	useMessagesDataStore,
 	useMessageBodySortStore,
-	useMessagesViewTypesStore,
 	useBookmarksStore,
+	useMessagesViewTypeStore,
 } from '../../../hooks';
-import { EventMessage, MessageViewType } from '../../../models/EventMessage';
-import MessageCardBase from './MessageCardBase';
+import { EventMessage, MessageViewTypeConfig } from '../../../models/EventMessage';
+import MessageCardBase, { MessageCardBaseProps } from './MessageCardBase';
 import '../../../styles/messages.scss';
+import MessageCardWarning from '../MessageCardWarning';
+import StateSaver from '../../util/StateSaver';
+import { getViewTypesConfig } from '../../../helpers/message';
+import { createBemBlock } from '../../../helpers/styleCreators';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 export interface OwnProps {
 	message: EventMessage;
+	displayType: CardDisplayType;
 }
 
 export interface RecoveredProps {
-	viewType: MessageViewType;
-	setViewType: (viewType: MessageViewType) => void;
+	viewTypesConfig: Map<string, MessageViewTypeConfig>;
+	isExpanded: boolean;
+	isDisplayRuleRaw: boolean;
+	setIsExpanded: (state: boolean) => void;
+	stateKey: string;
 }
 
 interface Props extends OwnProps, RecoveredProps {}
 
-const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
-	const { messageId } = message;
+export const MessageCard = observer((props: Props) => {
+	const { message, displayType, viewTypesConfig } = props;
+	const { id } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
@@ -52,21 +62,19 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
-	const isContentBeautified = viewType === MessageViewType.FORMATTED;
 	const isBookmarked =
-		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === messageId) !==
-		-1;
+		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !== -1;
 
-	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
+	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
 
 		if (
 			messagesStore.filterStore.isSoftFilter &&
-			messagesDataStore.isSoftFiltered.get(messageId) === undefined
+			messagesDataStore.isSoftFiltered.get(id) === undefined
 		) {
-			messagesDataStore.matchMessage(messageId, abortController.signal);
+			messagesDataStore.matchMessage(id, abortController.signal);
 		}
 
 		return () => {
@@ -75,7 +83,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}, []);
 
 	React.useEffect(() => {
-		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === messageId) {
+		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === id) {
 			setHighlighted(true);
 
 			highlightTimer.current = setTimeout(() => {
@@ -103,47 +111,80 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		messagesStore.setHoveredMessage(null);
 	}, [messagesStore.setHoveredMessage]);
 
+	const addMessageToExport = React.useCallback(
+		() => messagesStore.exportStore.addMessageToExport(message),
+		[messagesStore.exportStore.addMessageToExport],
+	);
+
 	const isAttached = computed(
-		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.messageId === message.messageId),
+		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.id === message.id),
 	).get();
 
 	const toogleMessagePin = React.useCallback(() => {
 		bookmarksStore.toggleMessagePin(message);
 	}, [bookmarksStore.toggleMessagePin]);
 
-	const addMessagesToExport = React.useCallback(
-		() => messagesStore.exportStore.addMessageToExport(message),
-		[messagesStore.exportStore.addMessageToExport],
-	);
-
 	const isExported = messagesStore.exportStore.isExported(message);
 
+	const messageCardBaseProps: MessageCardBaseProps = {
+		message,
+		displayType,
+		viewTypeConfig: viewTypesConfig,
+		hoverMessage,
+		unhoverMessage,
+		isDisplayRuleRaw: props.isDisplayRuleRaw,
+		isExpanded: props.isExpanded,
+		setIsExpanded: props.setIsExpanded,
+		isBookmarked,
+		isAttached,
+		isHighlighted,
+		toogleMessagePin,
+		sortOrderItems,
+		isExport: messagesStore.exportStore.isExport,
+		isExported,
+		addMessageToExport,
+	};
+
+	const rootClass = createBemBlock(
+		'messages-list__item',
+		isSoftFiltered ? 'soft-filtered' : null,
+		isExported ? 'exported' : null,
+		isAttached ? 'attached' : null,
+	);
+
 	return (
-		<MessageCardBase
-			message={message}
-			viewType={viewType}
-			setViewType={setViewType}
-			isHighlighted={isHighlighted}
-			hoverMessage={hoverMessage}
-			unhoverMessage={unhoverMessage}
-			isBookmarked={isBookmarked}
-			isAttached={isAttached}
-			isContentBeautified={isContentBeautified}
-			isSoftFiltered={isSoftFiltered}
-			toogleMessagePin={toogleMessagePin}
-			isExported={isExported}
-			isExport={messagesStore.exportStore.isExport}
-			sortOrderItems={sortOrderItems}
-			addMessageToExport={addMessagesToExport}
-		/>
+		<div className={rootClass}>
+			<MessageCardBase {...messageCardBaseProps} />
+			{!message.parsedMessages && (
+				<MessageCardWarning isHighlighted={isHighlighted} isScreenshotMsg={false} />
+			)}
+		</div>
 	);
 });
 
 const RecoverableMessageCard = (props: OwnProps) => {
-	const viewTypesStore = useMessagesViewTypesStore();
-	const { viewType, setViewType } = viewTypesStore.getSavedViewType(props.message);
+	const viewTypesStore = useMessagesViewTypeStore();
+	const { getSavedViewType } = viewTypesStore;
 
-	return <MessageCard {...props} viewType={viewType} setViewType={setViewType} />;
+	const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
+
+	const isDisplayRuleRaw = getSavedViewType(props.message).isDisplayRuleRaw;
+
+	return (
+		<StateSaver stateKey={props.message.id}>
+			{(state: boolean, stateSaver) => (
+				<MessageCard
+					message={props.message}
+					displayType={props.displayType}
+					viewTypesConfig={viewTypesConfig}
+					stateKey={props.message.id}
+					setIsExpanded={stateSaver}
+					isExpanded={state}
+					isDisplayRuleRaw={isDisplayRuleRaw}
+				/>
+			)}
+		</StateSaver>
+	);
 };
 
 export default observer(RecoverableMessageCard);

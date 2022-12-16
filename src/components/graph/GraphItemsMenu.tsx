@@ -69,7 +69,7 @@ export default function GraphItemsMenu({
 			<ul className='graph-item-group__list'>
 				{items.map(item => (
 					<li
-						key={isEventMessage(item) ? item.messageId : item.eventId}
+						key={isEventMessage(item) ? item.id : item.eventId}
 						className='graph-menu__item'
 						onClick={ev => handleClick(ev, item)}>
 						<div
@@ -79,7 +79,7 @@ export default function GraphItemsMenu({
 							)}
 						/>
 						<div className='graph-menu__item-name'>
-							{isEventMessage(item) ? item.messageId : item.eventName}
+							{isEventMessage(item) ? item.id : item.eventName}
 						</div>
 						<div className='graph-menu__item-timestamp'>
 							{moment(getTimestampAsNumber(item)).utc().format('DD.MM.YYYY HH:mm:ss:SSS')}

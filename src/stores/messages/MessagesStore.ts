@@ -19,8 +19,7 @@ import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
-import { timestampToNumber } from '../../helpers/date';
-import MessagesFilter from '../../models/filter/MessagesFilter';
+import MessagesFilter, { MessagesParams } from '../../models/filter/MessagesFilter';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { TimeRange } from '../../models/Timestamp';
@@ -28,13 +27,13 @@ import { SearchStore } from '../SearchStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
-import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
+import { timestampToNumber } from '../../helpers/date';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -101,7 +100,12 @@ export default class MessagesStore {
 
 		reaction(() => this.hoveredMessage, this.onMessageHover);
 
-		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
+		reaction(
+			() => this.filterStore.filter,
+			() => {
+				this.exportStore.disableExport();
+			},
+		);
 	}
 
 	@computed
@@ -143,11 +147,7 @@ export default class MessagesStore {
 	}
 
 	@action
-	public applyFilter = (
-		filter: MessagesFilter,
-		sseFilters: MessageFilterState | null,
-		isSoftFilterApplied: boolean,
-	) => {
+	public applyFilter = (filter: MessagesParams, sseFilters: MessagesFilter | null) => {
 		if (sseFilters) {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
@@ -163,7 +163,7 @@ export default class MessagesStore {
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.highlightedMessageId = null;
-		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
+		this.filterStore.setMessagesFilter(filter, sseFilters);
 	};
 
 	private init = async (defaultState: MessagesStoreDefaultStateType) => {
@@ -180,8 +180,8 @@ export default class MessagesStore {
 		} else {
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
-				this.selectedMessageId = new String(message.messageId);
-				this.highlightedMessageId = new String(message.messageId);
+				this.selectedMessageId = new String(message.id);
+				this.highlightedMessageId = new String(message.id);
 				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 				this.workspaceStore.viewStore.activePanel = this;
 			}
@@ -196,8 +196,8 @@ export default class MessagesStore {
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
 			const streams = this.filterStore.filter.streams;
 
-			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = new String(message.messageId);
+			this.selectedMessageId = new String(message.id);
+			this.highlightedMessageId = new String(message.id);
 			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
@@ -216,12 +216,10 @@ export default class MessagesStore {
 
 	@action
 	public selectAttachedMessage = (message: EventMessage) => {
-		const messageIndex = this.dataStore.sortedMessages.findIndex(
-			m => m.messageId === message.messageId,
-		);
+		const messageIndex = this.dataStore.sortedMessages.findIndex(m => m.id === message.id);
 		if (messageIndex !== -1) {
-			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = new String(message.messageId);
+			this.selectedMessageId = new String(message.id);
+			this.highlightedMessageId = new String(message.id);
 		} else {
 			this.onMessageSelect(message);
 		}
@@ -237,7 +235,7 @@ export default class MessagesStore {
 			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
 			if (mostRecentMessage) {
 				const streams = this.filterStore.filter.streams;
-				this.selectedMessageId = new String(mostRecentMessage.messageId);
+				this.selectedMessageId = new String(mostRecentMessage.id);
 				this.filterStore.setMessagesFilter(
 					{
 						...this.filterStore.filter,
@@ -247,7 +245,6 @@ export default class MessagesStore {
 						timestampTo: timestampToNumber(mostRecentMessage.timestamp),
 					},
 					this.filterStore.sseMessagesFilter,
-					this.filterStore.isSoftFilter,
 				);
 			}
 		}
@@ -266,7 +263,6 @@ export default class MessagesStore {
 				timestampTo: timestamp,
 			},
 			this.filterStore.sseMessagesFilter,
-			this.filterStore.isSoftFilter,
 		);
 
 		if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
@@ -305,7 +301,7 @@ export default class MessagesStore {
 		runInAction(() => (this.isFilteringTargetMessages = true));
 
 		const hintMessagesMatch = await Promise.all(
-			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
+			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.id, matchMessageParams)),
 		).finally(() => {
 			runInAction(() => (this.isFilteringTargetMessages = false));
 		});
@@ -324,8 +320,8 @@ export default class MessagesStore {
 
 		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
 
-		this.selectedMessageId = new String(targetMessage.messageId);
-		this.highlightedMessageId = new String(targetMessage.messageId);
+		this.selectedMessageId = new String(targetMessage.id);
+		this.highlightedMessageId = new String(targetMessage.id);
 		this.showFilterChangeHint = false;
 		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
 

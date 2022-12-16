@@ -29,7 +29,6 @@ import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';
-import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import EventsFilter from '../../models/filter/EventsFilter';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 
@@ -288,7 +287,6 @@ export default class EventsStore {
 			timestampToNumber(savedEventNode.startTimestamp),
 			this.graphStore.eventInterval,
 		);
-
 		this.eventDataStore.fetchEventTree({
 			timeRange,
 			filter: this.filterStore.filter,
@@ -507,7 +505,7 @@ export default class EventsStore {
 		this.eventDataStore.stopCurrentRequests();
 	};
 
-	public applyFilter = (filter: EventFilterState) => {
+	public applyFilter = (filter: EventsFilter) => {
 		this.filterHistoryStore.onEventFilterSubmit(filter);
 
 		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });

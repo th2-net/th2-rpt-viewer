@@ -14,14 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-type StreamDirection = 'FIRST' | 'SECOND';
+export type StreamDirection = 'FIRST' | 'SECOND';
 
 export type StreamInfo = {
 	stream: {
 		name: string;
 		direction: StreamDirection;
 	};
-	lastElement: string;
+	lastId: string;
 };
 
 export type DirectionalStreamInfo = {

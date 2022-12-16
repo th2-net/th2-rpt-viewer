@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import EventsFilterPanel from '../filter/EventsFilterPanel';
 import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 import EventsSearchPanel from './search/EventsSearchPanel';
@@ -24,10 +23,11 @@ import { EventListArrowNav } from './EventListNavigation';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { isEventsStore } from '../../helpers/stores';
 import { EventsIntervalInput } from './EventsIntervalInput';
+import EventsFilterPanel from '../filter/EventsFilterPanel';
 import { SearchDirection } from '../../models/search/SearchDirection';
 
 function EventWindowHeader() {
-	const eventStore = useWorkspaceEventStore();
+	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const workspaceStore = useWorkspaceStore();
 
@@ -36,7 +36,7 @@ function EventWindowHeader() {
 	const flattenButtonClassName = createBemElement(
 		'event-window-header',
 		'flat-button',
-		eventStore.viewStore.flattenedListView ? 'active' : null,
+		eventsStore.viewStore.flattenedListView ? 'active' : null,
 	);
 
 	return (
@@ -49,7 +49,7 @@ function EventWindowHeader() {
 					<EventsFilterPanel />
 					<div
 						role='button'
-						onClick={eventStore.viewStore.toggleFlattenEventListView}
+						onClick={eventsStore.viewStore.toggleFlattenEventListView}
 						className={flattenButtonClassName}>
 						Flat view
 					</div>

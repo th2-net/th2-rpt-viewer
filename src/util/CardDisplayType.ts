@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+export const COLLAPSED_MESSAGES_WIDTH = 750;
 
 const enum CardDisplayType {
 	STATUS_ONLY = 'status-only',

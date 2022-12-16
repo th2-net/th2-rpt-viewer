@@ -16,7 +16,7 @@
 
 import { MessageApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
-import MessagesFilter from '../models/filter/MessagesFilter';
+import { MessagesParams } from '../models/filter/MessagesFilter';
 import { MessagesSSEParams } from './sse';
 import fetch from '../helpers/fetchRetry';
 
@@ -44,7 +44,7 @@ const messageHttpApi: MessageApiSchema = {
 			messageId: string;
 			idsOnly: boolean;
 		},
-		filter: MessagesFilter,
+		filter: MessagesParams,
 		abortSignal?: AbortSignal,
 	) => {
 		const { idsOnly = true, messageId = '', timelineDirection = 'next', limit = 100 } = search;
@@ -55,9 +55,9 @@ const messageHttpApi: MessageApiSchema = {
 			timelineDirection,
 			messageId: messageId.length > 0 ? messageId : null,
 			limit,
-			timestampFrom,
-			timestampTo,
-			stream: streams,
+			timestampFrom: timestampFrom ? new Date(timestampFrom).toISOString() : null,
+			timestampTo: timestampTo ? new Date(timestampTo).toISOString() : null,
+			stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
 		});
 
 		const res = await fetch(`backend/search/messages?${params}`, {
@@ -75,8 +75,8 @@ const messageHttpApi: MessageApiSchema = {
 	getMessagesIds: async (timestampFrom, timestampTo) => {
 		const params = createURLSearchParams({
 			idsOnly: true,
-			timestampFrom,
-			timestampTo,
+			timestampFrom: timestampFrom ? new Date(timestampFrom).toISOString() : null,
+			timestampTo: timestampTo ? new Date(timestampTo).toISOString() : null,
 		});
 		const res = await fetch(`backend/search/messages?${params}`);
 
@@ -130,7 +130,11 @@ const messageHttpApi: MessageApiSchema = {
 			throw new Error('One of startTimestamp or messageId must be specified');
 		}
 
-		const params = createURLSearchParams({ stream: streams, startTimestamp, messageId });
+		const params = createURLSearchParams({
+			stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
+			startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
+			messageId,
+		});
 		const res = await fetch(`backend/messageIds/?${params}`, { signal });
 		if (res.ok) return res.json();
 

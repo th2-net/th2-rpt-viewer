@@ -152,9 +152,13 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		: bookmark;
 
 	const itemInfo = {
-		id: isEventMessage(item) ? item.messageId : item.eventId,
+		id: isEventMessage(item) ? item.id : item.eventId,
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
-		title: isEventMessage(item) ? item.messageType || 'unknown type' : item.eventName,
+		title: isEventMessage(item)
+			? item.parsedMessages
+					?.map(parsedMessage => parsedMessage.message.metadata.messageType)
+					.toString() || 'unknown type'
+			: item.eventName,
 		timestamp: getTimestampAsNumber(item),
 		type: item.type,
 	};
@@ -174,7 +178,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		itemInfo.status,
 	);
 
-	const bookmarkButtonClassname = createBemElement(
+	const bookmarkButtonClassName = createBemElement(
 		'bookmark-item',
 		'toggle-btn',
 		isBookmarkButtonDisabled ? 'disabled' : null,
@@ -204,7 +208,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 					</button>
 				)}
 				{!onRemove && toggleBookmark && (
-					<div className={bookmarkButtonClassname}>
+					<div className={bookmarkButtonClassName}>
 						<div
 							title={
 								isBookmarkButtonDisabled

@@ -16,36 +16,41 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import { matchWildcardRule } from '../../helpers/regexp';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { MessageViewType, EventMessage } from '../../models/EventMessage';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 
 export class SavedMessageViewType {
 	message: EventMessage;
 
-	messageDisplayRulesStore: MessageDisplayRulesStore;
+	messageDisplayRulesStore?: MessageDisplayRulesStore;
 
-	constructor(message: EventMessage, messageDisplayRulesStore: MessageDisplayRulesStore) {
+	constructor(message: EventMessage, messageDisplayRulesStore?: MessageDisplayRulesStore) {
 		this.message = message;
+
 		this.messageDisplayRulesStore = messageDisplayRulesStore;
-		reaction(() => this.displayRule, this.setViewType);
+
+		this.getViewTypes();
+
+		reaction(() => this.displayRule, this.onDisplayRuleChange);
 	}
 
 	@computed
-	private get displayRule() {
-		const rootRule = this.messageDisplayRulesStore.rootDisplayRule;
-		const declaredRule = this.messageDisplayRulesStore.messageDisplayRules.find(rule => {
+	public get displayRule() {
+		const rootRule = this.messageDisplayRulesStore?.rootDisplayRule;
+		const declaredRule = this.messageDisplayRulesStore?.messageDisplayRules.find(rule => {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
-				return matchWildcardRule(this.message.sessionId, rule.session);
+				return matchWildcardRule(this.message.id, rule.session);
 			}
-			return this.message.sessionId.includes(rule.session);
+			return this.message.id.includes(rule.session);
 		});
-		if (!this.message.body) {
+		if (!this.message.parsedMessages) {
 			return declaredRule
 				? getRawViewType(declaredRule.viewType)
 				: rootRule
 				? getRawViewType(rootRule.viewType)
 				: MessageViewType.ASCII;
 		}
+
 		return declaredRule
 			? declaredRule.viewType
 			: rootRule
@@ -54,11 +59,45 @@ export class SavedMessageViewType {
 	}
 
 	@observable
-	public viewType: MessageViewType = this.displayRule;
+	public viewTypes: Map<string, MessageViewType> = new Map();
+
+	@observable
+	public isDisplayRuleRaw: boolean = isRawViewType(this.displayRule);
 
 	@action
-	public setViewType = (vt: MessageViewType) => {
-		this.viewType = vt;
+	private getViewTypes = () => {
+		this.viewTypes.set(this.message.id, getRawViewType(this.displayRule));
+		if (this.message.parsedMessages) {
+			this.message.parsedMessages.forEach(parsedMessage => {
+				if (this.isDisplayRuleRaw) {
+					this.viewTypes.set(parsedMessage.id, MessageViewType.JSON);
+				} else {
+					this.viewTypes.set(parsedMessage.id, this.displayRule);
+				}
+			});
+		}
+	};
+
+	@action
+	private onDisplayRuleChange = (vt: MessageViewType) => {
+		if (!isRawViewType(vt)) {
+			this.viewTypes.forEach((viewType, key) => {
+				if (key !== this.message.id) {
+					this.viewTypes.set(key, vt);
+				} else {
+					this.viewTypes.set(key, MessageViewType.ASCII);
+				}
+			});
+			this.isDisplayRuleRaw = false;
+		} else {
+			this.viewTypes.set(this.message.id, vt);
+			this.isDisplayRuleRaw = true;
+		}
+	};
+
+	@action
+	public setViewType = (vt: string, id: string) => {
+		this.viewTypes.set(id, vt as MessageViewType);
 	};
 }
 

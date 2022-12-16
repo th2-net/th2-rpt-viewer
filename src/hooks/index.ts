@@ -39,5 +39,5 @@ export * from './useWorkspaceStore';
 export * from './useMessageDisplayRulesStore';
 export * from './useMessageBodySortStore';
 export * from './useFiltersHistoryStore';
-export * from './useMessagesViewTypesStore';
+export * from './useMessagesViewTypeStore';
 export * from './useBookmarksStore';

@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2022 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,26 +11,30 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
+import * as React from 'react';
+import ResizeObserver from 'resize-observer-polyfill';
 
-import { useCallback, useState } from 'react';
+const useElementSize = (target: HTMLElement | null) => {
+	const [size, setSize] = React.useState<DOMRectReadOnly>();
 
-const useSetState = <T extends object | null>(
-	defaultState: T = {} as T,
-): [T, (patch: Partial<T> | ((prevState: T) => Partial<T>)) => void] => {
-	const [state, set] = useState<T>(defaultState);
-	const setState = useCallback(
-		patch => {
-			set(prevState => ({
-				...prevState,
-				...(patch instanceof Function ? patch(prevState) : patch),
-			}));
-		},
-		[set],
+	const resizeObserver = React.useRef(
+		new ResizeObserver(entries => {
+			setSize(entries[0]?.contentRect as DOMRectReadOnly);
+		}),
 	);
 
-	return [state, setState];
+	React.useLayoutEffect(() => {
+		if (target) {
+			resizeObserver.current.observe(target);
+		}
+		return () => {
+			resizeObserver.current.disconnect();
+		};
+	}, [target]);
+
+	return size;
 };
 
-export default useSetState;
+export default useElementSize;
