@@ -26,11 +26,19 @@ export function EventsIntervalInput() {
 
 	const submitIntervalDebounced = useRef(
 		debounce((i: number) => {
-			graphStore.setInterval(i);
+			graphStore.setEventInterval(i);
 		}, 500),
 	);
 
-	const [interval, setEventsInterval] = React.useState(() => graphStore.interval.toString());
+	const [interval, setEventsInterval] = React.useState(() =>
+		graphStore.eventInterval ? graphStore.eventInterval.toString() : '',
+	);
+
+	React.useEffect(() => {
+		if (graphStore.eventInterval) {
+			setEventsInterval(graphStore.eventInterval.toString());
+		}
+	}, [graphStore.eventInterval]);
 
 	const onIntervalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const parsedInterval = parseInt(event.target.value) || '';
@@ -48,7 +56,7 @@ export function EventsIntervalInput() {
 			submitIntervalDebounced.current.cancel();
 			const parsedInterval = parseInt(interval);
 			if (parsedInterval) {
-				graphStore.setInterval(parsedInterval);
+				graphStore.setEventInterval(parsedInterval);
 				inputRef.current?.blur();
 			}
 		}

@@ -20,6 +20,7 @@ import EventsFilter from '../models/filter/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
 import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
 import { SearchDirection } from '../models/search/SearchDirection';
+import fetch from '../helpers/fetchRetry';
 
 interface BaseSSEParams {
 	startTimestamp?: number;
@@ -49,7 +50,15 @@ export interface SSEFilterParameter {
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
-export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status' | 'text';
+export type EventSSEFilters =
+	| 'attachedMessageId'
+	| 'type'
+	| 'name'
+	| 'body'
+	| 'status'
+	| 'text'
+	| 'parentId';
+
 export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body' | 'text';
 
 export interface EventsFiltersInfo {

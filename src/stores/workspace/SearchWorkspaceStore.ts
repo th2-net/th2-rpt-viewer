@@ -23,8 +23,8 @@ import WorkspacesStore from './WorkspacesStore';
 import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { WorkspaceInitialState } from './WorkspaceStore';
-import { isEventMessage } from '../../helpers/event';
-import { timestampToNumber, getRangeFromTimestamp } from '../../helpers/date';
+import { isEvent, isEventMessage } from '../../helpers/event';
+import { timestampToNumber, getRangeFromTimestamp, getTimestampAsNumber } from '../../helpers/date';
 import RootStore from '../RootStore';
 import BooksStore from '../BooksStore';
 
@@ -68,7 +68,33 @@ export default class SearchWorkspaceStore {
 			},
 		});
 
-		this.workspacesStore.addWorkspace(newWorkspace);
+		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
+	};
+
+	@action
+	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
+		const timeRange = getRangeFromTimestamp(getTimestampAsNumber(savedItem), SEARCH_STORE_INTERVAL);
+		const initialWorkspaceState: WorkspaceInitialState = {
+			timeRange,
+			interval: SEARCH_STORE_INTERVAL,
+		};
+		if (isEvent(savedItem)) {
+			initialWorkspaceState.events = {
+				targetEvent: savedItem,
+			};
+			initialWorkspaceState.layout = [100, 0];
+		} else {
+			initialWorkspaceState.messages = {
+				timestampTo: timestampToNumber(savedItem.timestamp),
+				timestampFrom: null,
+				streams: [savedItem.sessionId],
+				targetMessage: savedItem,
+			};
+			initialWorkspaceState.layout = [0, 100];
+		}
+
+		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
 	};
 
 	@action
@@ -93,7 +119,7 @@ export default class SearchWorkspaceStore {
 			);
 		}
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
-		this.workspacesStore.addWorkspace(newWorkspace);
+		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
 	};
 
 	@action
@@ -115,6 +141,6 @@ export default class SearchWorkspaceStore {
 		}
 
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
-		this.workspacesStore.addWorkspace(newWorkspace);
+		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
 	};
 }

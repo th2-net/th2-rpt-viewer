@@ -14,7 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, reaction, observable, computed, runInAction } from 'mobx';
+import { action, reaction, observable, computed, runInAction, toJS } from 'mobx';
+import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isAbortError } from '../../helpers/fetch';
@@ -27,8 +28,6 @@ import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
-import { isEventMessage } from '../../helpers/event';
-import { timestampToNumber } from '../../helpers/date';
 import { SearchDirection } from '../../models/search/SearchDirection';
 
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -152,11 +151,20 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		if (this.messagesStore.selectedMessageId) {
 			try {
-				this.messageAC = new AbortController();
-				message = await this.api.messages.getMessage(
-					this.messagesStore.selectedMessageId.valueOf(),
-					this.messageAC.signal,
-				);
+				if (
+					await this.api.messages.matchMessage(
+						this.messagesStore.selectedMessageId.valueOf(),
+						this.messagesStore.filterStore.filterParams,
+					)
+				) {
+					this.messageAC = new AbortController();
+					message = await this.api.messages.getMessage(
+						this.messagesStore.selectedMessageId.valueOf(),
+						this.messageAC.signal,
+					);
+				} else {
+					this.messagesStore.selectedMessageId = null;
+				}
 			} catch (error) {
 				if (!isAbortError(error)) {
 					this.isError = true;
@@ -199,21 +207,12 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			const messages = [
-				...nextMessages.filter(val => val.messageId !== message?.messageId),
-				...[message].filter(isEventMessage),
-				...prevMessages,
-			].sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
-			this.messages = messages;
+			this.messages = [...nextMessages, ...prevMessages];
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
 			message = prevMessages[0] || nextMessages[nextMessages.length - 1];
 			if (message) this.messagesStore.selectedMessageId = new String(message.messageId);
-		}
-
-		if (this.messagesStore.filterStore.isSoftFilter && message) {
-			this.isSoftFiltered.set(message.messageId, true);
 		}
 	};
 
@@ -228,7 +227,26 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	@action
 	private onLoadingError = (event: Event) => {
-		notificationsStore.handleSSEError(event);
+		if (event instanceof MessageEvent) {
+			notificationsStore.handleSSEError(event);
+		} else {
+			const evSource = toJS(event).currentTarget as EventSource;
+			const errorId = nanoid();
+			notificationsStore.addMessage({
+				id: errorId,
+				notificationType: 'genericError',
+				header: 'Something went wrong while loading messages',
+				type: 'error',
+				action: {
+					label: 'Refetch messages',
+					callback: () => {
+						notificationsStore.deleteMessage(errorId);
+						this.loadMessages();
+					},
+				},
+				description: evSource ? `${event.type} at ${evSource.url}` : `${event.type}`,
+			});
+		}
 		this.stopMessagesLoading();
 		this.resetState(true);
 		this.updateStore.stopSubscription();
@@ -285,13 +303,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length) {
-			let newMessagesList = [...this.messages, ...messages];
+			this.startIndex += messages.length;
 
-			if (newMessagesList.length > this.messagesLimit) {
-				newMessagesList = newMessagesList.slice(-this.messagesLimit);
-			}
-
-			this.messages = newMessagesList;
+			this.messages = [...this.messages, ...messages];
 		}
 	};
 
@@ -313,34 +327,14 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
 
-		const prevMessages =
-			this.messages.length > 0
-				? messages.filter(
-						message =>
-							timestampToNumber(message.timestamp) <
-								timestampToNumber(this.messages[0].timestamp) ||
-							message.messageId === this.messages[0].messageId,
-				  )
-				: [];
-		const firstNextMessage = prevMessages[0];
+		const nextMessages = messages.filter(
+			message => !this.messages.find(msg => msg.messageId === message.messageId),
+		);
 
-		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
+		if (nextMessages.length) {
+			this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
 
-		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
-			prevMessages.shift();
-		}
-
-		if (prevMessages.length > 0 || nextMessages.length > 0) {
-			this.startIndex -= nextMessages.length;
-
-			let newMessagesList = prevMessages.length
-				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
-				: [...nextMessages, ...this.messages];
-
-			if (newMessagesList.length > this.messagesLimit) {
-				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
-			}
-			this.messages = newMessagesList;
+			this.messages = [...nextMessages, ...this.messages];
 		}
 	};
 

@@ -133,7 +133,7 @@ class MessageBodySortOrderStore {
 					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save order rule ${rule.id}`,
-					description: '',
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 				});
 			}
@@ -153,7 +153,7 @@ class MessageBodySortOrderStore {
 					header: isMessageBodySortOrderItem(rule)
 						? `Failed to update order rule ${rule.id}`
 						: 'Failed to update rules order',
-					description: '',
+					description: error instanceof Error ? error.message : `${error}`,
 					id: nanoid(),
 				});
 			}

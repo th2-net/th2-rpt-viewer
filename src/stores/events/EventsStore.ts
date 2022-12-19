@@ -23,8 +23,8 @@ import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import { isEventNode, isRootEvent, sortEventsByTimestamp, isEvent } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
-import { timestampToNumber } from '../../helpers/date';
-import { calculateTimeRange } from '../../helpers/graph';
+import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
+import { calculateTimeRange, getRangeCenter } from '../../helpers/graph';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
@@ -93,7 +93,7 @@ export default class EventsStore {
 
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
 
-		reaction(() => this.graphStore.interval, this.onIntervalChange);
+		reaction(() => this.graphStore.eventInterval, this.onIntervalChange);
 	}
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
@@ -153,11 +153,6 @@ export default class EventsStore {
 			'desc',
 		);
 		return rootNodes.flatMap(eventNode => this.getFlatExpandedList(eventNode));
-	}
-
-	@computed
-	public get isSelectedEventLoading() {
-		return this.selectedNode !== null && this.selectedEvent === null;
 	}
 
 	// we need this property for correct virtualized tree render -
@@ -310,7 +305,7 @@ export default class EventsStore {
 			this.eventDataStore.fetchEventTree({
 				timeRange: calculateTimeRange(
 					timestampToNumber(event.startTimestamp),
-					this.graphStore.interval,
+					this.graphStore.eventInterval,
 				),
 				filter: this.filterStore.filter,
 				targetEventId: event.eventId,
@@ -325,7 +320,7 @@ export default class EventsStore {
 
 	@action
 	public onRangeChange = (timestampFrom: number) => {
-		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.interval);
+		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.eventInterval);
 
 		if (this.scope) {
 			this.eventDataStore.fetchEventTree({
@@ -413,27 +408,46 @@ export default class EventsStore {
 	private init = async (defaultState: EventStoreDefaultStateType) => {
 		const initialState = defaultState || {};
 		const scope = initialState.scope;
-
 		if (!scope) return;
 
 		this.scope = scope;
-
-		const targetEventId = isEvent(initialState.targetEvent)
-			? initialState.targetEvent.eventId
-			: initialState.selectedEventId;
-
-		this.eventDataStore.fetchEventTree({
-			filter: this.filterStore.filter,
-			timeRange: this.filterStore.range,
-			targetEventId,
-			scope,
-		});
+		if (typeof defaultState === 'string') {
+			try {
+				const event = await this.api.events.getEvent(defaultState);
+				this.filterStore.setEventsRange(
+					getRangeFromTimestamp(
+						timestampToNumber(event.startTimestamp),
+						this.graphStore.eventInterval,
+					),
+				);
+				initialState.selectedEventId = event.eventId;
+				initialState.targetEvent = event;
+				this.goToEvent(event);
+			} catch (error) {
+				console.error(`Couldnt fetch target event node ${defaultState}`);
+				this.eventDataStore.fetchEventTree({
+					filter: this.filterStore.filter,
+					timeRange: this.filterStore.range,
+					targetEventId: initialState.selectedEventId,
+					scope,
+				});
+			}
+		} else if (isEvent(initialState.targetEvent)) {
+			this.goToEvent(initialState.targetEvent);
+		} else {
+			this.eventDataStore.fetchEventTree({
+				filter: this.filterStore.filter,
+				timeRange: this.filterStore.range,
+				targetEventId: initialState.selectedEventId,
+				scope,
+			});
+		}
 	};
 
 	private onIntervalChange = (interval: number) => {
 		const intervalMs = interval * 60 * 1000;
-		let timestampFrom = this.filterStore.timestampFrom;
-		let timestampTo = this.filterStore.timestampFrom + intervalMs;
+		let timestampFrom = this.graphStore.timestamp.valueOf() - intervalMs / 2;
+		let timestampTo = this.graphStore.timestamp.valueOf() + intervalMs / 2;
 		const now = moment.utc().valueOf();
 		if (timestampTo > now) {
 			timestampTo = now;
@@ -487,16 +501,6 @@ export default class EventsStore {
 			),
 		];
 	};
-
-	private getNodesPath(path: string[], nodes: EventTreeNode[]): EventTreeNode[] {
-		if (path.length === 0 || nodes.length === 0) {
-			return [];
-		}
-		const [currentId, ...rest] = path;
-		const targetNode = nodes.find(n => n.eventId === currentId);
-		const childList = targetNode ? this.getChildrenNodes(targetNode.eventId) : [];
-		return targetNode ? [targetNode, ...this.getNodesPath(rest, childList)] : [];
-	}
 
 	private onHoveredEventChange = (hoveredEvent: EventTreeNode | null) => {
 		if (hoveredEvent !== null) {
@@ -590,22 +594,15 @@ export default class EventsStore {
 		}
 	};
 
-	public changeEventsRange = (minutesOffset: number) => {
-		const timestampFrom = moment
-			.utc(this.filterStore.timestampFrom)
-			.add(minutesOffset, 'minutes')
-			.valueOf();
-		const timestampTo = moment
-			.utc(timestampFrom)
-			.add(this.graphStore.interval, 'minutes')
-			.valueOf();
-
+	public changeEventsRange = (timerange: TimeRange) => {
 		if (this.scope) {
 			this.eventDataStore.fetchEventTree({
-				timeRange: [timestampFrom, timestampTo],
+				timeRange: timerange,
 				filter: this.filterStore.filter,
 				scope: this.scope,
 			});
+
+			this.graphStore.setTimestamp(getRangeCenter(timerange));
 		}
 	};
 }

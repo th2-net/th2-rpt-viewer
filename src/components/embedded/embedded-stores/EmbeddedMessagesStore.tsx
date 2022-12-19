@@ -15,7 +15,6 @@
  ***************************************************************************** */
 import moment from 'moment';
 import { action, reaction, observable } from 'mobx';
-import { EventMessage } from '../../../models/EventMessage';
 import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
 import ApiSchema from '../../../api/ApiSchema';
@@ -36,9 +35,6 @@ export default class EmbeddedMessagesStore {
 	public dataStore: EmbeddedMessagesDataProviderStore;
 
 	public filterStore: EmbeddedMessagesFilterStore;
-
-	@observable
-	public hoveredMessage: EventMessage | null = null;
 
 	@observable
 	public selectedMessageId: String | null = null;

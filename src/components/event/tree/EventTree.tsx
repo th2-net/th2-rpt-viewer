@@ -24,6 +24,7 @@ import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime } from '../../../helpers/date';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
+import { isRootEvent } from '../../../helpers/event';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
@@ -34,13 +35,23 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	const eventsStore = useWorkspaceEventStore();
 	const eventsDataStore = useEventsDataStore();
 
+	const isChildrenUnknown = computed(() =>
+		eventsDataStore.childrenAreUnknown.get(eventTreeNode.eventId),
+	).get();
+
+	const isOutOfMainChannel = computed(
+		() => !eventsDataStore.mainSourceEvents.has(eventTreeNode.eventId),
+	).get();
+
+	const isLoading = eventsDataStore.isLoading;
+
 	React.useEffect(() => {
-		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
-		if (eventsDataStore.childrenAreUnknown.get(eventTreeNode.eventId) && !children) {
+		if (isChildrenUnknown || (!isLoading && isOutOfMainChannel && !isRootEvent(eventTreeNode))) {
+			eventsDataStore.mainSourceEvents.set(eventTreeNode.eventId, true);
 			eventsDataStore.childrenAreUnknown.set(eventTreeNode.eventId, false);
 			eventsDataStore.loadChildren(eventTreeNode.eventId);
 		}
-	}, []);
+	}, [isChildrenUnknown, isLoading, eventTreeNode, isOutOfMainChannel]);
 
 	const parents = useMemo(() => {
 		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
@@ -68,19 +79,16 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	]);
 
 	const showLoadButton = computed(() => {
-		let isLastChild = false;
-		let parentHasMoreChilds = false;
+		if (eventTreeNode.parentId) {
+			const childrenData = eventsDataStore.childrenData.get(eventTreeNode.parentId);
 
-		if (eventTreeNode.parentId !== null) {
-			const siblings = eventsStore.getChildrenNodes(eventTreeNode.parentId);
-
-			isLastChild =
-				siblings.length > 0 && siblings[siblings.length - 1].eventId === eventTreeNode.eventId;
-			parentHasMoreChilds =
-				eventsDataStore.hasUnloadedChildren.get(eventTreeNode.parentId) === true;
+			return (
+				childrenData &&
+				childrenData.lastChild === eventTreeNode.eventId &&
+				eventsDataStore.hasMoreChildren.get(eventTreeNode.parentId)
+			);
 		}
-
-		return isLastChild && parentHasMoreChilds;
+		return false;
 	}).get();
 
 	const isSelected = computed(() =>
@@ -99,8 +107,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	function loadMoreSiblings() {
 		if (eventTreeNode.parentId) {
-			eventsDataStore.isLoadingChildren.set(eventTreeNode.parentId, true);
-			eventsDataStore.loadChildren(eventTreeNode.parentId);
+			eventsDataStore.loadNextChildren(eventTreeNode.parentId);
 		}
 	}
 

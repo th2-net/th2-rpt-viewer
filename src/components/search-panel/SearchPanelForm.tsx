@@ -60,8 +60,6 @@ const SearchPanelForm = () => {
 		isSearching,
 		searchProgress,
 		isPaused,
-		eventAutocompleteList,
-		resetEventAutocompleteList,
 		clearFilters,
 	} = useSearchStore();
 
@@ -72,7 +70,7 @@ const SearchPanelForm = () => {
 
 	const [currentStream, setCurrentStream] = useState('');
 	const sessionsStore = useSessionsStore();
-	const searchStore = useSearchStore();
+
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
@@ -115,20 +113,7 @@ const SearchPanelForm = () => {
 		disabled,
 	};
 
-	const eventsFormTypeConfig: FitlerRowItem = {
-		label: 'Parent Event',
-		value: form.parentEvent,
-		disabled,
-		setValue: getFormStateUpdater('parentEvent'),
-		type: 'event-resolver',
-		id: 'parent-event',
-		placeholder: 'matches events by the specified parent event id or event name',
-		autocompleteList: eventAutocompleteList.map(event => event.eventId),
-		onAutocompleteSelect: resetEventAutocompleteList,
-		isLoading: searchStore.isLoadingEventAutocompleteList,
-	};
-
-	const messagesFormTypeConfig: FitlerRowItem = {
+	const sessionsConfig: FitlerRowItem = {
 		type: 'multiple-strings',
 		id: 'stream',
 		label: 'Session',
@@ -142,9 +127,6 @@ const SearchPanelForm = () => {
 		required: true,
 		validateBubbles: true,
 	};
-
-	const config: FitlerRowItem =
-		formType === 'event' ? eventsFormTypeConfig : messagesFormTypeConfig;
 
 	const startTimestampInput: DateInputProps = {
 		inputConfig: {
@@ -256,7 +238,7 @@ const SearchPanelForm = () => {
 						<SearchResultCountLimit {...resultCountLimitConfig} />
 					</div>
 				</div>
-				<FilterRow rowConfig={config} />
+				{formType === 'message' ? <FilterRow rowConfig={sessionsConfig} /> : null}
 			</div>
 			<div className='filters'>
 				{filters && filters.info.length > 0 && (

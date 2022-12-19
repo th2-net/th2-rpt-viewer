@@ -21,6 +21,7 @@ import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
 import { BookmarkedItem } from '../../models/Bookmarks';
+import { createStyleSelector } from '../../helpers/styleCreators';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: BookmarkedItem) => void;
@@ -28,9 +29,10 @@ interface SearchPanelResultsProps {
 	onResultDelete: () => void;
 	disableNext: boolean;
 	disablePrev: boolean;
-	showToggler: boolean;
 	next: () => void;
 	prev: () => void;
+	currentIndex: number;
+	searchHistoryLength: number;
 	resultGroups: [string, SearchResult[]][];
 	timestamp: number;
 	disabledRemove: boolean;
@@ -48,9 +50,10 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		disablePrev,
 		disableNext,
 		disabledRemove,
-		showToggler,
 		next,
 		prev,
+		currentIndex,
+		searchHistoryLength,
 		showLoadMoreButton,
 		loadMore,
 	} = props;
@@ -61,14 +64,25 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		return isEventNode(item) ? item.eventId : item.messageId;
 	}
 
+	const arrowPrevClass = createStyleSelector('search-results__arrow', disablePrev ? 'disable' : '');
+
+	const arrowNextClass = createStyleSelector(
+		'search-results__arrow',
+		disableNext ? 'disable' : '',
+		'next',
+	);
+
 	return (
 		<div className='search-results'>
-			{showToggler && (
-				<div className='search-results__controls'>
-					<button className='search-results__arrow' disabled={disablePrev} onClick={prev} />
-					<button className='search-results__arrow next' disabled={disableNext} onClick={next} />
-				</div>
-			)}
+			<div className='search-results__controls'>
+				<button className={arrowPrevClass} disabled={disablePrev} onClick={prev} />
+				{searchHistoryLength > 1 && (
+					<div className='search-results__counter'>
+						{currentIndex + 1} of {searchHistoryLength}
+					</div>
+				)}
+				<button className={arrowNextClass} disabled={disableNext} onClick={next} />
+			</div>
 			<div className='history-point'>
 				<p className='history-point__timestamp'>
 					{moment(+timestamp)

@@ -112,3 +112,7 @@ export function getGraphItemId(item: GraphItem): string {
 	if (isEventMessage(item)) return item.messageId;
 	return item.eventId;
 }
+
+export function getRangeCenter(timerange: TimeRange) {
+	return Math.round(timerange[0] + (timerange[1] - timerange[0]) / 2);
+}

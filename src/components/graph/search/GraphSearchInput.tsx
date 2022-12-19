@@ -23,6 +23,7 @@ import { GraphSearchMode } from './GraphSearch';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
 import { TimeRange } from '../../../models/Timestamp';
 import { usePrevious } from '../../../hooks';
+import { getRangeCenter } from '../../../helpers/graph';
 
 const TIME_MASK = DateTimeMask.TIME_MASK;
 export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
@@ -96,21 +97,6 @@ function GraphSearchInput(props: Props) {
 	const refInput = useRef<HTMLInputElement | null>(null);
 
 	React.useEffect(() => {
-		function onKeyDown(e: KeyboardEvent) {
-			if (e.shiftKey && e.code === 'KeyT') {
-				e.preventDefault();
-				refInput.current?.focus();
-			}
-		}
-
-		document.documentElement.addEventListener('keydown', onKeyDown);
-
-		return () => {
-			document.documentElement.removeEventListener('keydown', onKeyDown);
-		};
-	}, []);
-
-	React.useEffect(() => {
 		if (timestamp !== null && timestamp !== inputConfig.timestamp) {
 			const updatedTimestamp = moment.utc(timestamp);
 
@@ -132,8 +118,7 @@ function GraphSearchInput(props: Props) {
 
 	React.useEffect(() => {
 		if (windowRange) {
-			const [from, to] = windowRange;
-			const centerTimestamp = from + (to - from) / 2;
+			const centerTimestamp = getRangeCenter(windowRange);
 
 			setInputConfig({
 				isValidDate: true,
@@ -180,13 +165,17 @@ function GraphSearchInput(props: Props) {
 	const prevHoveredTimestamp = usePrevious(hoveredTimestamp);
 
 	React.useEffect(() => {
+		if (
+			prevHoveredTimestamp === null &&
+			hoveredTimestamp !== null &&
+			restoreTimestampTimer.current == null
+		) {
+			savedInputConfig.current = inputConfig;
+		}
+
 		if (hoveredTimestamp && restoreTimestampTimer.current) {
 			clearTimeout(restoreTimestampTimer.current);
 			restoreTimestampTimer.current = null;
-		}
-
-		if (prevHoveredTimestamp === null && hoveredTimestamp !== null) {
-			savedInputConfig.current = inputConfig;
 		}
 
 		if (hoveredTimestamp) {
@@ -210,6 +199,7 @@ function GraphSearchInput(props: Props) {
 					if (savedInputConfig.current.timestamp) {
 						submitTimestamp(savedInputConfig.current.timestamp);
 					}
+					restoreTimestampTimer.current = null;
 				}
 			}, 800);
 		}

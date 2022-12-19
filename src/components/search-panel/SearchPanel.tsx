@@ -77,7 +77,6 @@ const SearchPanel = () => {
 								searchStore.deleteHistoryItem(searchStore.currentSearch);
 							}
 						}}
-						showToggler={searchStore.searchHistory.length > 1}
 						next={searchStore.nextSearch}
 						prev={searchStore.prevSearch}
 						disableNext={
@@ -88,6 +87,8 @@ const SearchPanel = () => {
 						disabledRemove={searchStore.isSearching}
 						showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
 						loadMore={() => searchStore.startSearch(true)}
+						currentIndex={searchStore.currentIndex}
+						searchHistoryLength={searchStore.searchHistory.length}
 					/>
 				</EventsScopeProvider>
 			)}

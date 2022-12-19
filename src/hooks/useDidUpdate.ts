@@ -14,18 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	MultipleStringFilter,
-	StringFilter,
-	SwitcherFilter,
-} from '../../components/search-panel/SearchPanelFilters';
+import { useEffect, useRef } from 'react';
 
-export default interface EventsFilter {
-	attachedMessageId: StringFilter;
-	type: MultipleStringFilter;
-	body: MultipleStringFilter;
-	name: MultipleStringFilter;
-	status: SwitcherFilter;
-	text: MultipleStringFilter;
-	parentId: MultipleStringFilter;
+function useDidUpdate(callback: () => void, dependencies?: unknown[]): void {
+	const mounted = useRef<boolean>(false);
+
+	useEffect(() => {
+		if (mounted.current) {
+			callback();
+		} else {
+			mounted.current = true;
+		}
+	}, dependencies);
 }
+
+export { useDidUpdate };

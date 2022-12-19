@@ -18,6 +18,7 @@ import { MessageApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import { MessagesSSEParams } from './sse';
+import fetch from '../helpers/fetchRetry';
 
 export type MatchMessageParams = Omit<
 	MessagesSSEParams,

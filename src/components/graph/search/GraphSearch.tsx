@@ -29,7 +29,7 @@ import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 
 interface Props {
-	onTimestampSubmit: (timestamp: number) => void;
+	onTimestampSubmit: (timestamp: number, isTimestampApplied?: boolean) => void;
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 	windowRange: TimeRange | null;
 	hoveredTimestamp: number | null;
@@ -66,8 +66,6 @@ function GraphSearch(props: Props) {
 	const [mode, setMode] = React.useState<GraphSearchMode>('timestamp');
 	// If user selects mode input will no longer switch automatically based on input value
 	const [isModeLocked, setIsModeLocked] = React.useState(false);
-
-	const [isLoading, setIsLoading] = React.useState(false);
 
 	const [isIdSearchDisabled, setIsIdSearchDisabled] = React.useState(false);
 
@@ -160,9 +158,8 @@ function GraphSearch(props: Props) {
 	};
 
 	const timestampSearch = (startTimestamp: number) => {
-		setTimestamp(startTimestamp);
-		setMode('history');
-		setIsLoading(true);
+		onTimestampSubmit(startTimestamp, true);
+		setShowModal(false);
 	};
 
 	const handleModalSubmit = () => {
@@ -242,12 +239,10 @@ function GraphSearch(props: Props) {
 							onSearchResultSelect={onGraphSearchResultSelect}
 							setTimestamp={handleTimepickerValueChange}
 							setIsIdSearchDisabled={setIsIdSearchDisabled}
-							setIsLoading={setIsLoading}
 							closeModal={closeModal}
 							submittedId={submittedId}
 							submittedTimestamp={timestamp}
 							isIdMode={showModal && mode === 'history'}
-							isLoading={isLoading}
 						/>
 					)}
 					<div className='graph-search__switchers'>

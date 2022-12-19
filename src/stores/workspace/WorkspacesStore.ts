@@ -25,7 +25,7 @@ import { MessageFilterState } from '../../components/search-panel/SearchPanelFil
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp, getTimestampAsNumber, timestampToNumber } from '../../helpers/date';
-import { DbData } from '../../api/indexedDb';
+import { DbData, IndexedDbStores, Settings } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import BooksStore from '../BooksStore';
@@ -88,15 +88,13 @@ export default class WorkspacesStore {
 	@action
 	private init(initialState: WorkspacesUrlState | null) {
 		if (initialState !== null) {
-			initialState.forEach(workspaceState =>
-				this.addWorkspace(this.createWorkspace(workspaceState)),
+			initialState.forEach(async workspaceState =>
+				this.addWorkspace(await this.createWorkspace(workspaceState)),
 			);
 		} else {
-			this.addWorkspace(
-				this.createWorkspace({
-					layout: [100, 0],
-				}),
-			);
+			this.createWorkspace({
+				layout: [100, 0],
+			}).then(workspace => this.addWorkspace(workspace));
 		}
 	}
 
@@ -115,7 +113,11 @@ export default class WorkspacesStore {
 		activeWorkspace.graphStore.setTimestampFromRange(activeWorkspace.graphStore.range);
 	};
 
-	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
+	public createWorkspace = async (workspaceInitialState: WorkspaceInitialState = {}) => {
+		const settings = await this.api.indexedDb.getStoreValues<Settings>(IndexedDbStores.SETTINGS);
+
+		const interval = settings.length > 0 ? settings[0].interval : 15;
+
 		return new WorkspaceStore(
 			this,
 			this.selectedStore,
@@ -125,6 +127,7 @@ export default class WorkspacesStore {
 			this.booksStore,
 			this.api,
 			workspaceInitialState,
+			interval,
 		);
 	};
 
@@ -186,15 +189,14 @@ export default class WorkspacesStore {
 		if (isEvent(item)) {
 			if (!isWorkspaceStore(this.activeWorkspace)) {
 				const timeRange = getRangeFromTimestamp(getTimestampAsNumber(item), SEARCH_STORE_INTERVAL);
-				const workspace = this.createWorkspace({
+				this.createWorkspace({
 					events: {
 						targetEvent: item,
 						scope,
 						range: timeRange,
 					},
 					timeRange,
-				});
-				this.addWorkspace(workspace);
+				}).then(workspace => this.addWorkspace(workspace));
 			} else {
 				this.activeWorkspace.eventsStore.goToEvent(item, scope);
 			}
@@ -202,14 +204,13 @@ export default class WorkspacesStore {
 
 		if (isMessage(item)) {
 			if (!isWorkspaceStore(this.activeWorkspace)) {
-				const workspace = this.createWorkspace({
+				this.createWorkspace({
 					messages: {
 						timestampTo: timestampToNumber(item.timestamp),
 						targetMessage: item,
 						streams: [item.sessionId],
 					},
-				});
-				this.addWorkspace(workspace);
+				}).then(workspace => this.addWorkspace(workspace));
 			} else {
 				this.activeWorkspace.messagesStore.onMessageSelect(item);
 			}
@@ -276,7 +277,6 @@ export default class WorkspacesStore {
 			};
 		}
 
-		const newWorkspace = this.createWorkspace(initialWorkspaceState);
-		this.addWorkspace(newWorkspace);
+		this.createWorkspace(initialWorkspaceState).then(workspace => this.addWorkspace(workspace));
 	};
 }

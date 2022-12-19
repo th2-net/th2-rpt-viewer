@@ -29,4 +29,5 @@ export interface MessagesDataStore {
 	resetState: () => void;
 	getFilterParams: () => any;
 	getNextMessages: () => Promise<EventMessage[]>;
+	getPreviousMessages: () => Promise<EventMessage[]>;
 }

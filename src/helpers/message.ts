@@ -18,6 +18,7 @@ import { ActionType } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import {
 	isMessageValue,
+	isNullValue,
 	isSimpleValue,
 	MessageBodyField,
 	MessageBodyFields,
@@ -56,6 +57,7 @@ export function normalizeFields(fields: MessageBodyFields) {
 }
 
 export function normalizeField(field: MessageBodyField): string | object {
+	if (isNullValue(field)) return field.nullValue;
 	if (isSimpleValue(field)) return field.simpleValue;
 	if (isMessageValue(field)) {
 		return Object.entries(field.messageValue.fields || {}).reduce(

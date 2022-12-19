@@ -23,6 +23,10 @@ import SplashScreen from './SplashScreen';
 function RootStoreProvider({ children }: React.PropsWithChildren<{}>) {
 	const [rootStore, setRootStore] = React.useState<null | RootStore>(null);
 
+	React.useEffect(() => {
+		if (api.indexedDb.getError()) throw api.indexedDb.getError();
+	}, [api.indexedDb.getError()]);
+
 	useEffect(() => {
 		async function initRootStore() {
 			const store = await createRootStore(api);

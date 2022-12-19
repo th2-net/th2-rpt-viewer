@@ -22,25 +22,23 @@ import GraphChunk from './GraphChunk';
 import GraphSearch from './search/GraphSearch';
 import OutsideItems from './OutsideItems';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
-import { useActiveWorkspace, useSelectedStore, useTabsStore, useWorkspaces } from '../../hooks';
+import {
+	useActiveWorkspace,
+	useSelectedStore,
+	useTabsStore,
+	useWorkspaces,
+	useDebouncedCallback,
+} from '../../hooks';
 import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import GraphLastEventsButton from './GraphLastEventsButton';
 import BookSelect from '../books/BookSelect';
+import { GraphResizer } from './GraphResizer';
 import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
-
-const settings: Settings = {
-	itemWidth: getChunkWidth(),
-	amount: 3,
-	tolerance: 1,
-	minIndex: -100,
-	maxIndex: 100,
-	startIndex: 0,
-} as const;
 
 interface GraphProps {
 	activeWorkspace: WorkspaceStore;
@@ -52,10 +50,24 @@ function Graph({ activeWorkspace }: GraphProps) {
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
+	const settings: Settings = React.useMemo(() => {
+		return {
+			itemWidth: getChunkWidth(),
+			amount: 3,
+			tolerance: 1,
+			minIndex: -100,
+			maxIndex: 100,
+			startIndex: 0,
+		};
+	}, [chunkWidth]);
+
+	const updateChunkWidth = useDebouncedCallback(() => {
+		setChunkWidth(getChunkWidth);
+	}, 250);
 
 	const resizeObserver = React.useRef(
 		new ResizeObserver(() => {
-			setChunkWidth(getChunkWidth);
+			updateChunkWidth();
 		}),
 	);
 
@@ -71,11 +83,11 @@ function Graph({ activeWorkspace }: GraphProps) {
 		(timestamp: number, index: number) => {
 			return activeWorkspace.graphStore.getChunkByTimestamp(
 				moment(timestamp)
-					.subtract(-index * activeWorkspace.graphStore.interval, 'minutes')
+					.subtract(-index * activeWorkspace.graphStore.graphInterval, 'minutes')
 					.valueOf(),
 			);
 		},
-		[activeWorkspace, activeWorkspace.graphStore.interval],
+		[activeWorkspace, activeWorkspace.graphStore.graphInterval],
 	);
 
 	const panelsRange: Array<PanelRange> = React.useMemo(() => {
@@ -106,7 +118,7 @@ function Graph({ activeWorkspace }: GraphProps) {
 						<GraphChunk
 							key={`${chunk.from}-${chunk.to}`}
 							tickSize={activeWorkspace.graphStore.tickSize}
-							interval={activeWorkspace.graphStore.interval}
+							interval={activeWorkspace.graphStore.graphInterval}
 							chunk={chunk}
 							chunkWidth={chunkWidth}
 							getChunkData={activeWorkspace.graphStore.getChunkData}
@@ -128,7 +140,7 @@ function Graph({ activeWorkspace }: GraphProps) {
 				settings={settings}
 				panelsRange={panelsRange}
 				setRange={activeWorkspace.graphStore.setRange}
-				interval={activeWorkspace.graphStore.interval}
+				interval={activeWorkspace.graphStore.graphInterval}
 				timestamp={activeWorkspace.graphStore.timestamp}
 				range={activeWorkspace.graphStore.range}
 			/>
@@ -168,12 +180,11 @@ const GraphRoot = () => {
 				/>
 				{isWorkspaceStore(activeWorkspace) && (
 					<GraphLastEventsButton
-						onTimestampSubmit={activeWorkspace.onTimestampSelect}
-						setRange={activeWorkspace.eventsStore.onRangeChange}
-						interval={activeWorkspace.graphStore.interval}
+						findLastEvents={activeWorkspace.eventsStore.eventDataStore.findLastEvents}
 					/>
 				)}
 				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
+				{isWorkspaceStore(activeWorkspace) && <GraphResizer />}
 			</div>
 		</PointerTimestampProvider>
 	);

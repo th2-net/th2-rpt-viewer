@@ -30,6 +30,14 @@ function FlatEventListItem(props: FlatEventListItemProps) {
 	const eventsStore = useWorkspaceEventStore();
 	const eventsDataStore = useEventsDataStore();
 
+	const onEventTypeSelect = React.useCallback((eventType: string) => {
+		const defaultFilter = eventsStore.filterStore.resetEventsFilter();
+		if (!defaultFilter) return;
+		defaultFilter.type.values.push(eventType);
+		eventsStore.filterStore.setEventsFilter(defaultFilter);
+		eventsStore.filterStore.setIsOpen(true);
+	}, []);
+
 	const { node } = props;
 
 	return (
@@ -41,6 +49,7 @@ function FlatEventListItem(props: FlatEventListItemProps) {
 				onSelect={() => eventsStore.selectNode(node)}
 				isSelected={eventsStore.isNodeSelected(node)}
 				isFlatView={true}
+				onEventTypeSelect={onEventTypeSelect}
 				parentsCount={
 					node.parentId === null
 						? 0
