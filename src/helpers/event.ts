@@ -165,3 +165,11 @@ export const unknownRoot: EventTreeNode = {
 export function getEventParentId(e: EventTreeNode | EventAction) {
 	return isEventNode(e) ? e.parentId : e.parentEventId;
 }
+
+export const isUnknownRoot = (event: string | EventTreeNode) => {
+	if (typeof event === 'string') {
+		return event === unknownRoot.eventId;
+	}
+
+	return event === unknownRoot;
+};

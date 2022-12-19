@@ -24,6 +24,7 @@ import {
 	getErrorEventTreeNode,
 	isRootEvent,
 	unknownRoot,
+	isUnknownRoot,
 } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import notificationsStore from '../NotificationsStore';
@@ -715,6 +716,9 @@ export default class EventsDataStore {
 		if (selectedPath) {
 			selectedPath
 				.filter(eventId => {
+					if (isUnknownRoot(eventId)) {
+						return false;
+					}
 					const loadedChildren = this.parentChildrensMap.get(eventId);
 					return !loadedChildren || loadedChildren.length < this.CHILDREN_CHUNK_SIZE;
 				})

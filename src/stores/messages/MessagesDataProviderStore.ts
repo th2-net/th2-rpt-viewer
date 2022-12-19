@@ -152,10 +152,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		if (this.messagesStore.selectedMessageId) {
 			try {
 				if (
-					await this.api.messages.matchMessage(
-						this.messagesStore.selectedMessageId.valueOf(),
-						this.messagesStore.filterStore.filterParams,
-					)
+					await this.api.messages.matchMessage(this.messagesStore.selectedMessageId.valueOf(), {
+						...this.messagesStore.filterStore.filterParams,
+						bookId,
+					})
 				) {
 					this.messageAC = new AbortController();
 					message = await this.api.messages.getMessage(
