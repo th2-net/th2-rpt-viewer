@@ -40,9 +40,7 @@ const virtuosoStyles: React.CSSProperties = { height: '100%' };
 
 function EventTreeListBase(props: Props) {
 	const eventStore = useWorkspaceEventStore();
-	const { selectedNode, isFlat = false } = props;
-
-	const scrolledIndex = React.useMemo(() => props.scrolledIndex, [props.scrolledIndex]);
+	const { selectedNode, scrolledIndex, isFlat = false } = props;
 
 	const nodes = !isFlat ? eventStore.nodesList : eventStore.flattenedEventList;
 

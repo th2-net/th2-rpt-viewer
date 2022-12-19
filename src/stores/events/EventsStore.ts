@@ -89,13 +89,6 @@ export default class EventsStore {
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
 
 		reaction(() => this.graphStore.eventInterval, this.onIntervalChange);
-
-		reaction(
-			() => this.flattenedEventList,
-			() => {
-				if (this.selectedEvent) this.scrollToEvent(this.selectedEvent.eventId);
-			},
-		);
 	}
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
