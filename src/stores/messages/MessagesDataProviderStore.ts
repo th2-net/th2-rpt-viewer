@@ -27,6 +27,7 @@ import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
+import { timestampToNumber } from '../../helpers/date';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
@@ -95,6 +96,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	@computed
 	public get isLoading(): boolean {
 		return this.isLoadingNextMessages || this.isLoadingPreviousMessages || this.isLoadingMessageIds;
+	}
+
+	@computed
+	public get sortedMessages() {
+		return this.messages.sort(
+			(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+		);
 	}
 
 	private messageAC: AbortController | null = null;
@@ -289,7 +297,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		if (messages.length) {
 			this.startIndex += messages.length;
-
 			this.messages = [...this.messages, ...messages];
 		}
 	};
@@ -318,7 +325,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		if (nextMessages.length) {
 			this.startIndex -= this.updateStore.isActive ? 0 : nextMessages.length;
-
 			this.messages = [...nextMessages, ...this.messages];
 		}
 	};
