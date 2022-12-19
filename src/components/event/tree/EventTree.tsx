@@ -24,6 +24,7 @@ import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime } from '../../../helpers/date';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
+import { isUnknownRoot } from '../../../helpers/event';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
@@ -36,7 +37,11 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	React.useEffect(() => {
 		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
-		if (eventsDataStore.childrenAreUnknown.get(eventTreeNode.eventId) && !children) {
+		if (
+			!isUnknownRoot(eventTreeNode) &&
+			eventsDataStore.childrenAreUnknown.get(eventTreeNode.eventId) &&
+			!children
+		) {
 			eventsDataStore.childrenAreUnknown.set(eventTreeNode.eventId, false);
 			eventsDataStore.loadChildren(eventTreeNode.eventId);
 		}
