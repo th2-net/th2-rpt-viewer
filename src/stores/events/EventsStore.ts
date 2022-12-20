@@ -32,6 +32,7 @@ import EventsDataStore from './EventsDataStore';
 import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import EventsFilter from '../../models/filter/EventsFilter';
 import FiltersHistoryStore from '../FiltersHistoryStore';
+import { notEmpty } from '../../helpers/object';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -116,8 +117,20 @@ export default class EventsStore {
 	public get flattenedEventList() {
 		return sortEventsByTimestamp(
 			this.flatExpandedList.filter(eventNode => {
-				const children = this.eventDataStore.parentChildrensMap.get(eventNode.eventId);
-				return !children || children.length === 0;
+				let children = this.eventDataStore.parentChildrensMap.get(eventNode.eventId) || [];
+
+				const targetNodes = [
+					...this.eventDataStore.targetNodeParents,
+					this.eventDataStore.targetNode,
+				].filter(notEmpty);
+
+				const targetChild = targetNodes.find(node => node.parentId === eventNode.eventId);
+
+				if (targetChild && !children.includes(targetChild.eventId)) {
+					children = [...children, targetChild.eventId];
+				}
+
+				return children.length === 0;
 			}),
 		);
 	}
@@ -145,7 +158,15 @@ export default class EventsStore {
 			rootIds.map(eventId => this.eventDataStore.eventsCache.get(eventId)).filter(isEventNode),
 			'desc',
 		);
-		return rootNodes.flatMap(eventNode => this.getFlatExpandedList(eventNode));
+		return rootNodes.flatMap(eventNode =>
+			this.getFlatExpandedList(
+				eventNode,
+				[],
+				[...this.eventDataStore.targetNodeParents.slice(1), this.eventDataStore.targetNode].filter(
+					notEmpty,
+				),
+			),
+		);
 	}
 
 	// we need this property for correct virtualized tree render -
@@ -464,12 +485,20 @@ export default class EventsStore {
 	private getFlatExpandedList = (
 		eventTreeNode: EventTreeNode,
 		parents: string[] = [],
+		targetNodes: EventTreeNode[],
 	): EventTreeNode[] => {
-		const childList = this.getChildrenNodes(eventTreeNode.eventId);
+		let childList = this.getChildrenNodes(eventTreeNode.eventId);
+
+		const targetNode = targetNodes.find(node => node.parentId === eventTreeNode.eventId);
+
+		if (targetNode && !childList.find(event => event.eventId === targetNode.eventId)) {
+			childList = sortEventsByTimestamp([...childList, targetNode]);
+		}
+
 		return [
 			eventTreeNode,
 			...childList.flatMap(node =>
-				this.getFlatExpandedList(node, [...parents, eventTreeNode.eventId]),
+				this.getFlatExpandedList(node, [...parents, eventTreeNode.eventId], targetNodes),
 			),
 		];
 	};
