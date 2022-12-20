@@ -17,7 +17,6 @@
 import * as React from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { createBemBlock } from 'helpers/styleCreators';
 import CardDisplayType from 'models/util/CardDisplayType';
 import StateSaver from 'components/util/StateSaver';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
@@ -83,13 +82,8 @@ const MessageCardListItem = observer((props: Props) => {
 		messagesStore.toggleBookmark(message);
 	}, [messagesStore.toggleBookmark]);
 
-	const rootClass = createBemBlock(
-		'messages-list__item',
-		isExported || isHighlighted ? 'selected' : null,
-	);
-
 	return (
-		<div className={rootClass}>
+		<div className='messages-list__item'>
 			<MessageCard
 				{...props}
 				onSelect={messagesStore.exportStore.addMessageToExport}

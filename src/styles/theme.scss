@@ -31,6 +31,7 @@
 
 	// messages
 	--messages-primary: #19c3e5;
+	--message-highlight: #E3ECFF;
 	--session-text-color: #fff;
 
 	// search
@@ -92,8 +93,10 @@ html[data-theme='dark'] {
 	--table-failed-row: rgba(255, 145, 130, 0.5);
 	--table-status-passed: #6fff97;
 	--table-status-failed: #ff6f6f;
+
 	// messages
 	--session-text-color: #2d3036;
+	--message-highlight: #354666;
 
 	// search
 	--search-primary: #0df292;

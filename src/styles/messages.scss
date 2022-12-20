@@ -88,6 +88,15 @@
 	&:hover .mc-header .message-card-tools {
 		visibility: visible;
 	}
+
+	&.highlighted {
+		--background-primary: var(--message-highlight);
+		border-color: var(--info-color);
+	}
+
+	&.selected {
+		border: 2px solid var(--info-color);
+	}
 }
 
 .mc-header {
@@ -567,10 +576,6 @@
 	&__item {
 		padding: 2px 16px;
 		border: 2px solid transparent;
-
-		&.selected > div {
-			border: 2px solid var(--info-color);
-		}
 	}
 
 	&__spinner {
@@ -642,22 +647,6 @@
 	&__overlay-spinner {
 		@include spinner(5px, 40px, 2s);
 	}
-}
-
-.highlighted {
-	@keyframes highlight {
-		from {
-			background: $highlightedMessageCardBackground;
-		}
-
-		50% {
-			background: rgba($highlightedMessageCardBackground, 0);
-		}
-		to {
-			background: $highlightedMessageCardBackground;
-		}
-	}
-	animation: highlight 1s infinite ease-in-out;
 }
 
 .sessions-row {

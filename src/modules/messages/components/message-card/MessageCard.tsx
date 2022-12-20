@@ -57,6 +57,8 @@ const MessageCard = (props: MessageCardProps) => {
 		viewTypesMap,
 		setViewType,
 		onSelect,
+		isHighlighted,
+		checked,
 	} = props;
 
 	const [expanded, setIsExpanded] = useState(isExpandedProp || false);
@@ -84,7 +86,7 @@ const MessageCard = (props: MessageCardProps) => {
 	const onlyRawData = !message.parsedMessages;
 
 	return (
-		<div className='message-card'>
+		<div className={clsx('message-card', { highlighted: isHighlighted, selected: checked })}>
 			<div className='message-card__messages'>
 				<Paper className='message-card__title-message'>
 					<div
