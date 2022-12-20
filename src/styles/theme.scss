@@ -14,79 +14,109 @@
  * limitations under the License.
  ******************************************************************************/
 
-:root {
-	--info-color: #4e8aff;
+@mixin pallete {
+	--highlight: #e3ecff;
+	--dark-highlight: #354666;
 
-	// text
-	--text-primary: #3a3a3a;
-	--text-secondary: #585858;
-	--text-info: #4e8aff;
-	--text-warning: #ffb84e;
+	--dark-100: #22262c;
+	--dark-90: #2d3036;
+	--dark-80: #383b41;
+	--dark-70: #4f5156;
+	--dark-60: #7a7c80;
+	--dark-50: #a7a8ab;
+	--dark-40: #c8c9ca;
 
-	// events
+	--primary-100: #4e8aff;
+	--primary-80: #71a2ff;
+	--primary-60: #aac7ff;
+	--primary-40: #c6daff;
+	--primary-24: #dde9ff;
+	--primary-16: #e3ecff;
+
+	--light-grey-100: #f1f1f1;
+	--light-grey-80: #f8f8f8;
+	--light-grey-60: #fbfbfb;
+
+	--dark-grey-100: #3b3b3b;
+	--dark-grey-80: #595959;
+	--dark-grey-60: #898989;
+	--dark-grey-40: #b0b0b0;
+	--dark-grey-24: #d0d0d0;
+	--dark-grey-16: #e0e0e0;
+
+	--white: #fff;
+
 	--events-primary: #f26c0d;
-	--events-passed: #52ff4e;
-	--events-failed: #ff4e4e;
-	--events-unknown: #666666;
-
-	// messages
-	--messages-primary: #19c3e5;
-	--message-highlight: #E3ECFF;
-	--session-text-color: #fff;
-
-	// search
 	--search-primary: #1d19e5;
-
-	// bookmarks
+	--messages-primary: #19c3e5;
 	--bookmarks-primary: #a65cd6;
 
+	--status-passed: #52ff4e;
+	--status-passed-light: #e9ffe8;
+	--status-error: #ff4e4e;
+	--status-unknown: #666666;
+	--status-error-light: #ffdddd;
+	--status-warning: #ffb84e;
+	--status-info: #4e8aff;
+
+	--text-primary: #3a3a3a;
+	--text-secondary: #585858;
+}
+
+:root {
+	@include pallete;
+	--info-color: var(--primary-100);
+	--text-info: var(--primary-100);
+
+	// messages
+	--highlight-color: var(--highlight);
+	--session-text-color: var(--white);
+
 	// workspace
-	--panel-title: #fff;
-	--tab-background: #4e8aff;
+	--panel-title: var(--white);
+	--tab-background: var(--primary-100);
 
 	// input
-	--text-input: #3a3a3a;
-	--input-border: #E0E0E0;
-	--input-background: #fbfbfb;
-	--input-placeholder: #898989;
+	--text-input: var(--text-primary);
+	--input-border: var(--dark-grey-16);
+	--input-background: var(--light-grey-60);
+	--input-placeholder: var(--dark-grey-60);
 
 	// tables
-	--table-passed-row: rgba(157, 255, 148, 0.32);
+	--table-passed-row: rgba(157, 255, 148, 0.291);
 	--table-failed-row: #ffdddd;
-	--table-status-passed: var(--events-passed);
-	--table-status-failed: var(--events-failed);
+	--table-status-passed: var(--status-passed);
+	--table-status-failed: var(--status-error);
 
 	// rest
-	--counter-border: #e0e0e0;
+	--counter-border: var(--dark-grey-16);
 
-	--background-primary: #ffffff;
-	--background-secondary: #fbfbfb;
+	--background-primary: var(--white);
+	--background-secondary: var(--light-grey-60);
 
-	--background-primary-darker: #e6e6e6;
-
-	--surface-background: #fbfbfb;
-	--panel-background: #f1f1f1;
-	--text-background: #f8f8f8;
-	--workspace-background: #fbfbfb;
+	--surface-background: var(--light-grey-60);
+	--panel-background: var(--light-grey-100);
+	--text-background: var(--light-grey-80);
+	--workspace-background: var(--light-grey-60);
 
 	--app-background: #bdccdb;
 	--app-header-background: #3d668f;
 
-	--progress-bar-background: #d0d0d0;
+	--progress-bar-background: var(--dark-grey-24);
 
-	--blocked-time-unit: #e0e0e0;
-	--time-unit-near: #898989;
-	--time-unit-far: #b0b0b0;
-
-	--calendar-border: #d9d9d9;
-	--date-select-background: #d5e3ff;
-	--date-hidden: #898989;
+	// calendar
+	--blocked-time-unit: var(--dark-grey-16);
+	--time-unit-near: var(--dark-grey-60);
+	--time-unit-far: var(--dark-grey-40);
+	--calendar-border: var(--dark-grey-16);
+	--date-select-background: var(--primary-24);
+	--date-hidden: var(--dark-grey-60);
 }
 
 html[data-theme='dark'] {
 	// text
-	--text-primary: #e0e0e0;
-	--text-secondary: #a7a8ab;
+	--text-primary: var(--dark-grey-16);
+	--text-secondary: var(--dark-50);
 
 	// events
 	--table-passed-row: rgba(89, 255, 115, 0.5);
@@ -95,45 +125,44 @@ html[data-theme='dark'] {
 	--table-status-failed: #ff6f6f;
 
 	// messages
-	--session-text-color: #2d3036;
-	--message-highlight: #354666;
+	--session-text-color: var(--dark-90);
+	--highlight-color: var(--dark-highlight);
 
 	// search
 	--search-primary: #0df292;
 	// bookmarks
 
 	// workspace
-	--panel-title: #2d3036;
+	--panel-title: var(--dark-90);
 
 	// input
-	--input-background: #383b41;
-	--text-input: #e0e0e0;
-	--input-border: #4f5156;
+	--input-background: var(--dark-80);
+	--text-input: var(--dark-grey-16);
+	--input-border: var(--dark-70);
 
 	// rest
-	--surface-background: #22262c;
-	--text-background: #383b41;
+	--surface-background: var(--dark-100);
+	--text-background: var(--dark-80);
 
-	--background-primary: #2d3036;
-	--background-secondary: #383b41;
+	--background-primary: var(--dark-90);
+	--background-secondary: var(--dark-80);
 
-	--background-primary-darker: #272a2f;
+	--panel-background: var(--dark-100);
+	--workspace-background: var(--dark-70);
 
-	--panel-background: #22262c;
-	--workspace-background: #4f5156;
-
-	--counter-border: #22262c;
+	--counter-border: var(--dark-100);
 
 	--app-background: #33383d;
 	--app-header-background: #18191b;
 
-	--progress-bar-background: #7a7c80;
+	--progress-bar-background: var(--dark-60);
 
-	--blocked-time-unit: #585858;
-	--time-unit-near: #a7a8ab;
-	--time-unit-far: #d0d0d0;
 
-	--calendar-border: #4f5156;
-	--date-select-background: #354666;
-	--date-hidden: #a7a8ab;
+	// calendar
+	--blocked-time-unit: var(--dark-grey-80);
+	--time-unit-near: var(--dark-50);
+	--time-unit-far: var(--dark-grey-24);
+	--calendar-border: var(--dark-70);
+	--date-select-background: var(--dark-highlight);
+	--date-hidden:  var(--dark-50); 
 }

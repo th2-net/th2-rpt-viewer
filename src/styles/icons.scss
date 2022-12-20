@@ -30,14 +30,14 @@
 .status-icon {
 	font-size: 16px;
 
-	color: var(--events-unknown);
+	color: var(--status-unknown);
 
 	&.passed {
-		color: var(--events-passed);
+		color: var(--status-passed);
 	}
 
 	&.failed {
-		color: var(--events-failed);
+		color: var(--status-error);
 	}
 }
 
@@ -62,4 +62,5 @@
 .message-icon {
 	color: var(--messages-primary);
 	border-radius: 2px;
+	font-size: 15px;
 }

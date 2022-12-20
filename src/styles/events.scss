@@ -369,10 +369,10 @@
 			&__error {
 				@include surface;
 				font-size: 10px;
-				border: 1px solid var(--events-failed);
+				border: 1px solid var(--status-error);
 				border-radius: 5px;
 				padding: 5px;
-				color: var(--events-failed);
+				color: var(--status-error);
 			}
 		}
 	}

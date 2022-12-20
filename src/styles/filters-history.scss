@@ -58,9 +58,8 @@
 	width: 100%;
 	overflow: hidden;
 
-	&.active {
-		background-color: var(--background-primary-darker);
-	}
+	&.active {}
+	
 	&__title {
 		text-decoration: underline;
 		display: flex;
