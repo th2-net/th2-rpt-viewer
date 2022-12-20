@@ -567,12 +567,7 @@ export default class EventsDataStore {
 		this.eventStore.targetNodeId = targetEventId;
 		if (targetEventId) {
 			this.targetEventLoadSubscription = when(
-				() =>
-					this.targetNodePath !== null &&
-					this.rootEventIds.includes(this.targetNodePath[0]) &&
-					(this.eventStore.viewStore.flattenedListView
-						? this.eventStore.flattenedEventList.some(event => event.eventId === targetEventId)
-						: true),
+				() => this.targetNodePath !== null && this.rootEventIds.includes(this.targetNodePath[0]),
 				() => {
 					if (this.targetNodePath) {
 						this.eventStore.onTargetNodeAddedToTree(this.targetNodePath);
