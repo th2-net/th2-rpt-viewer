@@ -595,43 +595,35 @@
 		gap: 2px;
 		padding: 3px 6px;
 		border-radius: 5px;
-		background-color: $messageListSearchInfoColor;
-		color: $messageListSearchInfoTextColor;
 		font-size: 9px;
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		transform: translate(24px, -50%);
 	}
 
-	&__loading-message {
+	&__loading-status {
 		display: flex;
-		flex-direction: column;
+		justify-content: center;
 		align-items: center;
-		width: 400px;
-		flex-shrink: 0;
-		margin: 0 auto;
-		padding: 8px 0;
-		gap: 7px;
+		padding-top: 8px;
+		padding-bottom: 2px;
 
-		&-text {
-			font-size: 13px;
-			color: $messageListLoadButtonTextColor;
+		& > div {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 12px;
+			padding: 0 12px;
+		}
+
+		button {
+			background-color: var(--background-primary);
+			border-radius: 20px;
+			border: none;
+			height: 28px;
 		}
 	}
 
-	&__load-btn {
-		@include clickable;
-
-		display: block;
-		border-radius: 4px;
-		border-width: 1px;
-		border-color: $messageListLoadButtonTextColor;
-		background-color: $messageListLoadButtonColor;
-		font-weight: 600;
-		font-size: 14px;
-		padding: 2px 7px;
-		color: $messageListLoadButtonTextColor;
+	&__no-matching-text {
+		font-size: 13px;
+		color: var(--text-info);
 	}
 
 	&__overlay-loader {

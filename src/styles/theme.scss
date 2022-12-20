@@ -84,7 +84,7 @@
 
 	// tables
 	--table-passed-row: rgba(157, 255, 148, 0.291);
-	--table-failed-row: #ffdddd;
+	--table-failed-row: var(--status-error-light);
 	--table-status-passed: var(--status-passed);
 	--table-status-failed: var(--status-error);
 
@@ -157,12 +157,11 @@ html[data-theme='dark'] {
 
 	--progress-bar-background: var(--dark-60);
 
-
 	// calendar
 	--blocked-time-unit: var(--dark-grey-80);
 	--time-unit-near: var(--dark-50);
 	--time-unit-far: var(--dark-grey-24);
 	--calendar-border: var(--dark-70);
 	--date-select-background: var(--dark-highlight);
-	--date-hidden:  var(--dark-50); 
+	--date-hidden: var(--dark-50);
 }

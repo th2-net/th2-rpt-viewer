@@ -26,6 +26,8 @@ import { raf } from 'helpers/raf';
 import { SSEHeartbeat } from 'api/sse';
 import { formatTime } from 'helpers/date';
 import useElementSize from 'hooks/useElementSize';
+import { Button } from 'components/buttons/Button';
+import { Paper } from 'components/Paper';
 import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from 'models/util/CardDisplayType';
 import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
@@ -213,30 +215,38 @@ function DirectionLoadingStatus(props: DirectionLoadingStatusProps) {
 
 	if (noMatchingMesssages) {
 		return (
-			<div className='messages-list__loading-message'>
-				{hearbeat && (
-					<span className='messages-list__loading-message-text'>
-						No more matching messages {direction === SearchDirection.Next ? 'up to' : 'from'}&nbsp;
-						{moment.utc(hearbeat.timestamp).format()}
-					</span>
-				)}
-				<button className='messages-list__load-btn' onClick={() => onKeepLoading(direction)}>
-					Keep loading
-				</button>
+			<div className='messages-list__loading-status'>
+				<Paper>
+					{hearbeat && (
+						<span className='messages-list__no-matching-text'>
+							No more matching messages {direction === SearchDirection.Next ? 'up to' : 'from'}
+							&nbsp;
+							{moment.utc(hearbeat.timestamp).format()}
+						</span>
+					)}
+					<Button
+						variant='outlined'
+						className='messages-list__no-matching-button'
+						onClick={() => onKeepLoading(direction)}>
+						Keep loading
+					</Button>
+				</Paper>
 			</div>
 		);
 	}
 
 	if (isLoading) {
 		return (
-			<div className='messages-list__spinner-wrapper'>
-				<div className='messages-list__spinner' />
-				{hearbeat && (
-					<div className='messages-list__search-info'>
-						<span>Processed items: {hearbeat.scanCounter}</span>
-						<span>Current search position: {formatTime(hearbeat.timestamp)}</span>
-					</div>
-				)}
+			<div className='messages-list__loading-status'>
+				<Paper>
+					<div className='messages-list__spinner' />
+					{hearbeat && (
+						<div className='messages-list__search-info'>
+							<span>Processed items: {hearbeat.scanCounter}</span>
+							<span>Current search position: {formatTime(hearbeat.timestamp)}</span>
+						</div>
+					)}
+				</Paper>
 			</div>
 		);
 	}

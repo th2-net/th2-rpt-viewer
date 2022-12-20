@@ -23,7 +23,6 @@ import { FiltersState } from './FiltersHistory';
 import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
 import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../../helpers/search';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
-import { useDebouncedCallback } from '../../hooks';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { showNotification } from '../../helpers/showNotification';
 import { ShareIcon } from '../icons/ShareIcon';
@@ -58,42 +57,6 @@ const FiltersHistoryItem = (props: Props) => {
 	const pinButtonRef = React.useRef<HTMLButtonElement>(null);
 	const shareButtonRef = React.useRef<HTMLButtonElement>(null);
 	const deleteButtonRef = React.useRef<HTMLButtonElement>(null);
-
-	const rootRef = React.useRef<HTMLDivElement>(null);
-
-	const isHovered = React.useRef(false);
-
-	const onMouseOver = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-		e.persist();
-		isHovered.current = true;
-		onMouseOverDebounced(e);
-	};
-
-	const onMouseOverDebounced = useDebouncedCallback(
-		(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-			if (!isHovered.current) return;
-			const buttons = [...Object.values(bubblesContainerRef.current)].filter(Boolean);
-			if (
-				e.target instanceof Element &&
-				(pinButtonRef.current?.contains(e.target) ||
-					shareButtonRef.current?.contains(e.target) ||
-					buttons.some(
-						buttonContainer =>
-							e.target !== buttonContainer && buttonContainer?.contains(e.target as Element),
-					))
-			) {
-				rootRef.current?.classList.remove('active');
-			} else {
-				rootRef.current?.classList.add('active');
-			}
-		},
-		55,
-	);
-
-	const onMouseLeave = () => {
-		isHovered.current = false;
-		rootRef.current?.classList.remove('active');
-	};
 
 	if (!filter) {
 		return null;
@@ -160,12 +123,7 @@ const FiltersHistoryItem = (props: Props) => {
 	}
 
 	return (
-		<div
-			className='filter-history-item'
-			onClick={onFilterSelect}
-			onMouseOver={onMouseOver}
-			onMouseLeave={onMouseLeave}
-			ref={rootRef}>
+		<div className='filter-history-item' onClick={onFilterSelect}>
 			<div className='filter-history-item__title'>
 				{moment.utc(item.timestamp).format(FILTER_HISTORY_DATE_FORMAT)}
 				<div className='filter-history-item__controls'>
