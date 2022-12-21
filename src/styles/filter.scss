@@ -536,7 +536,8 @@
 			opacity: 0.5;
 		}
 
-		&:focus, &:hover {
+		&:focus,
+		&:hover {
 			border: 1px solid var(--info-color);
 		}
 
@@ -750,6 +751,11 @@
 	align-items: center;
 	gap: 12px;
 	padding-left: 16px;
+
+	& > button {
+		box-shadow: none;
+		background-color: transparent;
+	}
 
 	&:hover {
 		border-color: var(--info-color);

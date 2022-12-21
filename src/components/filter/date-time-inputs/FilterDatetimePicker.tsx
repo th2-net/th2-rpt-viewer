@@ -118,30 +118,18 @@ const FilterDatetimePicker = forwardRef<HTMLDivElement, FilterDatetimePickerProp
 				<div className='filter-datetime-picker__interval-controls'>
 					<div className='filter-datetime-picker__interval-header'>Intervals</div>
 					<div className='filter-datetime-picker__intervals'>
-						<Button
-							variant='outlined'
-							className='filter-datetime-picker__interval'
-							onClick={setNow}>
+						<IntervalButton offset={0} onClick={setNow}>
 							Now
-						</Button>
-						<Button
-							variant='outlined'
-							className='filter-datetime-picker__interval'
-							onClick={setTimeOffset.bind(null, 15)}>
+						</IntervalButton>
+						<IntervalButton offset={15} onClick={setTimeOffset}>
 							15 Minutes
-						</Button>
-						<Button
-							variant='outlined'
-							className='filter-datetime-picker__interval'
-							onClick={setTimeOffset.bind(null, 60)}>
+						</IntervalButton>
+						<IntervalButton offset={60} onClick={setTimeOffset}>
 							1 Hour
-						</Button>
-						<Button
-							variant='outlined'
-							className='filter-datetime-picker__interval'
-							onClick={setTimeOffset.bind(null, 24 * 60)}>
+						</IntervalButton>
+						<IntervalButton offset={24 * 60} onClick={setTimeOffset}>
 							1 Day
-						</Button>
+						</IntervalButton>
 					</div>
 				</div>
 				<div className='filter-datetime-picker__controls'>
@@ -160,3 +148,19 @@ const FilterDatetimePicker = forwardRef<HTMLDivElement, FilterDatetimePickerProp
 FilterDatetimePicker.displayName = 'FilterDatetimePicker';
 
 export default FilterDatetimePicker;
+
+type IntervalButtonProps = React.PropsWithChildren<{
+	offset: number;
+	onClick: (offset: number) => void;
+}>;
+
+function IntervalButton(props: IntervalButtonProps) {
+	return (
+		<Button
+			variant='outlined'
+			className='filter-datetime-picker__interval'
+			onClick={() => props.onClick(props.offset)}>
+			{props.children}
+		</Button>
+	);
+}
