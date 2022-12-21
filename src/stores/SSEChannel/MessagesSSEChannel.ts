@@ -20,6 +20,7 @@ import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
+import { getBookIdScope } from '../../helpers/message';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
@@ -159,8 +160,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.messageIds = [
 			...newIds,
 			...this.messageIds.filter(
-				messageId =>
-					!newIds.find(id => id.includes(messageId.slice(0, messageId.lastIndexOf(':')))),
+				messageId => !newIds.find(id => id.includes(getBookIdScope(messageId))),
 			),
 		];
 		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {

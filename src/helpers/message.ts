@@ -72,3 +72,9 @@ export function normalizeField(field: MessageBodyField): string | object {
 	}
 	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
 }
+
+export function getBookIdScope(messageId: string): string {
+	const firstSlice = messageId.slice(0, messageId.lastIndexOf(':'));
+	const secondSlice = firstSlice.slice(0, messageId.lastIndexOf(':'));
+	return secondSlice.slice(0, secondSlice.lastIndexOf(':'));
+}

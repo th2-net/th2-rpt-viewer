@@ -301,18 +301,23 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	@action
 	public onPrevChannelResponse = (messages: EventMessage[]) => {
 		this.lastPreviousChannelResponseTimestamp = null;
-		const firstPrevMessage = messages[0];
+
+		const prevMessages = messages.filter(
+			message => !this.messages.find(msg => msg.messageId === message.messageId),
+		);
+
+		const firstPrevMessage = prevMessages[0];
 
 		if (
 			firstPrevMessage &&
 			firstPrevMessage.messageId === this.messages[this.messages.length - 1]?.messageId
 		) {
-			messages.shift();
+			prevMessages.shift();
 		}
 
 		if (messages.length) {
-			this.startIndex += messages.length;
-			this.messages = [...this.messages, ...messages];
+			this.startIndex += prevMessages.length;
+			this.messages = [...this.messages, ...prevMessages];
 		}
 	};
 
