@@ -15,17 +15,12 @@
  ***************************************************************************** */
 
 import clsx from 'clsx';
-import { Progress } from 'components/Progress';
-import '../styles/root.scss';
 
-interface SplashScreenProps {
+interface Props {
+	size?: number;
 	className?: string;
 }
 
-const SplashScreen = (props: SplashScreenProps) => (
-	<div className={clsx('splash-screen', props.className)}>
-		<Progress />
-	</div>
-);
-
-export default SplashScreen;
+export function Progress({ size = 32, className = '' }: Props) {
+	return <div style={{ width: size, height: size }} className={clsx('progress', className)} />;
+}

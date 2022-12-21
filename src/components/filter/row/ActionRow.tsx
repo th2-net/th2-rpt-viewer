@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { Progress } from 'components/Progress';
 import { ActionFilterConfig } from '../../../models/filter/FilterInputs';
 
 export default function ActionRow({ config }: { config: ActionFilterConfig }) {
@@ -22,7 +22,7 @@ export default function ActionRow({ config }: { config: ActionFilterConfig }) {
 		<div className='filter-row' id={config.id}>
 			<span className='filter-row__message'>{config.message}</span>
 			{config.isLoading ? (
-				<div className='filter__loading' />
+				<Progress size={16} />
 			) : (
 				<button className='filter-row__button' onClick={config.action}>
 					{config.actionButtonText}

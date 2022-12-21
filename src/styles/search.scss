@@ -193,7 +193,6 @@
 	}
 
 	&__loader {
-		@include spinner(3px);
 		display: inline-block;
 		margin: 0 0 0 2px;
 		flex-shrink: 0;

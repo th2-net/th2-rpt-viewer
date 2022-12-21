@@ -57,7 +57,7 @@ export const ExpandableEventCard = (props: EventBookmarkComponentProps) => {
 				<div className='event-expandable-card__body'>
 					{isExpanded && <EventBodyCard event={event} />}
 					<div className='event-expandable-card__footer'>
-						<Button variant='text' onClick={() => toggleExpand(event.eventId)}>
+						<Button variant='rounded' onClick={() => toggleExpand(event.eventId)}>
 							{isExpanded ? 'Show less' : 'Show more'}
 						</Button>
 					</div>

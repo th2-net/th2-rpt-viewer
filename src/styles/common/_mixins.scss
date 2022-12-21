@@ -239,31 +239,6 @@
 	}
 }
 
-@mixin spinner(
-	$thikness,
-	$size: 16px,
-	$duration: 1s,
-	$outer-color: $spinnerOuterColor,
-	$inner-color: $spinnerInnerColor
-) {
-	height: $size;
-	width: $size;
-	border: $thikness solid $outer-color;
-	border-top: $thikness solid $inner-color;
-	border-radius: 50%;
-	animation: spin $duration linear infinite;
-}
-
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
 @mixin clickable {
 	&:not([disabled]) {
 		cursor: pointer;

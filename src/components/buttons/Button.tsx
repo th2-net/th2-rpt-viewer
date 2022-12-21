@@ -18,7 +18,7 @@ import React from 'react';
 import '../../styles/buttons.scss';
 
 type Props = React.HTMLProps<HTMLButtonElement> & {
-	variant: 'text' | 'outlined' | 'contained';
+	variant: 'text' | 'outlined' | 'contained' | 'rounded';
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, Props>((props: Props, ref) => {

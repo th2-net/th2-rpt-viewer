@@ -21,6 +21,7 @@ import SearchToken from 'models/search/SearchToken';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from 'helpers/array';
 import { createSearchToken } from 'helpers/search/createSearchToken';
 import Bubble from 'components/util/Bubble';
+import { Progress } from 'components/Progress';
 import { raf } from 'helpers/raf';
 import KeyCodes from '../../../../models/util/KeyCodes';
 import { useEventsStore } from '../../hooks/useEventsStore';
@@ -131,7 +132,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 						<div className='search-field__search-controls search-controls'>
 							<div className='search-controls__clear-button' onClick={this.clear} />
 							{isLoading ? (
-								<div className='search-controls__loader' />
+								<Progress size={16} />
 							) : showControls ? (
 								<span className='search-controls__counter'>
 									{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount}

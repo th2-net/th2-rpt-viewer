@@ -28,6 +28,7 @@ import { formatTime } from 'helpers/date';
 import useElementSize from 'hooks/useElementSize';
 import { Button } from 'components/buttons/Button';
 import { Paper } from 'components/Paper';
+import { Progress } from 'components/Progress';
 import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from 'models/util/CardDisplayType';
 import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
@@ -216,7 +217,7 @@ function DirectionLoadingStatus(props: DirectionLoadingStatusProps) {
 	if (noMatchingMesssages) {
 		return (
 			<div className='messages-list__loading-status'>
-				<Paper>
+				<Paper style={{ backgroundColor: hearbeat ? undefined : 'transparent' }}>
 					{hearbeat && (
 						<span className='messages-list__no-matching-text'>
 							No more matching messages {direction === SearchDirection.Next ? 'up to' : 'from'}
@@ -224,10 +225,7 @@ function DirectionLoadingStatus(props: DirectionLoadingStatusProps) {
 							{moment.utc(hearbeat.timestamp).format()}
 						</span>
 					)}
-					<Button
-						variant='outlined'
-						className='messages-list__no-matching-button'
-						onClick={() => onKeepLoading(direction)}>
+					<Button variant='rounded' onClick={() => onKeepLoading(direction)}>
 						Keep loading
 					</Button>
 				</Paper>
@@ -238,8 +236,8 @@ function DirectionLoadingStatus(props: DirectionLoadingStatusProps) {
 	if (isLoading) {
 		return (
 			<div className='messages-list__loading-status'>
-				<Paper>
-					<div className='messages-list__spinner' />
+				<Paper style={{ backgroundColor: hearbeat ? undefined : 'transparent' }}>
+					<Progress size={24} />
 					{hearbeat && (
 						<div className='messages-list__search-info'>
 							<span>Processed items: {hearbeat.scanCounter}</span>

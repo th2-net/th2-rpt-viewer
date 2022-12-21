@@ -19,17 +19,15 @@ import { createStyleSelector } from 'helpers/styleCreators';
 type Props = React.PropsWithChildren<{
 	title?: string;
 	isSelected?: boolean;
-	isLoading?: boolean;
 	onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }>;
 
 export function Counter(props: Props) {
-	const { children, isSelected, onClick, title, isLoading } = props;
+	const { children, isSelected, onClick, title } = props;
 	const rootClass = createStyleSelector(
 		'counter',
 		isSelected ? 'selected' : null,
 		onClick ? 'clickable' : null,
-		isLoading ? 'loading' : null,
 	);
 
 	return (

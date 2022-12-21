@@ -20,6 +20,7 @@ import 'regenerator-runtime/runtime';
 import 'core-js/stable';
 import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
+import SplashScreen from 'components/SplashScreen';
 import { ThemeProvider } from 'components/ThemeProvider';
 import ErrorBoundary from './components/util/ErrorBoundary';
 import { ViewMode, ViewModeProvider } from './components/ViewModeProvider';
@@ -40,12 +41,7 @@ if (viewMode === ViewMode.Full) {
 
 ReactDOM.render(
 	<ErrorBoundary>
-		<Suspense
-			fallback={
-				<div className='app-loader'>
-					<i />
-				</div>
-			}>
+		<Suspense fallback={<SplashScreen className='app-loader' />}>
 			<ViewModeProvider value={viewMode}>
 				<ThemeProvider>
 					<App />

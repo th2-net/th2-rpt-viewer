@@ -20,6 +20,7 @@ import { observer } from 'mobx-react-lite';
 import { EventTreeNode } from 'models/EventAction';
 import { createBemBlock } from 'helpers/styleCreators';
 import { Paper } from 'components/Paper';
+import { Progress } from 'components/Progress';
 import { Button } from 'components/buttons/Button';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
@@ -152,9 +153,9 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 			{showLoadButton && (
 				<div className='event-tree-card__footer'>
 					{isLoadingSiblings ? (
-						<div className='event-tree-card__spinner' />
+						<Progress size={16} />
 					) : (
-						<Button variant='outlined' onClick={loadMoreSiblings}>
+						<Button variant='rounded' onClick={loadMoreSiblings}>
 							Load more
 						</Button>
 					)}

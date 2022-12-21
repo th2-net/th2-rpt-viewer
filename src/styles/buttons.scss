@@ -78,6 +78,17 @@
 			background-color: #2e74ff;
 		}
 	}
+
+	&.rounded {
+		background-color: var(--background-primary);
+    border-radius: 20px;
+    border: none;
+    height: 28px;
+
+		&:hover {
+			background-color: var(--hover-background);
+		}	
+	}
 }
 
 .toggle-button-group {

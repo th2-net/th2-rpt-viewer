@@ -122,10 +122,6 @@
 		padding: 2px 5px;
 	}
 
-	&__loading {
-		@include spinner(2px, 19px, 2s);
-	}
-
 	&-time-controls {
 		display: flex;
 		flex-direction: row;

@@ -36,10 +36,11 @@ body {
 
 * {
 	transition-property: color, background-color;
-  transition-duration: 0.25s, 0.25s;
+	transition-duration: 0.25s, 0.25s;
 }
 
-svg, svg > * {
+svg,
+svg > * {
 	transition: none;
 }
 
@@ -117,15 +118,28 @@ input {
 	background-color: var(--app-header-background);
 }
 
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.progress {
+	border-radius: 50%;
+	animation: spin 2s linear infinite;
+	border: 2px solid var(--info-color);
+	border-top: 2px solid transparent;
+}
+
 .splash-screen {
 	width: 100%;
 	height: 100%;
 	display: grid;
 	place-items: center;
-
-	&__spinner {
-		@include spinner(5px, 40px, 2s);
-	}
 }
 
 .attached-message-icon {
@@ -149,14 +163,5 @@ input {
 }
 
 .app-loader {
-	display: flex;
-	width: 100%;
-	height: 100%;
-	justify-content: center;
-	align-items: center;
 	background-color: var(--app-background);
-
-	& i {
-		@include spinner(5px, 40px, 2s);
-	}
 }

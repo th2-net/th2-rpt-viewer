@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { Progress } from 'components/Progress';
 import { EventTreeNode } from 'models/EventAction';
 import EventBreadcrumbsItem from './EventBreadcrumbsItem';
 
@@ -27,7 +28,7 @@ export default function EventBreadcrumbs(props: Props) {
 	const { path, onSelect, isLoadingSelectedPath } = props;
 	return (
 		<div className='event-breadcrumbs'>
-			{isLoadingSelectedPath && <div className='event-breadcrumbs__loader' />}
+			{isLoadingSelectedPath && <Progress size={12} />}
 			<EventBreadcrumbsItem
 				eventNode='root'
 				onSelect={() => onSelect(null)}
