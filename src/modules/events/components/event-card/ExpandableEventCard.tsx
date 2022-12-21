@@ -42,7 +42,7 @@ export const ExpandableEventCard = (props: EventBookmarkComponentProps) => {
 	}, [onClick]);
 
 	return (
-		<div className={clsx('event-expandable-card', { empty: isEmpty })}>
+		<div className={clsx('event-expandable-card', { empty: isEmpty, selected: checked })}>
 			<div className='event-expandable-card__header'>
 				<EventCardHeaderBase
 					event={toEventTreeNode(event)}

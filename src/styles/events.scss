@@ -758,9 +758,14 @@
 	width: 100%;
 	justify-content: stretch;
 	overflow: hidden;
+	border: 2px solid transparent;
 
 	.event-header-card {
 		border-radius: 8px 8px 0px 0px;
+	}
+
+	&.selected {
+		border: 2px solid var(--info-color);
 	}
 
 	&.empty {
