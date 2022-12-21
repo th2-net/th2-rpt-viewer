@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { Input } from 'components/Input';
-import { Button } from 'components/buttons/Button';
+import clsx from 'clsx';
+import React from 'react';
 
-interface Props {
-	value: string;
-	setValue: (value: string) => void;
-	label: string;
-}
-
-export default function BookmarkTextSearch({ value, setValue }: Props) {
-	return (
-		<div className='bookmark-panel-header__row'>
-			<Input
-				type='text'
-				className='bookmarks-search'
-				id='bookmark-text-search'
-				value={value}
-				onChange={e => setValue(e.target.value)}
-			/>
-			<Button className='input-submit' variant='contained'>
-				Search
-			</Button>
-		</div>
-	);
-}
+export const Input = ({
+	className,
+	...props
+}: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>) => (
+	<input {...props} className={clsx('input', className)} />
+);

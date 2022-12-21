@@ -88,15 +88,12 @@
 	--table-status-passed: var(--status-passed);
 	--table-status-failed: var(--status-error);
 
-	// rest
-	--counter-border: var(--dark-grey-16);
-
 	--background-primary: var(--white);
-	--background-secondary: var(--light-grey-60);
-
-	--surface-background: var(--light-grey-60);
-	--panel-background: var(--light-grey-100);
 	--text-background: var(--light-grey-80);
+	--background-secondary: var(--light-grey-60);
+	--surface-background: var(--light-grey-60);
+
+	--panel-background: var(--light-grey-100);
 	--workspace-background: var(--light-grey-60);
 
 	--app-background: #bdccdb;
@@ -111,6 +108,8 @@
 	--calendar-border: var(--dark-grey-16);
 	--date-select-background: var(--primary-24);
 	--date-hidden: var(--dark-grey-60);
+
+	--hover-background: rgba(0, 0, 0, 0.05);
 }
 
 html[data-theme='dark'] {
@@ -141,16 +140,13 @@ html[data-theme='dark'] {
 	--input-border: var(--dark-70);
 
 	// rest
-	--surface-background: var(--dark-100);
-	--text-background: var(--dark-80);
-
 	--background-primary: var(--dark-90);
+	--text-background: var(--dark-80);
 	--background-secondary: var(--dark-80);
+	--surface-background: var(--dark-100);
 
 	--panel-background: var(--dark-100);
 	--workspace-background: var(--dark-70);
-
-	--counter-border: var(--dark-100);
 
 	--app-background: #33383d;
 	--app-header-background: #18191b;
@@ -164,4 +160,6 @@ html[data-theme='dark'] {
 	--calendar-border: var(--dark-70);
 	--date-select-background: var(--dark-highlight);
 	--date-hidden: var(--dark-50);
+
+	--hover-background: rgba(255, 255, 255, 0.22);
 }

@@ -17,10 +17,11 @@
 import React, { forwardRef } from 'react';
 import Calendar from 'rc-calendar';
 import moment, { Moment } from 'moment';
-import 'rc-calendar/assets/index.css';
-import 'styles/filter-datetime.scss';
+import { Button } from 'components/buttons/Button';
 import { TimeInputType } from '../../../models/filter/FilterInputs';
 import FilterTimepicker from './FilterTimePicker';
+import 'rc-calendar/assets/index.css';
+import 'styles/filter-datetime.scss';
 
 interface FilterDatetimePickerProps {
 	value: number | null;
@@ -117,33 +118,39 @@ const FilterDatetimePicker = forwardRef<HTMLDivElement, FilterDatetimePickerProp
 				<div className='filter-datetime-picker__interval-controls'>
 					<div className='filter-datetime-picker__interval-header'>Intervals</div>
 					<div className='filter-datetime-picker__intervals'>
-						<button className='filter-datetime-picker__interval' onClick={setNow}>
+						<Button
+							variant='outlined'
+							className='filter-datetime-picker__interval'
+							onClick={setNow}>
 							Now
-						</button>
-						<button
+						</Button>
+						<Button
+							variant='outlined'
 							className='filter-datetime-picker__interval'
 							onClick={setTimeOffset.bind(null, 15)}>
 							15 Minutes
-						</button>
-						<button
+						</Button>
+						<Button
+							variant='outlined'
 							className='filter-datetime-picker__interval'
 							onClick={setTimeOffset.bind(null, 60)}>
 							1 Hour
-						</button>
-						<button
+						</Button>
+						<Button
+							variant='outlined'
 							className='filter-datetime-picker__interval'
 							onClick={setTimeOffset.bind(null, 24 * 60)}>
 							1 Day
-						</button>
+						</Button>
 					</div>
 				</div>
 				<div className='filter-datetime-picker__controls'>
-					<div className='filter-datetime-picker__controls button cancel' onClick={onClose}>
+					<Button variant='outlined' onClick={onClose}>
 						Cancel
-					</div>
-					<div className='filter-datetime-picker__controls button submit' onClick={onSubmit}>
+					</Button>
+					<Button variant='contained' onClick={onSubmit}>
 						Submit
-					</div>
+					</Button>
 				</div>
 			</div>
 		);

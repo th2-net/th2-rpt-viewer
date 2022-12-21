@@ -145,7 +145,7 @@ export function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 					{eventType && <Chip onClick={handleTypeClick}>{eventType}</Chip>}
 				</>
 			)}
-			{counter > 0 && <Counter>{counter}</Counter>}
+			{Boolean(counter) && <Counter>{counter}</Counter>}
 			<div className='event-header-card__details'>
 				{displayType !== CardDisplayType.STATUS_ONLY && (
 					<>
@@ -214,7 +214,7 @@ const UnknownEventCardHeader = (props: UnknownEventCardHeaderProps) => {
 			<div className='event-header-card__title' title={event.eventName}>
 				{event.eventName}
 			</div>
-			<Counter>{counter}</Counter>
+			{Boolean(counter) && <Counter>{counter}</Counter>}
 		</Paper>
 	);
 };

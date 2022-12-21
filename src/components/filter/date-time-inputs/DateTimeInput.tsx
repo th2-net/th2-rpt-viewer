@@ -24,7 +24,6 @@ import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
 import FilterDatetimePicker from './FilterDatetimePicker';
 import { DateTimeInputType } from '../../../models/filter/FilterInputs';
 import { formatTimestampValue } from '../../../helpers/date';
-import { createStyleSelector } from '../../../helpers/styleCreators';
 import { replaceUnfilledDateStringWithMinValues } from '../../../helpers/stringUtils';
 
 interface DateTimeInputProps {
@@ -95,8 +94,6 @@ const DatetimeInput = (props: DateTimeInputProps) => {
 		}
 	});
 
-	const maskedInputClassName = createStyleSelector(inputClassName, value ? 'non-empty' : null);
-
 	return (
 		<div className={clsx('date-time-input', { active: isActive })} ref={rootRef}>
 			{inputConfig.label && (
@@ -107,7 +104,7 @@ const DatetimeInput = (props: DateTimeInputProps) => {
 			<MaskedInput
 				ref={inputRef}
 				id={id}
-				className={`filter-row__input date-time-input ${maskedInputClassName}`}
+				className={clsx('filter-row__input', inputClassName)}
 				disabled={disabled}
 				mask={inputMask}
 				pipe={validPipe}

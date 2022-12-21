@@ -16,6 +16,35 @@
 
 @import './common/vars';
 
+.input {
+	@include surface;
+	height: 40px;
+	border: 1px solid var(--input-border);
+	background-color: var(--input-background);
+	color: var(--text-input);
+	width: 100%;
+	padding: 6px 12px;
+	border-radius: $bubbleBorderRadius;
+	min-height: 30px;
+	font-size: 13px;
+	box-sizing: border-box;
+	min-width: 0;
+	outline: none;
+	max-width: 500px;
+
+	&:disabled {
+		opacity: 0.5;
+	}
+
+	&:focus {
+		border-color: var(--info-color);
+	}
+
+	&:hover {
+		border-color: var(--info-color);
+	}
+}
+
 .checkbox {
 	display: flex;
 	align-items: center;
@@ -25,10 +54,14 @@
 		@include disable-appearance;
 		width: 16px;
 		height: 16px;
-		border: 1px solid #D9D9D9;
+		border: 1px solid var(--input-border);
 		margin: 0;
 		border-radius: 4px;
 		cursor: inherit;
+
+		&:hover {
+			border-color: var(--info-color);
+		}
 
 		&:checked {
 			@include icon(url(../../resources/icons/checkmark.svg), 16px, 16px);

@@ -33,6 +33,10 @@
 	&:hover:not([disabled]) {
 		cursor: pointer;
 	}
+
+	&:hover {
+		background-color: var(--hover-background);
+	}
 }
 
 .icon-button {
@@ -54,20 +58,30 @@
 	border: none;
 	outline: none;
 
+	&:hover {
+		background-color: var(--hover-background);
+	}
+
 	&.outlined {
 		border: 1px solid var(--info-color);
-		background: transparent;
+		background-color: transparent;
+
+		&:hover {
+			background-color: var(--hover-background);
+		}
 	}
 
 	&.contained {
-		color: #fff;
+		color: var(--white);
+
+		&:hover {
+			background-color: #2e74ff;
+		}
 	}
 }
 
 .toggle-button-group {
 	display: flex;
-
-	--toggler-background: #4f5156;
 
 	.toggle-button {
 		height: auto;
@@ -79,17 +93,20 @@
 		gap: 6px;
 		background: none;
 		padding: 8px 12px;
-		box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.16);
 		opacity: 0.8;
-		background-color: var(--toggler-background);
+		background-color: var(--background-primary);
 		color: var(--text-primary);
 		transition: color 0.3s, background-color 0.3s, opacity 0.3s;
 		font-size: 12px;
 		line-height: 16px;
 		border-radius: 0;
 
-		@include light() {
-			--toggler-background: #fff;
+		&:hover {
+			background-color: var(--hover-background);
+		}
+
+		@include dark() {
+			--background-primary: var(--dark-70);
 		}
 
 		&.selected {

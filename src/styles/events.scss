@@ -126,8 +126,8 @@
 
 	.counter {
 		@include unselectable;
-
-		border: 1px solid var(--counter-border);
+		box-sizing: border-box;
+		border: 1px solid var(--input-border);
 		border-radius: 8px;
 		height: 24px;
 		flex-shrink: 0;
@@ -770,8 +770,7 @@
 	}
 
 	&__calendar-button {
-		width: 20px;
-		margin: 9px 10px 11px 2px;
+		font-size: 20px;
 		color: var(--info-color);
 	}
 }
