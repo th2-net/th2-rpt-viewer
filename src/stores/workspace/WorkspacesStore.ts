@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { observable, action, computed, reaction } from 'mobx';
+import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
@@ -36,9 +37,14 @@ import { isMessage } from '../../helpers/message';
 import { Book } from '../../models/Books';
 import { Bookmark } from '../../models/Bookmarks';
 import { isEventBookmark } from '../../helpers/bookmarks';
+import notificationsStore from '../NotificationsStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
+export interface AppState {
+	workspaces: WorkspacesUrlState;
+	bookId?: string;
+}
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
@@ -53,7 +59,7 @@ export default class WorkspacesStore {
 		private api: ApiSchema,
 		public filtersHistoryStore: FiltersHistoryStore,
 		private booksStore: BooksStore,
-		initialState: WorkspacesUrlState | null,
+		initialState: AppState | null,
 	) {
 		this.searchWorkspace = new SearchWorkspaceStore(
 			this.rootStore,
@@ -86,15 +92,36 @@ export default class WorkspacesStore {
 	}
 
 	@action
-	private init(initialState: WorkspacesUrlState | null) {
-		if (initialState !== null) {
-			initialState.forEach(async workspaceState =>
+	private createEmptyWorkspace = () => {
+		this.createWorkspace({
+			layout: [50, 50],
+		}).then(workspace => this.addWorkspace(workspace));
+	};
+
+	@action
+	private init(initialState: AppState | null) {
+		if (initialState !== null && initialState.bookId) {
+			const book = this.booksStore.books.find(b => b.name === initialState.bookId);
+
+			if (!book) {
+				const id = nanoid();
+				notificationsStore.addMessage({
+					id,
+					notificationType: 'genericError',
+					header: `Unable to find book ${initialState.bookId}`,
+					type: 'error',
+					description: `Unable to find book ${initialState.bookId} which was in Workspace Link`,
+				});
+				this.createEmptyWorkspace();
+				return;
+			}
+			this.booksStore.selectBook(book);
+
+			initialState.workspaces.forEach(async workspaceState =>
 				this.addWorkspace(await this.createWorkspace(workspaceState)),
 			);
 		} else {
-			this.createWorkspace({
-				layout: [100, 0],
-			}).then(workspace => this.addWorkspace(workspace));
+			this.createEmptyWorkspace();
 		}
 	}
 

@@ -42,7 +42,7 @@ const WorkspaceLinkGetter = observer(() => {
 		const appState = rootStore.getAppState();
 		const params = appState
 			? new URLSearchParams({
-					workspaces: window.btoa(JSON.stringify(appState)),
+					workspaces: window.btoa(JSON.stringify(appState.workspaces)),
 					bookId: appState.bookId || '',
 			  })
 			: null;

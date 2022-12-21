@@ -17,7 +17,7 @@
 import { action, computed, observable, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
-import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
+import WorkspacesStore, { AppState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
 import EventsStore, { EventStoreURLState } from './events/EventsStore';
 import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
@@ -35,11 +35,6 @@ import {
 import { SessionsStore } from './messages/SessionsStore';
 import EventsFilter from '../models/filter/EventsFilter';
 import BooksStore from './BooksStore';
-
-interface AppState {
-	workspaces: WorkspacesUrlState;
-	bookId?: string;
-}
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -64,7 +59,7 @@ export default class RootStore {
 			this.api,
 			this.filtersHistoryStore,
 			this.bookStore,
-			defaultState?.workspaces || null,
+			defaultState || null,
 		);
 
 		window.history.replaceState({}, '', window.location.pathname);
