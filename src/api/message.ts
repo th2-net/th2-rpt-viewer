@@ -27,7 +27,7 @@ export type MatchMessageParams = Omit<
 const messageHttpApi: MessageApiSchema = {
 	getMessage: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/message/${id}?${params}`, {
+		const res = await fetch(`${process.env.BASE_URL}/message/${id}?${params}`, {
 			signal,
 		});
 
@@ -45,7 +45,7 @@ const messageHttpApi: MessageApiSchema = {
 		return null;
 	},
 	getMessageSessions: async () => {
-		const res = await fetch('backend/messageStreams');
+		const res = await fetch(`${process.env.BASE_URL}/messageStreams`);
 
 		if (res.ok) return res.json();
 
@@ -54,7 +54,7 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	matchMessage: async (messageId: string, filter: MatchMessageParams, signal?: AbortSignal) => {
 		const params = createURLSearchParams({ ...filter });
-		const res = await fetch(`backend/match/message/${messageId}?${params}`, {
+		const res = await fetch(`${process.env.BASE_URL}/match/message/${messageId}?${params}`, {
 			signal,
 		});
 
@@ -73,7 +73,7 @@ const messageHttpApi: MessageApiSchema = {
 			startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
 			messageId,
 		});
-		const res = await fetch(`backend/messageIds/?${params}`, {
+		const res = await fetch(`${process.env.BASE_URL}/messageIds/?${params}`, {
 			signal,
 		});
 		if (res.ok) return res.json();

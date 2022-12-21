@@ -46,7 +46,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 
 	useEffect(() => {
 		async function getMessage() {
-			const res = await fetch(`backend/message/${messageId}`);
+			const res = await fetch(`${process.env.BASE_URL}/message/${messageId}`);
 			if (res.ok) {
 				const msg = await res.json();
 				setViewType(getDefaultViewTypesMap(msg));

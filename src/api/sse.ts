@@ -260,10 +260,10 @@ const sseApi: SSESchema = {
 				? new Date(queryParams.endTimestamp).toISOString()
 				: null,
 		});
-		return new EventSource(`backend/search/sse/${type}s/?${params}`);
+		return new EventSource(`${process.env.BASE_URL}/search/sse/${type}s/?${params}`);
 	},
 	getFilters: async <T>(filterType: 'events' | 'messages'): Promise<T[]> => {
-		const res = await fetch(`backend/filters/sse-${filterType}`);
+		const res = await fetch(`${process.env.BASE_URL}/filters/sse-${filterType}`);
 		if (res.ok) {
 			return res.json();
 		}
@@ -275,7 +275,7 @@ const sseApi: SSESchema = {
 	getEventsFiltersInfo: async filters => {
 		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
 			filters.map(filterName =>
-				fetch(`backend/filters/sse-events/${filterName}`).then(res => res.json()),
+				fetch(`${process.env.BASE_URL}/filters/sse-events/${filterName}`).then(res => res.json()),
 			),
 		);
 
@@ -298,7 +298,7 @@ const sseApi: SSESchema = {
 	getMessagesFiltersInfo: filters =>
 		Promise.all(
 			filters.map(filterName =>
-				fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json()),
+				fetch(`${process.env.BASE_URL}/filters/sse-messages/${filterName}`).then(res => res.json()),
 			),
 		),
 };

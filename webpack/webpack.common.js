@@ -71,5 +71,8 @@ module.exports = {
 			resourceRegExp: /^\.\/locale$/,
 			contextRegExp: /moment$/,
 		}),
+		new webpack.EnvironmentPlugin({
+			BASE_URL: 'backend',
+		}),
 	],
 };
