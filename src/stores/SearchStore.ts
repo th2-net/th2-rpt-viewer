@@ -490,10 +490,11 @@ export class SearchStore {
 		const scope = this.searchForm.scope;
 
 		if (this.isSearching || !filterParams || (this.formType === 'event' && !scope.trim())) return;
+		const isPaused = this.isPaused;
 		this.setCompleted(false);
 
 		if (loadMore) {
-			if (this.isPaused) {
+			if (isPaused) {
 				this.startSearch();
 				return;
 			}
@@ -502,7 +503,7 @@ export class SearchStore {
 			this.searchProgressState[SearchDirection.Next].resultCount = 1;
 		}
 
-		if ((!this.isPaused && !loadMore) || this.currentSearch?.request.type !== this.formType) {
+		if ((!isPaused && !loadMore) || this.currentSearch?.request.type !== this.formType) {
 			this.newSearch({
 				timestamp: moment().utc().valueOf(),
 				request: {
@@ -571,7 +572,7 @@ export class SearchStore {
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 			};
 
-			if (this.isPaused || loadMore) {
+			if (isPaused || loadMore) {
 				if (this.formType === 'message') {
 					const messageIdEvent = this.resumeFromMessageIds[direction];
 
@@ -583,7 +584,7 @@ export class SearchStore {
 				}
 			}
 
-			if (this.isPaused) {
+			if (isPaused) {
 				params.resultCountLimit =
 					this.currentSearch!.request.state.resultCountLimit -
 					this.searchProgressState[direction].resultCount;
