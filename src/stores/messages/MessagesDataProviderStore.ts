@@ -216,7 +216,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			this.messages = [...nextMessages, ...[message].filter(notEmpty), ...prevMessages];
+			this.messages = [...nextMessages, ...[message].filter(notEmpty), ...prevMessages].filter(
+				(msg, index, array) => index === array.findIndex(m => m.messageId === msg.messageId),
+			);
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
