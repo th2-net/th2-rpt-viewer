@@ -30,6 +30,7 @@ import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import { timestampToNumber } from '../../helpers/date';
+import { notEmpty } from '../../helpers/object';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
@@ -215,7 +216,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			this.messages = [...nextMessages, ...prevMessages];
+			this.messages = [...nextMessages, ...[message].filter(notEmpty), ...prevMessages];
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
