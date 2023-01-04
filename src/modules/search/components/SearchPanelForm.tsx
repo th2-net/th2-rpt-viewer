@@ -180,6 +180,8 @@ const SearchPanelForm = () => {
 				},
 			],
 			type: 'time-window',
+			label: 'Search interval',
+			wrapperClassName: 'search-interval',
 		}),
 		[setStartTimestamp, setEndTimestamp, filterStore.startTimestamp, filterStore.endTimestamp],
 	);

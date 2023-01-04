@@ -61,30 +61,6 @@
 		gap: 12px;
 	}
 
-	&__clear-btn {
-		&:not([disabled]) {
-			@include clickable;
-		}
-		flex: initial;
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		padding: 0 7px 0 5px;
-		border-radius: 10px;
-		margin-right: 10px;
-		border: none;
-		background-color: unset;
-
-		&.disabled {
-			opacity: 0.5;
-			cursor: inherit;
-		}
-	}
-
-	&__clear-icon {
-		@include icon(url(../../resources/icons/cross-icon-white.svg), 25px, 25px);
-	}
-
 	&__form {
 		display: flex;
 		flex-direction: column;
@@ -114,30 +90,6 @@
 	}
 }
 
-.search-submit-button {
-	padding: 3px 0;
-	border-radius: 3px;
-	display: flex;
-	align-items: center;
-	font-size: 14px;
-	font-weight: bold;
-	color: #fff;
-	background: #adc2eb;
-	font-family: 'Open Sans', sans-serif;
-	cursor: pointer;
-	outline: none;
-	border: none;
-
-	&__label {
-		margin-right: 6px;
-	}
-
-	&:disabled {
-		opacity: 0.5;
-		cursor: inherit;
-	}
-}
-
 .search-results {
 	display: flex;
 	flex-direction: column;
@@ -156,7 +108,6 @@
 		font-size: 12px;
 		height: fit-content;
 	}
-
 
 	&__timestamp {
 		margin: 0;
@@ -200,14 +151,6 @@
 	}
 }
 
-.search-result-group-items {
-	margin-left: 40px;
-}
-
-.search-result-single-item {
-	margin-left: 22px;
-}
-
 .search-progress {
 	padding: 8px 16px;
 	font-size: 14px;
@@ -227,7 +170,7 @@
 
 	&__completed {
 		color: var(--search-primary);
-	
+
 		width: 120px;
 	}
 
@@ -258,3 +201,10 @@
 	}
 }
 
+.search-interval {
+	flex-direction: column;
+
+	.filter-row__label {
+		align-self: flex-start;
+	}
+}

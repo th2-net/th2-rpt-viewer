@@ -23,6 +23,7 @@ const DateTimeRangePicker = ({ config }: { config: FilterRowTimeWindowConfig }) 
 	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
 	return (
 		<div className={wrapperClassName}>
+			{config.label && <div className='filter-row__label'>{config.label}</div>}
 			<div className='date-time-range'>
 				{config.inputs.map((inputConfig, index) => (
 					<Fragment key={inputConfig.id}>
