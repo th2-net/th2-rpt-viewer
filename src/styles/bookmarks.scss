@@ -16,9 +16,8 @@
 
 @import './common/vars';
 
-.bookmarks-panel {
+.window.bookmarks-panel {
 	height: 100%;
-	background-color: #fff;
 	display: grid;
 	grid-template-rows: auto 1fr;
 
@@ -34,326 +33,59 @@
 	}
 }
 
-.bookmark-item {
-	@include bookmark-button($showOnHoverOverParent: false);
-	display: grid;
-	grid-template-columns: 1fr 30px;
-	background-color: #fff;
-	border-radius: 6px;
-	padding: 5px 7px 5px 30px;
-	border-width: 1px;
-	border-style: solid;
-	position: relative;
-	overflow: hidden;
-	margin-bottom: 6px;
-
-	&__info {
-		overflow: hidden;
-		display: grid;
-		grid-template-areas:
-			'name name'
-			'timestamp id';
-		grid-template-columns: auto 1fr;
-		grid-template-rows: 15px auto;
-		gap: 2px 10px;
-	}
-
-	&__buttons {
-		flex-grow: 0;
-		flex-shrink: 1;
-		display: grid;
-		place-items: center;
-	}
-
-	&__remove-btn {
-		background-color: transparent;
-		border: none;
-		outline: none;
-
-		&-icon {
-			@include clickable;
-			@include icon(url(../../resources/icons/cross-icon.svg), 20px, 20px);
-
-			border-radius: 50%;
-			display: inline-block;
-		}
-	}
-
-	&__toggle-btn {
-		@include clickable;
-		display: grid;
-		place-items: center;
-		border-radius: 50%;
-		width: 20px;
-		height: 20px;
-
-		&.disabled {
-			opacity: 0.6;
-			cursor: default;
-		}
-	}
-
-	&__title,
-	&__timestamp {
-		@include ellipsis();
-	}
-
-	&__title {
-		cursor: pointer;
-		white-space: nowrap;
-		font-weight: 600;
-		font-size: 12px;
-		line-height: 14px;
-		color: $graphAttachedItemNameColor;
-		transition: color 0.15s, border-bottom 0.15s;
-		border-bottom: 1px solid transparent;
-
-		&:hover {
-			color: $bookmarkLinkHoverColor;
-			border-bottom: 1px solid $bookmarkLinkHoverColor;
-		}
-	}
-
-	&__name {
-		grid-area: name;
-		display: flex;
-		justify-content: flex-start;
-	}
-
-	&__timestamp,
-	&__id {
-		grid-area: timestamp;
-		font-size: 9px;
-		color: $graphAttachedItemTimestampColor;
-	}
-
-	&__id {
-		grid-area: id;
-	}
-
-	&__icon {
-		position: absolute;
-		left: 7px;
-		top: 7px;
-
-		&.message-icon {
-			margin: 1px;
-			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
-		}
-
-		&.event-icon,
-		&.eventtreenode-icon {
-			width: 12px;
-			height: 12px;
-			margin: 1px;
-			border-radius: 50%;
-
-			&.passed {
-				background-color: $graphOverlayPassedEventsColor;
-			}
-
-			&.failed {
-				background-color: $graphOverlayFailedEventsColor;
-			}
-		}
-	}
-
-	&:not(:last-child) {
-		margin-bottom: 6px;
-	}
-
-	&.message {
-		border-color: $graphOverlayPinnedMessagesColor;
-	}
-
-	&.event,
-	&.eventtreenode {
-		&.passed {
-			border-color: $graphOverlayPassedEventsColor;
-		}
-
-		&.failed {
-			border-color: $graphOverlayFailedEventsColor;
-		}
-	}
-}
-
 .bookmarks-panel-item {
 	display: flex;
-	justify-content: space-around;
-	align-items: center;
-	width: 100%;
-	height: auto;
-
-	&__content {
-		width: calc(100% - 30px);
-	}
+	padding: 5px 0;
 }
 
-.bookmarks-panel-checkbox {
-	margin: 0 5px;
-
-	.checkbox__control {
-		background-color: $bookmarkPanelCheckboxColor;
-	}
+.window__controls.bookmark-panel-header {
+	padding: 12px 16px;
+	overflow: hidden;
+	gap: 12px;
+	color: var(--text-primary);
+	border-radius: 0 0 5px 5px;
+	flex-shrink: 0;
+	align-items: start;
 }
 
 .bookmark-panel-header {
-	padding: 0 8px 8px;
-	background-color: $bookmarkPanelHeaderColor;
-	overflow: hidden;
-	display: flex;
-	flex-direction: column;
-	color: #fff;
-	border-radius: 0 0 5px 5px;
-	flex-shrink: 0;
-
 	&__row {
-		min-height: 32px;
+		width: 100%;
 		font-size: 14px;
 		font-weight: bold;
 		box-sizing: border-box;
 		display: flex;
 		align-items: center;
-		margin-bottom: 5px;
 
-		&-input {
-			width: 100%;
-			padding: 3px 5px;
-			margin: 0 10px;
-			border-radius: $bubbleBorderRadius;
-			min-height: 30px;
-			background-color: rgba(#ffffff, 0.5);
-			font-size: 13px;
-			color: $primaryTextColor;
-			box-sizing: border-box;
-			// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
-			min-width: 0;
-			&:disabled {
-				opacity: 0.5;
-			}
-			&:focus {
-				background-color: #fff;
-
-				&::placeholder {
-					color: $secondaryTextColor;
-				}
-			}
-
-			&.non-empty {
-				background-color: #fff;
-			}
-		}
-
-		&-label {
-			width: 80px;
-			font-weight: bold;
-			font-size: 14px;
-			flex-shrink: 0;
+		&:last-child {
+			justify-content: space-between;
 		}
 	}
 }
 
-.bookmark-panel-header-actions {
+.bookmark-counter {
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	width: 100%;
-	height: auto;
+	justify-content: center;
+	padding: 0px 10px;
+	height: 24px;
 
-	.button {
-		padding: 3px 0;
-		border-radius: 3px;
-		display: flex;
-		align-items: center;
-		font-size: 14px;
-		font-weight: bold;
-		color: $bookmarkPanelButtonTextColor;
-		background: $bookmarkPanelButtonBackgroundColor;
-		font-family: 'Open Sans', sans-serif;
-		cursor: pointer;
-		outline: none;
-		border: none;
+	background: var(--surface-background);
+	color: var(--text-secondary);
+	border-radius: 8px;
+	font-size: 12px;
+	line-height: 24px;
 
-		&:hover {
-			background: rgba($bookmarkPanelButtonTextColor, 0.2);
-		}
-
-		&__icon {
-			margin-left: 3px;
-			margin-right: 1px;
-			flex-shrink: 0;
-			opacity: 0.85;
-			@include icon(url(../../resources/icons/cross-icon-white.svg), 20px, 20px);
-		}
-
-		&__label {
-			margin-right: 6px;
-		}
-
-		&:disabled {
-			opacity: 0.5;
-			cursor: inherit;
-		}
-	}
-
-	.bookmarks-panel-checkbox {
-		margin-right: 10px;
+	& > span {
+		color: var(--text-info);
+		padding: 0;
+		margin: 0;
 	}
 }
 
-.bookmark-type-switcher {
-	display: flex;
-
-	&__switch-bookmark-type-button {
-		margin-left: 10px;
-	}
+.bookmarks-panel__list {
+	@include scrollbar;
 }
 
-.switch-bookmark-type-button {
-	border: none;
-	outline: none;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	color: white;
-	background: none;
-	padding: 3px 8px 3px 5px;
-	border-radius: 5px;
-	opacity: 0.8;
-
-	transition: color 0.3s, background-color 0.3s, opacity 0.3s;
-
-	&.active {
-		color: $primaryTextColor;
-		background-color: white;
-		opacity: 1;
-	}
-
-	&.disabled {
-		opacity: 0.5;
-		cursor: inherit;
-	}
-
-	&__icon {
-		&.event {
-			@include icon(url(../../resources/icons/workspace-events-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
-			}
-		}
-		&.message {
-			@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
-			}
-		}
-	}
-
-	&__label {
-		margin-left: 3px;
-		font-size: 14px;
-	}
+.bookmarks-panel__list-item {
+	padding: 2px 12px;
 }

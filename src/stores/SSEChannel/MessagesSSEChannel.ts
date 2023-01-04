@@ -19,7 +19,7 @@ import { action, when } from 'mobx';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
-import { isEventMessage } from '../../helpers/event';
+import { isEventMessage } from '../../helpers/message';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
@@ -74,7 +74,6 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.clearSchedulersAndTimeouts();
 	};
 
-	@action
 	private _onKeepAliveResponse = (event: Event) => {
 		if (this.eventListeners.onKeepAliveResponse) {
 			const keepAlive = JSON.parse((event as MessageEvent).data) as SSEHeartbeat;
@@ -120,7 +119,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
-				stream: this.queryParams.stream.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
+				stream: this.queryParams.stream,
 				messageId: this.messageIds,
 			},
 			type: this.type,
@@ -133,15 +132,14 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.channel.addEventListener('message_ids', this._onMessageIdsEvent);
 	};
 
-	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
-		return new Promise(res => {
+	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> =>
+		new Promise(res => {
 			this.initialResponseTimeout = window.setTimeout(() => {
 				res(this.getNextChunk());
 				this.clearFetchedChunkSubscription();
 				this.initUpdateScheduler();
 			}, timeout);
 		});
-	};
 
 	private getFetchedChunk = async (): Promise<EventMessage[]> => {
 		this.fetchedChunkSubscription = when(() => !this.isLoading);

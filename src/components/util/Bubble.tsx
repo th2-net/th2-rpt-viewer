@@ -18,7 +18,7 @@ import * as React from 'react';
 import AutocompleteInput from './AutocompleteInput';
 import { stopPropagationHandler } from '../../helpers/react';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
-import KeyCodes from '../../util/KeyCodes';
+import KeyCodes from '../../models/util/KeyCodes';
 import '../../styles/bubble.scss';
 
 interface Props {

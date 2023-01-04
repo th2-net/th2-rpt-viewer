@@ -13,35 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import React from 'react';
-import { createStyleSelector } from '../../../helpers/styleCreators';
-import { FilterRowTogglerConfig } from '../../../models/filter/FilterInputs';
-import '../../../styles/toggler.scss';
+
+import clsx from 'clsx';
+import { FilterRowTogglerConfig } from 'models/filter/FilterInputs';
+import { AndIcon, IncludeIcon, StrictIcon } from 'components/icons/FilterTogglerIcon';
+import { ButtonBase } from 'components/buttons/ButtonBase';
+import 'styles/toggler.scss';
+
+const icons: Record<string, () => JSX.Element> = {
+	exclude: IncludeIcon,
+	and: AndIcon,
+	strict: StrictIcon,
+};
 
 const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
-	const { value, toggleValue, possibleValues, disabled } = config;
-	const [firstLabel, secondLabel] = possibleValues;
+	const { value, toggleValue, options, disabled } = config;
 
-	const togglerClassName = createStyleSelector('toggler', disabled ? 'disabled' : '');
-	const togglerIconClassName = createStyleSelector(
-		'toggler__icon',
-		value ? firstLabel.toLowerCase() : secondLabel.toLowerCase(),
-	);
+	const [firstLabel, secondLabel] = [options[0].split('-')[0], options[1].split('-')[0]];
+
+	const onToggle = () => {
+		if (!disabled) {
+			toggleValue();
+		}
+	};
+
+	const Icon = icons[firstLabel.toLowerCase()];
 
 	return (
-		<div className='toggler-wrapper'>
-			<div
-				className={togglerClassName}
-				onClick={() => {
-					if (!disabled) {
-						toggleValue();
-					}
-				}}>
-				<div className={togglerIconClassName}></div>
-				<p className='toggler__label'>
-					{firstLabel.includes('Strict') ? 'Strict' : value ? firstLabel : secondLabel}
-				</p>
-			</div>
+		<div className={clsx('toggler-row', { disabled })}>
+			<ButtonBase onClick={onToggle} className={clsx('toggler-row__button', { active: value })}>
+				{Icon && <Icon />}
+			</ButtonBase>
+			<p className='toggler-row__label'>{value ? firstLabel : secondLabel}</p>
 		</div>
 	);
 };

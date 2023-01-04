@@ -16,6 +16,7 @@
 
 @import './common/vars';
 @import './util.scss';
+@import './theme.scss';
 
 svg g {
 	user-select: none;
@@ -31,6 +32,16 @@ body {
 	}
 
 	overflow: hidden;
+}
+
+* {
+	transition-property: color, background-color;
+	transition-duration: 0.25s, 0.25s;
+}
+
+svg,
+svg > * {
+	transition: none;
 }
 
 p,
@@ -66,21 +77,19 @@ input {
 
 .app {
 	display: grid;
-	grid-template-rows: 100px 1fr;
+	grid-template-rows: 31px 1fr;
 	grid-template-columns: 100%;
-	row-gap: 20px;
+	row-gap: 9px;
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	background-color: $windowsLayoutBackgroundColor;
+	background-color: var(--app-background);
 
 	&__workspaces {
 		position: relative;
 		z-index: 100;
 		height: 100%;
 		width: 100%;
-		display: flex;
-		flex-direction: column;
 		padding: 0 10px;
 		overflow: hidden;
 	}
@@ -102,15 +111,35 @@ input {
 	}
 }
 
+.header {
+	position: relative;
+	height: 100%;
+	width: 100%;
+	background-color: var(--app-header-background);
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.progress {
+	border-radius: 50%;
+	animation: spin 2s linear infinite;
+	border: 2px solid var(--info-color);
+	border-top: 2px solid transparent;
+}
+
 .splash-screen {
 	width: 100%;
 	height: 100%;
 	display: grid;
 	place-items: center;
-
-	&__spinner {
-		@include spinner(5px, 40px, 2s);
-	}
 }
 
 .attached-message-icon {
@@ -121,29 +150,18 @@ input {
 	@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 }
 
-.event-icon {
-	width: 12px;
-	height: 12px;
-	margin: 1px;
-	border-radius: 50%;
+.filtered {
+	background-color: $filteredTextColor;
 
-	&.passed {
-		background-color: $graphOverlayPassedEventsColor;
-	}
-
-	&.failed {
-		background-color: $graphOverlayFailedEventsColor;
+	&.highlighted {
+		display: inline-block;
+		line-height: 11px;
+		height: 11px;
+		border-top: 2px solid $filteredTextColor;
+		border-bottom: 2px solid $filteredTextColor;
 	}
 }
 
 .app-loader {
-	display: flex;
-	width: 100%;
-	height: 100%;
-	justify-content: center;
-	align-items: center;
-	background-color: $windowsLayoutBackgroundColor;
-	& i {
-		@include spinner(5px, 40px, 2s);
-	}
+	background-color: var(--app-background);
 }

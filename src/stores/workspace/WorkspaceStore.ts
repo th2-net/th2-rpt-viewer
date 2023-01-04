@@ -14,242 +14,218 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
+import debounce from 'lodash.debounce';
+import { copyTextToClipboard } from 'helpers/copyHandler';
+import { showNotification } from 'helpers/showNotification';
+import { SearchStore } from 'modules/search/stores/SearchStore';
+import { IndexedDbStores, SavedWorkspaceState } from 'api/indexedDb';
+import {
+	IBookmarksStore,
+	IEventsStore,
+	IFilterConfigStore,
+	IMessagesStore,
+	ISearchStore,
+} from 'models/Stores';
+import { Panel } from 'models/Panel';
+import { Session, SessionHistoryStore } from 'modules/messages/stores//SessionHistoryStore';
+import { MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
-} from '../messages/MessagesStore';
-import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../events/EventsStore';
+} from 'modules/messages/stores/MessagesStore';
+import FiltersHistoryStore from 'stores/FiltersHistoryStore';
+import { MessagesSearchResult } from 'modules/search/stores/SearchResult';
+import EventsStore, {
+	EventStoreDefaultStateType,
+	EventStoreURLState,
+} from '../../modules/events/stores/EventsStore';
 import ApiSchema from '../../api/ApiSchema';
-import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { sortMessagesByTimestamp } from '../../helpers/message';
-import { GraphStore } from '../GraphStore';
-import { isEventMessage } from '../../helpers/event';
-import { TimeRange } from '../../models/Timestamp';
+import { isEventMessage } from '../../helpers/message';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import { SearchStore } from '../SearchStore';
-import { SessionsStore } from '../messages/SessionsStore';
-import { isAbortError } from '../../helpers/fetch';
-import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
-import MessagesViewTypeStore from '../messages/MessagesViewTypeStore';
-import { IndexedDbStores, Settings } from '../../api/indexedDb';
-import notificationsStore from '../NotificationsStore';
-import { getArrayOfUniques } from '../../helpers/array';
+import { timestampToNumber } from '../../helpers/date';
 
-export interface WorkspaceUrlState {
-	events: Partial<EventStoreURLState> | string;
-	messages: Partial<MessagesStoreURLState> | string;
-	timeRange?: TimeRange;
-	interval: number | null;
+export type WorkspaceUrlState = Partial<{
+	events: EventStoreURLState;
+	messages: Partial<MessagesStoreURLState>;
 	layout: WorkspacePanelsLayout;
-}
+}>;
 
 export type WorkspaceInitialState = Partial<{
 	events: EventStoreDefaultStateType;
 	messages: MessagesStoreDefaultStateType;
-	timeRange?: TimeRange;
-	interval: number | null;
 	layout: WorkspacePanelsLayout;
+	id: string;
 }>;
 
 export default class WorkspaceStore {
-	public eventsStore: EventsStore;
+	public readonly id = nanoid();
 
-	public messagesStore: MessagesStore;
+	public readonly searchStore: ISearchStore;
 
-	public messageViewStore: MessagesViewTypeStore;
+	public readonly eventsStore: IEventsStore;
 
-	public viewStore: WorkspaceViewStore;
+	public readonly messagesStore: IMessagesStore;
 
-	public graphStore: GraphStore;
-
-	public id = nanoid();
+	public readonly viewStore: WorkspaceViewStore;
 
 	constructor(
 		private workspacesStore: WorkspacesStore,
-		private selectedStore: SelectedStore,
-		private searchStore: SearchStore,
-		private sessionsStore: SessionsStore,
-		private messageDisplayRulesStore: MessageDisplayRulesStore,
+		private sessionsStore: SessionHistoryStore,
+		private filterConfigStore: IFilterConfigStore,
+		private filtersHistoryStore: FiltersHistoryStore,
+		private bookmarksStore: IBookmarksStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
-		interval: number,
 	) {
+		if (initialState.id) {
+			this.id = initialState.id;
+		}
+
+		this.searchStore = new SearchStore(
+			this.id,
+			this.workspacesStore,
+			api,
+			this.workspacesStore.filtersHistoryStore,
+			this.sessionsStore,
+			this.filterConfigStore,
+		);
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
-		this.graphStore = new GraphStore(this.selectedStore, initialState.timeRange, interval);
-		this.eventsStore = new EventsStore(
-			this,
-			this.graphStore,
-			this.searchStore,
-			this.api,
-			this.workspacesStore.filtersHistoryStore,
-			initialState.events,
-		);
+		this.eventsStore = new EventsStore(this, this.filterConfigStore, this.api, initialState.events);
 		this.messagesStore = new MessagesStore(
-			this,
-			this.graphStore,
-			this.selectedStore,
-			this.searchStore,
+			this.filterConfigStore,
 			this.api,
-			this.workspacesStore.filtersHistoryStore,
-			this.sessionsStore,
 			initialState.messages,
+			{
+				onSessionsSubmit: this.sessionsStore.saveSessions,
+				toggleBookmark: this.bookmarksStore.toggleMessagePin,
+				onFilterSubmit: this.filtersHistoryStore.onMessageFilterSubmit,
+			},
 		);
 
-		this.messageViewStore = new MessagesViewTypeStore(
-			this.messageDisplayRulesStore,
-			this.messagesStore,
-		);
+		reaction(() => this.eventsStore.selectedNode, this.messagesStore.onSelectedEventChange);
 
-		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
+		reaction(() => this.bookmarksStore.messages, this.onMessagesBookmarkChange, {
+			fireImmediately: true,
+		});
 
-		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
+		reaction(() => this.sessionsStore.sessions, this.onSessionHistoryChange, {
+			fireImmediately: true,
+		});
 
-		reaction(() => this.graphStore.eventInterval, this.saveInterval);
-	}
-
-	private saveInterval = (interval: number) => {
-		this.api.indexedDb
-			.updateDbStoreItem<Settings>(IndexedDbStores.SETTINGS, {
-				timestamp: 0,
-				interval,
-			})
-			.catch(() => {
-				this.api.indexedDb.addDbStoreItem<Settings>(IndexedDbStores.SETTINGS, {
-					timestamp: 0,
-					interval,
-				});
-			});
-	};
-
-	@observable
-	public attachedMessagesIds: Array<string> = [];
-
-	@observable
-	public attachedMessages: Array<EventMessage> = [];
-
-	@observable
-	public isLoadingAttachedMessages = false;
-
-	@computed
-	public get attachedMessagesStreams() {
-		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
+		reaction(() => this.state, this.saveWorkspaceState);
 	}
 
 	@computed
-	public get isActive(): boolean {
-		return this.workspacesStore.activeWorkspace === this;
+	public get state(): WorkspaceUrlState {
+		return {
+			events: this.eventsStore.urlState,
+			messages: this.messagesStore.urlState,
+			layout: this.viewStore.panelsLayout,
+		};
 	}
 
-	@action
-	public setAttachedMessagesIds = (attachedMessageIds: string[]) => {
-		this.attachedMessagesIds = [...new Set(attachedMessageIds)];
-	};
+	public copyWorkspaceURL = () => {
+		const { viewTypeMap, ...messagesState } = this.state.messages || {};
+		const urlState: WorkspaceUrlState = toJS(
+			{ ...this.state, messages: messagesState },
+			{ recurseEverything: true },
+		);
 
-	private attachedMessagesAC: AbortController | null = null;
+		const searchString = new URLSearchParams({
+			workspaces: window.btoa(JSON.stringify([urlState])),
+		});
 
-	@action
-	private getAttachedMessages = async (attachedMessagesIds: string[]) => {
-		this.isLoadingAttachedMessages = true;
-		if (this.attachedMessagesAC) {
-			this.attachedMessagesAC.abort();
-		}
-		this.attachedMessagesAC = new AbortController();
-		try {
-			const cachedMessages = this.attachedMessages.filter(message =>
-				attachedMessagesIds.includes(message.id),
-			);
-			const messagesToLoad = attachedMessagesIds.filter(
-				messageId => cachedMessages.findIndex(message => message.id === messageId) === -1,
-			);
-			const messages = await Promise.all(
-				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
-			);
-			const newStreams = getArrayOfUniques([
-				...messages.map(message => message.sessionId),
-				...this.messagesStore.filterStore.filter.streams,
-			]);
-
-			messages
-				.map(message => message.sessionId)
-				.filter(
-					(stream, index, self) =>
-						index === self.findIndex(str => str === stream) &&
-						!newStreams.slice(0, this.messagesStore.filterStore.SESSIONS_LIMIT).includes(stream),
-				)
-				.forEach(stream =>
-					notificationsStore.addMessage({
-						notificationType: 'genericError',
-						type: 'error',
-						header: `Sessions limit of ${this.messagesStore.filterStore.SESSIONS_LIMIT} reached.`,
-						description: `Session ${stream} not included in current sessions. 
-						 Attached messages from this session not included in workspace.`,
-						id: nanoid(),
-					}),
-				);
-
-			const messagesFiltered = messages.filter(message =>
-				newStreams
-					.slice(0, this.messagesStore.filterStore.SESSIONS_LIMIT)
-					.includes(message.sessionId),
-			);
-
-			this.attachedMessages = sortMessagesByTimestamp(
-				[...cachedMessages, ...messagesFiltered].filter(Boolean),
-			);
-		} catch (error) {
-			if (!isAbortError(error)) {
-				console.error('Error while loading attached messages', error);
-			}
-			this.attachedMessages = [];
-		} finally {
-			this.attachedMessagesAC = null;
-			this.isLoadingAttachedMessages = false;
-		}
+		copyTextToClipboard(
+			[window.location.origin, window.location.pathname, `?${searchString}`].join(''),
+		);
+		showNotification('Workspace link copied to clipboard');
 	};
 
 	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
 		if (isEventMessage(savedItem)) {
-			this.messagesStore.exportStore.disableExport();
-			this.viewStore.activePanel = this.messagesStore;
+			this.viewStore.activePanel = Panel.Messages;
+			if (!this.viewStore.isExpanded(Panel.Messages)) {
+				this.viewStore.expandPanel(Panel.Messages);
+			}
 			this.messagesStore.onMessageSelect(savedItem);
 		} else {
-			this.viewStore.activePanel = this.eventsStore;
+			this.viewStore.activePanel = Panel.Events;
+			if (!this.viewStore.isExpanded(Panel.Events)) {
+				this.viewStore.expandPanel(Panel.Events);
+			}
 			this.eventsStore.goToEvent(savedItem);
 		}
 	};
 
 	@action
-	public onTimestampSelect = (timestamp: number, isTimestampApplied?: boolean) => {
-		this.graphStore.setTimestamp(timestamp);
-		if (isTimestampApplied) {
-			this.eventsStore.onRangeChange(timestamp);
+	public onSearchResultItemSelect = async (
+		resultItem: EventTreeNode | EventAction | EventMessage,
+		isNewWorkspace?: boolean,
+	) => {
+		if (isNewWorkspace) {
+			let initialWorkspaceState: WorkspaceInitialState = {};
+
+			if (isEventMessage(resultItem)) {
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
+					this.searchStore.currentSearch as MessagesSearchResult,
+					timestampToNumber(resultItem.timestamp),
+					resultItem,
+				);
+			} else {
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
+					timestampToNumber(resultItem.startTimestamp),
+					resultItem,
+				);
+			}
+
+			const newWorkspace = await this.workspacesStore.createWorkspace(initialWorkspaceState);
+			this.workspacesStore.addWorkspace(newWorkspace);
+		} else {
+			this.onSavedItemSelect(resultItem);
 		}
 	};
 
-	@action
-	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
-		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
-	};
+	public onFilterByParentEvent = (parentEvent: EventTreeNode) => {
+		this.searchStore.filterEventsByParent(
+			parentEvent.eventId,
+			timestampToNumber(parentEvent.startTimestamp),
+		);
 
-	stopAttachedMessagesLoading = () => {
-		if (this.attachedMessagesAC) {
-			this.attachedMessagesAC.abort();
-			this.attachedMessagesAC = null;
+		this.viewStore.setActivePanel(Panel.Search);
+		if (!this.viewStore.isExpanded(Panel.Search)) {
+			this.viewStore.expandPanel(Panel.Search);
 		}
 	};
 
-	dispose = () => {
-		// Delete all subscriptions and cancel pending requests
+	private onMessagesBookmarkChange = (bookmarks: MessageBookmark[]) => {
+		this.messagesStore.onBookmarksChange(bookmarks.map(bookmark => bookmark.item));
+	};
+
+	private onSessionHistoryChange = (sessions: Session[]) => {
+		this.messagesStore.onSessionHistoryChange(sessions.map(s => s.session));
+	};
+
+	public dispose = () => {
 		this.messagesStore.dispose();
 		this.eventsStore.dispose();
+		this.saveWorkspaceState.cancel();
 	};
+
+	private saveWorkspaceState = debounce(() => {
+		const stateToSave: SavedWorkspaceState = {
+			id: this.id,
+			timestamp: Date.now(),
+			...toJS(this.state, { recurseEverything: true }),
+		};
+		this.api.indexedDb.updateDbStoreItem(IndexedDbStores.WORKSPACES_STATE, stateToSave);
+	}, 3000);
 }

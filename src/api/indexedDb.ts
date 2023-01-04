@@ -16,14 +16,16 @@
 
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
+import { EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
+import { Session } from 'modules/messages/stores/SessionHistoryStore';
+import { SearchHistory } from 'modules/search/stores/SearchStore';
+import { WorkspaceUrlState } from 'stores/workspace/WorkspaceStore';
 import { nanoid } from 'nanoid';
-import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
-import { OrderRule } from '../stores/MessageDisplayRulesStore';
-import { SearchHistory } from '../stores/SearchStore';
+import { OrderRule } from '../modules/messages/stores/MessageDisplayRulesStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
-import { Session } from '../stores/messages/SessionsStore';
-import { EventBookmark, MessageBookmark } from '../models/Bookmarks';
 import { FilterState } from '../models/search/Search';
 import notificationsStore from '../stores/NotificationsStore';
 
@@ -31,17 +33,22 @@ export enum IndexedDbStores {
 	EVENTS = 'events',
 	MESSAGES = 'messages',
 	SEARCH_HISTORY = 'search-history',
-	GRAPH_SEARCH_HISTORY = 'graph-search-history',
 	DISPLAY_RULES = 'display-rules',
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTERS_HISTORY = 'filters-history',
 	SESSIONS_HISTORY = 'sessions-history',
 	SETTINGS = 'settings',
+	WORKSPACES_STATE = 'workspaces-state',
 }
 
 export type Settings = {
 	timestamp: 0;
 	interval: number;
+};
+
+export type SavedWorkspaceState = WorkspaceUrlState & {
+	id: string;
+	timestamp: number;
 };
 
 type indexedDbStoresKeyPaths = {
@@ -52,13 +59,13 @@ export type DbData =
 	| EventBookmark
 	| MessageBookmark
 	| SearchHistory
-	| GraphSearchResult
 	| MessageDisplayRule
 	| OrderRule
 	| MessageSortOrderItem
 	| FiltersHistoryType<FilterState>
 	| Session
-	| Settings;
+	| Settings
+	| SavedWorkspaceState;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -82,13 +89,6 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
-	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: {
-		key: string;
-		value: GraphSearchResult;
-		indexes: {
-			timestamp: number;
-		};
-	};
 	[IndexedDbStores.DISPLAY_RULES]: {
 		key: string;
 		value: MessageDisplayRule | OrderRule;
@@ -105,7 +105,7 @@ interface TH2DB extends DBSchema {
 	};
 	[IndexedDbStores.FILTERS_HISTORY]: {
 		key: string;
-		value: FiltersHistoryType<FilterState>;
+		value: FiltersHistoryType<MessagesFilter | EventsFilter>;
 		indexes: {
 			timestamp: number;
 		};
@@ -124,6 +124,13 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
+	[IndexedDbStores.WORKSPACES_STATE]: {
+		key: string;
+		value: SavedWorkspaceState;
+		indexes: {
+			timestamp: number;
+		};
+	};
 }
 
 export const indexedDbLimits = {
@@ -131,24 +138,24 @@ export const indexedDbLimits = {
 	[IndexedDbStores.FILTERS_HISTORY]: 40,
 	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 100,
-	[IndexedDbStores.SEARCH_HISTORY]: 5,
-	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
+	[IndexedDbStores.SEARCH_HISTORY]: 10,
 	[IndexedDbStores.SESSIONS_HISTORY]: 20,
+	[IndexedDbStores.WORKSPACES_STATE]: 10,
 } as const;
 
 const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.EVENTS]: 'id',
 	[IndexedDbStores.MESSAGES]: 'id',
-	[IndexedDbStores.SEARCH_HISTORY]: 'timestamp',
-	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 'id',
+	[IndexedDbStores.SEARCH_HISTORY]: 'workspaceId',
 	[IndexedDbStores.DISPLAY_RULES]: 'id',
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
 	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
 	[IndexedDbStores.SETTINGS]: 'timestamp',
+	[IndexedDbStores.WORKSPACES_STATE]: 'id',
 };
 
-const dbVersion = 4;
+const dbVersion = 5;
 
 export class IndexedDB {
 	@observable
@@ -164,7 +171,10 @@ export class IndexedDB {
 	private async initDb() {
 		try {
 			this.db = await openDB<TH2DB>(this.env, dbVersion, {
-				upgrade: async db => {
+				upgrade: async (db, oldVersion, newVersion) => {
+					if (db.objectStoreNames.contains(IndexedDbStores.SEARCH_HISTORY) && newVersion === 5) {
+						db.deleteObjectStore(IndexedDbStores.SEARCH_HISTORY);
+					}
 					Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 						const name = storeName as IndexedDbStores;
 						if (!db.objectStoreNames.contains(name)) {
@@ -186,7 +196,7 @@ export class IndexedDB {
 		if (!this.db) {
 			await when(() => this.db !== null);
 		}
-		return (this.db as unknown) as IDBPDatabase<TH2DB>;
+		return this.db as unknown as IDBPDatabase<TH2DB>;
 	};
 
 	public deleteDbStoreItem = async (storeName: IndexedDbStores, key: string | number) => {
@@ -258,7 +268,12 @@ export class IndexedDB {
 			cursor = await cursor.continue();
 		}
 
-		return (data as unknown) as Promise<T[]>;
+		return data as unknown as Promise<T[]>;
+	};
+
+	public getData = async <T extends DbData>(storeName: IndexedDbStores, query: string | number) => {
+		const db = await this.getDb();
+		return db.get(storeName, query) as unknown as T;
 	};
 
 	public getStoreKeys = async <T extends IDBValidKey>(
@@ -285,7 +300,7 @@ export class IndexedDB {
 			cursor = await cursor.continue();
 		}
 
-		return (data as unknown) as Promise<T[]>;
+		return data as unknown as Promise<T[]>;
 	};
 
 	public clearAllData = async () => {

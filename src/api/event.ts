@@ -17,13 +17,12 @@
 import { EventApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import { EventAction } from '../models/EventAction';
-import { getEventParentId } from '../helpers/event';
 import fetch from '../helpers/fetchRetry';
 
 const eventHttpApi: EventApiSchema = {
 	getEvent: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/event/${id}?${params}`, {
+		const res = await fetch(`${process.env.BASE_URL}/event/${id}?${params}`, {
 			signal,
 		});
 
@@ -54,7 +53,7 @@ const eventHttpApi: EventApiSchema = {
 				if (currentParentEvent) {
 					path.unshift(currentParentEvent);
 				}
-				currentParentId = getEventParentId(currentParentEvent);
+				currentParentId = currentParentEvent.parentEventId;
 			}
 
 			return path;

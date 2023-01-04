@@ -14,43 +14,40 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { lazy, Suspense } from 'react';
 import * as ReactDOM from 'react-dom';
 import 'regenerator-runtime/runtime';
 import 'core-js/stable';
 import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
+import SplashScreen from 'components/SplashScreen';
+import { ThemeProvider } from 'components/ThemeProvider';
 import ErrorBoundary from './components/util/ErrorBoundary';
-import { ViewMode, ViewModeProvider } from './contexts/viewModeContext';
+import { ViewMode, ViewModeProvider } from './components/ViewModeProvider';
 import './styles/root.scss';
-
-const searchParams = new URLSearchParams(window.location.search);
 
 let App: React.LazyExoticComponent<() => JSX.Element>;
 
-if (searchParams.get('viewMode') === 'embedded') {
-	App = React.lazy(() => import('./components/embedded/EmbeddedApp'));
-} else if (searchParams.get('viewMode') === 'embeddedMessages') {
-	App = React.lazy(() => import('./components/embedded/EmbeddedMessages'));
-} else {
-	App = React.lazy(() => import('./components/App'));
-}
+const viewModeParam = new URLSearchParams(window.location.search).get('viewMode');
+const viewMode = Object.values(ViewMode).includes(viewModeParam as ViewMode)
+	? (viewModeParam as ViewMode)
+	: ViewMode.Full;
 
-const viewModeParam = searchParams.get('viewMode');
-const viewMode = (viewModeParam === null ? ViewMode.Full : viewModeParam) as ViewMode;
+if (viewMode === ViewMode.Full) {
+	App = lazy(() => import('./components/App'));
+} else {
+	App = lazy(() => import('./components/EmbeddedApp'));
+}
 
 ReactDOM.render(
 	<ErrorBoundary>
-		<React.Suspense
-			fallback={
-				<div className='app-loader'>
-					<i />
-				</div>
-			}>
+		<Suspense fallback={<SplashScreen className='app-loader' />}>
 			<ViewModeProvider value={viewMode}>
-				<App />
+				<ThemeProvider>
+					<App />
+				</ThemeProvider>
 			</ViewModeProvider>
-		</React.Suspense>
+		</Suspense>
 	</ErrorBoundary>,
 	document.getElementById('index'),
 );

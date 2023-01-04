@@ -16,20 +16,22 @@
 
 import React, { useState, useRef, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import EventsFilter from 'models/filter/EventsFilter';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import { EntityType } from 'models/EventAction';
+import { IconButton } from 'components/buttons/IconButton';
 import { ModalPortal } from '../util/Portal';
-import '../../styles/filters-history.scss';
 import { useOutsideClickListener, useFiltersHistoryStore } from '../../hooks';
+import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { raf } from '../../helpers/raf';
-import { SearchPanelType } from '../search-panel/SearchPanel';
 import FiltersHistoryItem from './FiltersHistoryItem';
-import { useSearchStore } from '../../hooks/useSearchStore';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
-import EventsFilter from '../../models/filter/EventsFilter';
-import MessagesFilter from '../../models/filter/MessagesFilter';
+import '../../styles/filters-history.scss';
+import { FilterHistoryIcon } from '../icons/FilterHistoryIcon';
 
 interface Props {
-	type?: SearchPanelType;
-	sseFilter?: FiltersState;
+	type: EntityType;
+	filter?: FiltersState;
 	disabled?: boolean;
 }
 
@@ -38,46 +40,28 @@ export type FiltersState = {
 	setState: ((patch: Partial<EventsFilter>) => void) | ((patch: Partial<MessagesFilter>) => void);
 } | null;
 
-const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
+const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
 
-	const {
-		eventsHistory,
-		messagesHistory,
-		toggleFilterPin,
-		deleteHistoryItem,
-	} = useFiltersHistoryStore();
-	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
+	const { eventsHistory, messagesHistory, toggleFilterPin, deleteHistoryItem } =
+		useFiltersHistoryStore();
+	const { eventFilterInfo, messagesFilterInfo } = useFilterConfigStore();
 
-	const toShow: (
-		| FiltersHistoryType<EventsFilter>
-		| FiltersHistoryType<MessagesFilter>
-	)[] = useMemo(() => {
-		const fType = type || formType;
-		return fType === 'event' ? eventsHistory : messagesHistory;
-	}, [eventsHistory, messagesHistory, type, formType]);
-
-	const filtersState: FiltersState = useMemo(() => {
-		if (sseFilter) {
-			return sseFilter;
-		}
-		return filters
-			? {
-					state: filters.state,
-					setState: filters.setState,
-			  }
-			: null;
-	}, [filters, sseFilter]);
+	const toShow: (FiltersHistoryType<EventsFilter> | FiltersHistoryType<MessagesFilter>)[] = useMemo(
+		() => (type === 'event' ? eventsHistory : messagesHistory),
+		[eventsHistory, messagesHistory, type],
+	);
 
 	React.useLayoutEffect(() => {
 		if (isOpen) {
 			raf(() => {
 				if (historyRef.current && buttonRef.current) {
-					const { left, bottom } = buttonRef.current?.getBoundingClientRect();
-					historyRef.current.style.left = `${left}px`;
-					historyRef.current.style.top = `${bottom - 45 - historyRef.current.clientHeight}px`;
+					const { left, bottom, width } = buttonRef.current.getBoundingClientRect();
+					historyRef.current.style.position = 'absolute';
+					historyRef.current.style.left = `${left + width}px`;
+					historyRef.current.style.top = `${bottom - width / 2}px`;
 				}
 			}, 2);
 		}
@@ -85,20 +69,16 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 
 	useOutsideClickListener(historyRef, (e: MouseEvent) => {
 		const target = e.target as Element;
-		if (target.closest('.filter-history-item')) {
-			e.stopImmediatePropagation();
+		if (buttonRef.current && buttonRef.current.contains(target)) {
 			return;
 		}
-		if (target !== buttonRef.current) {
-			setIsOpen(false);
-		}
+		setIsOpen(false);
 	});
 
 	const onFilterPin = React.useCallback(
-		(filter: FiltersHistoryType<EventsFilter | MessagesFilter>) => {
-			const isPinnedUpdated = !filter.isPinned;
-			toggleFilterPin(filter);
-			if (isPinnedUpdated) {
+		(pinnedFilter: FiltersHistoryType<EventsFilter | MessagesFilter>) => {
+			toggleFilterPin(pinnedFilter);
+			if (!pinnedFilter.isPinned) {
 				raf(() => {
 					historyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
 				}, 2);
@@ -111,41 +91,42 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 
 	return toShow.length ? (
 		<>
-			<button
+			<IconButton
 				ref={buttonRef}
 				className='filters-history-open'
-				onClick={() => {
-					setIsOpen(o => !o);
-				}}
-				title={'Filters history'}
-				disabled={disabled}
-			/>
-			<ModalPortal isOpen={isOpen}>
-				<div ref={historyRef} className='filters-history'>
-					{toShow.map((item, index) => (
-						<React.Fragment key={item.timestamp}>
-							<FiltersHistoryItem
-								item={item}
-								filter={filtersState}
-								eventsFilterInfo={eventFilterInfo}
-								messagesFilterInfo={messagesFilterInfo}
-								closeHistory={closeHistory}
-								toggleFilterPin={onFilterPin}
-								deleteHistoryItem={deleteHistoryItem}
-							/>
-							{toShow.length - 1 > index && <hr />}
-						</React.Fragment>
-					))}
+				onClick={() => setIsOpen(o => !o)}
+				title='Filters history'
+				disabled={disabled}>
+				<FilterHistoryIcon className='history-icon' />
+			</IconButton>
+			<ModalPortal isOpen={isOpen} ref={historyRef}>
+				<div className='filters-history'>
+					{filter &&
+						toShow.map((item, index) => (
+							<React.Fragment key={item.timestamp}>
+								<FiltersHistoryItem
+									item={item}
+									filter={filter}
+									eventsFilterInfo={eventFilterInfo}
+									messagesFilterInfo={messagesFilterInfo}
+									closeHistory={closeHistory}
+									toggleFilterPin={onFilterPin}
+									deleteHistoryItem={deleteHistoryItem}
+								/>
+								{toShow.length - 1 > index && <hr />}
+							</React.Fragment>
+						))}
 				</div>
 			</ModalPortal>
 		</>
 	) : (
-		<button
+		<IconButton
 			ref={buttonRef}
 			className='filters-history-open'
 			title={'Filters history'}
-			disabled={true}
-		/>
+			disabled={true}>
+			<FilterHistoryIcon className='filters-history-open history-icon' />
+		</IconButton>
 	);
 };
 

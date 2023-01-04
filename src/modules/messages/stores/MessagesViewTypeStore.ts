@@ -1,0 +1,58 @@
+/** ****************************************************************************
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************** */
+
+import { action, observable } from 'mobx';
+import { EventMessage } from 'models/EventMessage';
+import { MessagesStoreURLState } from './MessagesStore';
+import MessageDisplayRulesStore from './MessageDisplayRulesStore';
+import { SavedMessageViewType } from './SavedMessageViewType';
+
+class MessagesViewTypeStore {
+	constructor(
+		private messageDisplayRulesStore?: MessageDisplayRulesStore,
+		private initialValues: MessagesStoreURLState['viewTypeMap'] = {},
+	) {}
+
+	@observable
+	public savedViewTypes = new Map<string, SavedMessageViewType>();
+
+	@action
+	public getSavedViewType = (message: EventMessage): SavedMessageViewType => {
+		let savedViewType = this.savedViewTypes.get(message.id);
+
+		if (!savedViewType) {
+			savedViewType = new SavedMessageViewType(
+				message,
+				this.messageDisplayRulesStore,
+				this.initialValues ? this.initialValues[message.id] : undefined,
+			);
+			if (this.initialValues) {
+				delete this.initialValues[message.id];
+			}
+			this.savedViewTypes.set(message.id, savedViewType);
+		}
+
+		return savedViewType;
+	};
+
+	@action
+	public resetSavedViewTypes = () => {
+		this.savedViewTypes.clear();
+		this.initialValues = {};
+	};
+}
+
+export default MessagesViewTypeStore;

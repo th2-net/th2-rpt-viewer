@@ -90,8 +90,8 @@ export function useFilterConfig<T extends Filter>({
 	}, [filter]);
 
 	const getValuesUpdater = useCallback(
-		(filterName: FilterKeys) => {
-			return function updateFilter(values: string | string[]) {
+		(filterName: FilterKeys) =>
+			function updateFilter(values: string | string[]) {
 				setFilterState(currentState => {
 					const state = currentState && currentState[filterName];
 					if (!state) return currentState;
@@ -103,26 +103,24 @@ export function useFilterConfig<T extends Filter>({
 						},
 					} as T;
 				});
-			};
-		},
+			},
 		[setFilterState],
 	);
 
 	const setCurrentValue = useCallback(
-		(filterName: string) => {
-			return function updateCurrentValue(value: string) {
+		(filterName: string) =>
+			function updateCurrentValue(value: string) {
 				setCurrentValues(values => ({
 					...values,
 					[filterName]: value,
 				}));
-			};
-		},
+			},
 		[setCurrentValues],
 	);
 
 	const getToggler = useCallback(
-		(filterName: FilterKeys, paramName: SSEFilterParameter['name']) => {
-			return function updateFilter() {
+		(filterName: FilterKeys, paramName: SSEFilterParameter['name']) =>
+			function updateFilter() {
 				setFilterState(currentState => {
 					const state = currentState && currentState[filterName];
 					if (!state) return currentState;
@@ -134,8 +132,7 @@ export function useFilterConfig<T extends Filter>({
 						},
 					} as T;
 				});
-			};
-		},
+			},
 		[setFilterState],
 	);
 
@@ -143,9 +140,7 @@ export function useFilterConfig<T extends Filter>({
 		if (!filterState) return [];
 		return filterInfo
 			.slice()
-			.sort((filterA, filterB) => {
-				return order.indexOf(filterA.name) - order.indexOf(filterB.name);
-			})
+			.sort((filterA, filterB) => order.indexOf(filterA.name) - order.indexOf(filterB.name))
 			.map(({ name, hint, parameters }, filterIndex) => {
 				const state = filterState[name];
 
@@ -166,7 +161,6 @@ export function useFilterConfig<T extends Filter>({
 						case 'string':
 							return {
 								type: 'string',
-								label,
 								value: state.values as string,
 								setValue: getValuesUpdater(name),
 								autocompleteList: autocompleteLists[name],
@@ -175,7 +169,6 @@ export function useFilterConfig<T extends Filter>({
 							};
 						case 'string[]':
 							return {
-								label,
 								type: 'multiple-strings',
 								values: state.values as string[],
 								setValues: getValuesUpdater(name),
@@ -191,8 +184,7 @@ export function useFilterConfig<T extends Filter>({
 								type: 'toggler',
 								value: (state as MultipleStringFilter)[filterParam.name] as boolean,
 								toggleValue: getToggler(name, filterParam.name),
-								possibleValues:
-									togglerValues[filterParam.name as 'conjunct' | 'negative' | 'strict'],
+								options: togglerValues[filterParam.name as 'conjunct' | 'negative' | 'strict'],
 							};
 						case 'switcher':
 							return {
@@ -200,8 +192,8 @@ export function useFilterConfig<T extends Filter>({
 								type: 'switcher',
 								value: state.values as string,
 								setValue: getValuesUpdater(name),
-								possibleValues: statusValues,
-								defaultValue: 'any',
+								options: statusValues,
+								defaultValue: 'All',
 							};
 						default:
 							return null;

@@ -14,10 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import MessageBody from './MessageBody';
+import MessageBody from 'modules/messages/models/MessageBody';
+import { OrderRule } from 'modules/messages/stores/MessageDisplayRulesStore';
 import { ActionType } from './EventAction';
 import { notEmpty } from '../helpers/object';
-import { OrderRule } from '../stores/MessageDisplayRulesStore';
 
 export enum MessageViewType {
 	JSON = 'json',
@@ -25,11 +25,6 @@ export enum MessageViewType {
 	ASCII = 'ASCII',
 	BINARY = 'binary',
 }
-
-export type MessageViewTypeConfig = {
-	setViewType: (vt: MessageViewType, id: string) => void;
-	viewType: MessageViewType;
-};
 
 export interface MessageSortOrderItem {
 	id: string;

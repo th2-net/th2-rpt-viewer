@@ -18,9 +18,12 @@ import { observable, action, toJS, computed, reaction, when } from 'mobx';
 import isEqual from 'lodash.isequal';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
+import { capitalize } from 'helpers/stringUtils';
+import { FilterState } from 'models/search/Search';
+import { ActionType } from 'models/EventAction';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
-import { SearchPanelType } from '../components/search-panel/SearchPanel';
-import { FilterState } from '../models/search/Search';
 import {
 	getNonEmptyFilters,
 	isEmptyFilter,
@@ -29,12 +32,12 @@ import {
 } from '../helpers/filters';
 import { NotificationsStore } from './NotificationsStore';
 import { sortByTimestamp } from '../helpers/date';
-import EventsFilter from '../models/filter/EventsFilter';
-import MessagesFilter from '../models/filter/MessagesFilter';
 
-export interface FiltersHistoryType<T extends FilterState> {
+export type FilterType = ActionType.EVENT_ACTION | ActionType.MESSAGE;
+
+export interface FiltersHistoryType<T extends EventsFilter | MessagesFilter> {
 	timestamp: number;
-	type: SearchPanelType;
+	type: FilterType;
 	filters: Partial<T>;
 	isPinned?: boolean;
 }
@@ -124,7 +127,7 @@ class FiltersHistoryStore {
 			getEquilizedItem({
 				filters,
 				timestamp: Date.now(),
-				type: 'event',
+				type: ActionType.EVENT_ACTION,
 				isPinned,
 			}),
 		);
@@ -139,7 +142,7 @@ class FiltersHistoryStore {
 			getEquilizedItem({
 				filters,
 				timestamp: Date.now(),
-				type: 'message',
+				type: ActionType.MESSAGE,
 				isPinned,
 			}),
 		);
@@ -164,11 +167,11 @@ class FiltersHistoryStore {
 	};
 
 	@action
-	public showSuccessNotification = (type: SearchPanelType) => {
+	public showSuccessNotification = (type: FilterType) => {
 		this.notificationsStore.addMessage({
 			type: 'success',
 			notificationType: 'success',
-			description: `${type.charAt(0).toUpperCase()}${type.slice(1)} filter successfully saved!`,
+			description: `${capitalize(type)} filter successfully saved!`,
 			id: nanoid(),
 		});
 	};
@@ -206,7 +209,7 @@ class FiltersHistoryStore {
 	};
 
 	@action
-	private addHistoryItem = async (newItem: FiltersHistoryType<FilterState>) => {
+	private addHistoryItem = async (newItem: FiltersHistoryType<MessagesFilter | EventsFilter>) => {
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newItem);
 		this.filterHistory = [...this.filterHistory, newItem];
 	};
@@ -222,7 +225,7 @@ class FiltersHistoryStore {
 
 export default FiltersHistoryStore;
 
-function getEquilizedItem(newItem: FiltersHistoryType<FilterState>) {
+function getEquilizedItem(newItem: FiltersHistoryType<MessagesFilter | EventsFilter>) {
 	const { type, timestamp, isPinned } = newItem;
 	const equilizedFilter = getNonEmptyFilters(newItem.filters);
 	return {
@@ -230,5 +233,5 @@ function getEquilizedItem(newItem: FiltersHistoryType<FilterState>) {
 		type,
 		filters: equilizedFilter,
 		isPinned,
-	} as FiltersHistoryType<FilterState>;
+	} as FiltersHistoryType<MessagesFilter | EventsFilter>;
 }

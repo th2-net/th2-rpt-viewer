@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
+import { isEventMessage } from './message';
 import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import { EventStatus } from '../models/Status';
+import { EventStatus } from '../modules/events/models/Status';
 import { getTimestampAsNumber, timestampToNumber } from './date';
-
-export function getMinifiedStatus(status: string): string {
-	return status
-		.split('_')
-		.map(str => str[0])
-		.join('')
-		.toUpperCase();
-}
 
 export function getEventStatus(event: EventAction | EventTreeNode): EventStatus {
 	return event.successful ? EventStatus.PASSED : EventStatus.FAILED;
@@ -55,14 +49,6 @@ export function sortEventsByTimestamp(
 		return timestampToNumber(eventA.startTimestamp) - timestampToNumber(eventB.startTimestamp);
 	});
 	return copiedEvents;
-}
-
-export function isEventMessage(object: unknown): object is EventMessage {
-	return (
-		typeof object === 'object' &&
-		object !== null &&
-		(object as EventMessage).type === ActionType.MESSAGE
-	);
 }
 
 export function isEventAction(object: unknown): object is EventAction {
@@ -105,54 +91,13 @@ export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
 }
 
 export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
-	if (isEventMessage(item) && item.parsedMessages) {
-		return item.parsedMessages.reduce((previous, current) => {
-			return previous + current.message.metadata.messageType.concat(',');
-		}, '');
+	if (isEventMessage(item)) {
+		const messageName = item.parsedMessages?.reduce(
+			(previous, current) => previous + current.message.metadata.messageType.concat(','),
+			'',
+		);
+
+		return messageName || 'unknown type';
 	}
-	if (isEventAction(item) || isEventNode(item)) return item.eventName;
-
-	return 'unknown type';
-}
-
-export const convertEventActionToEventTreeNode = (event: EventAction): EventTreeNode => {
-	return {
-		eventId: event.eventId,
-		eventName: event.eventName,
-		eventType: event.eventType,
-		startTimestamp: event.startTimestamp,
-		endTimestamp: event.endTimestamp,
-		successful: event.successful,
-		parentId: event.parentEventId,
-		type: ActionType.EVENT_TREE_NODE,
-	};
-};
-
-export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
-	return {
-		type: ActionType.EVENT_TREE_NODE,
-		isUnknown: true,
-		eventId,
-		eventName: eventId,
-		eventType: 'eventTreeNode',
-		parentId: 'unknown-root',
-		startTimestamp: '',
-		endTimestamp: '',
-		successful: false,
-	};
-};
-
-export const unknownRoot: EventTreeNode = {
-	type: ActionType.EVENT_TREE_NODE,
-	isUnknown: true,
-	eventId: 'unknown-root',
-	eventName: 'Unknown Events',
-	eventType: 'eventTreeNode',
-	parentId: null,
-	startTimestamp: '',
-	successful: false,
-};
-
-export function getEventParentId(e: EventTreeNode | EventAction) {
-	return isEventNode(e) ? e.parentId : e.parentEventId;
+	return item.eventName;
 }

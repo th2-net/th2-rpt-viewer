@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import { createStyleSelector } from '../helpers/styleCreators';
+import { Paper } from 'components/Paper';
+import { createStyleSelector } from 'helpers/styleCreators';
 
 interface Props
 	extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
@@ -26,32 +26,18 @@ interface Props
 }
 
 export function Chip(props: Props) {
-	const {
-		className = '',
-		isSelected,
-		onClick,
-		title,
-		isLoading,
-		onMouseEnter,
-		onMouseLeave,
-		children,
-	} = props;
+	const { className = '', isSelected, isLoading, children, ...restProps } = props;
 	const rootClass = createStyleSelector(
 		'chip',
 		isSelected ? 'selected' : null,
-		onClick ? 'clickable' : null,
+		props.onClick ? 'clickable' : null,
 		isLoading ? 'loading' : null,
 		className,
 	);
 
 	return (
-		<div
-			className={rootClass}
-			title={title}
-			onClick={onClick}
-			onMouseEnter={onMouseEnter}
-			onMouseLeave={onMouseLeave}>
+		<Paper {...restProps} className={rootClass}>
 			{children}
-		</div>
+		</Paper>
 	);
 }

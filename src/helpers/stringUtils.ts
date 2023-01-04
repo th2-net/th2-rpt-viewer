@@ -82,30 +82,6 @@ const nonPrintableRegExp = createRegExp`
 	${'g'}
 `;
 
-type PartOfString = {
-	text: string;
-	isPrintable: boolean;
-};
-
-export function splitOnReadableParts(targetString: string): PartOfString[] {
-	const stringParts = targetString.split(createRegExp`
-		[\01]
-		${'g'}
-	`);
-	return stringParts.reduce((arr, curr) => {
-		if (curr === '') return arr;
-		arr.push({
-			text: curr,
-			isPrintable: true,
-		});
-		arr.push({
-			text: '',
-			isPrintable: false,
-		});
-		return arr;
-	}, [] as PartOfString[]);
-}
-
 export function replaceNonPrintableCharsWithDot(targetString: string): string {
 	if (!targetString) {
 		return targetString;
@@ -157,25 +133,6 @@ export function replaceUnfilledDateStringWithMinValues(
 	}
 }
 
-export function changeStatusName(status: string) {
-	switch (status) {
-		case 'any':
-			return 'All';
-		case 'passed':
-			return 'Passed';
-		case 'failed':
-			return 'Failed';
-		case 'All':
-			return 'any';
-		case 'Passed':
-			return 'passed';
-		case 'Failed':
-			return 'failed';
-		default:
-			return '';
-	}
-}
-
 /**
  * Splits and capitalizes camel cased string
  *  * @example
@@ -186,4 +143,8 @@ export function prettifyCamelcase(camelCasedString: string) {
 	return (camelCasedString.charAt(0).toUpperCase() + camelCasedString.slice(1))
 		.split(/(?=[A-Z])/)
 		.join(' ');
+}
+
+export function capitalize(str: string): string {
+	return str.charAt(0).toUpperCase() + str.slice(1);
 }

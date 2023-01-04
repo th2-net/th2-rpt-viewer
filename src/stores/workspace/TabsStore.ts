@@ -38,22 +38,4 @@ export default class TabsStore {
 	setActiveWorkspace = (tabIndex: number) => {
 		this.activeTabIndex = tabIndex;
 	};
-
-	@action
-	changeWorkspacePosition = (currentTabIndex: number, newIndex: number) => {
-		if (currentTabIndex === newIndex) return;
-		const activeTab = this.workspacesStore.workspaces[this.activeTabIndex];
-		const insertBeforeTab = this.workspacesStore.workspaces[newIndex];
-		const movedTab = this.workspacesStore.workspaces.splice(currentTabIndex, 1)[0];
-		if (!insertBeforeTab) {
-			this.workspacesStore.workspaces.push(movedTab);
-		} else {
-			this.workspacesStore.workspaces.splice(
-				this.workspacesStore.workspaces.findIndex(t => t === insertBeforeTab),
-				0,
-				movedTab,
-			);
-		}
-		this.activeTabIndex = this.workspacesStore.workspaces.findIndex(t => t === activeTab);
-	};
 }

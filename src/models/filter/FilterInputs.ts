@@ -31,6 +31,7 @@ export type FilterRowConfig = FitlerRowItem | CompoundFilterRow | ActionFilterRo
 export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
 	DATE_MASK = 'YYYY-MM-DD',
+	DATE_SECONDARY_MASK = 'DD.MM.YYYY',
 	DATE_TIME_MASK = 'DD.MM.YYYY HH:mm:ss.SSS',
 	INTERVAL_MASK = 'mm',
 }
@@ -54,18 +55,6 @@ export type DateTimeInputType = {
 	disabled?: boolean;
 };
 
-export type IntervalInputType = {
-	label?: string;
-	value: number | null;
-	setValue: (nextValue: number) => void;
-	type: TimeInputType;
-	id: string;
-	inputMask: RegExp;
-	placeholder: string;
-	inputClassName?: string;
-	labelClassName?: string;
-};
-
 export enum TimeInputType {
 	DATE_TIME,
 	DATE,
@@ -81,11 +70,12 @@ export type FilterRowBaseConfig = {
 	placeholder?: string;
 	isInvalid?: boolean;
 	required?: boolean;
+	hint?: string;
 };
 
 export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
 	type: 'time-window';
-	inputs: Array<DateTimeInputType | IntervalInputType>;
+	inputs: [DateTimeInputType, DateTimeInputType];
 };
 
 export type FilterRowStringConfig = FilterRowBaseConfig & {
@@ -95,7 +85,6 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	setValue: (nextValue: string) => void;
 	labelClassName?: string;
 	autocompleteList?: string[];
-	hint?: string;
 };
 
 export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
@@ -106,7 +95,6 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	setCurrentValue: (currentValue: string) => void;
 	autocompleteList?: string[];
 	validateBubbles?: boolean;
-	hint?: string;
 	labelClassName?: string;
 };
 
@@ -123,7 +111,7 @@ export type FilterRowTogglerConfig = FilterRowBaseConfig & {
 	type: 'toggler';
 	disabled?: boolean;
 	value: boolean;
-	possibleValues: [string, string];
+	options: string[];
 	toggleValue: () => void;
 	labelClassName?: string;
 	className?: string;
@@ -134,7 +122,7 @@ export type FilterRowSwitcherConfig = FilterRowBaseConfig & {
 	disabled?: boolean;
 	value: string;
 	setValue: (nextValue: string) => void;
-	possibleValues: string[];
+	options: string[];
 	className?: string;
 	defaultValue: string;
 };

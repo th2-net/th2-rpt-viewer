@@ -1,0 +1,111 @@
+/** ****************************************************************************
+ * Copyright 2021-2022 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************** */
+
+import React, { useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { MessageViewType } from 'models/EventMessage';
+import { IconButton } from 'components/buttons/IconButton';
+import { ButtonBase } from 'components/buttons/ButtonBase';
+import { CrossIcon } from 'components/icons/CrossIcon';
+import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
+import { ViewTypesList } from '../message-card/ViewTypesList';
+
+interface Props {
+	isExporting: boolean;
+	enableExport: () => void;
+	disableExport: () => void;
+	endExport: (messageViewType: MessageViewType) => void;
+	exportedCount: number;
+}
+
+const viewTypes = Object.values(MessageViewType);
+
+const MessageExport = (props: Props) => {
+	const {
+		isExporting,
+		enableExport,
+		disableExport,
+		endExport,
+		exportedCount: exportAmount,
+	} = props;
+	const [isOpen, setIsOpen] = React.useState(false);
+
+	const menuRef = useRef<HTMLDivElement>(null);
+
+	useOutsideClickListener(menuRef, event => {
+		if (
+			menuRef.current &&
+			event.target instanceof Element &&
+			!menuRef.current.contains(event.target)
+		) {
+			setIsOpen(false);
+		}
+	});
+
+	const exportMessages = (messageViewType: MessageViewType) => {
+		setIsOpen(false);
+		endExport(messageViewType);
+	};
+
+	const closeExport = () => {
+		disableExport();
+		setIsOpen(false);
+	};
+
+	function onExport() {
+		if (!isExporting) {
+			enableExport();
+			return;
+		}
+		if (isExporting && exportAmount === 0) {
+			closeExport();
+			return;
+		}
+		setIsOpen(true);
+	}
+
+	return (
+		<>
+			<ButtonBase className='messages-export__button' onClick={onExport}>
+				<span className='messages-export__icon'></span>
+				Export
+				{isExporting && <span className='messages-export__counter'>{exportAmount}</span>}
+			</ButtonBase>
+			{isExporting && (
+				<IconButton title='Cancel export' className='cancel-button' onClick={closeExport}>
+					<CrossIcon />
+				</IconButton>
+			)}
+			<div className='messages-export__export' ref={menuRef}>
+				<AnimatePresence>
+					{isOpen && (
+						<motion.div
+							className='messages-export__tools-list'
+							style={{ transformOrigin: 'top' }}
+							initial={{ opacity: 0, scale: 0.5 }}
+							animate={{ opacity: 1, scale: 1 }}
+							exit={{ opacity: 0, scale: 0.5 }}
+							transition={{ duration: 0.15, ease: 'easeOut' }}>
+							<ViewTypesList onViewTypeSelect={exportMessages} viewTypes={viewTypes} />
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
+		</>
+	);
+};
+
+export default MessageExport;

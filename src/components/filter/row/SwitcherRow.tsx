@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import React from 'react';
-import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
+
+import { ToggleButtonGroup, ToggleButton } from 'components/buttons/ToggleButton';
+import { StatusIcon } from 'components/icons/StatusIcon';
+import { EventStatus } from 'modules/events/models/Status';
+import { createStyleSelector } from '../../../helpers/styleCreators';
 import { FilterRowSwitcherConfig } from '../../../models/filter/FilterInputs';
-import { changeStatusName } from '../../../helpers/stringUtils';
+
+const icons: Record<string, JSX.Element> = {
+	passed: <StatusIcon status={EventStatus.PASSED} />,
+	failed: <StatusIcon status={EventStatus.FAILED} />,
+};
 
 const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
-	const { value, setValue, possibleValues, disabled, defaultValue } = config;
+	const { value, setValue, options, disabled, defaultValue } = config;
 
 	const setType = (type: string) => {
 		if (!disabled) {
-			setValue(changeStatusName(type));
+			setValue(type);
 		}
 	};
 
@@ -32,6 +39,8 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 		config.label === 'Status' ? 'status' : null,
 	);
 
+	const selectedValue = value || defaultValue;
+
 	return (
 		<div className='search-type-switcher'>
 			{config.label && (
@@ -39,36 +48,17 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 					{config.label}
 				</label>
 			)}
-			<div className='search-type-switcher__togglers'>
-				{possibleValues.map(val => {
-					const buttonClassName = createBemElement(
-						'search-type-switcher',
-						'button',
-						'switch-search-type-button',
-						val,
-						changeStatusName(value) === val || (value === '' && defaultValue === val)
-							? 'active'
-							: null,
-						disabled ? 'disabled' : null,
-					);
-
-					const iconClassName = createBemElement(
-						'switch-search-type-button',
-						'icon',
-						val,
-						changeStatusName(value) === val || (value === '' && defaultValue === val)
-							? 'active'
-							: null,
-					);
-
-					return (
-						<button key={val} className={buttonClassName} onClick={() => setType(val)}>
-							<i className={iconClassName} />
-							<div className='switch-search-type-button__label'>{val}</div>
-						</button>
-					);
-				})}
-			</div>
+			<ToggleButtonGroup value={selectedValue} onChange={setType}>
+				{options.map(option => (
+					<ToggleButton
+						key={option}
+						value={option}
+						style={{ padding: option.toLowerCase() === 'all' ? '8px 24px' : undefined }}>
+						{icons[option.toLowerCase()]}
+						{option}
+					</ToggleButton>
+				))}
+			</ToggleButtonGroup>
 		</div>
 	);
 };

@@ -21,11 +21,19 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const { appSrc, appPath } = require('./paths');
 
-const api_env = process.env.API_ENV || 'http';
-
 module.exports = {
 	resolve: {
 		extensions: ['.ts', '.tsx', '.scss', '.js'],
+		alias: {
+			helpers: path.resolve(appSrc, 'helpers'),
+			models: path.resolve(appSrc, 'models'),
+			api: path.resolve(appSrc, 'api'),
+			stores: path.resolve(appSrc, 'stores'),
+			styles: path.resolve(appSrc, 'styles'),
+			components: path.resolve(appSrc, 'components'),
+			hooks: path.resolve(appSrc, 'hooks'),
+			modules: path.resolve(appSrc, 'modules'),
+		},
 	},
 	module: {
 		rules: [
@@ -43,29 +51,28 @@ module.exports = {
 				exclude: /node_modules/,
 			},
 			{
-				test: /\.(woff(2)?|ttf|eot|svg|jpg)(\?v=\d+\.\d+\.\d+)?$/,
-				use: [
-					{
-						loader: 'file-loader',
-						options: {
-							name: '[name].[ext]',
-							outputPath: 'resources/',
-						},
-					},
-				],
+				test: /\.(woff|woff2|eot|ttf|otf)$/i,
+				type: 'asset/resource',
+			},
+			{
+				test: /\.(png|svg|jpg|jpeg|gif)$/i,
+				type: 'asset/resource',
 			},
 		],
 	},
 	plugins: [
 		new CleanWebpackPlugin(),
-		new webpack.EnvironmentPlugin({
-			API_ENV: api_env,
-		}),
 		new HtmlWebPackPlugin({
 			title: 'Report viewer',
 			template: path.resolve(appSrc, 'index.html'),
 			favicon: path.resolve(appPath, 'resources', 'icons', 'favicon.svg'),
 		}),
-		new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+		new webpack.IgnorePlugin({
+			resourceRegExp: /^\.\/locale$/,
+			contextRegExp: /moment$/,
+		}),
+		new webpack.EnvironmentPlugin({
+			BASE_URL: 'backend',
+		}),
 	],
 };

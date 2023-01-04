@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { createStyleSelector } from '../../helpers/styleCreators';
 

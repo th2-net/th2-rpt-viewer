@@ -20,7 +20,7 @@
 	height: 100%;
 	width: 100%;
 	display: grid;
-	grid-template-columns: 22px 1fr;
+	grid-template-rows: 27px 1fr;
 	overflow: hidden;
 
 	&__wrapper {
@@ -33,14 +33,12 @@
 		@include hidden-scrollbar();
 		width: 100%;
 		height: 100%;
-		display: grid;
-		grid-auto-rows: min-content;
-		grid-row-gap: 5px;
+		display: flex;
+		column-gap: 10px;
 		overflow: auto;
 	}
 
 	&__content {
-		background-color: $workspaceBackground;
 		padding: 0 7px;
 		position: relative;
 		border-top-right-radius: 5px;
@@ -52,46 +50,5 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-	}
-}
-
-.tab {
-	position: relative;
-	height: 36px;
-	width: 100%;
-	border-radius: 6px;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	transition: width 0.15s, transform 0.15s;
-	background-color: $tabsBackgroundColor;
-
-	&.selected {
-		background-color: #fff;
-
-		&::before {
-			background-color: inherit;
-			height: 14px;
-			content: '';
-			width: 100%;
-			position: absolute;
-			top: 28px;
-			left: 0;
-			z-index: 1;
-		}
-	}
-
-	&__content {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-grow: 1;
-		overflow: hidden;
-	}
-
-	&__content-wrapper {
-		overflow: hidden;
-		padding: 0 5px;
-		flex-grow: 1;
 	}
 }

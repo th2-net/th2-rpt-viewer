@@ -14,126 +14,141 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed, reaction } from 'mobx';
-import ApiSchema from '../../api/ApiSchema';
-import { SelectedStore } from '../SelectedStore';
+import { observable, action, computed } from 'mobx';
+import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
+import { IBookmarksStore, IFilterConfigStore } from 'models/Stores';
+import ApiSchema from 'api/ApiSchema';
+import { DbData, IndexedDbStores, SavedWorkspaceState } from 'api/indexedDb';
+import { MessagesSearchResult } from 'modules/search/stores/SearchResult';
+import { SessionHistoryStore } from 'modules/messages/stores/SessionHistoryStore';
+import { getRangeFromTimestamp } from '../../helpers/date';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
-import SearchWorkspaceStore, { SEARCH_STORE_INTERVAL } from './SearchWorkspaceStore';
-import { isWorkspaceStore } from '../../helpers/workspace';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { getRangeFromTimestamp } from '../../helpers/date';
-import { DbData, IndexedDbStores, Settings } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
-import MessagesFilter from '../../models/filter/MessagesFilter';
+import { EventMessage } from '../../models/EventMessage';
+import { EventTreeNode, EventAction } from '../../models/EventAction';
+import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
+
+const SEARCH_INTERVAL = 15;
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
 export default class WorkspacesStore {
-	public readonly MAX_WORKSPACES_COUNT = 12;
+	public readonly MAX_WORKSPACES_COUNT = 10;
 
-	public selectedStore = new SelectedStore(this, this.api.indexedDb);
+	public bookmarksStore: IBookmarksStore;
 
 	public tabsStore = new TabsStore(this);
-
-	public searchWorkspace: SearchWorkspaceStore;
 
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
+		private filterConfigStore: IFilterConfigStore,
 		public filtersHistoryStore: FiltersHistoryStore,
+		private sessionsStore: SessionHistoryStore,
 		initialState: WorkspacesUrlState | null,
 	) {
-		this.searchWorkspace = new SearchWorkspaceStore(this.rootStore, this, this.api);
+		this.bookmarksStore = new BookmarksStore(this, this.api.indexedDb);
 
 		this.init(initialState || null);
-
-		reaction(
-			() => this.activeWorkspace,
-			activeWorkspace =>
-				isWorkspaceStore(activeWorkspace) && this.onActiveWorkspaceChange(activeWorkspace),
-		);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
-
-	@computed get eventStores() {
-		return this.workspaces.map(workspace => workspace.eventsStore);
-	}
 
 	@computed get isFull() {
 		return this.workspaces.length === this.MAX_WORKSPACES_COUNT;
 	}
 
 	@computed get activeWorkspace() {
-		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
+		return this.workspaces[this.tabsStore.activeTabIndex];
 	}
 
 	@action
-	private init(initialState: WorkspacesUrlState | null) {
+	private async init(initialState: WorkspacesUrlState | null) {
 		if (initialState !== null) {
 			initialState.forEach(async workspaceState =>
 				this.addWorkspace(await this.createWorkspace(workspaceState)),
 			);
 		} else {
-			this.createWorkspace({
-				layout: [100, 0],
-			}).then(workspace => this.addWorkspace(workspace));
+			const workspaces = await this.getWorkspaces();
+			workspaces.forEach(workspaceState =>
+				this.createWorkspace(workspaceState).then(this.addWorkspace),
+			);
 		}
+
+		const savedWorkspaces = await this.api.indexedDb.getStoreKeys<string>(
+			IndexedDbStores.WORKSPACES_STATE,
+		);
+
+		savedWorkspaces
+			.filter(workspaceId => !this.workspaces.find(workspace => workspace.id === workspaceId))
+			.forEach(this.removeSavedWorkspaceState);
 	}
 
-	@action
-	public deleteWorkspace = (workspace: WorkspaceStore) => {
-		this.workspaces.splice(this.workspaces.indexOf(workspace), 1);
+	private removeSavedWorkspaceState = (workspaceId: string) => {
+		this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.WORKSPACES_STATE, workspaceId);
+		this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, workspaceId);
 	};
 
 	@action
-	public addWorkspace = (workspace: WorkspaceStore) => {
+	public addWorkspace = async (workspace?: WorkspaceStore) => {
+		if (this.isFull) return;
+		if (!workspace) {
+			// eslint-disable-next-line no-param-reassign
+			workspace = await this.createWorkspace();
+		}
 		this.workspaces.push(workspace);
-		this.tabsStore.setActiveWorkspace(this.workspaces.length);
+		this.tabsStore.setActiveWorkspace(this.workspaces.length - 1);
 	};
 
-	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
-		activeWorkspace.graphStore.setTimestampFromRange(activeWorkspace.graphStore.range);
-	};
-
-	public createWorkspace = async (workspaceInitialState: WorkspaceInitialState = {}) => {
-		const settings = await this.api.indexedDb.getStoreValues<Settings>(IndexedDbStores.SETTINGS);
-
-		const interval = settings.length > 0 ? settings[0].interval : 15;
-
-		return new WorkspaceStore(
+	public createWorkspace = async (workspaceInitialState: WorkspaceInitialState = {}) =>
+		new WorkspaceStore(
 			this,
-			this.selectedStore,
-			this.searchWorkspace.searchStore,
 			this.rootStore.sessionsStore,
-			this.rootStore.messageDisplayRulesStore,
+			this.filterConfigStore,
+			this.filtersHistoryStore,
+			this.bookmarksStore,
 			this.api,
 			workspaceInitialState,
-			interval,
 		);
-	};
 
 	public getInitialWorkspaceByMessage = (
+		currentSearch: MessagesSearchResult,
 		timestamp: number,
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
-		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
-		const filters: MessagesFilter | null = (requestInfo?.filters as MessagesFilter) || null;
+		const filter = currentSearch?.filter;
 
 		return {
+			events: {
+				range: getRangeFromTimestamp(timestamp, SEARCH_INTERVAL),
+				interval: SEARCH_INTERVAL,
+			},
 			messages: {
-				sse: filters,
-				streams: requestInfo?.state.stream || [],
-				timestampFrom: null,
-				timestampTo: timestamp,
+				filter,
+				streams: currentSearch?.streams || [],
+				startTimestamp: timestamp,
+				endTimestamp: null,
 				targetMessage,
 			},
-			interval: SEARCH_STORE_INTERVAL,
-			layout: [0, 100],
-			timeRange: getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL),
+			layout: [0, 0, 100, 0],
+		};
+	};
+
+	public getInitialWorkspaceByEvent = (
+		timestamp: number,
+		targetEvent?: EventTreeNode | EventAction,
+	): WorkspaceInitialState => {
+		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_INTERVAL);
+
+		return {
+			events: {
+				range: [timestampFrom, timestampTo],
+				targetEvent,
+				interval: SEARCH_INTERVAL,
+			},
+			layout: [0, 100, 0, 0],
 		};
 	};
 
@@ -141,38 +156,42 @@ export default class WorkspacesStore {
 		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
 
 		closedWorkspace.dispose();
-	};
-
-	public getInitialWorkspaceByEvent = (
-		timestamp: number,
-		targetEvent?: EventTreeNode | EventAction,
-	): WorkspaceInitialState => {
-		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
-
-		return {
-			events: {
-				range: [timestampFrom, timestampTo],
-				targetEvent,
-			},
-			layout: [100, 0],
-			interval: SEARCH_STORE_INTERVAL,
-			timeRange: [timestampFrom, timestampTo],
-		};
+		this.removeSavedWorkspaceState(closedWorkspace.id);
 	};
 
 	public syncData = async (unsavedData?: DbData) => {
-		try {
-			await Promise.all([
-				this.searchWorkspace.searchStore.syncData(unsavedData),
-				this.selectedStore.bookmarksStore.syncData(unsavedData),
-			]);
-		} catch (error) {
-			this.searchWorkspace.searchStore.syncData();
-			this.selectedStore.bookmarksStore.syncData();
-		}
+		console.log({ unsavedData });
+		// TODO: Fix sync data
+		// try {
+		// 	await Promise.all([
+		// 		this.searchWorkspace.searchStore.syncData(unsavedData),
+		// 		this.selectedStore.bookmarksStore.syncData(unsavedData),
+		// 	]);
+		// } catch (error) {
+		// 	this.searchWorkspace.searchStore.syncData();
+		// 	this.selectedStore.bookmarksStore.syncData();
+		// }
 	};
 
 	public onQuotaExceededError = (unsavedData?: DbData) => {
 		this.rootStore.handleQuotaExceededError(unsavedData);
+	};
+
+	private getWorkspaces = async (): Promise<WorkspaceInitialState[]> => {
+		const defaultWorkspace = [
+			{
+				layout: [0, 100, 0, 0] as WorkspacePanelsLayout,
+			},
+		];
+
+		const savedWorkspaces = await this.api.indexedDb.getStoreValues<SavedWorkspaceState>(
+			IndexedDbStores.WORKSPACES_STATE,
+		);
+
+		if (savedWorkspaces && savedWorkspaces.length > 0) {
+			return savedWorkspaces;
+		}
+
+		return defaultWorkspace;
 	};
 }

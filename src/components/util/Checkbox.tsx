@@ -14,7 +14,6 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import '../../styles/checkbox.scss';
 import { createBemBlock } from '../../helpers/styleCreators';
 
@@ -45,6 +44,7 @@ export default function Checkbox({
 				id={id}
 				checked={checked}
 				onChange={onChange}
+				onClick={e => e.stopPropagation()}
 			/>
 			{label && (
 				<label className='checkbox__label' htmlFor={id}>

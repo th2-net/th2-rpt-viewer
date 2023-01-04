@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventBodyPayload } from './EventActionPayload';
+import { EventBodyPayload } from 'modules/events/models/EventBodyPayload';
 
 export type EventTree = Array<EventTreeNode>;
 
@@ -23,6 +23,8 @@ export enum ActionType {
 	EVENT_TREE_NODE = 'eventTreeNode',
 	MESSAGE = 'message',
 }
+
+export type EntityType = 'event' | 'message';
 
 interface EventBase {
 	eventId: string;
@@ -45,8 +47,8 @@ export interface EventAction extends EventBase {
 	batchId: null | string;
 	batched: boolean;
 	body: EventActionBody;
-	parentEventId: string;
+	parentEventId: string | null;
 	type: ActionType.EVENT_ACTION;
 }
 
-export type EventActionBody = EventBodyPayload[];
+export type EventActionBody = EventBodyPayload | EventBodyPayload[];

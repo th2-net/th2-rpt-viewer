@@ -29,5 +29,13 @@ module.exports = {
 	watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],
 	moduleNameMapper: {
 		'\\.(css|less|scss)$': 'identity-obj-proxy',
+		'^models(.*)$': '<rootDir>/src/models$1',
+		"^helpers(.*)$": "<rootDir>/src/helpers$1",
+		"^api(.*)$": "<rootDir>/src/api$1",
+		"^stores(.*)$": "<rootDir>/src/stores$1",
+		"^styles(.*)$": "<rootDir>/src/styles$1",
+		"^components(.*)$": "<rootDir>/src/components$1",
+		"^hooks(.*)$": "<rootDir>/src/hooks$1",
+		"^modules(.*)$": "<rootDir>/src/modules$1",
 	},
 };

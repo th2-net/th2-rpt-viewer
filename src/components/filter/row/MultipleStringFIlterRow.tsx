@@ -19,7 +19,7 @@ import { FilterRowMultipleStringsConfig } from '../../../models/filter/FilterInp
 import { removeByIndex, replaceByIndex } from '../../../helpers/array';
 import Bubble, { BubbleRef } from '../../util/Bubble';
 import AutocompleteInput from '../../util/AutocompleteInput/AutocompleteInput';
-import KeyCodes from '../../../util/KeyCodes';
+import KeyCodes from '../../../models/util/KeyCodes';
 import {
 	createBemBlock,
 	createBemElement,
@@ -30,7 +30,7 @@ interface MultipleStringFilterRowProps {
 	config: FilterRowMultipleStringsConfig;
 }
 
-function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
+function MultipleStringFilterRowBase({ config }: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
 	const bubbleRefs = React.useRef<{ [index: number]: BubbleRef | null }>({});
 	const rootRef = React.useRef<HTMLDivElement>(null);
@@ -64,10 +64,6 @@ function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 		nextValue = nextValue.trim();
 		const { values, setValues, setCurrentValue } = config;
 		setCurrentValue('');
-		if (values.length > 0) {
-			setValues([...values, nextValue]);
-			return;
-		}
 		setValues([...values, nextValue]);
 	};
 
@@ -119,7 +115,6 @@ function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 							key={index}
 							selectNext={() => focusBubbleOrInput(index + 1)}
 							selectPrev={() => focusBubbleOrInput(index - 1)}
-							size='small'
 							removeIconType='white'
 							submitKeyCodes={[KeyCodes.TAB]}
 							className='filter__bubble'
@@ -168,7 +163,7 @@ function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 	);
 }
 
-export default React.memo(MultipleStringFilterRow, (prevProps, nextProps) => {
+const MultipleStringFilterRow = React.memo(MultipleStringFilterRowBase, (prevProps, nextProps) => {
 	const props: (keyof FilterRowMultipleStringsConfig)[] = [
 		'values',
 		'currentValue',
@@ -178,3 +173,7 @@ export default React.memo(MultipleStringFilterRow, (prevProps, nextProps) => {
 	];
 	return props.every(prop => prevProps.config[prop] === nextProps.config[prop]);
 });
+
+MultipleStringFilterRow.displayName = 'MultipleStringFilterRow';
+
+export default MultipleStringFilterRow;

@@ -1,0 +1,165 @@
+/******************************************************************************
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+@mixin pallete {
+	--highlight: #e3ecff;
+	--dark-highlight: #354666;
+
+	--dark-100: #22262c;
+	--dark-90: #2d3036;
+	--dark-80: #383b41;
+	--dark-70: #4f5156;
+	--dark-60: #7a7c80;
+	--dark-50: #a7a8ab;
+	--dark-40: #c8c9ca;
+
+	--primary-100: #4e8aff;
+	--primary-80: #71a2ff;
+	--primary-60: #aac7ff;
+	--primary-40: #c6daff;
+	--primary-24: #dde9ff;
+	--primary-16: #e3ecff;
+
+	--light-grey-100: #f1f1f1;
+	--light-grey-80: #f8f8f8;
+	--light-grey-60: #fbfbfb;
+
+	--dark-grey-100: #3b3b3b;
+	--dark-grey-80: #595959;
+	--dark-grey-60: #898989;
+	--dark-grey-40: #b0b0b0;
+	--dark-grey-24: #d0d0d0;
+	--dark-grey-16: #e0e0e0;
+
+	--white: #fff;
+
+	--events-primary: #f26c0d;
+	--search-primary: #1d19e5;
+	--messages-primary: #19c3e5;
+	--bookmarks-primary: #a65cd6;
+
+	--status-passed: #52ff4e;
+	--status-passed-light: #e9ffe8;
+	--status-error: #ff4e4e;
+	--status-unknown: #666666;
+	--status-error-light: #ffdddd;
+	--status-warning: #ffb84e;
+	--status-info: #4e8aff;
+
+	--text-primary: #3a3a3a;
+	--text-secondary: #585858;
+}
+
+:root {
+	@include pallete;
+	--info-color: var(--primary-100);
+	--text-info: var(--primary-100);
+
+	// messages
+	--highlight-color: var(--highlight);
+	--session-text-color: var(--white);
+
+	// workspace
+	--panel-title: var(--white);
+	--tab-background: var(--primary-100);
+
+	// input
+	--text-input: var(--text-primary);
+	--input-border: var(--dark-grey-16);
+	--input-background: var(--light-grey-60);
+	--input-placeholder: var(--dark-grey-60);
+
+	// tables
+	--table-passed-row: rgba(157, 255, 148, 0.291);
+	--table-failed-row: var(--status-error-light);
+	--table-status-passed: var(--status-passed);
+	--table-status-failed: var(--status-error);
+
+	--background-primary: var(--white);
+	--text-background: var(--light-grey-80);
+	--background-secondary: var(--light-grey-60);
+	--surface-background: var(--light-grey-60);
+
+	--panel-background: var(--light-grey-100);
+	--workspace-background: var(--light-grey-60);
+
+	--app-background: #bdccdb;
+	--app-header-background: #3d668f;
+
+	--progress-bar-background: var(--dark-grey-24);
+
+	// calendar
+	--blocked-time-unit: var(--dark-grey-16);
+	--time-unit-near: var(--dark-grey-60);
+	--time-unit-far: var(--dark-grey-40);
+	--calendar-border: var(--dark-grey-16);
+	--date-select-background: var(--primary-24);
+	--date-hidden: var(--dark-grey-60);
+
+	--hover-background: rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme='dark'] {
+	// text
+	--text-primary: var(--dark-grey-16);
+	--text-secondary: var(--dark-50);
+
+	// events
+	--table-passed-row: rgba(89, 255, 115, 0.5);
+	--table-failed-row: rgba(255, 145, 130, 0.5);
+	--table-status-passed: #6fff97;
+	--table-status-failed: #ff6f6f;
+
+	// messages
+	--session-text-color: var(--dark-90);
+	--highlight-color: var(--dark-highlight);
+
+	// search
+	--search-primary: #0df292;
+	// bookmarks
+
+	// workspace
+	--panel-title: var(--dark-90);
+
+	// input
+	--input-background: var(--dark-80);
+	--text-input: var(--dark-grey-16);
+	--input-border: var(--dark-70);
+
+	// rest
+	--background-primary: var(--dark-90);
+	--text-background: var(--dark-80);
+	--background-secondary: var(--dark-80);
+	--surface-background: var(--dark-100);
+
+	--panel-background: var(--dark-100);
+	--workspace-background: var(--dark-70);
+
+	--app-background: #33383d;
+	--app-header-background: #18191b;
+
+	--progress-bar-background: var(--dark-60);
+
+	// calendar
+	--blocked-time-unit: var(--dark-grey-80);
+	--time-unit-near: var(--dark-50);
+	--time-unit-far: var(--dark-grey-24);
+	--calendar-border: var(--dark-70);
+	--date-select-background: var(--dark-highlight);
+	--date-hidden: var(--dark-50);
+
+	--hover-background: rgba(255, 255, 255, 0.11);
+}

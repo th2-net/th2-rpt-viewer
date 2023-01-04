@@ -14,18 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import RootStoreContext, { createRootStore } from '../contexts/rootStoreContext';
+import React, { useState } from 'react';
+import RootStore from '../stores/RootStore';
 import api from '../api';
 
+export const RootStoreContext = React.createContext<RootStore | null>(null);
+
+const createRootStore = () => new RootStore(api);
+
 function RootStoreProvider({ children }: React.PropsWithChildren<{}>) {
+	const [rootStore] = useState(createRootStore);
+
 	React.useEffect(() => {
 		if (api.indexedDb.getError()) throw api.indexedDb.getError();
 	}, [api.indexedDb.getError()]);
 
-	return (
-		<RootStoreContext.Provider value={createRootStore(api)}>{children}</RootStoreContext.Provider>
-	);
+	return <RootStoreContext.Provider value={rootStore}>{children}</RootStoreContext.Provider>;
 }
 
 export default RootStoreProvider;

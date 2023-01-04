@@ -25,17 +25,6 @@ export function createStyleSelector(className: string, ...modifiers: (string | n
 	return className + joinModifiers(modifiers);
 }
 
-export function createTriStateControlClassName(
-	baseName: string,
-	isActive: boolean,
-	isEnabled?: boolean,
-) {
-	return createStyleSelector(
-		baseName,
-		isEnabled != null && !isEnabled ? 'disabled' : isActive ? 'active' : 'inactive',
-	);
-}
-
 export function joinModifiers(modifiers: (string | null)[]): string {
 	return modifiers
 		.map(modifier => {

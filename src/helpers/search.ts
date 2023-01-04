@@ -14,10 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { EventsFiltersInfo, MessagesFilterInfo, SSEFilterParameter } from '../api/sse';
-import { SearchHistory } from '../stores/SearchStore';
-import MessagesFilter from '../models/filter/MessagesFilter';
-import EventsFilter from '../models/filter/EventsFilter';
 
 export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 	if (param.defaultValue === null) {
@@ -37,21 +36,22 @@ export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 
 export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventsFilter | null {
 	if (!info.length) return null;
-	const state = info.reduce((prev, curr) => {
-		return {
+	const state = info.reduce(
+		(prev, curr) => ({
 			...prev,
-			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
-				return {
+			[curr.name]: curr.parameters.reduce(
+				(prevParams, currParam) => ({
 					hint: curr.hint,
 					...prevParams,
 					type: currParam.type.value,
-					[currParam.name.includes('value')
-						? 'values'
-						: currParam.name]: getFilterParameterDefaultValue(currParam),
-				};
-			}, {}),
-		};
-	}, {} as EventsFilter);
+					[currParam.name.includes('value') ? 'values' : currParam.name]:
+						getFilterParameterDefaultValue(currParam),
+				}),
+				{},
+			),
+		}),
+		{} as EventsFilter,
+	);
 	return state;
 }
 
@@ -74,17 +74,4 @@ export function getDefaultMessagesFiltersState(info: MessagesFilterInfo[]): Mess
 	);
 
 	return state;
-}
-
-export function isSearchHistoryEntity(obj: unknown): obj is SearchHistory {
-	return (
-		typeof obj === 'object' &&
-		obj !== null &&
-		(obj as SearchHistory).request !== undefined &&
-		(obj as SearchHistory).results !== undefined
-	);
-}
-
-export function getResultGroupKey(timestamp: number, interval: number) {
-	return Math.floor(timestamp / 1000 / (interval * 60)).toString();
 }

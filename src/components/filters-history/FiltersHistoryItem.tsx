@@ -16,16 +16,18 @@
 
 import React from 'react';
 import moment from 'moment';
+import clsx from 'clsx';
+import { FilterState } from 'modules/search/models/Search';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
-import { FilterState } from '../../models/search/Search';
 import { FiltersState } from './FiltersHistory';
 import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
 import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../../helpers/search';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
-import { createBemElement } from '../../helpers/styleCreators';
-import { useDebouncedCallback } from '../../hooks';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { showNotification } from '../../helpers/showNotification';
+import { ShareIcon } from '../icons/ShareIcon';
+import { DeleteIcon } from '../icons/DeleteIcon';
+import { PinIcon } from '../icons/PinIcon';
 
 const FILTER_HISTORY_DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss.SSS' as const;
 
@@ -54,42 +56,7 @@ const FiltersHistoryItem = (props: Props) => {
 
 	const pinButtonRef = React.useRef<HTMLButtonElement>(null);
 	const shareButtonRef = React.useRef<HTMLButtonElement>(null);
-
-	const rootRef = React.useRef<HTMLDivElement>(null);
-
-	const isHovered = React.useRef(false);
-
-	const onMouseOver = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-		e.persist();
-		isHovered.current = true;
-		onMouseOverDebounced(e);
-	};
-
-	const onMouseOverDebounced = useDebouncedCallback(
-		(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-			if (!isHovered.current) return;
-			const buttons = [...Object.values(bubblesContainerRef.current)].filter(Boolean);
-			if (
-				e.target instanceof Element &&
-				(pinButtonRef.current?.contains(e.target) ||
-					shareButtonRef.current?.contains(e.target) ||
-					buttons.some(
-						buttonContainer =>
-							e.target !== buttonContainer && buttonContainer?.contains(e.target as Element),
-					))
-			) {
-				rootRef.current?.classList.remove('active');
-			} else {
-				rootRef.current?.classList.add('active');
-			}
-		},
-		55,
-	);
-
-	const onMouseLeave = () => {
-		isHovered.current = false;
-		rootRef.current?.classList.remove('active');
-	};
+	const deleteButtonRef = React.useRef<HTMLButtonElement>(null);
 
 	if (!filter) {
 		return null;
@@ -155,42 +122,31 @@ const FiltersHistoryItem = (props: Props) => {
 		deleteHistoryItem(item);
 	}
 
-	const pinButtonClassname = createBemElement(
-		'filter-history-item',
-		'pin-icon',
-		item.isPinned ? 'pinned' : null,
-	);
-
 	return (
-		<div
-			className='filter-history-item'
-			onClick={onFilterSelect}
-			onMouseOver={onMouseOver}
-			onMouseLeave={onMouseLeave}
-			ref={rootRef}>
+		<div className='filter-history-item' onClick={onFilterSelect}>
 			<div className='filter-history-item__title'>
 				{moment.utc(item.timestamp).format(FILTER_HISTORY_DATE_FORMAT)}
 				<div className='filter-history-item__controls'>
 					<button
-						className={pinButtonClassname}
+						className={clsx('filter-history-item__pin-icon', { pinned: item.isPinned })}
 						onClick={onFilterPin}
 						ref={pinButtonRef}
 						title={item.isPinned ? 'Unpin filter' : 'Pin filter'}>
-						<i></i>
+						<PinIcon />
 					</button>
 					<button
 						className='filter-history-item__share-icon'
 						onClick={onShareClick}
 						ref={shareButtonRef}
 						title='Share filters'>
-						<i></i>
+						<ShareIcon />
 					</button>
 					<button
 						className='filter-history-item__delete-icon'
 						onClick={onDeleteClick}
-						ref={shareButtonRef}
+						ref={deleteButtonRef}
 						title='Delete from history'>
-						<i></i>
+						<DeleteIcon />
 					</button>
 				</div>
 			</div>

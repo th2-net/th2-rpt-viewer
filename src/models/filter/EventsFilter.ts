@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2022-2022 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { StringFilter, MultipleStringFilter, SwitcherFilter } from './Filter';
+import { MultipleStringFilter, SwitcherFilter } from './Filter';
 
 export default interface EventsFilter {
-	attachedMessageId: StringFilter;
+	attachedMessageId: MultipleStringFilter;
 	type: MultipleStringFilter;
 	body: MultipleStringFilter;
 	name: MultipleStringFilter;

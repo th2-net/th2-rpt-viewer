@@ -22,12 +22,6 @@ export function getObjectKeys<O extends object>(obj: O) {
 	return Object.keys(obj) as Array<keyof O>;
 }
 
-/**
- * Returns typed object entries
- * @param obj
- */
-export const entries = Object.entries as <T>(obj: T) => [Extract<keyof T, string>, T[keyof T]][];
-
 export function notEmpty<TValue>(value: TValue | null | undefined | string): value is TValue {
 	return value !== null && value !== undefined && value !== '';
 }

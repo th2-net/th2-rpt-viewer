@@ -15,31 +15,44 @@
  ***************************************************************************** */
 
 import React from 'react';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
+import { EntityType } from 'models/EventAction';
+import FiltersHistory from 'components/filters-history/FiltersHistory';
+import { ViewMode } from 'components/ViewModeProvider';
+import useViewMode from 'hooks/useViewMode';
+import { Button } from 'components/buttons/Button';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
+import { FilterRows } from './FilterRows';
 import '../../styles/filter.scss';
-import { FilterRows } from './FilerRows';
 
-interface Props {
+interface Props<T extends MessagesFilter | EventsFilter> {
 	config: FilterRowConfig[];
 	showFilter: boolean;
 	setShowFilter: (isShown: boolean) => void;
 	onSubmit: () => void;
 	onClearAll: () => void;
-	renderFooter?: () => React.ReactNode;
 	isEmbedded?: boolean;
+	filter?: T | null;
+	setFilter?: (filter: Partial<T>) => void;
+	type?: EntityType;
 }
 
-const FilterConfig = (props: Props) => {
+const FilterConfig = <T extends MessagesFilter | EventsFilter>(props: Props<T>) => {
 	const {
 		showFilter,
 		setShowFilter,
 		config,
 		onSubmit,
 		onClearAll,
-		renderFooter,
+		filter,
+		setFilter,
+		type = 'event',
 		isEmbedded,
 	} = props;
+
+	const viewMode = useViewMode();
 
 	function onSubmitClick() {
 		onSubmit();
@@ -67,17 +80,24 @@ const FilterConfig = (props: Props) => {
 					<FilterRows config={config} />
 				</div>
 				<div className='filter-controls'>
-					{renderFooter && renderFooter()}
-					<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
-						<div className='filter-controls__clear-icon' />
+					{viewMode !== ViewMode.EmbeddedMessages && filter && setFilter && (
+						<FiltersHistory
+							type={type}
+							filter={{
+								state: filter,
+								setState: setFilter as any,
+							}}
+						/>
+					)}
+					<Button variant='outlined' onClick={onClearAllClick}>
 						Clear All
-					</div>
-					<div className='filter-row__button close' onClick={onClose}>
+					</Button>
+					<Button variant='outlined' onClick={onClose}>
 						Close
-					</div>
-					<div className='filter-row__button submit' onClick={onSubmitClick}>
+					</Button>
+					<Button variant='contained' onClick={onSubmitClick}>
 						Filter
-					</div>
+					</Button>
 				</div>
 			</div>
 		</div>

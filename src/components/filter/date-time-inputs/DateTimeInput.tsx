@@ -14,20 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
+import clsx from 'clsx';
 import MaskedInput from 'react-text-mask';
 import moment from 'moment';
+import { CalendarIcon } from 'components/icons/CalendarIcon';
+import { IconButton } from 'components/buttons/IconButton';
+import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
 import FilterDatetimePicker from './FilterDatetimePicker';
 import { DateTimeInputType } from '../../../models/filter/FilterInputs';
 import { formatTimestampValue } from '../../../helpers/date';
-import { createStyleSelector } from '../../../helpers/styleCreators';
 import { replaceUnfilledDateStringWithMinValues } from '../../../helpers/stringUtils';
 
 interface DateTimeInputProps {
 	inputConfig: DateTimeInputType;
 }
 
-const FilterDatetimeInput = (props: DateTimeInputProps) => {
+const DatetimeInput = (props: DateTimeInputProps) => {
 	const {
 		inputConfig,
 		inputConfig: {
@@ -42,16 +45,21 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 		},
 	} = props;
 
-	const inputRef = React.useRef<MaskedInput>(null);
+	const inputRef = useRef<MaskedInput>(null);
+	const rootRef = useRef<HTMLDivElement>(null);
 
-	const [showPicker, setShowPicker] = React.useState(false);
-	const [inputValue, setInputValue] = React.useState(formatTimestampValue(value, dateMask));
+	const [showPicker, setShowPicker] = useState(false);
+	const [inputValue, setInputValue] = useState(formatTimestampValue(value, dateMask));
+	const [isFocused, setIsFocused] = useState(false);
+
+	const isActive = showPicker || isFocused;
 
 	React.useEffect(() => {
 		setInputValue(formatTimestampValue(props.inputConfig.value, dateMask));
 	}, [props.inputConfig.value]);
 
-	const togglePicker = (isShown: boolean) => setShowPicker(isShown);
+	const togglePicker = () => setShowPicker(o => !o);
+	const closePicker = () => setShowPicker(false);
 
 	const inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { value: updatedValue } = e.target;
@@ -80,25 +88,38 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 		return false;
 	};
 
-	const maskedInputClassName = createStyleSelector(inputClassName, value ? 'non-empty' : null);
+	useOutsideClickListener(rootRef, (e: MouseEvent) => {
+		if (showPicker && e.target instanceof Node && !rootRef.current?.contains(e.target)) {
+			closePicker();
+		}
+	});
 
 	return (
-		<>
+		<div className={clsx('date-time-input', { active: isActive })} ref={rootRef}>
+			{inputConfig.label && (
+				<label htmlFor={inputConfig.id} className={inputConfig.labelClassName}>
+					{inputConfig.label}
+				</label>
+			)}
 			<MaskedInput
 				ref={inputRef}
 				id={id}
-				className={`filter-row__input ${maskedInputClassName}`}
+				className={clsx('filter-row__input', inputClassName)}
 				disabled={disabled}
 				mask={inputMask}
 				pipe={validPipe}
-				onFocus={() => togglePicker(true)}
 				onChange={inputChangeHandler}
 				placeholder={placeholder}
 				keepCharPositions={true}
 				autoComplete='off'
 				name={id}
 				value={inputValue}
+				onFocus={() => setIsFocused(true)}
+				onBlur={() => setIsFocused(false)}
 			/>
+			<IconButton onClick={togglePicker}>
+				<CalendarIcon className='events-nav__calendar-button' />
+			</IconButton>
 			{showPicker && (
 				<FilterDatetimePicker
 					setValue={inputConfig.setValue}
@@ -109,14 +130,14 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 						inputRef.current?.inputElement
 							? inputRef.current.inputElement.offsetTop +
 							  inputRef.current.inputElement.clientHeight +
-							  10
+							  4
 							: undefined
 					}
-					onClose={() => togglePicker(false)}
+					onClose={togglePicker}
 				/>
 			)}
-		</>
+		</div>
 	);
 };
 
-export default FilterDatetimeInput;
+export default DatetimeInput;

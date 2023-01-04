@@ -14,15 +14,14 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { mount } from 'enzyme';
 import {
 	SearchInputBase,
 	Props as SearchInputProps,
 	REACTIVE_SEARCH_DELAY,
-} from '../../../components/search/SearchInput';
+} from '../../../modules/events/components/search/SearchInput';
 import SearchToken from '../../../models/search/SearchToken';
-import KeyCodes from '../../../util/KeyCodes';
+import KeyCodes from '../../../models/util/KeyCodes';
 import { timer } from '../../util/timer';
 
 /* eslint-disable @typescript-eslint/no-empty-function */

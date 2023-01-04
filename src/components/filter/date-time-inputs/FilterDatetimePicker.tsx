@@ -14,19 +14,20 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 import Calendar from 'rc-calendar';
 import moment, { Moment } from 'moment';
-import 'rc-calendar/assets/index.css';
+import { Button } from 'components/buttons/Button';
 import { TimeInputType } from '../../../models/filter/FilterInputs';
-import { useOutsideClickListener } from '../../../hooks';
 import FilterTimepicker from './FilterTimePicker';
+import 'rc-calendar/assets/index.css';
+import 'styles/filter-datetime.scss';
 
 interface FilterDatetimePickerProps {
 	value: number | null;
 	setValue: (nextValue: number | null) => void;
 	type: TimeInputType;
-	onClose?: () => void;
+	onClose: () => void;
 	left?: number;
 	top?: number;
 	className?: string;
@@ -35,112 +36,131 @@ interface FilterDatetimePickerProps {
 const now = moment();
 now.utcOffset(0);
 
-const FilterDatetimePicker = ({
-	value,
-	setValue,
-	type,
-	onClose,
-	left,
-	top,
-	className = '',
-}: FilterDatetimePickerProps) => {
-	const pickerRef = React.useRef<HTMLDivElement>(null);
+const FilterDatetimePicker = forwardRef<HTMLDivElement, FilterDatetimePickerProps>(
+	({ value, setValue, type, onClose, left, top, className = '' }, ref) => {
+		const [changedValue, setChangedValue] = React.useState(value);
 
-	useOutsideClickListener(pickerRef, (e: MouseEvent) => {
-		if (onClose && e.target instanceof Node && !pickerRef.current?.contains(e.target)) {
-			onClose();
-		}
-	});
+		React.useEffect(() => {
+			setChangedValue(value);
+		}, [value]);
 
-	const change = (dateValue: Moment | null) => {
-		if (!dateValue) return;
-		if (dateValue.utc().startOf('day').isSameOrBefore(moment().startOf('day'))) {
-			let appliedDate;
-			if (value) {
-				appliedDate = moment(value)
-					.utc()
-					.set('year', dateValue.year())
-					.set('month', dateValue.month())
-					.set('date', dateValue.date());
-			} else {
-				appliedDate = dateValue.utc().startOf('day');
+		const change = (dateValue: Moment | null) => {
+			if (!dateValue) return;
+			if (dateValue.utc().startOf('day').isSameOrBefore(moment().startOf('day'))) {
+				let appliedDate;
+				if (changedValue) {
+					appliedDate = moment(changedValue)
+						.utc()
+						.set('year', dateValue.year())
+						.set('month', dateValue.month())
+						.set('date', dateValue.date());
+				} else {
+					appliedDate = dateValue.utc().startOf('day');
+				}
+				setChangedValue(appliedDate.valueOf());
+				return;
 			}
-			setValue(appliedDate.valueOf());
-			return;
-		}
 
-		setValue(moment().utc().startOf('day').valueOf());
-	};
+			setChangedValue(moment().utc().startOf('day').valueOf());
+		};
 
-	const setTimeOffset = (minutes: number) => {
-		setValue(
-			moment(value || Date.now())
-				.utc()
-				.subtract(minutes, 'minutes')
-				.valueOf(),
-		);
-	};
+		const setTimeOffset = (minutes: number) => {
+			setChangedValue(
+				moment(changedValue || Date.now())
+					.utc()
+					.subtract(minutes, 'minutes')
+					.valueOf(),
+			);
+		};
 
-	const setNow = () => {
-		setValue(moment().utc().valueOf());
-	};
+		const setNow = () => {
+			setChangedValue(moment().utc().valueOf());
+		};
 
-	const getDisabledDate = (calendarDate?: Moment) => {
-		if (!calendarDate) return false;
+		const getDisabledDate = (calendarDate?: Moment) => {
+			if (!calendarDate) return false;
 
-		const tomorrow = moment().utc().startOf('day').add(1, 'day');
-		return calendarDate.valueOf() >= tomorrow.valueOf();
-	};
+			const tomorrow = moment().utc().startOf('day').add(1, 'day');
+			return calendarDate.valueOf() >= tomorrow.valueOf();
+		};
 
-	return (
-		<div
-			ref={pickerRef}
-			className={`filter-datetime-picker ${className}`}
-			style={{
-				left: `${left || 0}px`,
-				top: `${top || 0}px`,
-			}}>
-			<div className='filter-datetime-picker__row'>
-				{(type === TimeInputType.DATE_TIME || type === TimeInputType.DATE) && (
-					<Calendar
-						value={moment(value).utcOffset(0)}
-						defaultValue={now}
-						onSelect={change}
-						onChange={change}
-						showDateInput={false}
-						showToday={false}
-						className='filter-datetime-picker__datepicker'
-						disabledDate={getDisabledDate}
-						renderFooter={() => (
-							<div className='filter-datetime-picker__controls'>
-								<button className='filter-datetime-picker__control' onClick={setNow}>
-									now
-								</button>
-								<button
-									className='filter-datetime-picker__control'
-									onClick={setTimeOffset.bind(null, 15)}>
-									-15m
-								</button>
-								<button
-									className='filter-datetime-picker__control'
-									onClick={setTimeOffset.bind(null, 60)}>
-									-1h
-								</button>
-								<button
-									className='filter-datetime-picker__control'
-									onClick={setTimeOffset.bind(null, 24 * 60)}>
-									-1d
-								</button>
-							</div>
-						)}
-					/>
-				)}
-				{(type === TimeInputType.DATE_TIME || type === TimeInputType.TIME) && (
-					<FilterTimepicker setValue={setValue} value={value} />
-				)}
+		const onSubmit = () => {
+			setValue(changedValue);
+			onClose();
+		};
+
+		return (
+			<div
+				ref={ref}
+				className={`filter-datetime-picker ${className}`}
+				style={{
+					left: `${left || 0}px`,
+					top: `${top || 0}px`,
+				}}>
+				<div className='filter-datetime-picker__header'>Select Date and Time</div>
+				<div className='filter-datetime-picker__row'>
+					{(type === TimeInputType.DATE_TIME || type === TimeInputType.DATE) && (
+						<Calendar
+							value={moment(changedValue).utcOffset(0)}
+							defaultValue={now}
+							onSelect={change}
+							onChange={change}
+							showDateInput={false}
+							showToday={false}
+							className='filter-datetime-picker__datepicker'
+							disabledDate={getDisabledDate}
+						/>
+					)}
+					{(type === TimeInputType.DATE_TIME || type === TimeInputType.TIME) && (
+						<FilterTimepicker setValue={setChangedValue} value={changedValue} />
+					)}
+				</div>
+				<div className='filter-datetime-picker__interval-controls'>
+					<div className='filter-datetime-picker__interval-header'>Intervals</div>
+					<div className='filter-datetime-picker__intervals'>
+						<IntervalButton offset={0} onClick={setNow}>
+							Now
+						</IntervalButton>
+						<IntervalButton offset={15} onClick={setTimeOffset}>
+							15 Minutes
+						</IntervalButton>
+						<IntervalButton offset={60} onClick={setTimeOffset}>
+							1 Hour
+						</IntervalButton>
+						<IntervalButton offset={24 * 60} onClick={setTimeOffset}>
+							1 Day
+						</IntervalButton>
+					</div>
+				</div>
+				<div className='filter-datetime-picker__controls'>
+					<Button variant='outlined' onClick={onClose}>
+						Cancel
+					</Button>
+					<Button variant='contained' onClick={onSubmit}>
+						Submit
+					</Button>
+				</div>
 			</div>
-		</div>
-	);
-};
+		);
+	},
+);
+
+FilterDatetimePicker.displayName = 'FilterDatetimePicker';
 
 export default FilterDatetimePicker;
+
+type IntervalButtonProps = React.PropsWithChildren<{
+	offset: number;
+	onClick: (offset: number) => void;
+}>;
+
+function IntervalButton(props: IntervalButtonProps) {
+	return (
+		<Button
+			variant='outlined'
+			className='filter-datetime-picker__interval'
+			onClick={() => props.onClick(props.offset)}>
+			{props.children}
+		</Button>
+	);
+}

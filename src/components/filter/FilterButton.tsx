@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import React from 'react';
-import { createBemElement } from '../../helpers/styleCreators';
+
+import { useRef } from 'react';
+import clsx from 'clsx';
+import { IconButton } from 'components/buttons/IconButton';
+import { FilterIcon } from 'components/icons/FilterIcon';
 import '../../styles/filter.scss';
 
 interface Props {
@@ -26,9 +29,9 @@ interface Props {
 }
 
 const FilterButton = (props: Props) => {
-	const { isFilterApplied, showFilter, setShowFilter, isDisabled = false, isLoading } = props;
+	const { isFilterApplied, showFilter, setShowFilter, isDisabled = false } = props;
 
-	const filterButtonRef = React.useRef<HTMLDivElement>(null);
+	const filterButtonRef = useRef<HTMLButtonElement>(null);
 
 	function onClick() {
 		if (!isDisabled) {
@@ -36,33 +39,15 @@ const FilterButton = (props: Props) => {
 		}
 	}
 
-	const filterTitleClass = createBemElement(
-		'filter',
-		'title',
-		!showFilter && isFilterApplied ? 'applied' : null,
-	);
-
-	const filterIconClass = createBemElement(
-		'filter',
-		'icon',
-		!showFilter && isFilterApplied ? 'applied' : null,
-	);
-
-	const filterButtonClass = createBemElement(
-		'filter',
-		'button',
-		isDisabled ? 'disabled' : null,
-		!showFilter && isFilterApplied ? 'applied' : null,
-	);
+	const filterButtonClass = clsx('filter__button', {
+		disabled: isDisabled,
+		applied: isFilterApplied && !isDisabled,
+	});
 
 	return (
-		<div className={filterButtonClass} ref={filterButtonRef} onClick={onClick}>
-			<div className={filterIconClass} />
-			<div className={filterTitleClass}>{showFilter ? 'Hide Filter' : 'Show Filter'}</div>
-			{typeof isLoading === 'boolean'
-				? isLoading && <div style={{ marginLeft: 5 }} className='filter__loading' />
-				: null}
-		</div>
+		<IconButton className={filterButtonClass} ref={filterButtonRef} onClick={onClick}>
+			<FilterIcon />
+		</IconButton>
 	);
 };
 

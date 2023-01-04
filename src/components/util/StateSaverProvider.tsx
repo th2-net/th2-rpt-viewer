@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { StateSaverContextType, StateSaverContext } from './StateSaver';
+import { StateSaverContext } from './StateSaver';
 
 interface State {
 	statesMap: Map<string, any>;
@@ -45,12 +45,10 @@ export default class StateSaverProvider extends React.Component<{}, State> {
 	render() {
 		return (
 			<StateSaverContext.Provider
-				value={
-					{
-						states: this.state.statesMap,
-						saveState: this.stateHandler,
-					} as StateSaverContextType
-				}>
+				value={{
+					states: this.state.statesMap,
+					saveState: this.stateHandler,
+				}}>
 				{this.props.children}
 			</StateSaverContext.Provider>
 		);

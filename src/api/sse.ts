@@ -14,18 +14,19 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
-import EventsFilter from '../models/filter/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
-import MessagesFilter from '../models/filter/MessagesFilter';
+import { SearchDirection } from '../models/SearchDirection';
 import fetch from '../helpers/fetchRetry';
 
 interface BaseSSEParams {
 	startTimestamp?: number;
 	endTimestamp?: number | null;
 	resultCountLimit?: number;
-	searchDirection?: 'next' | 'previous'; // defaults to next
+	searchDirection?: SearchDirection.Next | SearchDirection.Previous; // defaults to next
 }
 
 export interface SSEHeartbeat {
@@ -77,6 +78,11 @@ export interface MessagesFilterInfo {
 export interface EventSSEParams extends BaseSSEParams {
 	parentEvent?: string;
 	filters?: Array<EventFilterKeys>;
+	resumeFromId?: string;
+	resultCountLimit?: number;
+	limitForParent?: number;
+	metadataOnly?: boolean;
+
 	'attachedMessageId-values'?: string;
 	'attachedMessageId-negative'?: boolean;
 	'attachedMessageId-conjunct'?: boolean;
@@ -89,7 +95,6 @@ export interface EventSSEParams extends BaseSSEParams {
 	'name-negative'?: boolean;
 	'name-conjunct'?: boolean;
 	'name-strict'?: boolean;
-	resumeFromId?: string;
 }
 
 export type MessageDirection = 'first' | 'second';
@@ -115,14 +120,7 @@ export interface MessagesSSEParams extends BaseSSEParams {
 	'body-conjunct'?: boolean;
 	'body-strict'?: boolean;
 	messageId?: string[];
-}
-
-export interface SSEParamsEvents {
-	parentEvent?: string;
-	resultCountLimit?: number;
 	resumeFromId?: string;
-	searchDirection?: 'next' | 'previous'; // defaults to next
-	limitForParent?: number;
 }
 
 export interface MessageIdsEvent {
@@ -137,16 +135,15 @@ export interface MessageIdsEvent {
 	};
 }
 
-export type SSEParams = EventSSEParams | MessagesSSEParams;
-
 type ParamsFromFilter = Record<string, string | string[] | boolean>;
 
-function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
+export function getParamsFromFilter(filter: EventsFilter): EventSSEParams {
 	const filters = getObjectKeys(filter).filter(filterName =>
 		filterName === 'status'
-			? filter[filterName].values !== 'any'
+			? filter[filterName].values !== 'All'
 			: filter[filterName].values.length > 0,
 	);
+
 	return filters.reduce(
 		(params, filterName) => {
 			const currentFilter = filter[filterName];
@@ -169,18 +166,42 @@ function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
 				...currentFilterParams,
 			};
 		},
-		{ filters },
+		{
+			filters,
+		},
 	);
 }
 
-export function getMessagesSSEParamsFromFilter(
-	filter: MessagesFilter | null,
-	streams: string[],
-	startTimestamp: number | null,
-	endTimestamp: number | null,
-	searchDirection = 'previous',
-	resultCountLimit?: number,
-): URLSearchParams {
+interface EventParams {
+	filter: EventsFilter | null;
+	startTimestamp: number;
+	endTimestamp?: number;
+	searchDirection: SearchDirection.Next | SearchDirection.Previous;
+	resultCountLimit?: number;
+	metadataOnly?: boolean;
+	parentEvent?: string;
+	resumeFromId?: string;
+}
+
+export function getEventsSSEParams(params: EventParams): EventSSEParams {
+	const { filter, ...restParams } = params;
+	const filters = filter ? getParamsFromFilter(filter) : {};
+
+	return {
+		...restParams,
+		...filters,
+	};
+}
+
+interface MessageParams {
+	filter: MessagesFilter | null;
+	params: MessagesParams;
+	searchDirection: SearchDirection;
+	resultCountLimit?: number;
+}
+
+export function getMessagesSSEParams(searchParams: MessageParams): MessagesSSEParams {
+	const { filter, params, searchDirection, resultCountLimit } = searchParams;
 	const filtersToAdd: Array<keyof MessagesFilter> = !filter
 		? []
 		: Object.entries(filter)
@@ -207,9 +228,11 @@ export function getMessagesSSEParamsFromFilter(
 		filter && filter[filterName].strict ? [`${filterName}-strict`, filter[filterName].strict] : [],
 	);
 
+	const { streams, startTimestamp, endTimestamp } = params;
+
 	const queryParams: MessagesSSEParams = {
-		startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
-		endTimestamp: endTimestamp ? new Date(endTimestamp).toISOString() : endTimestamp,
+		startTimestamp: startTimestamp && new Date(startTimestamp).toISOString(),
+		endTimestamp: endTimestamp && new Date(endTimestamp).toISOString(),
 		stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
 		searchDirection,
 		resultCountLimit,
@@ -222,7 +245,7 @@ export function getMessagesSSEParamsFromFilter(
 		]),
 	};
 
-	return createURLSearchParams({ ...queryParams });
+	return queryParams;
 }
 
 const sseApi: SSESchema = {
@@ -237,36 +260,22 @@ const sseApi: SSESchema = {
 				? new Date(queryParams.endTimestamp).toISOString()
 				: null,
 		});
-		return new EventSource(`backend/search/sse/${type}s/?${params}`);
-	},
-	getEventsTreeSource: (timeRange, filter, sseParams) => {
-		const paramFromFilter = filter ? getEventsSSEParamsFromFilter(filter) : {};
-		const params = createURLSearchParams({
-			startTimestamp: new Date(timeRange[0]).toISOString(),
-			endTimestamp: new Date(timeRange[1]).toISOString(),
-			...paramFromFilter,
-			...sseParams,
-		});
-		return new EventSource(`backend/search/sse/events/?${params}`);
+		return new EventSource(`${process.env.BASE_URL}/search/sse/${type}s/?${params}`);
 	},
 	getFilters: async <T>(filterType: 'events' | 'messages'): Promise<T[]> => {
-		const res = await fetch(`backend/filters/sse-${filterType}`);
+		const res = await fetch(`${process.env.BASE_URL}/filters/sse-${filterType}`);
 		if (res.ok) {
 			return res.json();
 		}
 
 		throw res;
 	},
-	getEventFilters: () => {
-		return sseApi.getFilters<EventFilterKeys>('events');
-	},
-	getMessagesFilters: () => {
-		return sseApi.getFilters<MessageFilterKeys>('messages');
-	},
+	getEventFilters: () => sseApi.getFilters<EventFilterKeys>('events'),
+	getMessagesFilters: () => sseApi.getFilters<MessageFilterKeys>('messages'),
 	getEventsFiltersInfo: async filters => {
 		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
 			filters.map(filterName =>
-				fetch(`backend/filters/sse-events/${filterName}`).then(res => res.json()),
+				fetch(`${process.env.BASE_URL}/filters/sse-events/${filterName}`).then(res => res.json()),
 			),
 		);
 
@@ -277,8 +286,8 @@ const sseApi: SSESchema = {
 					{
 						type: { value: 'switcher' },
 						name: 'values',
-						defaultValue: 'any',
-						hint: 'passed, failed, any',
+						defaultValue: 'All',
+						hint: 'passed, failed, all',
 					},
 				];
 			}
@@ -286,13 +295,12 @@ const sseApi: SSESchema = {
 			return filterInfo;
 		});
 	},
-	getMessagesFiltersInfo: filters => {
-		return Promise.all(
+	getMessagesFiltersInfo: filters =>
+		Promise.all(
 			filters.map(filterName =>
-				fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json()),
+				fetch(`${process.env.BASE_URL}/filters/sse-messages/${filterName}`).then(res => res.json()),
 			),
-		);
-	},
+		),
 };
 
 export default sseApi;

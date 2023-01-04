@@ -14,7 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import Panel from '../../util/Panel';
+import { Panel } from 'models/Panel';
 
 export default interface SearchToken {
 	pattern: string;

@@ -21,11 +21,9 @@
 	position: relative;
 	flex-direction: column;
 	width: 100%;
-	padding: 16px 24px 16px 16px;
-	gap: 12px;
+	gap: 18px;
 	font-size: 16px;
 	border-radius: 4px;
-	background: #fff;
 	color: $filterTextColor;
 	white-space: nowrap;
 
@@ -35,11 +33,14 @@
 
 	&-wrapper {
 		display: none;
+		background: var(--background-primary);
 		position: absolute;
 		z-index: 2;
-		top: 40px;
+		top: 72px;
+		left: 0;
 		align-items: center;
 		width: 100%;
+		padding: 16px 24px 16px 16px;
 
 		&.active {
 			display: flex;
@@ -57,19 +58,21 @@
 		align-items: center;
 		padding: 4px 5px;
 		cursor: pointer;
-		background-color: transparent;
 		border: none;
 		outline: none;
-		min-width: 95px;
+
+		& span {
+			font-size: 24px;
+		}
+
+		&.applied path {
+			fill: var(--text-info);
+		}
 
 		&.disabled {
 			opacity: 0.6;
 			cursor: default;
 		}
-	}
-
-	&__icon {
-		@include icon(url(../../resources/icons/filter.svg), 15px, 15px);
 	}
 
 	&__title {
@@ -84,23 +87,9 @@
 		padding-left: 5px;
 	}
 
-	&__button:hover & {
-		&__title {
-			color: $controlButtonTextColorHover;
-		}
-
-		&__icon {
-			background-image: url(../../resources/icons/filter-hover.svg);
-		}
-	}
-
 	&__button.active & {
-		&__title {
-			color: $filterTextColor;
-		}
-
 		&__icon {
-			background-image: url(../../resources/icons/filter-white.svg);
+			background-image: url(../../resources/icons/filter.svg);
 		}
 	}
 
@@ -113,8 +102,7 @@
 
 	&__bubble {
 		color: #ffffff;
-		background-color: #5eba6e;
-		margin: 2px 5px;
+		background-color: #71a2ff;
 	}
 
 	&__controls {
@@ -132,10 +120,6 @@
 		text-align: center;
 		margin-left: 5px;
 		padding: 2px 5px;
-	}
-
-	&__loading {
-		@include spinner(2px, 19px, 2s);
 	}
 
 	&-time-controls {
@@ -165,102 +149,151 @@
 		position: absolute;
 		left: 0;
 		top: 40px;
-		z-index: 2;
-		padding: 20px 30px;
-		background-color: white;
+		z-index: 101;
+		background-color: var(--background-secondary);
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		color: var(--text-primary);
 		display: flex;
 		flex-direction: column;
-		border-radius: 6px;
-		box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
-			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+		margin: 0 10px 10px 10px;
+		border-radius: 16px;
+
+		&__header {
+			align-items: center;
+			font-weight: 600;
+			font-size: 20px;
+			padding: 12px 16px;
+			border-bottom: 1px solid var(--calendar-border);
+		}
 
 		&__row {
-			height: 300px;
+			height: 480px;
 			display: flex;
+			border-bottom: 1px solid var(--calendar-border);
+		}
+
+		&__interval-controls {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			padding: 0 12px 12px;
+			border-bottom: 1px solid var(--calendar-border);
+		}
+
+		&__intervals {
+			display: flex;
+			gap: 8px;
+
+			.button {
+				box-shadow: none;
+				border: 1px solid var(--input-border);
+				background-color: var(--background-primary);
+			}
+		}
+
+		&__interval-header {
+			font-size: 20px;
+			font-weight: 600;
+			padding: 8px 0 12px 0;
+		}
+
+		&__interval {
+			height: 32px;
+			border-radius: 8px;
 		}
 
 		&__controls {
-			width: 253px;
 			display: flex;
-			justify-content: space-between;
-			padding: 0 12px;
-		}
-
-		&__control {
-			margin: 0;
-			padding: 4px 5px;
-			width: 50px;
-			border: none;
-			background-color: $filterPickerControlColor;
-			border-radius: 6px;
-			font-size: 14px;
-			color: $filterPickerControlFontColor;
-			cursor: pointer;
+			justify-content: flex-end;
+			gap: 12px;
+			padding: 12px 16px;
 			font-weight: 600;
-			outline: none;
 		}
 
 		&__datepicker {
-			margin-right: 10px;
-		}
-	}
-
-	&-datetime-input {
-		&-wrapper {
-			width: 100%;
-			min-width: 70px;
-			position: relative;
+			width: 400px;
 		}
 	}
 
 	&-timepicker {
 		display: grid;
-		grid-template-columns: repeat(3, 70px);
+		grid-template-columns: 80px 25px 80px;
 		height: 100%;
+		border-left: 1px solid var(--calendar-border);
+		padding: 0 16px;
+		position: relative;
+
+		&__selected-area {
+			position: absolute;
+			border: 1px solid var(--calendar-border);
+			height: 80px;
+			width: 100%;
+			top: 201px;
+			border-left: none;
+			border-right: none;
+			user-select: none;
+			pointer-events: none;
+		}
+
+		&__delimiter {
+			color: var(--info-color);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 46px;
+		}
 
 		&__scroll {
-			@include scrollbar;
 			display: inline-block;
 			height: 100%;
-			overflow-y: scroll;
+			overflow: hidden;
+
+			&:hover {
+				@include hidden-scrollbar;
+				overflow-y: scroll;
+				scroll-snap-type: y proximity;
+			}
 
 			&::-webkit-scrollbar-track {
 				background-color: transparent;
 			}
 
 			&-item {
-				height: 30px;
+				height: 80px;
 				display: flex;
+				scroll-snap-align: center;
+				scroll-snap-stop: normal;
 				justify-content: center;
 				align-items: center;
-				font-size: 18px;
+				font-size: 36px;
 				cursor: pointer;
-				border-radius: 6px;
 				transition: background-color 0.15s ease-in-out;
-				color: $filterPickerScrollItemColor;
+				user-select: none;
+				color: var(--time-unit-near);
 
 				&.active {
-					background-color: $filterPickerScrollItemActiveColor;
-					color: white;
+					font-size: 46px;
+					color: var(--info-color);
+				}
 
-					&:hover {
-						background-color: $filterPickerScrollItemActiveColor;
+				&.empty {
+					height: 200px;
+
+					&.blocked {
+						display: none;
 					}
+				}
+
+				&.far {
+					font-size: 26px;
+					color: var(--time-unit-far);
 				}
 
 				&.blocked {
-					color: $filterPickerScrollItemBlockedFontColor;
-					background-color: $filterPickerScrollItemBlockedColor;
+					color: var(--time-unit-near);
+					background-color: var(--blocked-time-unit);
 					border-radius: 0;
 					cursor: not-allowed;
-
-					&:hover {
-						background-color: $filterPickerScrollItemBlockedColor;
-					}
-				}
-
-				&:hover {
-					background-color: $filterPickerScrollItemHoverColor;
 				}
 			}
 		}
@@ -269,6 +302,7 @@
 	&__compound {
 		display: flex;
 		flex-direction: column;
+		gap: 12px;
 		padding: 2px;
 
 		& > div:last-child {
@@ -278,9 +312,9 @@
 			display: flex;
 			overflow: hidden;
 			justify-content: space-between;
-			margin-bottom: 20px;
 
 			&.status {
+				padding: 3px 0;
 				margin: 0;
 			}
 		}
@@ -290,6 +324,7 @@
 		display: flex;
 		width: 100%;
 		justify-content: flex-end;
+		gap: 16px;
 
 		&.status {
 			justify-content: flex-start;
@@ -347,11 +382,6 @@
 			@include card-shadow;
 			background-color: $filterPrimaryColor;
 		}
-
-		&.applied {
-			background-color: $filterPrimaryColor;
-			border-radius: 5px;
-		}
 	}
 }
 
@@ -383,10 +413,6 @@
 	align-items: center;
 	gap: 12px;
 	font-size: 14px;
-
-	.filters-history-open {
-		@include improved-clickable($filterPrimaryColor, 10px);
-	}
 
 	&__counts {
 		flex: auto;
@@ -431,16 +457,17 @@
 }
 
 .filter-row {
+	@include surface;
+	background-color: unset;
 	overflow: hidden;
-	background: #fbfbfb;
-	box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.3);
 	border-radius: 4px;
 	min-height: 40px;
 	font-size: 14px;
-	font-weight: bold;
+	font-weight: normal;
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
+	gap: 15px;
 	width: 100%;
 
 	&:hover &__divider-text {
@@ -484,31 +511,50 @@
 		flex-grow: 1;
 		padding: 3px 5px;
 		margin: 0 10px;
-		background-color: #f1f1f1;
 		border-radius: $bubbleBorderRadius;
 		min-height: 40px;
 		font-size: 13px;
-		color: $primaryTextColor;
 		box-sizing: border-box;
-		// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
 		min-width: 0;
+		border-radius: 4px;
+		border: 1px solid var(--input-border);
+		background-color: var(--input-background);
+		color: var(--text-input);
+		outline: none;
+		position: relative;
+
+		&.date-time-input {
+			margin: 0;
+			max-width: 350px;
+		}
+
 		&:disabled {
 			opacity: 0.5;
 		}
-		&:focus {
-			background-color: #fff;
 
-			&::placeholder {
-				color: $secondaryTextColor;
-			}
+		&:focus,
+		&:hover {
+			border: 1px solid var(--info-color);
 		}
 
 		&.active {
-			background-color: #fff;
+			border: 1px solid var(--info-color);
 		}
 
-		&.non-empty {
-			background-color: #fff;
+		&.datetime-picker {
+			margin: 0;
+			outline: none;
+			border: 1px solid var(--info-color);
+			border-radius: 4px;
+			&.time {
+				width: 95px;
+			}
+			&.datetime {
+				width: 170px;
+			}
+			&.timestamps {
+				width: 340px;
+			}
 		}
 
 		&.time-interval {
@@ -518,29 +564,20 @@
 		}
 	}
 
-	&__datetime-input {
-		margin: 0 10px;
+	&__toggler {
+		cursor: pointer;
+		border: none;
+		background-color: $filterPickerControlFontColor;
+		height: 10px;
+		width: 30px;
+
+		&::before {
+			background-color: $filterSecondaryColor;
+		}
 	}
 
-	&__button {
-		display: flex;
-		align-items: center;
-		padding: 12px 24px;
-		border-radius: 12px;
-		background-color: $filterButtonSubmitColor;
-		color: $filterButtonSubmitTextColor;
-		cursor: pointer;
-		font-size: 14px;
-		font-weight: bold;
-		border: none;
-		outline: none;
-
-		&.close {
-			border: 1px solid $filterButtonCloseTextColor;
-			background: $filterButtonCloseColor;
-			border-color: $filterButtonCloseTextColor;
-			color: $filterButtonCloseTextColor;
-		}
+	&__datetime-input {
+		margin: 0 10px;
 	}
 
 	&__select {
@@ -551,15 +588,14 @@
 	}
 
 	&__label {
-		width: 120px;
 		align-self: center;
 		flex-shrink: 0;
-		color: #3a3a3a;
+		color: var(--text-primary);
+		font-size: 16px;
 		font-weight: bold;
 
 		&.status {
 			align-self: flex-start;
-			margin-bottom: 12px;
 		}
 	}
 
@@ -568,11 +604,7 @@
 		width: 100%;
 		height: 100%;
 		border-radius: 4px;
-		background: #f1f1f1;
 
-		&.active {
-			background: #ffffff;
-		}
 		&.disabled {
 			opacity: 0.5;
 			cursor: default;
@@ -591,7 +623,7 @@
 		position: relative;
 		flex-wrap: wrap;
 		flex-grow: 1;
-		gap: 5px;
+		gap: 6px;
 		padding: 5px 8px;
 
 		&.filter-row__input {
@@ -610,7 +642,7 @@
 		background: transparent;
 		border: none;
 		appearance: none;
-		color: $primaryTextColor;
+		color: var(--text-input);
 
 		&::-webkit-calendar-picker-indicator {
 			display: none;
@@ -678,4 +710,67 @@
 
 .event-filters-panel-label {
 	width: 145px;
+}
+
+.date-time-range {
+	display: flex;
+	align-items: center;
+	background-color: var(--input-background);
+	border-radius: 4px;
+
+	& input {
+		border: none;
+		background-color: transparent;
+		width: 180px;
+
+		&:focus {
+			border: none;
+		}
+	}
+
+	& label {
+		color: var(--text-secondary);
+	}
+
+	&__separator {
+		height: 18px;
+		width: 1px;
+		background-color: var(--input-border);
+	}
+}
+
+.date-time-input {
+	display: flex;
+	align-items: center;
+	border: 1px solid transparent;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding-left: 16px;
+
+	& > button {
+		box-shadow: none;
+		background-color: transparent;
+	}
+
+	&:hover {
+		border-color: var(--info-color);
+	}
+
+	&.active {
+		border-color: var(--info-color);
+	}
+
+	&:first-child {
+		padding-right: 24px;
+	}
+
+	&:last-child {
+		padding-left: 40px;
+		padding-right: 16px;
+	}
+
+	.filter-row__input:hover {
+		border: none;
+	}
 }

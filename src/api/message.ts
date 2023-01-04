@@ -16,7 +16,6 @@
 
 import { MessageApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
-import { MessagesParams } from '../models/filter/MessagesFilter';
 import { MessagesSSEParams } from './sse';
 import fetch from '../helpers/fetchRetry';
 
@@ -26,70 +25,9 @@ export type MatchMessageParams = Omit<
 >;
 
 const messageHttpApi: MessageApiSchema = {
-	getAll: async () => {
-		const params = createURLSearchParams({ idsOnly: false });
-		const res = await fetch(`backend/search/messages?${params}`);
-
-		if (res.ok) {
-			return res.json();
-		}
-
-		console.error(res.statusText);
-		return [];
-	},
-	getMessages: async (
-		search: {
-			limit: number;
-			timelineDirection: 'previous' | 'next';
-			messageId: string;
-			idsOnly: boolean;
-		},
-		filter: MessagesParams,
-		abortSignal?: AbortSignal,
-	) => {
-		const { idsOnly = true, messageId = '', timelineDirection = 'next', limit = 100 } = search;
-		const { streams, timestampFrom, timestampTo } = filter;
-
-		const params = createURLSearchParams({
-			idsOnly,
-			timelineDirection,
-			messageId: messageId.length > 0 ? messageId : null,
-			limit,
-			timestampFrom: timestampFrom ? new Date(timestampFrom).toISOString() : null,
-			timestampTo: timestampTo ? new Date(timestampTo).toISOString() : null,
-			stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
-		});
-
-		const res = await fetch(`backend/search/messages?${params}`, {
-			signal: abortSignal,
-		});
-
-		if (res.ok) {
-			return res.json();
-		}
-
-		console.error(res.statusText);
-
-		throw res;
-	},
-	getMessagesIds: async (timestampFrom, timestampTo) => {
-		const params = createURLSearchParams({
-			idsOnly: true,
-			timestampFrom: timestampFrom ? new Date(timestampFrom).toISOString() : null,
-			timestampTo: timestampTo ? new Date(timestampTo).toISOString() : null,
-		});
-		const res = await fetch(`backend/search/messages?${params}`);
-
-		if (res.ok) {
-			return res.json();
-		}
-
-		console.error(res.statusText);
-		return [];
-	},
 	getMessage: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/message/${id}?${params}`, {
+		const res = await fetch(`${process.env.BASE_URL}/message/${id}?${params}`, {
 			signal,
 		});
 
@@ -107,7 +45,7 @@ const messageHttpApi: MessageApiSchema = {
 		return null;
 	},
 	getMessageSessions: async () => {
-		const res = await fetch('backend/messageStreams');
+		const res = await fetch(`${process.env.BASE_URL}/messageStreams`);
 
 		if (res.ok) return res.json();
 
@@ -116,7 +54,7 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	matchMessage: async (messageId: string, filter: MatchMessageParams, signal?: AbortSignal) => {
 		const params = createURLSearchParams({ ...filter });
-		const res = await fetch(`backend/match/message/${messageId}?${params}`, {
+		const res = await fetch(`${process.env.BASE_URL}/match/message/${messageId}?${params}`, {
 			signal,
 		});
 
@@ -125,17 +63,19 @@ const messageHttpApi: MessageApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getResumptionMessageIds: async ({ streams, startTimestamp, messageId, abortSignal: signal }) => {
+	getResumptionMessageIds: async ({ streams, startTimestamp, messageId }, signal) => {
 		if (!startTimestamp && !messageId) {
 			throw new Error('One of startTimestamp or messageId must be specified');
 		}
 
 		const params = createURLSearchParams({
-			stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
+			stream: streams,
 			startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
 			messageId,
 		});
-		const res = await fetch(`backend/messageIds/?${params}`, { signal });
+		const res = await fetch(`${process.env.BASE_URL}/messageIds/?${params}`, {
+			signal,
+		});
 		if (res.ok) return res.json();
 
 		console.error(res.statusText);

@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import { ToastProps } from 'react-toast-notifications';
 import { createStyleSelector } from '../../helpers/styleCreators';
 

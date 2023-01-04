@@ -15,18 +15,17 @@
  ***************************************************************************** */
 
 import { observable, toJS } from 'mobx';
-import { FilterState } from '../models/search/Search';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { notEmpty } from './object';
-import EventsFilter from '../models/filter/EventsFilter';
-import MessagesFilter from '../models/filter/MessagesFilter';
 
-export function getNonEmptyFilters(filter: Partial<FilterState>) {
+export function getNonEmptyFilters(filter: Partial<MessagesFilter | EventsFilter>) {
 	return Object.fromEntries(
 		Object.entries(toJS(observable(filter)))
 			.filter(([_, value]) => value && value.values && value.values.length > 0)
-			.map(([k, v]) => {
-				return typeof v.values === 'string'
+			.map(([k, v]) =>
+				typeof v.values === 'string'
 					? [k, v]
 					: [
 							k,
@@ -34,8 +33,8 @@ export function getNonEmptyFilters(filter: Partial<FilterState>) {
 								...v,
 								values: [...new Set(v.values.sort())],
 							},
-					  ];
-			}),
+					  ],
+			),
 	);
 }
 

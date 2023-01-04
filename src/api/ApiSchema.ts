@@ -16,33 +16,23 @@
 
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import EventsFilter from '../models/filter/EventsFilter';
-import { MessagesParams } from '../models/filter/MessagesFilter';
-import { TimeRange } from '../models/Timestamp';
 import {
-	SSEParamsEvents,
 	EventsFiltersInfo,
 	EventFilterKeys,
 	MessagesFilterInfo,
 	MessageFilterKeys,
-	SSEParams,
+	EventSSEParams,
+	MessagesSSEParams,
 } from './sse';
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
 import { DirectionalStreamInfo } from '../models/StreamInfo';
 
-export default interface ApiSchema {
-	events: EventApiSchema;
-	messages: MessageApiSchema;
-	sse: SSESchema;
-	indexedDb: IndexedDB;
-}
-
 export type SSEChannelType = 'event' | 'message';
 
 export interface EventSourceConfig {
 	type: SSEChannelType;
-	queryParams: SSEParams;
+	queryParams: EventSSEParams | MessagesSSEParams;
 }
 
 export interface EventApiSchema {
@@ -55,28 +45,6 @@ export interface EventApiSchema {
 }
 
 export interface MessageApiSchema {
-	getAll: () => Promise<number[]>;
-	getMessagesIds: (timestampFrom: number, timestampTo: number) => Promise<string[]>;
-	getMessages(
-		search: {
-			limit: number;
-			timelineDirection: 'previous' | 'next';
-			messageId: string;
-			idsOnly: true;
-		},
-		filter: MessagesParams,
-		abortSignal?: AbortSignal,
-	): Promise<string[]>;
-	getMessages(
-		search: {
-			limit: number;
-			timelineDirection: 'previous' | 'next';
-			messageId: string;
-			idsOnly: false;
-		},
-		filter: MessagesParams,
-		abortSignal?: AbortSignal,
-	): Promise<EventMessage[]>;
 	getMessage: (
 		id: string,
 		signal?: AbortSignal,
@@ -88,24 +56,28 @@ export interface MessageApiSchema {
 		filter: MatchMessageParams,
 		abortSignal?: AbortSignal,
 	) => Promise<boolean>;
-	getResumptionMessageIds: (params: {
-		streams: string[];
-		startTimestamp?: number;
-		messageId?: string;
-		abortSignal?: AbortSignal;
-	}) => Promise<DirectionalStreamInfo>;
+	getResumptionMessageIds: (
+		params: {
+			streams: string[];
+			startTimestamp?: number;
+			messageId?: string;
+		},
+		abortSignal?: AbortSignal,
+	) => Promise<DirectionalStreamInfo>;
 }
 
 export interface SSESchema {
 	getEventSource: (config: EventSourceConfig) => EventSource;
-	getEventsTreeSource: (
-		timeRange: TimeRange,
-		filter: EventsFilter | null,
-		sseParams: SSEParamsEvents,
-	) => EventSource;
 	getFilters: <T>(filterType: 'events' | 'messages') => Promise<T[]>;
 	getEventFilters: () => Promise<EventFilterKeys[]>;
 	getMessagesFilters: () => Promise<MessageFilterKeys[]>;
 	getEventsFiltersInfo: (filters: EventFilterKeys[]) => Promise<EventsFiltersInfo[]>;
 	getMessagesFiltersInfo: (filters: MessageFilterKeys[]) => Promise<MessagesFilterInfo[]>;
+}
+
+export default interface ApiSchema {
+	events: EventApiSchema;
+	messages: MessageApiSchema;
+	sse: SSESchema;
+	indexedDb: IndexedDB;
 }

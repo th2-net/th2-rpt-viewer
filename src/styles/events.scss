@@ -17,21 +17,30 @@
 @import './common/vars';
 
 .event-header-card {
-	@include status-card;
-	@include bookmark-button();
-	@include event-status-icon($isParentHoverable: true);
-	line-height: 15px;
 	width: 100%;
-	border-radius: 5px;
-	padding: 0px 5px;
+	border-radius: 8px;
+	padding: 12px;
 	display: flex;
 	align-items: center;
 	border: 2px solid transparent;
 	overflow: hidden;
 	cursor: pointer;
-	gap: 5px;
-	height: 23px;
+	gap: 6px;
 	position: relative;
+	height: 48px;
+
+	.chip {
+		display: block;
+		padding: 6px 8px;
+	}
+
+	&__icons {
+		flex-shrink: 0;
+
+		&.chip {
+			display: flex;
+		}
+	}
 
 	&__details {
 		visibility: hidden;
@@ -39,17 +48,13 @@
 		top: 0;
 		right: 0;
 		height: 100%;
-		padding-left: 15px;
 		display: flex;
 		align-items: center;
 		gap: 4px;
 		max-width: 90%;
 		transition: none;
 		background-color: inherit;
-	}
-
-	&:hover {
-		background-color: var(--status-secondary-background-color);
+		padding: 0 12px;
 	}
 
 	&:hover &__details {
@@ -71,12 +76,7 @@
 	}
 
 	&.selected {
-		border-color: var(--status-primary-border-color);
-	}
-
-	&.active {
-		background-color: var(--status-secondary-background-color);
-		border-color: var(--status-hover-border-color);
+		border-color: var(--info-color);
 	}
 
 	&.not-selectable {
@@ -92,34 +92,25 @@
 		@include ellipsis();
 		flex-grow: 1;
 		display: inline-block;
+
+		&.clickable {
+			cursor: pointer;
+
+			&:hover {
+				text-decoration: underline;
+			}
+		}
 	}
 
 	&__elapsed-time {
-		color: $activeTextColor;
 		font-weight: 600;
 		font-size: 10px;
 		line-height: 15px;
 	}
 
-	&__time-label,
-	&__event-type {
-		font-size: 9px;
-		color: $secondaryLightTextColor;
-		white-space: nowrap;
-		padding: 0 2px;
-		transition: color 0.15s, border 0.15s;
-		border: 1px solid transparent;
-		border-radius: 4px;
-
-		&:hover {
-			color: $graphTextColor;
-			border: 1px solid $graphTextColor;
-		}
-	}
-
 	&__status,
 	&__title {
-		color: var(--status-primary-color);
+		color: var(--text-primary);
 		font-size: 11px;
 		line-height: 15px;
 		font-weight: bold;
@@ -132,169 +123,106 @@
 		flex-shrink: 0;
 		background: url(../../resources/icons/filter-hover.svg);
 	}
+
+	.counter {
+		@include unselectable;
+		box-sizing: border-box;
+		border: 1px solid var(--input-border);
+		border-radius: 8px;
+		height: 24px;
+		flex-shrink: 0;
+		color: var(--text-info);
+		background-color: var(--surface-background);
+		font-size: 12px;
+		font-weight: bold;
+		line-height: 24px;
+		padding: 0 6px;
+
+		&.selected {
+			font-weight: bold;
+			color: white;
+			border-color: var(--status-primary-border-color);
+			background-color: var(--status-primary-background-color);
+		}
+
+		&.clickable {
+			cursor: pointer;
+		}
+	}
 }
 
 .event-detail-info {
 	@include scrollbar;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
 	overflow-y: auto;
 	width: 100%;
 	height: 100%;
-	padding-right: 5px;
+	padding: 16px 16px 16px 0px;
+	color: var(--text-secondary);
+
+	.event-card {
+		overflow: visible;
+		padding: 0;
+		padding-bottom: 16px;
+	}
 
 	&__parents {
 		display: flex;
 		flex-direction: column;
-		padding-bottom: 10px;
-
-		& > *:not(:first-child) {
-			margin-top: 3px;
+		gap: 8px;
+		& > div {
+			border-radius: 4px;
 		}
 	}
 
-	&__event-card {
-		margin-bottom: 10px;
-	}
-
-	&__list {
-		display: flex;
-		flex-direction: column;
-
-		& > *:not(:first-child) {
-			margin-top: 5px;
-		}
-	}
-
-	&__message-wrapper {
-		@include message-background;
-		overflow-x: auto;
-	}
-
-	&__message {
-		font-size: 11px;
+	.splash-screen {
+		height: auto;
+		position: absolute;
+		top: 50%;
+		transform: translate(0px, -100%);
 	}
 }
 
 .event-card {
-	@include status-card;
-	@include event-status-icon($isParentHoverable: false);
-	@include bookmark-button($showOnHoverOverParent: false);
 	@include scrollbar;
-	display: flex;
 
-	padding: 2px 3px;
-	border-radius: 5px;
-	background-color: $workspaceBackground;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 8px;
+
 	font-size: 11px;
 	line-height: 15px;
-	overflow: hidden;
+	height: 100%;
+	overflow: auto;
+	flex-shrink: 0;
 
-	&__status {
-		& .event-status-icon {
-			margin: 3px 2px;
-			&:hover .event-card__status-label {
-				display: block;
-			}
-		}
-	}
-
-	&__info {
-		padding-left: 6px;
-		padding-right: 6px;
-		flex-grow: 1;
+	&__header {
+		@include surface();
+		background-color: var(--background-primary);
+		border-radius: 8px;
+		padding: 8px;
 		flex-shrink: 1;
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
-	}
+		gap: 8px;
 
-	&__header {
-		display: flex;
-		align-items: center;
-
-		& > *:not(:first-child) {
-			margin-left: 5px;
+		& > div {
+			display: flex;
+			align-items: center;
+			width: 100%;
+			gap: 8px;
 		}
-	}
 
-	&__title {
-		flex-grow: 1;
-		flex-shrink: 1;
-		font-weight: 600;
-		color: var(--status-primary-color);
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		overflow: hidden;
-	}
-
-	&__event-type {
-		white-space: nowrap;
-		color: $eventCardIdColor;
-	}
-
-	&__time {
-		color: $activeTextColor;
-		font-weight: 600;
-	}
-
-	&__status-label {
-		display: none;
-		font-weight: 600;
-		position: absolute;
-		padding: 5px 10px;
-		border-radius: 5px;
-		background-color: var(--status-primary-color-light);
-		color: white;
-		white-space: nowrap;
-		left: -1px;
-		top: 17px;
-
-		&:before {
-			content: '';
-			position: absolute;
-			left: 3px;
-			top: -4px;
-			border-left: 7px solid transparent;
-			border-right: 7px solid transparent;
-			border-bottom: 7px solid var(--status-primary-color-light);
+		.chip {
+			display: block;
 		}
-	}
 
-	&__controls {
-		display: flex;
-
-		& > *:not(:first-child) {
-			margin-left: 5px;
-		}
-	}
-
-	&__body {
-		margin-top: 2px;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, min-content);
-		overflow: hidden;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 10px;
-	}
-
-	&__id {
-		@include ellipsis();
-		color: $eventCardIdColor;
-	}
-
-	&__timestamp {
-		@include ellipsis();
-		min-width: 0;
-		margin-left: 5px;
-		padding: 0 2px;
-		transition: all 0.15s;
-		border: 1px solid transparent;
-		border-radius: 4px;
-		text-align: right;
-
-		&:hover {
-			color: $graphTextColor;
-			border: 1px solid $graphTextColor;
+		& div:last-child {
+			justify-content: space-between;
 		}
 	}
 
@@ -302,14 +230,148 @@
 		display: flex;
 		align-items: center;
 		flex-shrink: 0;
+		border-radius: 50%;
+		padding: 5px 6px;
+		cursor: pointer;
 	}
-}
 
-.event-body-fallback {
-	overflow-x: auto;
-	@include scrollbar;
-	@include message-background;
-	margin-top: 15px;
+	&__title {
+		flex-grow: 1;
+		flex-shrink: 1;
+		font-size: 14px;
+		line-height: 20px;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		color: var(--text-primary);
+	}
+
+	&__id {
+		cursor: pointer;
+	}
+
+	&__timestamp {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	&__status-icon {
+		@include surface();
+		height: 24px;
+		padding: 6px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-items: center;
+		font-size: 15px;
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		color: var(--text-secondary);
+		font-size: 11px;
+		line-height: 15px;
+
+		.event-message-card {
+			border-radius: 4px;
+			@include surface;
+			padding: 6px 10px;
+			background-color: var(--text-background);
+		}
+
+		.fallback {
+			@include scrollbar;
+			@include surface;
+			overflow-x: auto;
+			border-radius: 4px;
+			padding: 6px 10px;
+		}
+
+		.reference-card {
+			width: 100%;
+			overflow: hidden;
+			cursor: default;
+			border-radius: 4px;
+			color: var(--text-primary);
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+
+			.icon-button {
+				cursor: pointer;
+				align-items: center;
+				background: var(--surface-background);
+				box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+				padding: 4px;
+				border-radius: 20px;
+				width: 24px;
+				height: 24px;
+				font-size: 12px;
+				transition: all 0.2s;
+				position: relative;
+
+				&::before {
+					content: '';
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					display: none;
+					background-color: var(--info-color);
+					opacity: 0.15;
+				}
+
+				&.expanded {
+					color: var(--info-color);
+					transform: rotate(180deg);
+
+					&::before {
+						display: block;
+					}
+				}
+			}
+
+			&.open {
+				padding: 6px;
+				border: 1px solid var(--info-color);
+			}
+
+			&__title {
+				@include ellipsis();
+				flex-grow: 1;
+				flex-shrink: 1;
+			}
+
+			&__header {
+				@include surface;
+				background-color: var(--text-background);
+				font-size: 13px;
+				display: flex;
+				align-items: center;
+				padding: 8px;
+				border-radius: 4px;
+			}
+
+			&__body {
+				display: flex;
+				flex-direction: column;
+				gap: 16px;
+			}
+
+			&__error {
+				@include surface;
+				font-size: 10px;
+				border: 1px solid var(--status-error);
+				border-radius: 5px;
+				padding: 5px;
+				color: var(--status-error);
+			}
+		}
+	}
 }
 
 .event-window {
@@ -322,7 +384,7 @@
 	width: 100%;
 	height: 40px;
 	display: flex;
-	justify-content: space-between;
+	gap: 12px;
 	align-items: center;
 	color: var(--status-primary-color);
 	z-index: 1;
@@ -341,20 +403,15 @@
 	&__flat-button {
 		@include unselectable;
 
-		color: $controlButtonTextColor;
+		color: var(--text-primary);
 		font-size: 12px;
 		line-height: 15px;
 		font-weight: bold;
 		cursor: pointer;
-		margin: 0 5px;
 		transition: color 0.2s;
 
-		&:hover {
-			color: $controlButtonTextColorHover;
-		}
-
 		&.active {
-			color: $filterPrimaryColor;
+			color: var(--text-info);
 		}
 	}
 
@@ -408,10 +465,21 @@
 
 		& input {
 			width: 32px;
-			border: 1px solid $controlButtonTextColor;
 			border-radius: 6px;
 			text-align: center;
+			border: 1px solid var(--input-border);
+			background-color: var(--input-background);
+			color: var(--text-input);
+			outline: none;
+
+			&:focus {
+				border: 1px solid var(--info-color);
+			}
 		}
+	}
+
+	.filter-wrapper {
+		top: 109px;
 	}
 }
 
@@ -460,74 +528,102 @@
 	}
 }
 
-.event-skeleton {
-	@include skeleton-pulse;
-	width: 100%;
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: center;
-	padding: 0 10px;
-	border: 2px solid $skeletonBackgroundColor;
-	border-radius: 5px;
-	min-height: 38px;
-	margin: 2px 0;
-
-	&.status-only {
-		width: 38px;
-		justify-content: center;
-		border-radius: 50%;
-	}
-
-	&__name {
-		width: 60%;
-	}
-
-	&__status {
-		width: 10%;
-	}
-
-	&__name,
-	&__status {
-		background-color: $skeletonBackgroundColor;
-		height: 18px;
-		border-radius: 3px;
-	}
+.event-list-item {
+	padding: 4px 16px;
 }
 
 .event-tree-card {
 	display: flex;
-	gap: 5px;
+	gap: 4px;
 	flex-direction: row;
 	align-items: center;
-	padding: 1px 5px 1px 0;
-}
 
-.event-tree-timestamp {
-	display: flex;
-	justify-content: flex-end;
-	padding: 3px 10px 3px 0;
-	margin-top: 3px;
-	margin-bottom: 5px;
-
-	&__value {
-		font-size: 9px;
-		line-height: 15px;
-		color: $eventTextColor;
+	&__indent {
+		background-color: var(--background-secondary);
+		min-height: 48px;
+		min-width: 48px;
+		height: 100%;
+		border-radius: 8px 0px 0px 8px;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
 	}
 
-	&__icon {
-		margin-left: 10px;
-		@include icon(url(../../resources/icons/time-arrow-start.svg), 15px, 15px);
+	.expand-button {
+		padding: 16px;
+		background: none;
+		box-shadow: none;
 	}
 
-	&.end & {
-		margin-top: 3px;
-		margin-bottom: 5px;
+	.expand-icon {
+		@include icon(null, 16px, 16px);
+		flex-shrink: 0;
 
-		&__icon {
-			background-image: url(../../resources/icons/time-arrow-end.svg);
+		&::before {
+			content: '';
+			position: absolute;
+			width: 16px;
+			height: 16px;
+			border-radius: 3px;
 		}
+
+		&.expanded {
+			background-image: url(../../resources/icons/expand-on.svg);
+		}
+
+		&.hidden {
+			background-image: url(../../resources/icons/expand-off.svg);
+		}
+
+		&.loading {
+			display: flex;
+			justify-content: space-around;
+			align-items: center;
+			flex-shrink: 0;
+		}
+
+		&.disabled {
+			cursor: default;
+
+			&:hover::before {
+				display: none;
+			}
+		}
+
+		&__dot {
+			background-color: #414141;
+			width: 3px;
+			height: 3px;
+			border-radius: 1px;
+			animation-name: dot-opacity;
+			animation-duration: 1s;
+			animation-iteration-count: infinite;
+
+			&:nth-child(1) {
+				animation-delay: 0s;
+			}
+
+			&:nth-child(2) {
+				animation-delay: 330ms;
+			}
+
+			&:nth-child(3) {
+				animation-delay: 660ms;
+			}
+		}
+	}
+
+	.event-header-card {
+		border-radius: 0px 8px 8px 0px;
+	}
+
+	&__footer {
+		background-color: var(--background-secondary);
+		margin: 0px 16px;
+		padding: 8px;
+		border-radius: 0 0 8px 8px;
+		display: flex;
+		justify-content: center;
 	}
 }
 
@@ -535,8 +631,8 @@
 	display: flex;
 	align-items: center;
 	white-space: nowrap;
-	font-size: 10px;
-	line-height: 15px;
+	font-size: 12px;
+	line-height: 16px;
 	padding-bottom: 5px;
 	flex-wrap: wrap;
 
@@ -544,14 +640,20 @@
 		margin-right: 10px;
 	}
 
+	.status-icon {
+		width: 10px;
+		height: 10px;
+	}
+
 	&__item {
-		@include status-card;
 		display: flex;
 		align-items: center;
 		max-width: 100%;
+		color: var(--text-primary);
 
 		&-title {
 			@include ellipsis;
+			margin-left: 8px;
 			cursor: pointer;
 			margin-right: 10px;
 			color: var(--status-primary-color-light);
@@ -573,7 +675,10 @@
 
 		&.root & {
 			&-title {
-				color: $eventTextColorLight;
+				color: var(--events-primary);
+				font-size: 14px;
+				line-height: 16px;
+				margin-left: 0;
 			}
 
 			&-icon {
@@ -582,54 +687,109 @@
 			}
 		}
 	}
+}
 
-	&__loader {
-		@include spinner(2px, 12px);
+.events-nav {
+	@include surface;
+	display: flex;
+	align-items: center;
+	border-radius: 4px;
 
-		&:first-child {
-			margin-right: 5px;
+	& button {
+		box-shadow: none;
+		padding: 0 8px;
+	}
+
+	&__timestamp {
+		@include dark {
+			--info-color: #c6daff;
 		}
+
+		color: var(--info-color);
+		border: 1px solid var(--info-color);
+		border-radius: 8px;
+		padding: 0 10px;
+		font-size: 12px;
+		line-height: 24px;
+		font-weight: bold;
+	}
+
+	&__nav-circle {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		padding: 4px;
+		margin-left: 8px;
+		gap: 10px;
+
+		width: 16px;
+		height: 16px;
+
+		@include light {
+			--surface-background: #fff;
+		}
+
+		@include dark {
+			--surface-background: #4f5156;
+		}
+
+		& > span {
+			color: var(--text-secondary);
+		}
+	}
+
+	.left {
+		transform: rotate(-180deg);
+		margin-left: 0;
+		margin-right: 8px;
+	}
+
+	&__calendar-button {
+		font-size: 20px;
+		color: var(--info-color);
 	}
 }
 
-.event-reference-card {
-	padding: 2px;
-	padding-bottom: 0px;
-	line-height: 15px;
+.event-expandable-card {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 	width: 100%;
+	justify-content: stretch;
 	overflow: hidden;
-	cursor: default;
+	border: 2px solid transparent;
+	border-radius: 8px;
 
-	&__title {
-		@include ellipsis();
-		flex-grow: 1;
-		flex-shrink: 1;
-		font-weight: 600;
-		color: $tableTitleColor;
+	.event-header-card {
+		border-radius: 8px 8px 0px 0px;
+	}
+
+	&.selected {
+		border: 2px solid var(--info-color);
+	}
+
+	&.empty {
+		.event-header-card {
+			border-radius: 8px;
+		}
 	}
 
 	&__header {
-		font-size: 13px;
-		display: flex;
-		align-items: center;
-		background-color: $skeletonBackgroundColor;
-		padding: 5px;
-		margin: 0px 0px 1px;
+		width: 100%;
 	}
-}
 
-.event-reference {
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	color: $primaryTextColor;
+	&__footer {
+		display: flex;
+		justify-content: flex-end;
+	}
 
-	&__error {
-		font-size: 10px;
-		border: 1px $failedBorderColor solid;
-		border-radius: 5px;
-		padding: 5px;
-		background-color: $failedBackgroundColor;
-		color: $failedTextColor;
+	&__body {
+		background-color: var(--background-secondary);
+		border-radius: 0px 0px 8px 8px;
+		padding: 8px 12px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
 	}
 }

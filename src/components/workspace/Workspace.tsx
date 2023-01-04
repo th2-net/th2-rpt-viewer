@@ -14,62 +14,128 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import EventWindow from '../event/EventWindow';
+import BookmarksPanel from 'modules/bookmarks';
+import EventsPanel from 'modules/events';
+import SearchPanel from 'modules/search';
+import { getItemId } from 'helpers/event';
+import { Panel } from 'models/Panel';
+import MessagesPanel from 'modules/messages';
+import { BookmarkIcon } from 'components/icons/BookmarkIcon';
+import { StatusIcon } from 'components/icons/StatusIcon';
+import { MessageIcon } from 'components/icons/MessageIcon';
+import { SearchIcon } from 'components/icons/SearchIcon';
 import WorkspaceSplitter from './WorkspaceSplitter';
-import MessagesWindow from '../message/MessagesWindow';
+import BookmarkCounter from '../../modules/bookmarks/components/BookmarkCounter';
 import { useActivePanel, useWorkspaceStore } from '../../hooks';
-import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 import '../../styles/workspace.scss';
 
+// TODO: These colors seem to be redundant. recheck later
 const panelColors = {
 	events: {
 		default: '#F5C5A3',
 		active: '#F7A76E',
 	},
+	search: {
+		default: '#5C85D6',
+		active: '#5C85D6',
+	},
 	messages: {
 		default: '#ADE0EB',
 		active: '#1AC4E5',
 	},
+	bookmarks: {
+		default: '#CCA3F5',
+		active: '#CCA3F5',
+	},
 } as const;
 
 function Workspace() {
-	const { activePanel } = useActivePanel(null);
-	const {
-		panelsLayout,
-		setPanelsLayout,
-		resetToDefaulLayout,
-		collapsePanel,
-	} = useWorkspaceViewStore();
+	const { activePanel } = useActivePanel();
+	const { panelsLayout, setPanelsLayout, togglePanel } = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
+
+	const itemsInView = computed(() =>
+		[
+			...workspaceStore.messagesStore.messagesInView,
+			...workspaceStore.eventsStore.renderedEvents,
+		].reduce(
+			(map, item) => ({
+				...map,
+				[getItemId(item)]: true,
+			}),
+			{} as Record<string, boolean>,
+		),
+	).get();
 
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
-				resetToDefaulLayout={resetToDefaulLayout}
-				collapsePanel={collapsePanel}
+				togglePanel={togglePanel}
 				panels={[
+					{
+						title: 'Smart Search',
+						color: panelColors.search,
+						header: (
+							<div className='search-panel-header'>
+								<SearchIcon />
+								<h2>Smart Search</h2>
+							</div>
+						),
+						component: (
+							<SearchPanel
+								onResultClick={workspaceStore.onSearchResultItemSelect}
+								itemsInView={itemsInView}
+							/>
+						),
+						panel: Panel.Search,
+						isActive: activePanel === Panel.Search,
+						setActivePanel: workspaceStore.viewStore.setActivePanel,
+					},
 					{
 						title: 'Events',
 						color: panelColors.events,
-						component: <EventWindow />,
-						minWidth: 500,
-						isActive: isEventsStore(activePanel),
-						setActivePanel: () =>
-							workspaceStore.viewStore.setActivePanel(workspaceStore.eventsStore),
+						header: (
+							<div className='events-panel-header'>
+								<StatusIcon /> <h2>Events</h2>
+							</div>
+						),
+						component: <EventsPanel />,
+						isActive: activePanel === Panel.Events,
+						panel: Panel.Events,
+						setActivePanel: workspaceStore.viewStore.setActivePanel,
 					},
 					{
 						title: 'Messages',
 						color: panelColors.messages,
-						component: <MessagesWindow />,
-						minWidth: 400,
-						isActive: isMessagesStore(activePanel),
-						setActivePanel: () =>
-							workspaceStore.viewStore.setActivePanel(workspaceStore.messagesStore),
+						header: (
+							<div className='messages-panel-header'>
+								<MessageIcon /> <h2>Messages</h2>
+							</div>
+						),
+						component: <MessagesPanel />,
+						isActive: activePanel === Panel.Messages,
+						panel: Panel.Messages,
+						setActivePanel: workspaceStore.viewStore.setActivePanel,
+					},
+					{
+						title: 'Bookmarks',
+						color: panelColors.bookmarks,
+						header: (
+							<div className='bookmarks-panel-header'>
+								<BookmarkIcon isPinned={false} />
+								<h2>Bookmarks</h2>
+								<BookmarkCounter />
+							</div>
+						),
+						component: <BookmarksPanel onBookmarkClick={workspaceStore.onSavedItemSelect} />,
+						isActive: activePanel === Panel.Bookmarks,
+						panel: Panel.Bookmarks,
+						setActivePanel: workspaceStore.viewStore.setActivePanel,
 					},
 				]}
 			/>

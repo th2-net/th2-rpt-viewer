@@ -14,9 +14,66 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { MessagesSSEParams } from '../api/sse';
+import { Bookmark, EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
+import { SearchHistory } from 'modules/search/stores/SearchStore';
+import { EventStoreURLState } from 'modules/events/stores/EventsStore';
+import { MessagesStoreURLState } from 'modules/messages/stores/MessagesStore';
+import { TimeRange } from 'models/Timestamp';
+import EventsFilter from 'models/filter/EventsFilter';
+import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
+import { DbData } from '../api/indexedDb';
+import { EventsFiltersInfo, MessagesFilterInfo, MessagesSSEParams } from '../api/sse';
+import { EventTreeNode, EventAction } from './EventAction';
 import { MessageSSEEventListeners } from '../stores/SSEChannel/MessagesSSEChannel';
 import { EventMessage } from './EventMessage';
+
+export interface IBookmarksStore {
+	messages: MessageBookmark[];
+	events: EventBookmark[];
+	bookmarks: Bookmark[];
+	BOOKMARKS_LIMIT: number;
+	isLoadingBookmarks: boolean;
+	toggleMessagePin: (message: EventMessage) => void;
+	toggleEventPin: (message: EventAction) => void;
+	syncData: (unsavedData?: DbData) => void;
+}
+
+export interface IFilterConfigStore {
+	isMessageFiltersLoading: boolean;
+	isEventFiltersLoading: boolean;
+	eventFilterInfo: EventsFiltersInfo[];
+	messagesFilterInfo: MessagesFilterInfo[];
+	messageSessions: string[];
+	eventFilters: EventsFilter | null;
+	getEventFilters: () => Promise<EventsFilter | null>;
+	messageFilters: MessagesFilter | null;
+	getMessageFilters: () => Promise<MessagesFilter | null>;
+	getMessageSessions: () => Promise<string[]>;
+}
+
+export interface ISearchStore {
+	currentSearch: SearchHistory | null;
+	dispose: () => void;
+	isSearching: boolean;
+	filterEventsByParent: (parentId: string, parentTimestamp: number) => void;
+}
+
+export interface IMessagesStore {
+	filterStore: IMessageFilterStore;
+	onMessageSelect: (message: EventMessage) => void;
+	onBookmarksChange: (bookmarkedMessages: EventMessage[]) => void;
+	onSessionHistoryChange: (sessions: string[]) => void;
+	dispose: () => void;
+	onSelectedEventChange: (event: EventTreeNode | null) => void;
+	messagesInView: EventMessage[];
+	urlState: MessagesStoreURLState;
+}
+
+interface IMessageFilterStore {
+	params: MessagesParams;
+	filter: MessagesFilter | null;
+	isSoftFilter: boolean;
+}
 
 export interface MessagesDataStore {
 	messages: EventMessage[];
@@ -32,6 +89,11 @@ export interface MessagesDataStore {
 	getPreviousMessages: () => Promise<EventMessage[]>;
 }
 
-export interface MessageIdsStore {
-	readonly idList: string[];
+export interface IEventsStore {
+	renderedEvents: EventTreeNode[];
+	selectedNode: EventTreeNode | null;
+	goToEvent: (event: EventAction | EventTreeNode) => void;
+	dispose: () => void;
+	urlState: EventStoreURLState;
+	applyFilter: (filter?: EventsFilter, timeRange?: TimeRange) => void;
 }

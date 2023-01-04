@@ -16,236 +16,161 @@
 
 @import './common/vars';
 
-.messages-view-configurator {
+.message-settings {
+	@include surface;
 	width: 100%;
-	border-radius: 4px;
 	overflow: hidden;
-	font: 11px 'Open sans', sans-serif;
-	background-color: #fff;
-	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
-		0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+	font-size: 12px;
+	border-radius: 8px;
+	padding: 12px;
+	background-color: var(--background-primary);
+	color: var(--text-primary);
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	min-height: 300px;
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+	}
+
+	&__togglers {
+		width: 100%;
+		& button {
+			flex: 1;
+		}
+	}
+}
+
+.settings-button {
+	@include surface;
+	width: 24px;
+	height: 24px;
+	border: none;
+	cursor: pointer;
+	color: var(--info-color);
 	border-radius: 6px;
-	.hint {
+
+	& span {
+		color: var(--info-color);
+	}
+}
+
+.reorder {
+	display: none;
+	align-items: center;
+
+	& span {
+		font-size: 14px;
+	}
+
+	&__up {
+		transform: rotate(90deg);
+	}
+
+	&__down {
+		transform: rotate(-90deg);
+	}
+}
+
+.display-rules {
+	flex-grow: 1;
+	display: grid;
+	grid-template-rows: auto auto 1fr auto;
+
+	&__header {
+		text-align: center;
+	}
+
+	&__columns {
+		display: flex;
+		justify-content: space-between;
+	}
+
+	&__hint {
 		padding: 6px;
 		font-size: 10px;
 		opacity: 0.7;
 	}
-	&-open {
-		@include icon(url(../../resources/icons/settings.svg), 23px, 23px);
-		cursor: pointer;
-		position: absolute;
-		top: 10px;
-		right: 14px;
-		outline: none;
-		border: none;
-		background-color: $graphBackgroundColor;
+
+	&__list {
+		@include scrollbar;
 	}
-	&-header {
-		display: flex;
-		justify-content: center;
-		padding: 4px 0 0;
-	}
-	&-body {
-		@include scrollbar();
-		padding: 0 6px 6px;
-		height: 100%;
-		.rules {
-			margin: 6px 0 0;
-			@include scrollbar();
-		}
-		&__header {
+
+	&__list-header {
+		& div:first-child {
 			display: flex;
 			justify-content: space-between;
-			p {
-				text-decoration: underline;
-			}
-		}
-	}
-	.switchers {
-		display: flex;
-		justify-content: center;
-	}
-	.switcher {
-		cursor: pointer;
-		border: none;
-		outline: none;
-		padding: 2px 0;
-		flex-basis: 50%;
-		background-color: $filterPickerScrollItemBlockedColor;
-		color: $filterPickerScrollItemBlockedFontColor;
-		text-align: center;
-		transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
-
-		&.active {
-			color: #fff;
-			background-color: $filterPickerScrollItemActiveColor;
-			cursor: pointer;
 		}
 	}
 }
 
-.session-input,
-.order-item__input {
-	border-radius: 2px;
-	background-color: $skeletonBackgroundColor;
-	&:focus {
-		background-color: transparent;
-	}
-}
-
-.rule,
-.order-item {
-	.view-type {
-		border-radius: 2px;
-		background-color: $skeletonBackgroundColor;
-		@extend %icons;
-	}
-	p {
-		border-radius: 2px;
-		background-color: $skeletonBackgroundColor;
-		padding: 0 2px;
-	}
-	.root-rule {
-		background-color: transparent;
-		cursor: default;
-	}
-	.order-item {
-		padding: 0;
-	}
-	position: relative;
-	padding: 4px 32px 0 0;
+.rule-row {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	input,
-	select {
-		font: inherit;
+	padding: 4px 8px;
+	gap: 8px;
+
+	&:hover .reorder {
+		display: flex;
 	}
-	&.editable {
-		padding-left: 18px;
-		&:hover {
-			.reorder {
-				display: flex;
-			}
-			.rule-delete,
-			.order-item-delete {
-				display: block;
-			}
-		}
-	}
-	.reorder {
-		position: absolute;
-		left: 0;
-		display: none;
-		width: 16px;
-		flex-wrap: wrap;
-		align-items: center;
-		&-control {
-			cursor: pointer;
-			flex-basis: 100%;
-			outline: none;
-			background-color: transparent;
-			border: 1px solid gray;
-			border-radius: 4px;
-			&.up {
-				@include icon(url(../../resources/icons/arr4-up.svg), 8px, 16px);
-			}
-			&.down {
-				@include icon(url(../../resources/icons/arr4-down.svg), 8px, 16px);
-			}
-		}
-	}
-	&-delete,
-	&-button {
-		position: absolute;
-		top: 5px;
-		right: 0;
-		cursor: pointer;
+
+	& input {
 		outline: none;
-		border-radius: 4px;
-	}
-	&-delete {
-		border: 1px solid gray;
-		padding: 0 1px;
-		background-color: transparent;
-		display: none;
-		@include icon(url(../../resources/icons/cross-icon.svg));
-	}
-	&-button {
-		border: none;
-		padding: 1px 2px;
-		color: #fff;
-		background-color: $filterPickerScrollItemActiveColor;
-		&:disabled {
-			opacity: 0.5;
-			cursor: default;
+		flex-grow: 1;
+		border: 1px solid var(--input-border);
+		background-color: var(--input-background);
+		color: var(--text-input);
+
+		&:focus {
+			border-color: var(--info-color);
 		}
 	}
+
+	.chip {
+		display: block;
+	}
+
+	.session {
+		flex-grow: 1;
+	}
+}
+
+.body-sort-rules {
+	height: 100%;
+	display: grid;
+	grid-template-rows: auto 1fr;
+	flex-grow: 1;
 }
 
 .rules-select {
+	&__button {
+		@include surface;
+		width: 24px;
+		height: 24px;
+		position: relative;
+		border-radius: 4px;
+		border: none;
+		cursor: pointer;
+
+		& span {
+			color: var(--info-color);
+			font-size: 12px;
+		}
+	}
+
 	&-options-list {
-		background: #fff;
-		box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
-			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+		@include surface;
+		padding: 12px;
+		font-size: 12px;
+		line-height: 16px;
+		border-radius: 8px;
+		overflow: hidden;
 		visibility: hidden;
 		&.show {
 			visibility: visible;
 		}
-	}
-	&-trigger {
-		@extend %icons;
-		background-color: $skeletonBackgroundColor;
-	}
-	&-option {
-		display: flex;
-		align-items: center;
-		padding: 0 4px 2px 2px;
-		margin: 0;
-		border: none;
-		outline: none;
-		width: 100%;
-		font-size: 10px;
-		background-color: #fff;
-		&:hover {
-			background-color: $skeletonBackgroundColor;
-			.select-icon {
-				background-color: $skeletonBackgroundColor;
-			}
-		}
-		.select-icon {
-			@extend %icons;
-		}
-	}
-	&-trigger {
-		border-radius: 2px;
-	}
-}
-
-%icons {
-	display: block;
-	padding: 0;
-	margin: 0 2px 0 0;
-	cursor: pointer;
-	border-style: none;
-	outline: none;
-	width: 16px;
-	height: 16px;
-	&.json {
-		@include icon(url(../../resources/icons/json.svg));
-		background-position: 1.5px 3px;
-	}
-
-	&.formatted {
-		@include icon(url(../../resources/icons/formatted.svg));
-		background-position: 1px;
-	}
-
-	&.binary {
-		@include icon(url(../../resources/icons/binar.svg));
-	}
-
-	&.ascii {
-		@include icon(url(../../resources/icons/ascii.svg));
 	}
 }

@@ -14,12 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import clsx from 'clsx';
+import { Progress } from 'components/Progress';
 import '../styles/root.scss';
 
-const SplashScreen = () => (
-	<div className='splash-screen'>
-		<div className='splash-screen__spinner' />
+interface SplashScreenProps {
+	className?: string;
+}
+
+const SplashScreen = (props: SplashScreenProps) => (
+	<div className={clsx('splash-screen', props.className)}>
+		<Progress />
 	</div>
 );
 

@@ -14,10 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/* eslint-disable no-new-wrappers */
-// eslint-disable-next-line import/no-unassigned-import
-import 'setimmediate';
-
 /**
  * Returns next item after current index in array if it exists, or returns
  * first item if it doesn't exist.
@@ -174,7 +170,7 @@ export function areArraysEqual<T extends unknown[]>(arr1: T, arr2: T): boolean {
 	return true;
 }
 
-export function getArrayOfUniques<T>(arr: T[]) {
+export function uniq<T>(arr: T[]) {
 	return [...new Set(arr)];
 }
 

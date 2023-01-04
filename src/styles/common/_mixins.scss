@@ -88,7 +88,6 @@
 		--status-primary-header-background-color: #{$passedHeaderColor};
 		--status-secondary-header-background-color: #{$passedHeaderSecondaryBackground};
 		--status-icon-color: #{$passedIconColor};
-		--status-icon-color-light: #{$passedIconColorLight};
 		--status-icon-color-active: #{$passedIconColorActive};
 	}
 
@@ -106,7 +105,6 @@
 		--status-secondary-header-background-color: #{$failedHeaderSecondaryBackground};
 		--status-header-border-color: #{$failedHeaderBorderColor};
 		--status-icon-color: #{$failedIconColor};
-		--status-icon-color-light: #{$failedIconColorLight};
 		--status-icon-color-active: #{$failedIconColorActive};
 	}
 }
@@ -184,8 +182,7 @@
 	td {
 		font-size: 11px;
 		line-height: 16px;
-		padding-top: 0;
-		padding-bottom: 0;
+		padding: 10px;
 		box-sizing: border-box;
 		border-bottom: 1px solid $tableCellBorderColor;
 	}
@@ -199,11 +196,14 @@
 	td {
 		word-break: break-all;
 		white-space: pre-wrap;
-		background-color: $tableBodyBackground;
+		background-color: var(--text-background);
 		border-right: 0;
 		border-left: 0;
 		display: flex;
 		align-items: center;
+		font-weight: 400;
+		font-size: 12px;
+		color: var(--text-primary);
 
 		&.transparent {
 			background-color: transparent;
@@ -215,8 +215,9 @@
 		font-weight: bold;
 		line-height: 16px;
 		color: white;
-		background-color: $tableHeaderBackground;
-		padding: 4px;
+		background-color: #4e8aff;
+		font-size: 13px;
+		line-height: 16px;
 
 		&.transparent {
 			background-color: transparent;
@@ -234,44 +235,7 @@
 
 	td,
 	th {
-		&:first-child {
-			padding-left: 10px;
-		}
-	}
-
-	tr {
-		&:hover td {
-			background-color: darken($color: $tableBodyBackground, $amount: 10);
-
-			&.transparent {
-				background-color: transparent;
-			}
-		}
-	}
-}
-
-@mixin spinner(
-	$thikness,
-	$size: 16px,
-	$duration: 1s,
-	$outer-color: $spinnerOuterColor,
-	$inner-color: $spinnerInnerColor
-) {
-	height: $size;
-	width: $size;
-	border: $thikness solid $outer-color;
-	border-top: $thikness solid $inner-color;
-	border-radius: 50%;
-	animation: spin $duration linear infinite;
-}
-
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-
-	100% {
-		transform: rotate(360deg);
+		padding-left: 10px;
 	}
 }
 
@@ -350,30 +314,6 @@
 }
 
 @mixin bookmark-button($showOnHoverOverParent: false) {
-	& .bookmark-button {
-		@if $showOnHoverOverParent {
-			display: none;
-		}
-		cursor: pointer;
-		width: 12px;
-		height: 12px;
-		flex-shrink: 0;
-		@include icon(url(../../resources/icons/bookmark-add-icon.svg), 14px, 12px);
-
-		&.pinned {
-			display: inline-block;
-			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
-		}
-	}
-
-	&:hover .bookmark-button {
-		display: inline-block;
-		@include icon(url(../../resources/icons/bookmark-add-icon.svg), 14px, 12px);
-
-		&.pinned {
-			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
-		}
-	}
 }
 
 @mixin event-status-icon($isParentHoverable: false) {
@@ -389,16 +329,24 @@
 		width: 9px;
 		height: 9px;
 		border-radius: 50%;
-		background-color: var(--status-icon-color-light);
+		background-color: var(--status-icon-color);
+	}
+}
 
-		&.selected {
-			border-color: var(--status-icon-color);
-			background-color: var(--status-icon-color);
-		}
+@mixin surface {
+	box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+	background-color: var(--surface-background);
+}
 
-		&.active {
-			box-shadow: 0 0 0 2px white;
-			background-color: var(--status-icon-color-active);
-		}
+@mixin light() {
+	@at-root #{selector-nest(':root[data-theme=light]', &)} {
+		@content;
+	}
+}
+
+
+@mixin dark() {
+	@at-root #{selector-nest(':root[data-theme=dark]', &)} {
+		@content;
 	}
 }

@@ -14,42 +14,38 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { hot } from 'react-hot-loader/root';
 import { observer } from 'mobx-react-lite';
-import * as React from 'react';
 import { ToastProvider } from 'react-toast-notifications';
+import { TH2Icon } from 'components/icons/TH2Icon';
 import StoresProvider from './StoresProvider';
 import Toast from './notifications/Toast';
 import ToastContainer from './notifications/ToastContainer';
 import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
-import Graph from './graph/Graph';
-import WorkspaceLinkGetter from './WorkspaceLinkGetter';
-import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
+import { ThemeToggler } from './ThemeToggler';
 import '../styles/root.scss';
 
-const AppRootBase = () => {
-	return (
-		<div className='app'>
-			<ToastProvider
-				placement='top-right'
-				components={{ Toast, ToastContainer }}
-				transitionDuration={400}>
-				<Graph />
-				<WorkspaceLinkGetter />
-				<MessagesViewConfigurator />
-				<div className='app__workspaces'>
-					<WorkspacesLayout />
-				</div>
-				<Notifier />
-			</ToastProvider>
-		</div>
-	);
-};
+const AppRootBase = () => (
+	<div className='app'>
+		<ToastProvider
+			placement='top-right'
+			components={{ Toast, ToastContainer }}
+			transitionDuration={400}>
+			<div className='header'>
+				<TH2Icon className='th2-icon' />
+				<ThemeToggler />
+			</div>
+			<div className='app__workspaces'>
+				<WorkspacesLayout />
+			</div>
+			<Notifier />
+		</ToastProvider>
+	</div>
+);
 
 AppRootBase.displayName = 'AppRootBase';
 
-const AppRoot = hot(observer(AppRootBase));
+const AppRoot = observer(AppRootBase);
 
 export default function App() {
 	return (

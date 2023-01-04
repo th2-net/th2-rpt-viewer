@@ -27,25 +27,22 @@
 	overflow: hidden;
 	padding-top: 10px;
 	padding-right: 10px;
+	background-color: var(--workspace-background);
 }
 
 .workspace-tab {
 	display: flex;
-	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	height: fit-content;
-	width: 100%;
-	border-radius: 6px 0 0 6px;
-	padding: 10px 0;
-	background-color: $workspaceTabBackground;
-	color: $workspaceTabTextColor;
-	box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
+	border-radius: 6px 6px 0 0;
+	padding: 6px 7px;
+	background-color: var(--workspace-background);
+	color: var(--text-primary);
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 	cursor: pointer;
-	transition: background-color 0.2s;
 
 	&.active {
-		background-color: $workspaceTabActiveBackground;
+		background-color: var(--tab-background);
 		color: white;
 	}
 
@@ -53,29 +50,37 @@
 		transition: color 0.2s;
 		color: inherit;
 		font-size: 12px;
-		writing-mode: vertical-rl;
-		text-orientation: mixed;
-		transform: rotate(180deg);
-		line-height: 22px;
+		line-height: 15px;
 	}
 
 	&__add {
 		background-color: #dee5ed;
+		border: none;
 		text-align: center;
-		height: 25px;
-		padding: 0;
+		padding: 7px;
 		color: $workspaceTabActiveBackground;
 		font-size: 20px;
-		line-height: 25px;
+		line-height: 15px;
 	}
 
-	&__close {
-		@include icon(url(../../resources/icons/cross-icon-white.svg));
-		display: block;
-		border-radius: 50%;
-		margin: auto;
-		margin-bottom: 5px;
+	&__controls {
+		display: flex;
+		align-items: center;
 		transition: all 0.2s;
+		max-width: 0;
+		overflow: hidden;
+	}
+
+	&:hover &__controls {
+		transform: scale(1);
+		max-width: 60px;
+	}
+
+	&__control-button {
+		margin-left: 5px;
+		border-radius: 5px;
+		padding: 3px;
+		transition: background-color 0.2s;
 
 		&:hover {
 			background-color: rgba(102, 102, 102, 0.15);
@@ -86,6 +91,18 @@
 				background-color: rgba(181, 181, 181, 0.34);
 			}
 		}
+	}
+
+	&__copy {
+		@include icon(url(../../resources/icons/workspace-link.svg));
+
+		&.selected {
+			@include icon(url(../../resources/icons/workspace-link-white.svg));
+		}
+	}
+
+	&__close {
+		@include icon(url(../../resources/icons/cross-icon-white.svg));
 	}
 }
 
@@ -106,22 +123,22 @@
 		@include scrollbar;
 	}
 
-	&__search-icon {
+	&__smart-search-icon {
 		@include icon(url(../../resources/icons/workspace-search.svg), 15px, 15px);
 		margin-bottom: 3px;
 	}
 
-	&__search-icon-white {
+	&__smart-search-icon-white {
 		@include icon(url(../../resources/icons/workspace-search-white.svg), 15px, 15px);
 	}
 
 	&__messages-icon {
-		@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
+		@include icon(url(../../resources/icons/workspace-messages.svg), 18px, 18px);
 		margin-bottom: 3px;
 	}
 
 	&__messages-icon-white {
-		@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
+		@include icon(url(../../resources/icons/workspace-messages-white.svg), 18px, 18px);
 	}
 
 	&__events-icon {
@@ -152,7 +169,7 @@
 		cursor: col-resize;
 		width: 10px;
 		position: relative;
-		z-index: 1001;
+		z-index: 2;
 
 		&.disabled {
 			cursor: default;
@@ -177,32 +194,36 @@
 }
 
 .window {
+	height: 100%;
+	width: 100%;
 	display: flex;
 	flex-direction: column;
-	width: 100%;
 	min-width: 350px;
 	height: 100%;
 	overflow: hidden;
-	background-color: #fff;
-	padding: 10px 5px 0 5px;
+	background-color: var(--panel-background);
 
 	&__breadcrumbs {
 		padding: 0 5px;
+		align-self: start;
 	}
 
 	&__controls {
+		min-height: 120px;
 		position: relative;
 		z-index: 100;
 		width: 100%;
 		display: flex;
 		flex-direction: column;
+		gap: 16px;
 		align-items: center;
 		white-space: nowrap;
+		padding: 16px;
+		background-color: var(--background-primary);
 	}
 
 	&__body {
 		flex-grow: 1;
-		padding-top: 5px;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
@@ -226,6 +247,7 @@
 		writing-mode: vertical-rl;
 		display: flex;
 		align-items: center;
+		gap: 8px;
 		width: 0;
 		flex-shrink: 0;
 		overflow: hidden;
@@ -234,9 +256,9 @@
 	&__title {
 		margin-left: 3px;
 		font-weight: 600;
-		color: #666;
 		font-size: 14px;
 		line-height: 15px;
+		color: var(--text-primary);
 	}
 
 	&__line {
@@ -255,17 +277,35 @@
 	}
 
 	&__header {
+		height: 40px;
 		flex-shrink: 0;
-		padding: 5px 10px;
 		display: flex;
 		align-items: center;
-		font-style: normal;
-		font-weight: bold;
-		font-size: 14px;
-		line-height: 15px;
-		color: #fff;
-		border-radius: 5px;
+		border-radius: 24px 24px 0 0;
 		transition: background-color 0.15s;
+		cursor: pointer;
+		font-size: 20px;
+		line-height: 24px;
+		overflow: hidden;
+
+		.icon {
+			color: var(--panel-title);
+		}
+		color: var(--panel-title);
+
+		& > div {
+			padding: 0px 24px;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		& h2 {
+			font-size: 20px;
+			line-height: 24px;
+		}
 	}
 
 	&__header-icon {
@@ -280,7 +320,24 @@
 		overflow: hidden;
 	}
 
+	&.minified &__wrapper {
+		display: none;
+	}
+
 	&.minified &__sidebar {
 		width: 15px;
 	}
+}
+
+.search-panel-header {
+	background-color: var(--search-primary);
+}
+.events-panel-header {
+	background-color: var(--events-primary);
+}
+.messages-panel-header {
+	background-color: var(--messages-primary);
+}
+.bookmarks-panel-header {
+	background-color: var(--bookmarks-primary);
 }
