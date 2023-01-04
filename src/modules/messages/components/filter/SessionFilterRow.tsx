@@ -17,6 +17,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import { FilterRowMultipleStringsConfig } from 'models/filter/FilterInputs';
 import FilterRow from 'components/filter/row/FilterRow';
+import { Button } from 'components/buttons/Button';
 import { useSessionAutocomplete } from '../../hooks/useMessagesAutocomplete';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 import { useFilterStore } from '../../hooks/useFilterStore';
@@ -73,11 +74,9 @@ const MessagesFilterSessionFilter = ({
 	return (
 		<div className='sessions-row'>
 			<FilterRow rowConfig={config} />
-			<button
-				onClick={isLoading ? stopLoading : submitChanges}
-				className='sessions-row__submit-button'>
+			<Button variant='contained' onClick={isLoading ? stopLoading : submitChanges}>
 				<span>{isLoading ? 'Stop' : 'Search'}</span>
-			</button>
+			</Button>
 		</div>
 	);
 };

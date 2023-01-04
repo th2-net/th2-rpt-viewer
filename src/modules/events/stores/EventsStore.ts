@@ -156,8 +156,6 @@ export default class EventsStore implements IEventsStore {
 		return rootNodes.flatMap(eventNode => this.getFlatExpandedList(eventNode));
 	}
 
-	// we need this property for correct virtualized tree render -
-	// to get event key by index in tree and list length calculation.
 	@computed
 	public get nodesList() {
 		const rootIds = this.eventDataStore.rootEventIds.slice();
