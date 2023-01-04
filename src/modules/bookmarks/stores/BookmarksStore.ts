@@ -93,7 +93,6 @@ export class BookmarksStore implements IBookmarksStore {
 		if (bookmark) {
 			this.removeBookmark(bookmark);
 		} else if (!this.isBookmarksFull) {
-			// TODO: fix event bookmark type
 			const eventBookmark = this.createBookmark(event);
 			this.events = this.events.concat(eventBookmark);
 			this.saveBookmark(eventBookmark);
