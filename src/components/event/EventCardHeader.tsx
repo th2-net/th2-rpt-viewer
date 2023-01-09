@@ -100,7 +100,7 @@ function EventCardHeader(props: Props) {
 
 	function onSearchClicked(e: React.MouseEvent) {
 		e.stopPropagation();
-		filterEventsByParent(eventId, startTimestampValue);
+		filterEventsByParent(eventId, startTimestampValue, scope);
 	}
 
 	function onMouseEnter() {
