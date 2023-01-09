@@ -51,6 +51,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 	};
 
 	const inputOnRemove = () => {
+		console.log('inputOnRemove');
 		const { values, setValues } = config;
 		if (values.length === 0) {
 			return;
@@ -60,6 +61,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 	};
 
 	const inputOnSubmit = (nextValue: string) => {
+		console.log('inputOnSubmit');
 		// eslint-disable-next-line no-param-reassign
 		nextValue = nextValue.trim();
 		const { values, setValues, setCurrentValue } = config;
@@ -72,10 +74,12 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 	};
 
 	const rootOnClick = () => {
+		console.log('rootOnClick');
 		input.current?.focus();
 	};
 
 	const focusBubbleOrInput = (index: number) => {
+		console.log('focusBubbleOrInput');
 		if (index >= config.values.length) input.current?.focus();
 		else {
 			bubbleRefs.current[index]?.focus();
@@ -83,6 +87,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 	};
 
 	const focusBubbles: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		console.log('focusBubbles');
 		if (e.keyCode === KeyCodes.LEFT && input.current?.selectionStart === 0) {
 			focusBubbleOrInput(config.values.length - 1);
 		}
@@ -152,7 +157,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						wrapperClassName='filter-row__multiple-values-input-wrapper'
 						value={config.currentValue}
 						setValue={config.setCurrentValue}
-						autoresize
+						autoresize={false}
 						autoCompleteList={config.autocompleteList}
 						datalistKey={`autocomplete-${1}`}
 						onSubmit={inputOnSubmit}

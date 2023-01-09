@@ -40,6 +40,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		const { items, value, anchor, onSelect, className, minWidth = 250, alwaysShow = false } = props;
 
 		const [isOpen, setIsOpen] = React.useState(alwaysShow);
+		const [isVirtuosoOpen, setIsVirtuosoOpen] = React.useState(false);
 
 		const [focusedOption, setFocusedOption] = React.useState<string | null>(null);
 
@@ -203,6 +204,8 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 				if (list.length > 0) {
 					virtuosoRef.current?.scrollToIndex(0);
 				}
+			} else {
+				setIsVirtuosoOpen(false);
 			}
 		}, [isOpen]);
 
@@ -238,6 +241,15 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 			list.length * AUTOCOMPLETE_OPTION_HEIGHT,
 		);
 
+		React.useEffect(
+			() =>
+				console.log(
+					RENDERED_OPTIONS_COUNT * AUTOCOMPLETE_OPTION_HEIGHT,
+					list.length * AUTOCOMPLETE_OPTION_HEIGHT,
+				),
+			[list.length],
+		);
+
 		return (
 			<ModalPortal isOpen={isOpen} closeDelay={150} ref={ref}>
 				<div
@@ -246,16 +258,22 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 						isOpen ? 'opened' : 'closed',
 						className || null,
 					)}
+					onAnimationEnd={event => {
+						event.persist();
+						setIsVirtuosoOpen(event.animationName === 'open');
+					}}
 					style={{ zIndex: 1000, height: `${listHeight}px` }}
 					ref={rootRef}>
-					<Virtuoso
-						ref={virtuosoRef}
-						totalCount={list.length}
-						height={`${listHeight}px`}
-						overscan={0}
-						itemContent={renderAutocompleteOption}
-						className='autocomplete-list__options'
-					/>
+					{isVirtuosoOpen && (
+						<Virtuoso
+							ref={virtuosoRef}
+							totalCount={list.length}
+							height={`100%`}
+							overscan={0}
+							itemContent={renderAutocompleteOption}
+							className='autocomplete-list__options'
+						/>
+					)}
 				</div>
 			</ModalPortal>
 		);
