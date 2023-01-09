@@ -241,15 +241,6 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 			list.length * AUTOCOMPLETE_OPTION_HEIGHT,
 		);
 
-		React.useEffect(
-			() =>
-				console.log(
-					RENDERED_OPTIONS_COUNT * AUTOCOMPLETE_OPTION_HEIGHT,
-					list.length * AUTOCOMPLETE_OPTION_HEIGHT,
-				),
-			[list.length],
-		);
-
 		return (
 			<ModalPortal isOpen={isOpen} closeDelay={150} ref={ref}>
 				<div
