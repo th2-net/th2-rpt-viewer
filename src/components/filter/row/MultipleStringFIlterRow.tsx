@@ -152,7 +152,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						wrapperClassName='filter-row__multiple-values-input-wrapper'
 						value={config.currentValue}
 						setValue={config.setCurrentValue}
-						autoresize={false}
+						autoresize
 						autoCompleteList={config.autocompleteList}
 						datalistKey={`autocomplete-${1}`}
 						onSubmit={inputOnSubmit}
