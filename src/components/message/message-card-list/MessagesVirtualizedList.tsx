@@ -130,6 +130,11 @@ const MessagesVirtualizedList = (props: Props) => {
 		debouncedScrollHandler(event);
 	};
 
+	const onWheel = (event: React.WheelEvent<'div'>) => {
+		event.persist();
+		if (event.deltaY < 0) debouncedScrollHandler(event);
+	};
+
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
 		messageStore.currentMessagesIndexesRange = {
 			startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
@@ -151,6 +156,7 @@ const MessagesVirtualizedList = (props: Props) => {
 			style={{ height: '100%', width: '100%' }}
 			className={className}
 			itemsRendered={onMessagesRendered}
+			onWheel={onWheel}
 			onScroll={onScroll}
 			endReached={onEndReached}
 			components={{
