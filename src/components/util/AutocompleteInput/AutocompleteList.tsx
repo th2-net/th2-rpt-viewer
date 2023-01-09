@@ -249,9 +249,9 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 					style={{ zIndex: 1000, height: `${listHeight}px` }}
 					ref={rootRef}>
 					<Virtuoso
+						style={{ height: `${listHeight}px` }}
 						ref={virtuosoRef}
 						totalCount={list.length}
-						height={`${listHeight}px`}
 						overscan={0}
 						itemContent={renderAutocompleteOption}
 						className='autocomplete-list__options'
