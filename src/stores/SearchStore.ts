@@ -392,12 +392,11 @@ export class SearchStore {
 		this.resetSearchProgressState();
 	};
 
-	@action filterEventsByParent = (parentId: string, parentTimestamp: number, scope: string) => {
+	@action filterEventsByParent = (parentId: string, parentTimestamp: number) => {
 		if (this.eventsFilter) {
 			this.setFormType('event');
 			this.stopSearch();
 			this.eventsFilter.parentId.values = [parentId];
-			this.searchForm.scope = scope;
 			this.searchForm.startTimestamp = parentTimestamp;
 			this.resetSearchProgressState();
 			this.workspacesStore.tabsStore.setActiveWorkspace(0);
