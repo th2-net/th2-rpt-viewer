@@ -209,7 +209,6 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		const handleSelect = React.useCallback(
 			(item: string) => {
 				onSelect?.(item);
-				setIsOpen(false);
 			},
 			[onSelect, setIsOpen],
 		);
