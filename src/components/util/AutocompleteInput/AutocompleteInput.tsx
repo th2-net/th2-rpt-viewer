@@ -121,7 +121,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const onAutocompleteSelect = React.useCallback(
 		(selectedOption: string) => {
 			onSubmit(selectedOption);
-			// setAutocompleteAnchor(null);
 			selectedOptionRef.current = selectedOption;
 		},
 		[setValue, onSubmit],
