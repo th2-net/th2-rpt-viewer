@@ -210,7 +210,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 			(item: string) => {
 				onSelect?.(item);
 			},
-			[onSelect, setIsOpen],
+			[onSelect],
 		);
 
 		const renderAutocompleteOption = React.useCallback(
