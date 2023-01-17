@@ -314,17 +314,14 @@ export class SearchStore {
 	@computed get sortedResultGroups() {
 		if (!this.currentSearch) return [];
 
-		const startTimestamp = this.currentSearch.request.state.startTimestamp || 0;
+		const searchDirection = this.currentSearch.request.state.searchDirection;
 
 		return Object.entries(this.currentSearch.results).sort((a, b) => {
-			const [firstResultGroupTimestamp, secondResultGroupTimestamp] = [a, b].map(
-				resultGroup => +resultGroup[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60,
-			);
+			if (searchDirection === SearchDirection.Previous) {
+				return Number(b[0]) - Number(a[0]);
+			}
 
-			return (
-				Math.abs(firstResultGroupTimestamp - startTimestamp) -
-				Math.abs(secondResultGroupTimestamp - startTimestamp)
-			);
+			return Number(a[0]) - Number(b[0]);
 		});
 	}
 
