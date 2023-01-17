@@ -125,6 +125,11 @@ const MessagesVirtualizedList = (props: Props) => {
 		}
 	};
 
+	const onWheel = (event: React.WheelEvent<'div'>) => {
+		event.persist();
+		if (event.deltaY < 0) debouncedScrollHandler(event);
+	};
+
 	const onScroll = (event: React.UIEvent<'div'>) => {
 		event.persist();
 		debouncedScrollHandler(event);
@@ -158,6 +163,7 @@ const MessagesVirtualizedList = (props: Props) => {
 			itemsRendered={onMessagesRendered}
 			onWheel={onWheel}
 			onScroll={onScroll}
+			onWheel={onWheel}
 			endReached={onEndReached}
 			components={{
 				Header: function MessagesListSpinnerNext() {
