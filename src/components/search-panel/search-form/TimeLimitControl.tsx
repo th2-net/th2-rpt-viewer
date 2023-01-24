@@ -87,7 +87,7 @@ const TimeLimitControl = ({
 				) : (
 					<div
 						className='search-time-limit__limit'
-						title={`Limited at: ${moment(infinityLimit).format('DD.MM.YYYY HH:mm:ss')}`}>
+						title={`Limited at: ${moment(infinityLimit).utc().format('DD.MM.YYYY HH:mm:ss')}`}>
 						Limit
 					</div>
 					// <div className='search-time-limit__infinite' title={`Limited at: `} />
