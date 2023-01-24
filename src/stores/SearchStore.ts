@@ -543,10 +543,11 @@ export class SearchStore {
 				startTimestamp: _startTimestamp,
 				searchDirection: direction,
 				resultCountLimit,
-				endTimestamp:
-					timeLimits[direction] ?? direction === SearchDirection.Next
-						? moment(_startTimestamp).add(infinityLimit, 'days').valueOf()
-						: moment(_startTimestamp).subtract(infinityLimit, 'days').valueOf(),
+				endTimestamp: timeLimits[direction]
+					? timeLimits[direction]
+					: direction === SearchDirection.Next
+					? moment(_startTimestamp).add(infinityLimit, 'days').valueOf()
+					: moment(_startTimestamp).subtract(infinityLimit, 'days').valueOf(),
 				filters: filtersToAdd,
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 			};
