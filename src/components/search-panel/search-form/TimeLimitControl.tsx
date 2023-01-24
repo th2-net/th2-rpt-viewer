@@ -29,6 +29,7 @@ type Props = {
 	errorTextRows: string[];
 	hidden?: boolean;
 	readonly?: boolean;
+	infinityLimit: number;
 };
 
 const TimeLimitControl = ({
@@ -38,12 +39,12 @@ const TimeLimitControl = ({
 	showError,
 	errorPosition = 'left',
 	errorTextRows,
+	infinityLimit,
 	hidden = false,
 	readonly = false,
 }: Props) => {
 	const [showPicker, togglePicker] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
-
 	const datetime = moment(value).utc();
 
 	const handleRootClick = () => {
@@ -84,7 +85,12 @@ const TimeLimitControl = ({
 						<div className='search-time-limit__clear' onClick={handleClearClick} />
 					</>
 				) : (
-					<div className='search-time-limit__infinite' />
+					<div
+						className='search-time-limit__limit'
+						title={`Limited at: ${moment(infinityLimit).format('DD.MM.YYYY HH:mm:ss')}`}>
+						Limit
+					</div>
+					// <div className='search-time-limit__infinite' title={`Limited at: `} />
 				)}
 				<div className={errorClassName}>
 					{errorTextRows.map(errorText => (
