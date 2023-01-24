@@ -162,8 +162,8 @@ const SearchPanelForm = () => {
 
 	const searchDatetimeControlsConfig: SearchDatetimeControlsConfig = {
 		infinityLimit: {
-			next: moment(form.startTimestamp).add(form.infinityLimit, 'days').valueOf(),
-			prev: moment(form.startTimestamp).subtract(form.infinityLimit, 'days').valueOf(),
+			next: moment.utc(form.startTimestamp).add(form.infinityLimit, 'days').valueOf(),
+			prev: moment.utc(form.startTimestamp).subtract(form.infinityLimit, 'days').valueOf(),
 		},
 		isSearching,
 		updateForm,
