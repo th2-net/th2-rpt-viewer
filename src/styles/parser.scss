@@ -1,0 +1,96 @@
+@import './common/vars';
+
+.parser {
+    height: 100%;
+}
+
+.valueLeaf {
+	@include status-card;
+	@include event-status-icon($isParentHoverable: true);
+	line-height: 15px;
+	width: 100%;
+	border-radius: 5px;
+	padding: 0px 5px;
+	display: flex;
+	align-items: center;
+	border: 2px solid transparent;
+	cursor: pointer;
+	gap: 5px;
+	position: relative;
+
+	&:hover {
+		background-color: var(--status-secondary-background-color);
+		&-table {
+			background-color: transparent;
+		}
+	}
+
+	&.selected {
+		border-color: var(--status-primary-border-color);
+	}
+	
+	color: var(--status-primary-color);
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.expand-icon {
+	height: 15px;
+	width: 15px;
+
+	background: {
+		repeat: no-repeat;
+		size: 100%;
+		position: center;
+	}
+	flex-shrink: 0;
+	border-radius: 3px;
+
+	&.expanded {
+		background-image: url('../../resources/icons/expand-on.svg');
+		cursor: pointer;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+	}
+
+	&.hidden {
+		background-image: url('../../resources/icons/expand-off.svg');
+		cursor: pointer;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+	}
+	&.none {
+		background-image: none;
+		cursor: default;
+		&:hover {
+			background-color: transparent;
+		}
+	}
+
+	&.loading {
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	&.disabled {
+		cursor: default;
+
+		&:hover {
+			display: none;
+		}
+	}
+}
+
+.leafWrapper {
+	display: flex;
+	gap: 5px;
+	flex-direction: row;
+	align-items: center;
+	padding: 1px 5px 1px 0;
+}

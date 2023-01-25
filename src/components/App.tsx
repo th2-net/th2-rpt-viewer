@@ -18,11 +18,23 @@ import * as React from 'react';
 import StoresProvider from './StoresProvider';
 import Workspaces from './Workspaces';
 import '../styles/root.scss';
+import Parser from './parser/Parser';
 
 export default function App() {
+	const [parserOpen, setParserOpen] = React.useState(true);
 	return (
 		<div className='app'>
 			<StoresProvider>
+				{parserOpen && (
+					<div style={{ width: '400px', height: '100vh' }}>
+						<Parser />
+					</div>
+				)}
+				<div
+					className={`parserOpen ${parserOpen ? 'open' : ''}`}
+					onClick={() => setParserOpen(!parserOpen)}>
+					{parserOpen ? '<' : '>'}
+				</div>
 				<Workspaces />
 			</StoresProvider>
 		</div>

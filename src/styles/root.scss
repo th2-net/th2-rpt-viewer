@@ -68,6 +68,7 @@ input {
 	background-color: $windowsLayoutBackgroundColor;
 	width: 100%;
 	height: 100%;
+	display: flex;
 }
 
 .workspaces-root {
@@ -150,5 +151,14 @@ input {
 	background-color: $windowsLayoutBackgroundColor;
 	& i {
 		@include spinner(5px, 40px, 2s);
+	}
+}
+
+.parserOpen {
+	position: absolute;
+	z-index: 1;
+	top: 10px;
+	&.open {
+		left: 300px;
 	}
 }
