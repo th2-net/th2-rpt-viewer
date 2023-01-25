@@ -38,7 +38,9 @@ const ParserTablePanel = ({ node: [nodeKey, nodeTree] }: { node: [string, Tree] 
 					className={createBemBlock('valueLeaf', failed ? 'failed' : 'passed', 'selected')}
 					style={{ cursor: 'default' }}
 					title={nodeKey}>
-					<div className={createBemBlock('event-status-icon', failed ? 'failed' : 'passed')} />
+					<div
+						className={createBemBlock('event-status-icon', 'active', failed ? 'failed' : 'passed')}
+					/>
 					{nodeKey}
 				</div>
 			)}

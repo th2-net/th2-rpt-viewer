@@ -26,16 +26,18 @@ export default function App() {
 		<div className='app'>
 			<StoresProvider>
 				{parserOpen && (
-					<div style={{ width: '400px', height: '100vh' }}>
+					<div style={{ width: '25%', height: '100vh' }}>
 						<Parser />
 					</div>
 				)}
 				<div
 					className={`parserOpen ${parserOpen ? 'open' : ''}`}
 					onClick={() => setParserOpen(!parserOpen)}>
-					{parserOpen ? '<' : '>'}
+					<i className='parser__icon' />
 				</div>
-				<Workspaces />
+				<div style={{ width: parserOpen ? '75%' : '100%' }}>
+					<Workspaces />
+				</div>
 			</StoresProvider>
 		</div>
 	);

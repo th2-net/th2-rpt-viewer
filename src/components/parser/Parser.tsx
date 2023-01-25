@@ -26,22 +26,26 @@ const Parser = ({ jsonFile = {} }: { jsonFile?: Tree }) => {
 					}
 				}}
 			/>
-			<SplitView panelArea={view} onPanelAreaChange={setView}>
-				<SplitViewPane>
-					<div style={{ height: '100%', overflow: 'auto' }}>
-						<ParserTreePanel
-							node={data}
-							setNode={(nodeKey: string, nodeTree: Tree) => setNode([nodeKey, nodeTree])}
-							parentsPath={''}
-							parentKey={''}
-							selectedNode={node}
-						/>
-					</div>
-				</SplitViewPane>
-				<SplitViewPane>
-					<ParserTablePanel node={node} />
-				</SplitViewPane>
-			</SplitView>
+			<div style={{ height: 'calc(100% - 31px)' }}>
+				<SplitView panelArea={view} onPanelAreaChange={setView}>
+					<SplitViewPane>
+						<div className='parser-tree-panel'>
+							<ParserTreePanel
+								node={data}
+								setNode={(nodeKey: string, nodeTree: Tree) => setNode([nodeKey, nodeTree])}
+								parentsPath={''}
+								parentKey={''}
+								selectedNode={node}
+							/>
+						</div>
+					</SplitViewPane>
+					<SplitViewPane>
+						<div className='parser-table-panel'>
+							<ParserTablePanel node={node} />
+						</div>
+					</SplitViewPane>
+				</SplitView>
+			</div>
 		</div>
 	);
 };

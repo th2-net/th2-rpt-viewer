@@ -41,8 +41,7 @@ const ParserTreePanel = ({
 			<div className='lowerLevel'>
 				{parentKey && (
 					<div className='leafWrapper'>
-						<div style={{ width: `${10 * nest}px` }} />
-						<div className={createBemBlock('expand-icon', 'none')} />
+						<div style={{ width: `${20 * nest + 20}px` }} />
 						<div
 							className={createBemBlock(
 								'valueLeaf',
@@ -53,7 +52,13 @@ const ParserTreePanel = ({
 							)}
 							onClick={() => setNode(parentKey, node)}
 							title={parentKey}>
-							<div className={createBemBlock('event-status-icon', failed ? 'failed' : 'passed')} />
+							<div
+								className={createBemBlock(
+									'event-status-icon',
+									'active',
+									failed ? 'failed' : 'passed',
+								)}
+							/>
 							{parentKey}
 						</div>
 					</div>
@@ -64,15 +69,13 @@ const ParserTreePanel = ({
 		<>
 			{parentKey && (
 				<div className='leafWrapper'>
-					<div style={{ width: `${20 * nest}px` }} />
-					<div
-						className={createBemBlock(
-							'expand-icon',
-							open ? 'expanded' : 'hidden',
-							complexLeafs.length > 0 ? null : 'none',
-						)}
-						onClick={() => setOpen(!open)}
-					/>
+					<div style={{ width: `${20 * nest + (complexLeafs.length === 0 ? 20 : 0)}px` }} />
+					{complexLeafs.length > 0 && (
+						<div
+							className={createBemBlock('expand-icon', open ? 'expanded' : 'hidden')}
+							onClick={() => setOpen(!open)}
+						/>
+					)}
 					<div
 						className={createBemBlock(
 							'valueLeaf',
@@ -81,9 +84,16 @@ const ParserTreePanel = ({
 								? 'selected'
 								: null,
 						)}
+						style={{ width: `calc(100% - ${20 * nest + 20}px)` }}
 						onClick={() => setNode(parentKey, node)}
 						title={parentKey}>
-						<div className={createBemBlock('event-status-icon', failed ? 'failed' : 'passed')} />
+						<div
+							className={createBemBlock(
+								'event-status-icon',
+								'active',
+								failed ? 'failed' : 'passed',
+							)}
+						/>
 						{parentKey}
 					</div>
 				</div>

@@ -158,7 +158,51 @@ input {
 	position: absolute;
 	z-index: 1;
 	top: 10px;
+	background-color: $windowsLayoutBackgroundColor;
+    width: 20px;
+    height: 30px;
+    border-radius: 0% 100% 100% 0%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+	
+
+	.parser__icon {
+		@include icon(url(../../resources/icons/arr1-right-enabled.svg), 15px, 15px);
+	}
+	&:hover {
+		@keyframes open {
+		from {
+			width: 20px;
+		}
+
+		to {
+			width: 25px;
+		}
+	}
+
+	animation: open 0.15s ease-in-out 1 forwards;
+	}
+
 	&.open {
-		left: 300px;
+		width: 25px;
+		left: 25%;
+		.parser__icon {
+			@include icon(url(../../resources/icons/arr1-left-enabled.svg), 15px, 15px);
+		}
+
+		&:hover {
+			@keyframes close {
+			from {
+				width: 25px;
+			}
+	
+			to {
+				width: 20px;
+			}
+		}
+	
+		animation: close 0.15s ease-in-out 1 forwards;
+		}
 	}
 }
