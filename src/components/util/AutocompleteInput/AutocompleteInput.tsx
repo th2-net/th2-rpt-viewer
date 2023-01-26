@@ -57,7 +57,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		className = '',
 		inputStyle = {},
 		wrapperClassName = '',
-		submitKeyCodes = [KeyCodes.ENTER],
 		anchor,
 		alwaysShowAutocomplete,
 		autocompleteListMinWidth,
@@ -106,10 +105,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		if (typeof onKeyDownProp !== 'undefined') onKeyDownProp(e);
 		if (e.keyCode === KeyCodes.UP || e.keyCode === KeyCodes.DOWN || e.keyCode === KeyCodes.TAB) {
 			e.preventDefault();
-		}
-
-		if (value.trim().length > 0 && submitKeyCodes.includes(e.keyCode)) {
-			onSubmit(value.trim());
 		}
 
 		if (e.keyCode === KeyCodes.BACKSPACE && value.length < 1 && onRemove) {
