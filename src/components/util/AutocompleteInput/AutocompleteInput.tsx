@@ -30,7 +30,7 @@ type Props = Override<
 	setValue: (newValue: string) => void;
 	autoresize?: boolean;
 	alwaysShowAutocomplete?: boolean;
-	autoCompleteList?: string[];
+	autocompleteList?: string[];
 	autocompleteClassName?: string;
 	datalistKey?: string;
 	submitKeyCodes?: number[];
@@ -49,7 +49,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onRemove,
 		onEmptyBlur,
 		onFocus,
-		autoCompleteList,
+		autocompleteList,
 		autocompleteClassName,
 		autoresize = true,
 		spellCheck = false,
@@ -157,11 +157,11 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			) : (
 				<input {...inputProps} ref={ref} className={className} />
 			)}
-			{autoCompleteList && autoCompleteList.length > 0 && (
+			{autocompleteList && autocompleteList.length > 0 && (
 				<AutocompleteList
 					className={autocompleteClassName}
 					ref={autocompleteListRef}
-					items={autoCompleteList}
+					items={autocompleteList}
 					value={value.trim()}
 					anchor={autocompleteAnchor}
 					onSelect={onAutocompleteSelect}
