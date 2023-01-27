@@ -125,14 +125,14 @@ const MessagesVirtualizedList = (props: Props) => {
 		}
 	};
 
-	const onScroll = (event: React.UIEvent<'div'>) => {
-		event.persist();
-		debouncedScrollHandler(event);
-	};
-
 	const onWheel = (event: React.WheelEvent<'div'>) => {
 		event.persist();
 		if (event.deltaY < 0) debouncedScrollHandler(event);
+	};
+
+	const onScroll = (event: React.UIEvent<'div'>) => {
+		event.persist();
+		debouncedScrollHandler(event);
 	};
 
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
@@ -156,8 +156,8 @@ const MessagesVirtualizedList = (props: Props) => {
 			style={{ height: '100%', width: '100%' }}
 			className={className}
 			itemsRendered={onMessagesRendered}
-			onWheel={onWheel}
 			onScroll={onScroll}
+			onWheel={onWheel}
 			endReached={onEndReached}
 			components={{
 				Header: function MessagesListSpinnerNext() {
