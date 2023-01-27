@@ -51,7 +51,7 @@ const BookSelect = () => {
 				onSubmit={onSubmit}
 				value={currentValue}
 				setValue={setCurrentValue}
-				autoCompleteList={booksIds}
+				autocompleteList={booksIds}
 				ref={inputRef}
 				anchor={inputRef.current || undefined}
 				autoresize={false}

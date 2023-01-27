@@ -153,7 +153,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						value={config.currentValue}
 						setValue={config.setCurrentValue}
 						autoresize
-						autoCompleteList={config.autocompleteList}
+						autocompleteList={config.autocompleteList}
 						datalistKey={`autocomplete-${1}`}
 						onSubmit={inputOnSubmit}
 						onRemove={inputOnRemove}

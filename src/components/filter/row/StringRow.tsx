@@ -59,7 +59,7 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 					autoresize={false}
 					className={inputClassName}
 					ref={ref}
-					autoCompleteList={config.autocompleteList}
+					autocompleteList={config.autocompleteList}
 					value={config.value}
 					setValue={config.setValue}
 					onSubmit={config.setValue}
