@@ -125,11 +125,14 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							value={value}
 							onSubmit={valueBubbleOnChangeFor(index)}
 							onRemove={valueBubbleOnRemoveFor(index)}
-							autocompleteVariants={config.autocompleteList}
+							autocompleteVariants={config.autocompleteList?.filter(
+								item => !config.values.includes(item),
+							)}
 							isValid={
 								config.validateBubbles
 									? config.autocompleteList && config.autocompleteList.length > 0
-										? config.autocompleteList.includes(value.trim())
+										? config.autocompleteList.includes(value.trim()) &&
+										  config.values.indexOf(value.trim()) === index
 										: undefined
 									: undefined
 							}
@@ -153,7 +156,9 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						value={config.currentValue}
 						setValue={config.setCurrentValue}
 						autoresize
-						autoCompleteList={config.autocompleteList}
+						autocompleteList={config.autocompleteList?.filter(
+							item => !config.values.includes(item),
+						)}
 						datalistKey={`autocomplete-${1}`}
 						onSubmit={inputOnSubmit}
 						onRemove={inputOnRemove}
