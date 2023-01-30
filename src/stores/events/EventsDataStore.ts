@@ -235,6 +235,7 @@ export default class EventsDataStore {
 
 			const fetchedEventChildren = fetchedChildren
 				.map(event => event.eventId)
+				.filter((eventId, i, children) => children.indexOf(eventId) === i)
 				.filter(eventId => !cachedEventChildren.includes(eventId));
 
 			const childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
@@ -258,6 +259,10 @@ export default class EventsDataStore {
 			this.rootEventIds = [
 				...this.rootEventIds,
 				...rootEvents
+					.filter(
+						(rootEvent, index, incomingRootEvents) =>
+							incomingRootEvents.findIndex(e => e.eventId === rootEvent.eventId) === index,
+					)
 					.filter(rootEvent => !this.rootEventIds.includes(rootEvent.eventId))
 					.map(({ eventId }) => eventId),
 			];
