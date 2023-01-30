@@ -235,6 +235,7 @@ export default class EventsDataStore {
 
 			const fetchedEventChildren = fetchedChildren
 				.map(event => event.eventId)
+				.filter((eventId, i, children) => children.indexOf(eventId) === i)
 				.filter(eventId => !cachedEventChildren.includes(eventId));
 
 			const childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
