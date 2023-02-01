@@ -48,7 +48,7 @@ import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
-import { getItemAt } from '../helpers/array';
+import { getArrayOfUniques, getItemAt } from '../helpers/array';
 import BooksStore from './BooksStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
@@ -485,6 +485,8 @@ export class SearchStore {
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
 		const bookId = this.booksStore.selectedBook.name;
 		const scope = this.searchForm.scope;
+
+		this.searchForm.stream = getArrayOfUniques(this.searchForm.stream);
 
 		if (this.isSearching || !filterParams || (this.formType === 'event' && !scope.trim())) return;
 		const isPaused = this.isPaused;
