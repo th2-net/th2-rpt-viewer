@@ -54,7 +54,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		autocompleteClassName,
 		autoresize = true,
 		spellCheck = false,
-		closedOnClick = true,
+		closedOnClick,
 		datalistKey,
 		className = '',
 		inputStyle = {},

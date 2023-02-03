@@ -234,7 +234,6 @@ const MessagesFilterPanel = () => {
 			required: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
-			closedOnClick: false,
 		};
 	}, [streams, setStreams, currentStream, setCurrentStream, sessionsStore.bookStreams]);
 
