@@ -79,16 +79,20 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 		}
 	}, [isOpen]);
 
-	useOutsideClickListener(historyRef, (e: MouseEvent) => {
-		const target = e.target as Element;
-		if (target.closest('.filter-history-item')) {
-			e.stopImmediatePropagation();
-			return;
-		}
-		if (target !== buttonRef.current) {
-			setIsOpen(false);
-		}
-	});
+	useOutsideClickListener(
+		historyRef,
+		(e: MouseEvent) => {
+			const target = e.target as Element;
+			if (target.closest('.filter-history-item')) {
+				e.stopImmediatePropagation();
+				return;
+			}
+			if (target !== buttonRef.current) {
+				setIsOpen(false);
+			}
+		},
+		isOpen,
+	);
 
 	const onFilterPin = React.useCallback(
 		(filter: FiltersHistoryType<EventFilterState | MessageFilterState>) => {

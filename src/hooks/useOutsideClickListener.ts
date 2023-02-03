@@ -19,6 +19,7 @@ import * as React from 'react';
 export function useOutsideClickListener(
 	ref: React.MutableRefObject<HTMLElement | null>,
 	handler: (e: MouseEvent) => void,
+	isOpen?: boolean,
 	eventType: 'mousedown' | 'mouseup' = 'mousedown',
 ) {
 	const onOutsideClick = (e: MouseEvent) => {
@@ -28,10 +29,12 @@ export function useOutsideClickListener(
 	};
 
 	React.useEffect(() => {
-		document.addEventListener(eventType, onOutsideClick);
+		if (isOpen === undefined || isOpen) {
+			document.addEventListener(eventType, onOutsideClick);
 
-		return () => {
-			document.removeEventListener(eventType, onOutsideClick);
-		};
-	}, [handler]);
+			return () => {
+				document.removeEventListener(eventType, onOutsideClick);
+			};
+		}
+	}, [handler, isOpen]);
 }
