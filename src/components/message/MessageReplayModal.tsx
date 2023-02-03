@@ -72,7 +72,12 @@ function MessageReplayModal() {
 	useOutsideClickListener(
 		rootRef,
 		e => {
-			if (rootRef.current && e.target instanceof Element && !rootRef.current.contains(e.target)) {
+			if (
+				rootRef.current &&
+				e.target instanceof Element &&
+				!rootRef.current.contains(e.target) &&
+				!document.getElementsByClassName('autocomplete-list')[0]
+			) {
 				setIsOpen(false);
 			}
 		},
