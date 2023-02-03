@@ -36,5 +36,6 @@ export function useOutsideClickListener(
 				document.removeEventListener(eventType, onOutsideClick);
 			};
 		}
+		return;
 	}, [handler, isOpen]);
 }
