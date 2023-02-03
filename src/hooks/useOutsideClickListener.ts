@@ -23,19 +23,16 @@ export function useOutsideClickListener(
 	eventType: 'mousedown' | 'mouseup' = 'mousedown',
 ) {
 	const onOutsideClick = (e: MouseEvent) => {
-		if (ref && !ref.current?.contains(e.target as Element)) {
+		if ((isOpen === undefined || isOpen) && ref && !ref.current?.contains(e.target as Element)) {
 			handler(e);
 		}
 	};
 
 	React.useEffect(() => {
-		if (isOpen === undefined || isOpen) {
-			document.addEventListener(eventType, onOutsideClick);
+		document.addEventListener(eventType, onOutsideClick);
 
-			return () => {
-				document.removeEventListener(eventType, onOutsideClick);
-			};
-		}
-		return () => {};
-	}, [handler, isOpen]);
+		return () => {
+			document.removeEventListener(eventType, onOutsideClick);
+		};
+	}, [handler]);
 }
