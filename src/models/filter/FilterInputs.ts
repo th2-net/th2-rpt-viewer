@@ -82,6 +82,7 @@ export type FilterRowBaseConfig = {
 	placeholder?: string;
 	isInvalid?: boolean;
 	required?: boolean;
+	closedOnClick?: boolean;
 };
 
 export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {

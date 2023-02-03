@@ -164,6 +164,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 											value: filterState[param.name],
 											toggleValue: getToggler(filter.name, param.name as keyof Filter),
 											possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+											closedOnClick: false,
 										};
 									case 'string':
 										return {
@@ -175,6 +176,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 											setValue: getValuesUpdater(filter.name),
 											autocompleteList,
 											hint: filter.hint,
+											closedOnClick: false,
 										};
 									case 'switcher':
 										return {
@@ -186,6 +188,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 											setValue: getValuesUpdater(filter.name),
 											possibleValues: ['passed', 'failed', 'any'],
 											defaultValue: 'any',
+											closedOnClick: false,
 										};
 									default:
 										return {
@@ -199,6 +202,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 											setCurrentValue: setCurrentValue(filter.name),
 											autocompleteList,
 											hint: filter.hint,
+											closedOnClick: false,
 										};
 								}
 							},

@@ -151,6 +151,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						}
 						disabled={config.disabled}
 						submitKeyCodes={[KeyCodes.TAB]}
+						closedOnClick={config.closedOnClick}
 						className='filter-row__multiple-values-input'
 						wrapperClassName='filter-row__multiple-values-input-wrapper'
 						value={config.currentValue}
