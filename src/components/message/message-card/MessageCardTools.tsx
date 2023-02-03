@@ -56,11 +56,15 @@ const MessageCardTools = ({
 	const rootRef = useRef<HTMLDivElement>(null);
 	const appViewMode = useViewMode();
 
-	useOutsideClickListener(rootRef, (e: MouseEvent) => {
-		if (e.target instanceof Element && rootRef.current && !rootRef.current.contains(e.target)) {
-			setIsViewMenuOpen(false);
-		}
-	});
+	useOutsideClickListener(
+		rootRef,
+		(e: MouseEvent) => {
+			if (e.target instanceof Element && rootRef.current && !rootRef.current.contains(e.target)) {
+				setIsViewMenuOpen(false);
+			}
+		},
+		isViewMenuOpen,
+	);
 
 	const viewTypes = message.body
 		? [

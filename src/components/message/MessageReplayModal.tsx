@@ -69,11 +69,20 @@ function MessageReplayModal() {
 	const [streams, setStreams] = React.useState<Array<string>>([]);
 	const [currentStream, setCurrentStream] = React.useState('');
 
-	useOutsideClickListener(rootRef, e => {
-		if (rootRef.current && e.target instanceof Element && !rootRef.current.contains(e.target)) {
-			setIsOpen(false);
-		}
-	});
+	useOutsideClickListener(
+		rootRef,
+		e => {
+			if (
+				rootRef.current &&
+				e.target instanceof Element &&
+				!rootRef.current.contains(e.target) &&
+				!document.getElementsByClassName('autocomplete-list')[0]
+			) {
+				setIsOpen(false);
+			}
+		},
+		isOpen,
+	);
 
 	React.useEffect(() => {
 		let timeout: NodeJS.Timeout;

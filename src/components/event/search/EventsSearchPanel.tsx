@@ -73,11 +73,15 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 		};
 	}, [handleKeyDown]);
 
-	useOutsideClickListener(searchBaseRef, (e: MouseEvent) => {
-		if (e.target instanceof Element && !searchButtonRef.current?.contains(e.target)) {
-			setShowSearch(false);
-		}
-	});
+	useOutsideClickListener(
+		searchBaseRef,
+		(e: MouseEvent) => {
+			if (e.target instanceof Element && !searchButtonRef.current?.contains(e.target)) {
+				setShowSearch(false);
+			}
+		},
+		showSearch,
+	);
 
 	const searchWrapperClass = createStyleSelector('search-wrapper', showSearch ? 'active' : null);
 
