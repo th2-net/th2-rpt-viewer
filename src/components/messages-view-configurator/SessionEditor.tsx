@@ -61,6 +61,7 @@ const SessionEditor: React.FC<SessionEditorProps> = ({
 			autocompleteList={sessions}
 			autocompleteClassName='rules-autocomplete'
 			datalistKey='session-input'
+			closedOnClick={true}
 		/>
 	);
 };
