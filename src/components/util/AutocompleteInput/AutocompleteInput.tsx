@@ -38,6 +38,7 @@ type Props = Override<
 	onEmptyBlur?: () => void;
 	anchor?: HTMLElement;
 	autocompleteListMinWidth?: number;
+	closedOnClick?: boolean;
 };
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -53,6 +54,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		autocompleteClassName,
 		autoresize = true,
 		spellCheck = false,
+		closedOnClick,
 		datalistKey,
 		className = '',
 		inputStyle = {},
@@ -121,6 +123,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const onAutocompleteSelect = React.useCallback(
 		(selectedOption: string) => {
 			onSubmit(selectedOption);
+			if (closedOnClick) {
+				setAutocompleteAnchor(null);
+			}
 			selectedOptionRef.current = selectedOption;
 		},
 		[setValue, onSubmit],
