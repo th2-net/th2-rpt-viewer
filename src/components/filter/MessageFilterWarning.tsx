@@ -56,9 +56,13 @@ const MessageFilterWarning = () => {
 		};
 	})();
 
-	useOutsideClickListener(filterHintModalRef, () => {
-		setShowHintModal(false);
-	});
+	useOutsideClickListener(
+		filterHintModalRef,
+		() => {
+			setShowHintModal(false);
+		},
+		showHintModal,
+	);
 
 	return (
 		<>

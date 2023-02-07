@@ -32,13 +32,17 @@ const MessageViewConfigurator = () => {
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 
-	useOutsideClickListener(modalRef, (e: MouseEvent) => {
-		const isFromAutocomplete = Boolean((e.target as HTMLElement).closest('.rules-autocomplete'));
-		const isFromSelect = Boolean((e.target as HTMLElement).closest('.rules-select-options-list'));
-		if (e.target !== buttonRef.current && !isFromAutocomplete && !isFromSelect) {
-			setIsOpen(false);
-		}
-	});
+	useOutsideClickListener(
+		modalRef,
+		(e: MouseEvent) => {
+			const isFromAutocomplete = Boolean((e.target as HTMLElement).closest('.rules-autocomplete'));
+			const isFromSelect = Boolean((e.target as HTMLElement).closest('.rules-select-options-list'));
+			if (e.target !== buttonRef.current && !isFromAutocomplete && !isFromSelect) {
+				setIsOpen(false);
+			}
+		},
+		isOpen,
+	);
 
 	const rulesButtonClassName = createStyleSelector(
 		'switcher',

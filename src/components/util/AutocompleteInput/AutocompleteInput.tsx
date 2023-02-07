@@ -30,7 +30,7 @@ type Props = Override<
 	setValue: (newValue: string) => void;
 	autoresize?: boolean;
 	alwaysShowAutocomplete?: boolean;
-	autoCompleteList?: string[];
+	autocompleteList?: string[];
 	autocompleteClassName?: string;
 	datalistKey?: string;
 	submitKeyCodes?: number[];
@@ -38,6 +38,7 @@ type Props = Override<
 	onEmptyBlur?: () => void;
 	anchor?: HTMLElement;
 	autocompleteListMinWidth?: number;
+	closedOnClick?: boolean;
 };
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -49,10 +50,11 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onRemove,
 		onEmptyBlur,
 		onFocus,
-		autoCompleteList,
+		autocompleteList,
 		autocompleteClassName,
 		autoresize = true,
 		spellCheck = false,
+		closedOnClick,
 		datalistKey,
 		className = '',
 		inputStyle = {},
@@ -121,7 +123,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const onAutocompleteSelect = React.useCallback(
 		(selectedOption: string) => {
 			onSubmit(selectedOption);
-			setAutocompleteAnchor(null);
+			if (closedOnClick) {
+				setAutocompleteAnchor(null);
+			}
 			selectedOptionRef.current = selectedOption;
 		},
 		[setValue, onSubmit],
@@ -163,11 +167,11 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			) : (
 				<input {...inputProps} ref={ref} className={className} />
 			)}
-			{autoCompleteList && autoCompleteList.length > 0 && (
+			{autocompleteList && autocompleteList.length > 0 && (
 				<AutocompleteList
 					className={autocompleteClassName}
 					ref={autocompleteListRef}
-					items={autoCompleteList}
+					items={autocompleteList}
 					value={value.trim()}
 					anchor={autocompleteAnchor}
 					onSelect={onAutocompleteSelect}

@@ -117,6 +117,13 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 			[list],
 		);
 
+		const handleSelect = React.useCallback(
+			(item: string) => {
+				onSelect?.(item);
+			},
+			[onSelect],
+		);
+
 		const handleKeyDown = React.useCallback(
 			(event: KeyboardEvent) => {
 				if (event.keyCode === KeyCodes.UP) {
@@ -154,7 +161,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 					setIsOpen(false);
 				}
 			},
-			[focusedOption, setFocusedOption, isOpen, list, scrollToOption],
+			[focusedOption, setFocusedOption, isOpen, list, scrollToOption, handleSelect],
 		);
 
 		React.useEffect(() => {
@@ -205,14 +212,6 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 				}
 			}
 		}, [isOpen]);
-
-		const handleSelect = React.useCallback(
-			(item: string) => {
-				onSelect?.(item);
-				setIsOpen(false);
-			},
-			[onSelect, setIsOpen],
-		);
 
 		const renderAutocompleteOption = React.useCallback(
 			(index: number) => {
