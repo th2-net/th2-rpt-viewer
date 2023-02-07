@@ -28,6 +28,8 @@ import { EventTreeNode } from '../../models/EventAction';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import BooksStore from '../BooksStore';
 import { SearchDirection } from '../../models/search/SearchDirection';
+import { notEmpty } from '../../helpers/object';
+import { sortEventsByTimestamp } from '../../helpers/event';
 
 const defaultState = {
 	tokens: [],
@@ -242,9 +244,21 @@ export default class EventsSearchStore {
 
 	@action
 	private onSearchResultsUpdateWorker = (e: MessageEvent) => {
-		const { results, currentIndex } = e.data;
+		const { results: workerResults, currentIndex } = e.data;
+
+		const eventsOutOfRange = sortEventsByTimestamp(
+			this.eventsStore.eventDataStore.eventIdsOutOfRange
+				.map(eventId => this.eventsStore.eventDataStore.eventsCache.get(eventId))
+				.filter(notEmpty),
+		);
+
+		const results = eventsOutOfRange
+			.filter(event => this.tokens.some(t => event.eventName.includes(t.pattern)))
+			.map(event => event.eventId)
+			.slice();
+
 		this.scrolledIndex = currentIndex;
-		this.results = results;
+		this.results = [...results, ...workerResults];
 
 		this.isProccessingSearchResults = false;
 	};
