@@ -74,8 +74,10 @@ const FilterPanel = (props: Props) => {
 		filterBaseRef,
 		(e: MouseEvent) => {
 			if (
-				!filterBaseRef.current?.contains(e.target as Element) &&
-				!document.getElementsByClassName('autocomplete-list')[0]
+				e.target instanceof Element && 
+				!filterBaseRef.current?.contains(e.target) &&
+				!e.target.className.includes('autocomplete') &&
+				!filterButtonRef.current?.contains(e.target)
 			) {
 				setShowFilter(false);
 			}
