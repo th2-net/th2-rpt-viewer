@@ -96,7 +96,9 @@ export default class EventsSearchStore {
 			this.onSearchTokensUpdate(nextTokens);
 		}
 
-		this.tokens = nextTokens;
+		this.tokens = nextTokens.filter(
+			(token, index, tokens) => tokens.findIndex(t => t.pattern === token.pattern) === index,
+		);
 	};
 
 	@action
