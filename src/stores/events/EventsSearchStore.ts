@@ -122,6 +122,7 @@ export default class EventsSearchStore {
 	@action
 	clear = () => {
 		this.resetState();
+		this.tokens = [];
 	};
 
 	@action
