@@ -20,9 +20,12 @@ import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
-import { getBookIdScope } from '../../helpers/message';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
+import { DirectionalStreamInfo } from '../../models/StreamInfo';
+import { SearchDirection } from '../../models/search/SearchDirection';
+import { extractMessageIds } from '../../helpers/streamInfo';
+import { isAbortError } from '../../helpers/fetch';
 
 export type MessageSSEEventListeners = SSEEventListeners<EventMessage> & {
 	onKeepAliveResponse?: (event: SSEHeartbeat) => void;
@@ -37,6 +40,11 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	constructor(
 		private queryParams: MessagesSSEParams,
 		protected eventListeners: MessageSSEEventListeners,
+		private getMessagesIds: (
+			stream: string,
+			bookId: string,
+			dir: SearchDirection,
+		) => Promise<DirectionalStreamInfo>,
 		protected options?: SSEChannelOptions,
 	) {
 		super(isEventMessage, eventListeners, options);
@@ -113,11 +121,21 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		}
 	};
 
-	private initConnection = (resumeMessageIds?: string[]): void => {
+	private initConnection = async (resumeMessageIds?: string[]): Promise<void> => {
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
 		this.messageIds = resumeMessageIds || this.messageIds;
+
+		try {
+			await this.updateMessagesIds();
+		} catch (error) {
+			if (!isAbortError(error)) {
+				this.isError = true;
+			}
+			return;
+		}
+
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
@@ -154,15 +172,8 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private _onMessageIdsEvent = (e: Event) => {
 		const messagesIdsEvent: MessageIdsEvent =
 			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-		const newIds = Object.values(messagesIdsEvent.messageIds).filter(
-			id => id && id.slice(-2) !== '-1',
-		) as string[];
-		this.messageIds = [
-			...newIds,
-			...this.messageIds.filter(
-				messageId => !newIds.find(id => id.includes(getBookIdScope(messageId))),
-			),
-		];
+		const newIds = Object.values(messagesIdsEvent.messageIds).filter(id => typeof id === 'string');
+		this.messageIds = newIds as string[];
 		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
 			this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
 		}
@@ -172,4 +183,30 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.eventListeners = eventListeners || this.eventListeners;
 		this.subscribe();
 	}
+
+	private updateMessagesIds = async () => {
+		const { stream: streams, searchDirection, bookId } = this.queryParams;
+
+		const isInvalidMessageId = (messageId: string) => messageId.slice(-2) === '-1';
+
+		const invalidIds = this.messageIds.filter(isInvalidMessageId);
+		const streamsToUpdate = streams.filter(stream =>
+			invalidIds.find(id => id.startsWith(`${bookId}:${stream}`)),
+		);
+
+		const streamsInfos = await Promise.all(
+			streamsToUpdate.map(stream => this.getMessagesIds(bookId, stream, searchDirection)),
+		);
+
+		streamsInfos.forEach(info => {
+			const streamInfo = searchDirection === SearchDirection.Previous ? info.previous : info.next;
+			// eslint-disable-next-line max-len
+			const messageIdToReplace = `${streamInfo[0].streamPointer.bookId.name}:${streamInfo[0].streamPointer.name}:`;
+
+			this.messageIds = this.messageIds.filter(
+				messageId => !messageId.startsWith(messageIdToReplace),
+			);
+			this.messageIds.push(...extractMessageIds(streamInfo));
+		});
+	};
 }

@@ -17,7 +17,10 @@
 type StreamDirection = 'FIRST' | 'SECOND';
 
 export type StreamInfo = {
-	stream: {
+	streamPointer: {
+		bookId: {
+			name: string;
+		};
 		name: string;
 		direction: StreamDirection;
 	};

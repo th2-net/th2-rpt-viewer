@@ -221,6 +221,23 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.searchChannelNext = null;
 	};
 
+	private getMessagesIds = async (bookId: string, stream: string, dir: SearchDirection) => {
+		this.messageAC = new AbortController();
+		const messages = dir === SearchDirection.Next ? this.messages : this.messages.slice().reverse();
+		const lastMessage = messages.find(msg => msg.sessionId === stream);
+
+		return this.api.messages.getResumptionMessageIds(
+			{
+				streams: [stream],
+				bookId,
+				...(lastMessage
+					? { messageId: lastMessage?.messageId }
+					: { startTimestamp: this.messagesStore.filterStore.filterParams.startTimestamp }),
+			},
+			this.messageAC.signal,
+		);
+	};
+
 	@action
 	private onLoadingError = (event: Event) => {
 		notificationsStore.handleSSEError(event);
@@ -235,12 +252,16 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	) => {
 		this.prevLoadEndTimestamp = null;
 
-		this.searchChannelPrev = new MessagesSSEChannel(query, {
-			onResponse: this.onPrevChannelResponse,
-			onError: this.onLoadingError,
-			onKeepAliveResponse: heartbeat => this.onKeepAliveMessagePrevious(heartbeat),
-			...listeners,
-		});
+		this.searchChannelPrev = new MessagesSSEChannel(
+			query,
+			{
+				onResponse: this.onPrevChannelResponse,
+				onError: this.onLoadingError,
+				onKeepAliveResponse: heartbeat => this.onKeepAliveMessagePrevious(heartbeat),
+				...listeners,
+			},
+			this.getMessagesIds,
+		);
 	};
 
 	private onKeepAliveMessagePrevious = (e: SSEHeartbeat) => {
@@ -292,12 +313,16 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		query: MessagesSSEParams,
 		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
-		this.searchChannelNext = new MessagesSSEChannel(query, {
-			onResponse: this.onNextChannelResponse,
-			onError: this.onLoadingError,
-			onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat),
-			...listeners,
-		});
+		this.searchChannelNext = new MessagesSSEChannel(
+			query,
+			{
+				onResponse: this.onNextChannelResponse,
+				onError: this.onLoadingError,
+				onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat),
+				...listeners,
+			},
+			this.getMessagesIds,
+		);
 	};
 
 	@action
