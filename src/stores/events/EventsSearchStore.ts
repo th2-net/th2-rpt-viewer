@@ -28,6 +28,8 @@ import { EventTreeNode } from '../../models/EventAction';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import BooksStore from '../BooksStore';
 import { SearchDirection } from '../../models/search/SearchDirection';
+import { notEmpty } from '../../helpers/object';
+import { sortEventsByTimestamp } from '../../helpers/event';
 
 const defaultState = {
 	tokens: [],
@@ -88,15 +90,11 @@ export default class EventsSearchStore {
 
 	@action
 	updateTokens = (nextTokens: SearchToken[]) => {
-		if (
-			nextTokens.some(
-				nextToken => !this.tokens.map(t => t.pattern.trim()).includes(nextToken.pattern.trim()),
-			)
-		) {
-			this.onSearchTokensUpdate(nextTokens);
-		}
+		this.onSearchTokensUpdate(nextTokens);
 
-		this.tokens = nextTokens;
+		this.tokens = nextTokens.filter(
+			(token, index, tokens) => tokens.findIndex(t => t.pattern === token.pattern) === index,
+		);
 	};
 
 	@action
@@ -122,6 +120,7 @@ export default class EventsSearchStore {
 	@action
 	clear = () => {
 		this.resetState();
+		this.tokens = [];
 	};
 
 	@action
@@ -239,9 +238,23 @@ export default class EventsSearchStore {
 
 	@action
 	private onSearchResultsUpdateWorker = (e: MessageEvent) => {
-		const { results, currentIndex } = e.data;
+		const { results: workerResults, currentIndex } = e.data;
+
+		const eventsOutOfRange = sortEventsByTimestamp(
+			this.eventsStore.eventDataStore.eventIdsOutOfRange
+				.map(eventId => this.eventsStore.eventDataStore.eventsCache.get(eventId))
+				.filter(notEmpty),
+		);
+
+		const results = eventsOutOfRange
+			.filter(event =>
+				this.tokens.some(t => event.eventName.toLowerCase().includes(t.pattern.toLowerCase())),
+			)
+			.map(event => event.eventId)
+			.slice();
+
 		this.scrolledIndex = currentIndex;
-		this.results = results;
+		this.results = [...results, ...workerResults];
 
 		this.isProccessingSearchResults = false;
 	};
