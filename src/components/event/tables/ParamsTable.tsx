@@ -18,6 +18,7 @@ import * as React from 'react';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import StateSaver from '../../util/StateSaver';
 import '../../../styles/tables.scss';
+import { ColumnSeparator } from './ColumnSeparator';
 
 export interface ParamsTableRow {
 	subRows: ParamsTableRow[];
@@ -55,6 +56,7 @@ interface Props extends Omit<OwnProps, 'params'>, StateProps, RecoveredProps {}
 
 const ParamsTableBase = (props: Props) => {
 	const [nodes, setNodes] = React.useState(props.nodes);
+	const [columnWidth, setColumnWidth] = React.useState<number[]>(props.columns.map(() => 150));
 
 	const findNode = (node: ParamsTableRow, targetNode: ParamsTableRow): ParamsTableRow => {
 		if (node === targetNode) {
@@ -134,10 +136,11 @@ const ParamsTableBase = (props: Props) => {
 		return (
 			<tr className='params-table-row-value' key={key}>
 				<td style={cellStyle}>{renderContent(`${key}-name`, rowTitle)}</td>
-				{props.columns.map(columnTitle => (
-					<td key={`${rowTitle} - ${columnTitle}`}>
-						{renderContent(`${key}-value`, columns[columnTitle])}
-					</td>
+				{props.columns.map((columnTitle, ind) => (
+					<React.Fragment key={`${rowTitle} - ${columnTitle}`}>
+						<td>{renderContent(`${key}-value`, columns[columnTitle])}</td>
+						<ColumnSeparator index={ind} onChange={changeWidth} isHeader={false} />
+					</React.Fragment>
 				))}
 			</tr>
 		);
@@ -157,7 +160,7 @@ const ParamsTableBase = (props: Props) => {
 		};
 		return (
 			<tr className={rootClass} key={key} onClick={togglerClickHandler(node)}>
-				<td style={{ gridColumn: `1 / ${props.columns.length + 2}` }}>
+				<td style={{ gridColumn: `1 / ${props.columns.length * 2 + 2}` }}>
 					<p style={nameStyle}>{renderContent(`${key}-name`, node.title)}</p>
 				</td>
 			</tr>
@@ -185,6 +188,14 @@ const ParamsTableBase = (props: Props) => {
 		e.stopPropagation();
 	};
 
+	const changeWidth = (index: number, value: number) => {
+		setColumnWidth([
+			...columnWidth.slice(0, index),
+			Math.max(columnWidth[index] + value, 150),
+			...columnWidth.slice(index + 1),
+		]);
+	};
+
 	return (
 		<div className='params-table'>
 			<div className='params-table-header'>
@@ -203,15 +214,16 @@ const ParamsTableBase = (props: Props) => {
 			<div className='params-table-wrapper'>
 				<table
 					style={{
-						gridTemplateColumns: `1fr repeat(${props.columns.length}, minmax(150px, 250px))`,
+						gridTemplateColumns: `1fr ${columnWidth.map(val => `${val}px 2px`).join(' ')}`,
 					}}>
 					<thead>
 						<tr>
-							<th style={{ gridColumn: '1 / 2' }}></th>
+							<th />
 							{props.columns.map((columnTitle, idx) => (
-								<th style={{ gridColumn: `${idx + 2}/${idx + 3}` }} key={columnTitle}>
-									{columnTitle}
-								</th>
+								<React.Fragment key={columnTitle}>
+									<th key={columnTitle}>{columnTitle}</th>
+									<ColumnSeparator index={idx} onChange={changeWidth} isHeader={true} />
+								</React.Fragment>
 							))}
 						</tr>
 					</thead>
