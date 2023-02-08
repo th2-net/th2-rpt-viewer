@@ -159,10 +159,9 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		} else {
 			this.updateTokens.cancel();
 
-			const tokens = this.props.searchTokens.slice().map(t => {
-				t.isActive = false;
-				return t;
-			});
+			const tokens = this.props.searchTokens
+				.slice()
+				.map(t => (t.isActive ? { ...t, isActive: false } : t));
 
 			if (this.props.value) {
 				const val = this.props.value;
