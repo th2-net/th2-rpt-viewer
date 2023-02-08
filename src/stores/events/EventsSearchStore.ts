@@ -253,7 +253,9 @@ export default class EventsSearchStore {
 		);
 
 		const results = eventsOutOfRange
-			.filter(event => this.tokens.some(t => event.eventName.includes(t.pattern)))
+			.filter(event =>
+				this.tokens.some(t => event.eventName.toLowerCase().includes(t.pattern.toLowerCase())),
+			)
 			.map(event => event.eventId)
 			.slice();
 
