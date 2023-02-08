@@ -53,10 +53,6 @@ interface RecoveredProps {
 
 interface Props extends Omit<OwnProps, 'params'>, StateProps, RecoveredProps {}
 
-interface State {
-	nodes: ParamsTableRow[];
-}
-
 const ParamsTableBase = (props: Props) => {
 	const [nodes, setNodes] = React.useState(props.nodes);
 
