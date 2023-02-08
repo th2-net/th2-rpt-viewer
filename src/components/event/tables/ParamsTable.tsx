@@ -57,15 +57,10 @@ interface State {
 	nodes: ParamsTableRow[];
 }
 
-class ParamsTableBase extends React.Component<Props, State> {
-	constructor(props: Props) {
-		super(props);
-		this.state = {
-			nodes: props.nodes,
-		};
-	}
+const ParamsTableBase = (props: Props) => {
+	const [nodes, setNodes] = React.useState(props.nodes);
 
-	findNode(node: ParamsTableRow, targetNode: ParamsTableRow): ParamsTableRow {
+	const findNode = (node: ParamsTableRow, targetNode: ParamsTableRow): ParamsTableRow => {
 		if (node === targetNode) {
 			return {
 				...targetNode,
@@ -75,137 +70,88 @@ class ParamsTableBase extends React.Component<Props, State> {
 
 		return {
 			...node,
-			subRows: node.subRows && node.subRows.map(subNode => this.findNode(subNode, targetNode)),
+			subRows: node.subRows && node.subRows.map(subNode => findNode(subNode, targetNode)),
 		};
-	}
+	};
 
-	setExpandStatus(isCollapsed: boolean) {
-		this.setState({
-			nodes: this.state.nodes.map(node => this.setNodeExpandStatus(node, isCollapsed)),
-		});
-	}
+	const setExpandStatus = (isCollapsed: boolean) => {
+		setNodes(nodes.map(node => setNodeExpandStatus(node, isCollapsed)));
+	};
 
-	setNodeExpandStatus(node: ParamsTableRow, isExpanded: boolean): ParamsTableRow {
+	const setNodeExpandStatus = (node: ParamsTableRow, isExpanded: boolean): ParamsTableRow => {
 		return {
 			...node,
 			isExpanded,
-			subRows: node.subRows.map(subNode => this.setNodeExpandStatus(subNode, isExpanded)),
+			subRows: node.subRows.map(subNode => setNodeExpandStatus(subNode, isExpanded)),
 		};
-	}
+	};
 
-	updateExpandPath(
+	const updateExpandPath = (
 		[currentIndex, ...expandPath]: number[],
 		prevState: ParamsTableRow[],
-	): ParamsTableRow[] {
+	): ParamsTableRow[] => {
 		return prevState.map((node, index) =>
 			index === currentIndex
 				? {
 						...node,
 						isExpanded: true,
-						subParameters: node.subRows && this.updateExpandPath(expandPath, node.subRows),
+						subParameters: node.subRows && updateExpandPath(expandPath, node.subRows),
 				  }
 				: node,
 		);
-	}
+	};
 
-	componentDidUpdate(prevProps: Props) {
-		if (
-			prevProps.expandPath !== this.props.expandPath &&
-			this.props.expandPath &&
-			this.props.expandPath.length > 0
-		) {
-			this.setState({
-				nodes: this.updateExpandPath(this.props.expandPath, this.state.nodes),
-			});
+	React.useEffect(() => {
+		return () => props.saveState(nodes);
+	}, []);
+
+	React.useEffect(() => {
+		if (props.expandPath && props.expandPath.length > 0) {
+			setNodes(updateExpandPath(props.expandPath, nodes));
 		}
-	}
+	}, [props.expandPath]);
 
-	componentWillUnmount() {
-		this.props.saveState(this.state.nodes);
-	}
-
-	render() {
-		return (
-			<div className='params-table'>
-				<div className='params-table-header'>
-					<div className='params-table-header-control'>
-						<span
-							className='params-table-header-control-button'
-							onClick={this.onControlButtonClick(false)}>
-							Collapse
-						</span>
-						<span> | </span>
-						<span
-							className='params-table-header-control-button'
-							onClick={this.onControlButtonClick(true)}>
-							Expand
-						</span>
-					</div>
-				</div>
-				<div className='params-table-wrapper'>
-					<table
-						style={{
-							gridTemplateColumns: `1fr repeat(${this.props.columns.length}, minmax(150px, 250px))`,
-						}}>
-						<thead>
-							<tr>
-								<th style={{ gridColumn: '1 / 2' }}></th>
-								{this.props.columns.map((columnTitle, idx) => (
-									<th style={{ gridColumn: `${idx + 2}/${idx + 3}` }} key={columnTitle}>
-										{columnTitle}
-									</th>
-								))}
-							</tr>
-						</thead>
-						<tbody>{this.state.nodes.map(nodes => this.renderNodes(nodes, 1))}</tbody>
-					</table>
-				</div>
-			</div>
-		);
-	}
-
-	private renderNodes(node: ParamsTableRow, paddingLevel = 1, key = ''): React.ReactNodeArray {
+	const renderNodes = (node: ParamsTableRow, paddingLevel = 1, key = ''): React.ReactNodeArray => {
 		if (node.subRows && node.subRows.length !== 0) {
 			const subNodes = node.isExpanded
 				? node.subRows.reduce(
-						(list, n, index) =>
-							list.concat(this.renderNodes(n, paddingLevel + 1, `${key}-${index}`)),
+						(list, n, index) => list.concat(renderNodes(n, paddingLevel + 1, `${key}-${index}`)),
 						[] as React.ReactNodeArray,
 				  )
 				: [];
 
-			return [this.renderTooglerNode(node, paddingLevel, key), ...subNodes];
+			return [renderTooglerNode(node, paddingLevel, key), ...subNodes];
 		}
-		return [this.renderValueNode(node.title, node.columns, paddingLevel, key)];
-	}
+		return [renderValueNode(node.title, node.columns, paddingLevel, key)];
+	};
 
-	private renderValueNode(
+	const renderValueNode = (
 		rowTitle: string,
 		columns: { [columnTitle: string]: string } = {},
 		paddingLevel: number,
 		key: string,
-	): React.ReactNode {
+	): React.ReactNode => {
 		const cellStyle = {
 			paddingLeft: PADDING_LEVEL_VALUE * paddingLevel,
 		};
 
 		return (
 			<tr className='params-table-row-value' key={key}>
-				<td style={cellStyle}>{this.renderContent(`${key}-name`, rowTitle)}</td>
-				{this.props.columns.map(columnTitle => (
+				<td style={cellStyle}>{renderContent(`${key}-name`, rowTitle)}</td>
+				{props.columns.map(columnTitle => (
 					<td key={`${rowTitle} - ${columnTitle}`}>
-						{this.renderContent(`${key}-value`, columns[columnTitle])}
+						{renderContent(`${key}-value`, columns[columnTitle])}
 					</td>
 				))}
 			</tr>
 		);
-	}
+	};
 
-	private renderTooglerNode(
+	const renderTooglerNode = (
 		node: ParamsTableRow,
 		paddingLevel: number,
 		key: string,
-	): React.ReactNode {
+	): React.ReactNode => {
 		const rootClass = createStyleSelector(
 			'params-table-row-toogler',
 			node.isExpanded ? 'expanded' : 'collapsed',
@@ -214,38 +160,71 @@ class ParamsTableBase extends React.Component<Props, State> {
 			paddingLeft: PADDING_LEVEL_VALUE * paddingLevel,
 		};
 		return (
-			<tr className={rootClass} key={key} onClick={this.togglerClickHandler(node)}>
-				<td style={{ gridColumn: `1 / ${this.props.columns.length + 2}` }}>
-					<p style={nameStyle}>{this.renderContent(`${key}-name`, node.title)}</p>
+			<tr className={rootClass} key={key} onClick={togglerClickHandler(node)}>
+				<td style={{ gridColumn: `1 / ${props.columns.length + 2}` }}>
+					<p style={nameStyle}>{renderContent(`${key}-name`, node.title)}</p>
 				</td>
 			</tr>
 		);
-	}
+	};
 
 	/* 
 		we need this for optimization - render SearchableContent component
 		only if it contains some search results
 	*/
-	private renderContent(contentKey: string, content: string): React.ReactNode {
+	const renderContent = (contentKey: string, content: string): React.ReactNode => {
 		if (typeof content === 'boolean' && (content as boolean))
 			return <div className='boolean-value-cell' />;
 		return content;
-	}
+	};
 
-	private togglerClickHandler = (targetNode: ParamsTableRow) => (e: React.MouseEvent) => {
-		this.setState({
-			...this.state,
-			nodes: this.state.nodes.map(node => this.findNode(node, targetNode)),
-		});
+	const togglerClickHandler = (targetNode: ParamsTableRow) => (e: React.MouseEvent) => {
+		setNodes(nodes.map(node => findNode(node, targetNode)));
 
 		e.stopPropagation();
 	};
 
-	private onControlButtonClick = (expandStatus: boolean) => (e: React.MouseEvent) => {
-		this.setExpandStatus(expandStatus);
+	const onControlButtonClick = (expandStatus: boolean) => (e: React.MouseEvent) => {
+		setExpandStatus(expandStatus);
 		e.stopPropagation();
 	};
-}
+
+	return (
+		<div className='params-table'>
+			<div className='params-table-header'>
+				<div className='params-table-header-control'>
+					<span
+						className='params-table-header-control-button'
+						onClick={onControlButtonClick(false)}>
+						Collapse
+					</span>
+					<span> | </span>
+					<span className='params-table-header-control-button' onClick={onControlButtonClick(true)}>
+						Expand
+					</span>
+				</div>
+			</div>
+			<div className='params-table-wrapper'>
+				<table
+					style={{
+						gridTemplateColumns: `1fr repeat(${props.columns.length}, minmax(150px, 250px))`,
+					}}>
+					<thead>
+						<tr>
+							<th style={{ gridColumn: '1 / 2' }}></th>
+							{props.columns.map((columnTitle, idx) => (
+								<th style={{ gridColumn: `${idx + 2}/${idx + 3}` }} key={columnTitle}>
+									{columnTitle}
+								</th>
+							))}
+						</tr>
+					</thead>
+					<tbody>{nodes.map(node => renderNodes(node, 1))}</tbody>
+				</table>
+			</div>
+		</div>
+	);
+};
 
 export const RecoverableParamsTable = ({
 	stateKey,
