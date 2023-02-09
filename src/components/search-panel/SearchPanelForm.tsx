@@ -16,6 +16,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import moment from 'moment';
 import {
 	DateTimeInputType,
 	DateTimeMask,
@@ -24,7 +25,6 @@ import {
 } from '../../models/filter/FilterInputs';
 import FilterRow from '../filter/row';
 import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
-import { SearchPanelFormState } from '../../stores/SearchStore';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelFilters from './SearchPanelFilters';
 import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
@@ -42,6 +42,8 @@ import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 import SelectFilterRow from '../filter/row/SelectFilterRow';
 import { useBooksStore } from '../../hooks/useBooksStore';
+import InfinityLimit, { InfinityLimitConfig } from './search-form/InfinityLimit';
+import { SearchPanelFormState } from '../../stores/SearchStore';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -113,6 +115,18 @@ const SearchPanelForm = () => {
 		disabled,
 	};
 
+	function updateInfinityLimit(value: string) {
+		if (value === '' || /^\d+$/.test(value)) {
+			updateForm({ infinityLimit: value === '' ? undefined : Number(value) });
+		}
+	}
+
+	const infinityLimitConfig: InfinityLimitConfig = {
+		value: !form.infinityLimit ? '' : form.infinityLimit.toString(),
+		setValue: updateInfinityLimit,
+		disabled,
+	};
+
 	const sessionsConfig: FitlerRowItem = {
 		type: 'multiple-strings',
 		id: 'stream',
@@ -151,6 +165,10 @@ const SearchPanelForm = () => {
 	} = searchProgress;
 
 	const searchDatetimeControlsConfig: SearchDatetimeControlsConfig = {
+		infinityLimit: {
+			next: moment.utc(form.startTimestamp).add(form.infinityLimit, 'days').valueOf(),
+			prev: moment.utc(form.startTimestamp).subtract(form.infinityLimit, 'days').valueOf(),
+		},
 		isSearching,
 		updateForm,
 		startTimestampInput,
@@ -230,7 +248,12 @@ const SearchPanelForm = () => {
 			<SearchProgressBar {...progressBarConfig} />
 			<SearchSubmit {...searchSubmitConfig} />
 			<div className='search-panel__fields'>
-				<FiltersHistory disabled={disabled} />
+				<div className='filter-row'>
+					<div className='search-type-config'>
+						<FiltersHistory disabled={disabled} />
+						<InfinityLimit {...infinityLimitConfig} />
+					</div>
+				</div>
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
 					<div className='search-type-config'>

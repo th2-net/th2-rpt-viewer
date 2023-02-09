@@ -23,6 +23,10 @@ import { DateInputProps } from '../SearchPanelForm';
 import TimeLimitControl from './TimeLimitControl';
 
 export type SearchDatetimeControlsConfig = {
+	infinityLimit: {
+		next: number;
+		prev: number;
+	};
 	isSearching: boolean;
 	updateForm: (stateUpdate: Partial<SearchPanelFormState>) => void;
 	startTimestampInput: DateInputProps;
@@ -39,6 +43,7 @@ export type SearchDatetimeControlsConfig = {
 };
 
 const SearchDatetimeControls = ({
+	infinityLimit,
 	isSearching,
 	searchDirection,
 	updateForm,
@@ -120,6 +125,7 @@ const SearchDatetimeControls = ({
 		<div className='search-form__search-datetime-controls search-datetime-controls'>
 			<div className='search-datetime-controls__previous'>
 				<TimeLimitControl
+					infinityLimit={infinityLimit.prev}
 					value={previousTimeLimit.value}
 					setValue={previousTimeLimit.setValue}
 					disabled={disabled || !searchDirection || searchDirection === SearchDirection.Next}
@@ -147,6 +153,7 @@ const SearchDatetimeControls = ({
 			</div>
 			<div className='search-datetime-controls__next'>
 				<TimeLimitControl
+					infinityLimit={infinityLimit.next}
 					value={nextTimeLimit.value}
 					setValue={nextTimeLimit.setValue}
 					disabled={disabled || !searchDirection || searchDirection === SearchDirection.Previous}
