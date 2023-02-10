@@ -25,16 +25,21 @@ import { filterUniqueGraphItems } from '../helpers/graph';
 import { isWorkspaceStore } from '../helpers/workspace';
 import { IndexedDB } from '../api/indexedDb';
 import { BookmarksStore } from './BookmarksStore';
+import BooksStore from './BooksStore';
 
 export class SelectedStore {
 	bookmarksStore: BookmarksStore;
 
-	constructor(private workspacesStore: WorkspacesStore, private db: IndexedDB) {
-		this.bookmarksStore = new BookmarksStore(workspacesStore, db);
+	constructor(
+		private workspacesStore: WorkspacesStore,
+		private db: IndexedDB,
+		booksStore: BooksStore,
+	) {
+		this.bookmarksStore = new BookmarksStore(workspacesStore, db, booksStore);
 	}
 
 	@computed
-	public get savedItems(): Array<EventTreeNode | EventMessage> {
+	public get savedItems(): Array<GraphItem> {
 		return sortByTimestamp([
 			...this.bookmarksStore.events.map(bookmark => bookmark.item),
 			...this.bookmarksStore.messages.map(bookmark => bookmark.item),

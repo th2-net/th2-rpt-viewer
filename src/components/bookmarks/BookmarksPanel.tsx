@@ -22,19 +22,18 @@ import Empty from '../util/Empty';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useActivePanel, useBookmarksStore } from '../../hooks';
+import { useActivePanel, useBookmarksStore, useWorkspaces } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
 import Checkbox from '../util/Checkbox';
-import '../../styles/bookmarks.scss';
 import { BookmarkedItem } from '../../models/Bookmarks';
 import { isBookmark } from '../../helpers/bookmarks';
+import '../../styles/bookmarks.scss';
 
 function BookmarksPanel() {
-	const searchWorkspace = useSearchWorkspace();
+	const workspacesStore = useWorkspaces();
 	const {
 		filteredBookmarks,
 		selectedBookmarks,
@@ -53,12 +52,11 @@ function BookmarksPanel() {
 
 	function onBookmarkClick(bookmark: BookmarkedItem) {
 		if (isBookmark(bookmark)) {
-			searchWorkspace.onSavedItemSelect(bookmark.item);
+			workspacesStore.onGraphSearchResultSelect(bookmark.item);
 		} else {
-			searchWorkspace.onSavedItemSelect(bookmark);
+			workspacesStore.onGraphSearchResultSelect(bookmark);
 		}
 	}
-
 	function computeKey(index: number) {
 		return filteredBookmarks[index].id;
 	}
@@ -188,7 +186,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 					<p
 						className='bookmark-item__title'
 						title={itemInfo.title}
-						onClick={() => onClick && onClick(item)}>
+						onClick={() => onClick && onClick(bookmark)}>
 						{itemInfo.title}
 					</p>
 				</div>

@@ -24,6 +24,7 @@ import {
 	getErrorEventTreeNode,
 	isRootEvent,
 	unknownRoot,
+	isUnknownRoot,
 } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import notificationsStore from '../NotificationsStore';
@@ -35,12 +36,14 @@ import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
 import { getItemAt } from '../../helpers/array';
 import { timestampToNumber } from '../../helpers/date';
+import BooksStore from '../BooksStore';
 import { SearchDirection } from '../../models/search/SearchDirection';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
 	filter: EventsFilter | null;
 	targetEventId?: string;
+	scope: string;
 }
 
 interface ChildrenData {
@@ -61,6 +64,7 @@ export default class EventsDataStore {
 	constructor(
 		private eventStore: EventsStore,
 		private filterStore: EventsFilterStore,
+		private booksStore: BooksStore,
 		private api: ApiSchema,
 	) {
 		reaction(() => this.targetNodePath, this.preloadSelectedPathChildren, {
@@ -77,7 +81,7 @@ export default class EventsDataStore {
 	@observable.ref
 	private eventTreeEventSource: EventsSSEChannel | null = null;
 
-	@observable
+	@observable.shallow
 	public eventsCache: Map<string, EventTreeNode> = new Map();
 
 	@observable
@@ -128,10 +132,12 @@ export default class EventsDataStore {
 	}
 
 	@action
-	public fetchEventTree = (options: FetchEventTreeOptions) => {
-		const { timeRange, filter, targetEventId } = options;
+	public fetchEventTree = async (options: FetchEventTreeOptions) => {
+		const { timeRange, filter, targetEventId, scope } = options;
 
-		this.resetEventsTreeState({ isLoading: true });
+		const bookId = this.booksStore.selectedBook.name;
+
+		this.resetEventsTreeState();
 
 		this.eventStore.selectedNode = null;
 		this.eventStore.selectedEvent = null;
@@ -153,6 +159,8 @@ export default class EventsDataStore {
 					sseParams: {
 						searchDirection: SearchDirection.Next,
 						limitForParent: this.CHILDREN_CHUNK_SIZE,
+						bookId,
+						scope,
 					},
 				},
 				{
@@ -270,24 +278,28 @@ export default class EventsDataStore {
 			notificationsStore.handleSSEError(e);
 		} else {
 			const errorId = nanoid();
-			notificationsStore.addMessage({
-				id: errorId,
-				notificationType: 'genericError',
-				header: 'Something went wrong while loading events',
-				type: 'error',
-				action: {
-					label: 'Refetch events',
-					callback: () => {
-						notificationsStore.deleteMessage(errorId);
-						this.fetchEventTree({
-							filter: this.filterStore.filter,
-							timeRange: this.filterStore.range,
-							targetEventId: this.eventStore.selectedNode?.eventId,
-						});
+			const scope = this.eventStore.scope;
+			if (scope) {
+				notificationsStore.addMessage({
+					id: errorId,
+					notificationType: 'genericError',
+					header: 'Something went wrong while loading events',
+					type: 'error',
+					action: {
+						label: 'Refetch events',
+						callback: () => {
+							notificationsStore.deleteMessage(errorId);
+							this.fetchEventTree({
+								filter: this.filterStore.filter,
+								timeRange: this.filterStore.range,
+								targetEventId: this.eventStore.selectedNode?.eventId,
+								scope,
+							});
+						},
 					},
-				},
-				description: `${e.type} occured. Try to refetch events.`,
-			});
+					description: `${e.type} occured. Try to refetch events.`,
+				});
+			}
 		}
 		this.resetEventsTreeState({ isError: true });
 	};
@@ -301,6 +313,8 @@ export default class EventsDataStore {
 	private parentNodesUpdateScheduler: number | null = null;
 
 	private onParentEventsLoadedSub: IReactionDisposer | null = null;
+
+	public eventIdsOutOfRange: string[] = [];
 
 	@action
 	private loadParentNodes = async (parentId: string, isTargetNodes = false) => {
@@ -340,6 +354,11 @@ export default class EventsDataStore {
 						{ probe: true },
 					);
 					if (!currentParentEvent) break;
+					if (
+						timestampToNumber(currentParentEvent.startTimestamp) < this.filterStore.timestampFrom
+					) {
+						this.eventIdsOutOfRange.push(currentParentEvent.eventId);
+					}
 					parentNode = convertEventActionToEventTreeNode(currentParentEvent);
 					parentNodes.unshift(parentNode);
 					currentParentId = parentNode.parentId;
@@ -465,7 +484,8 @@ export default class EventsDataStore {
 	public childrenAreUnknown: Map<string, boolean> = new Map();
 
 	@action
-	public loadNextChildren = (parentId: string) => {
+	public loadNextChildren = async (parentId: string) => {
+		if (!this.booksStore.selectedBook) return;
 		const childrenData = this.childrenData.get(parentId);
 		const resumeFromId = childrenData?.lastChild;
 
@@ -483,32 +503,38 @@ export default class EventsDataStore {
 			delete this.childrenLoaders[parentId];
 		}
 
-		const loader = new EventsSSEChannel(
-			{
-				timeRange: [this.filterStore.timestampFrom, this.filterStore.timestampTo],
-				filter: this.filterStore.filter,
-				sseParams: {
-					parentEvent: parentId,
-					resumeFromId,
-					resultCountLimit: this.CHILDREN_CHUNK_SIZE,
-					searchDirection: 'next',
+		const parentNode = this.eventsCache.get(parentId);
+
+		if (parentNode) {
+			const loader = new EventsSSEChannel(
+				{
+					timeRange: [this.filterStore.timestampFrom, this.filterStore.timestampTo],
+					filter: this.filterStore.filter,
+					sseParams: {
+						parentEvent: parentId,
+						resumeFromId,
+						resultCountLimit: this.CHILDREN_CHUNK_SIZE,
+						searchDirection: 'next',
+						bookId: this.booksStore.selectedBook.name,
+						scope: this.eventStore.scope!,
+					},
 				},
-			},
-			{
-				onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
-				onError: this.onEventTreeFetchError,
-				onClose: events => this.onEventChildrenLoadEnd(events, parentId),
-			},
-			{
-				chunkSize: this.CHILDREN_CHUNK_SIZE,
-			},
-		);
+				{
+					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
+					onError: this.onEventTreeFetchError,
+					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
+				},
+				{
+					chunkSize: this.CHILDREN_CHUNK_SIZE,
+				},
+			);
 
-		this.childrenLoaders[parentId] = {
-			loader,
-		};
+			this.childrenLoaders[parentId] = {
+				loader,
+			};
 
-		this.childrenLoaders[parentId].loader.subscribe();
+			this.childrenLoaders[parentId].loader.subscribe();
+		}
 	};
 
 	@action
@@ -578,7 +604,6 @@ export default class EventsDataStore {
 				this.targetEventAC = new AbortController();
 				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
 				const targetEventTimestamp = timestampToNumber(event.startTimestamp);
-				// TODO: add filtering too see if target event matches current filter
 				if (
 					targetEventTimestamp < this.filterStore.timestampFrom ||
 					targetEventTimestamp > this.filterStore.timestampTo
@@ -670,11 +695,9 @@ export default class EventsDataStore {
 	};
 
 	@action
-	public resetEventsTreeState = (
-		initialState: Partial<{ isError: boolean; isLoading: boolean }> = {},
-	) => {
+	public resetEventsTreeState = (initialState: Partial<{ isError: boolean }> = {}) => {
 		this.stopCurrentRequests();
-		const { isError = false, isLoading = false } = initialState;
+		const { isError = false } = initialState;
 
 		this.isError = isError;
 
@@ -691,6 +714,7 @@ export default class EventsDataStore {
 		this.parentsToLoad.clear();
 		this.childrenData.clear();
 		this.mainSourceEvents.clear();
+		this.eventIdsOutOfRange = [];
 	};
 
 	private isPreloadingTargetEventsChildren: Map<string, boolean> = new Map();
@@ -699,6 +723,9 @@ export default class EventsDataStore {
 		if (selectedPath) {
 			selectedPath
 				.filter(eventId => {
+					if (isUnknownRoot(eventId)) {
+						return false;
+					}
 					const loadedChildren = this.parentChildrensMap.get(eventId);
 					return !loadedChildren || loadedChildren.length < this.CHILDREN_CHUNK_SIZE;
 				})
@@ -711,8 +738,18 @@ export default class EventsDataStore {
 		}
 	};
 
+	public onScopeChange = (scope: string | null) => {
+		if (scope) {
+			this.fetchEventTree({
+				filter: this.filterStore.filter,
+				timeRange: this.filterStore.range,
+				scope,
+			});
+		}
+	};
+
 	public findLastEvents = () => {
-		this.resetEventsTreeState({ isLoading: true });
+		this.resetEventsTreeState();
 
 		this.eventTreeEventSource = new EventsSSEChannel(
 			{
@@ -721,6 +758,8 @@ export default class EventsDataStore {
 				sseParams: {
 					searchDirection: SearchDirection.Previous,
 					resultCountLimit: 1,
+					bookId: this.booksStore.selectedBook.name,
+					scope: this.eventStore.scope!,
 				},
 			},
 			{

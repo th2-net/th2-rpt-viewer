@@ -16,8 +16,6 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
 import { GraphItem, PanelRange } from '../../models/Graph';
 import { sortByTimestamp } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
@@ -36,8 +34,8 @@ interface OverlayPanelProps {
 	range: TimeRange;
 	panelsRange: Array<PanelRange>;
 	graphItems: GraphItem[];
-	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
-	goToGraphItem: (item: EventTreeNode | EventMessage) => void;
+	onGraphItemClick: (item: GraphItem) => void;
+	goToGraphItem: (item: GraphItem) => void;
 	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 	onPanelRangeSelect: (panelRange: TimeRange) => void;
 }

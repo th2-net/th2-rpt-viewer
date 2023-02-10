@@ -26,6 +26,7 @@ import {
 } from '../../../hooks';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
+import { useBooksStore } from '../../../hooks/useBooksStore';
 import '../../../styles/messages.scss';
 
 export interface OwnProps {
@@ -46,6 +47,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const messagesDataStore = useMessagesDataStore();
 	const bookmarksStore = useBookmarksStore();
 	const { sortOrderItems } = useMessageBodySortStore();
+	const booksStore = useBooksStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
@@ -108,8 +110,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	).get();
 
 	const toogleMessagePin = React.useCallback(() => {
-		bookmarksStore.toggleMessagePin(message);
-	}, [bookmarksStore.toggleMessagePin]);
+		bookmarksStore.toggleMessagePin(message, booksStore.selectedBook.name);
+	}, [bookmarksStore.toggleMessagePin, booksStore.selectedBook]);
 
 	const addMessagesToExport = React.useCallback(
 		() => messagesStore.exportStore.addMessageToExport(message),

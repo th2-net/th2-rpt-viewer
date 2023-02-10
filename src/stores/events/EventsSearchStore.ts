@@ -26,6 +26,10 @@ import { nextCyclicItemByIndex } from '../../helpers/array';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { EventTreeNode } from '../../models/EventAction';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
+import BooksStore from '../BooksStore';
+import { SearchDirection } from '../../models/search/SearchDirection';
+import { notEmpty } from '../../helpers/object';
+import { sortEventsByTimestamp } from '../../helpers/event';
 
 const defaultState = {
 	tokens: [],
@@ -44,6 +48,7 @@ export default class EventsSearchStore {
 	constructor(
 		private api: ApiSchema,
 		private eventsStore: EventsStore,
+		private booksStore: BooksStore,
 		initialState?: initialState,
 	) {
 		this.init(initialState);
@@ -85,15 +90,11 @@ export default class EventsSearchStore {
 
 	@action
 	updateTokens = (nextTokens: SearchToken[]) => {
-		if (
-			nextTokens.some(
-				nextToken => !this.tokens.map(t => t.pattern.trim()).includes(nextToken.pattern.trim()),
-			)
-		) {
-			this.onSearchTokensUpdate(nextTokens);
-		}
+		this.onSearchTokensUpdate(nextTokens);
 
-		this.tokens = nextTokens;
+		this.tokens = nextTokens.filter(
+			(token, index, tokens) => tokens.findIndex(t => t.pattern === token.pattern) === index,
+		);
 	};
 
 	@action
@@ -119,6 +120,7 @@ export default class EventsSearchStore {
 	@action
 	clear = () => {
 		this.resetState();
+		this.tokens = [];
 	};
 
 	@action
@@ -170,7 +172,7 @@ export default class EventsSearchStore {
 	private worker: typeof SearchWorker | null = null;
 
 	@action
-	public fetchSearchResults = (searchTokens: SearchToken[]) => {
+	public fetchSearchResults = async (searchTokens: SearchToken[], bookId: string) => {
 		this.channel?.stop();
 		this.worker?.terminate();
 		this.rawResults = [];
@@ -180,7 +182,9 @@ export default class EventsSearchStore {
 			this.searchResultsUpdateReaction();
 		}
 
-		if (searchTokens.length === 0) return;
+		const scope = this.eventsStore.scope;
+
+		if (searchTokens.length === 0 || !scope) return;
 
 		this.isLoadingSearchResults = true;
 
@@ -188,7 +192,9 @@ export default class EventsSearchStore {
 			{
 				filter: this.getSearchFilter(searchTokens),
 				sseParams: {
-					searchDirection: 'next',
+					searchDirection: SearchDirection.Next,
+					bookId,
+					scope,
 				},
 				timeRange: this.eventsStore.filterStore.range,
 			},
@@ -232,9 +238,23 @@ export default class EventsSearchStore {
 
 	@action
 	private onSearchResultsUpdateWorker = (e: MessageEvent) => {
-		const { results, currentIndex } = e.data;
+		const { results: workerResults, currentIndex } = e.data;
+
+		const eventsOutOfRange = sortEventsByTimestamp(
+			this.eventsStore.eventDataStore.eventIdsOutOfRange
+				.map(eventId => this.eventsStore.eventDataStore.eventsCache.get(eventId))
+				.filter(notEmpty),
+		);
+
+		const results = eventsOutOfRange
+			.filter(event =>
+				this.tokens.some(t => event.eventName.toLowerCase().includes(t.pattern.toLowerCase())),
+			)
+			.map(event => event.eventId)
+			.slice();
+
 		this.scrolledIndex = currentIndex;
-		this.results = results;
+		this.results = [...results, ...workerResults];
 
 		this.isProccessingSearchResults = false;
 	};
@@ -273,7 +293,7 @@ export default class EventsSearchStore {
 		this.isProccessingSearchResults = Boolean(searchTokens.length);
 
 		if (searchTokens.length !== 0) {
-			this.debouncedFetchSearchResults(searchTokens);
+			this.debouncedFetchSearchResults(searchTokens, this.booksStore.selectedBook.name);
 		} else {
 			this.resetState();
 		}
@@ -283,7 +303,9 @@ export default class EventsSearchStore {
 
 	public onFilterChange = () => {
 		this.resetState();
-		this.fetchSearchResults(this.tokens);
+		if (this.booksStore.selectedBook) {
+			this.fetchSearchResults(this.tokens, this.booksStore.selectedBook.name);
+		}
 	};
 
 	private onSearchDataUpdate = debounce((rawResults: string[], nodes: EventTreeNode[]) => {

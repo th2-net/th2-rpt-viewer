@@ -14,9 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventTreeNode } from './EventAction';
+import { EventTreeNode, EventAction } from './EventAction';
 import { EventMessage } from './EventMessage';
 import { TimeRange } from './Timestamp';
+import { Bookmark } from './Bookmarks';
 
 export const intervalOptions = [15, 30, 60] as const;
 
@@ -49,7 +50,7 @@ export interface GraphGroup {
 	left: number;
 }
 
-export type GraphItem = EventMessage | EventTreeNode;
+export type GraphItem = EventMessage | EventTreeNode | EventAction | Bookmark;
 
 export enum GraphItemType {
 	ATTACHED_MESSAGE = 'attached-message',

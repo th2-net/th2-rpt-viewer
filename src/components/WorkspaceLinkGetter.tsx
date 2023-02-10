@@ -41,7 +41,10 @@ const WorkspaceLinkGetter = observer(() => {
 	function copyWorkspaceLink() {
 		const appState = rootStore.getAppState();
 		const params = appState
-			? new URLSearchParams({ workspaces: window.btoa(JSON.stringify(appState)) })
+			? new URLSearchParams({
+					workspaces: window.btoa(JSON.stringify(appState.workspaces)),
+					bookId: appState.bookId || '',
+			  })
 			: null;
 
 		if (params) {

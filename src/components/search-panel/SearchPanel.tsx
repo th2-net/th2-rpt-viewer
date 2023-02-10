@@ -21,8 +21,11 @@ import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
-import { BookmarkedItem } from '../../models/Bookmarks';
 import { isBookmark } from '../../helpers/bookmarks';
+import { EventsScopeProvider } from '../../contexts/eventsScopeProvider';
+import { SearchHistory } from '../../stores/SearchStore';
+import { ActionType } from '../../models/EventAction';
+import { BookmarkedItem } from '../../models/Bookmarks';
 import '../../styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';
@@ -34,14 +37,23 @@ const SearchPanel = () => {
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const onResultItemClick = React.useCallback(
-		(bookmark: BookmarkedItem) => {
+		(bookmark: BookmarkedItem, search: SearchHistory) => {
+			const bookId = search.bookId;
+			const scope = search.request.scope;
 			if (isBookmark(bookmark)) {
-				searchWorkspace.onSearchResultItemSelect(bookmark.item);
+				searchWorkspace.onSearchResultItemSelect(bookmark.item, bookId, scope);
 			} else {
-				searchWorkspace.onSearchResultItemSelect(bookmark);
+				searchWorkspace.onSearchResultItemSelect(bookmark, bookId, scope);
 			}
 		},
 		[searchWorkspace.onSearchResultItemSelect],
+	);
+
+	const onResultGroupClick = React.useCallback(
+		(timestamp: number, resultType: ActionType, search: SearchHistory) => {
+			searchWorkspace.followByTimestamp(timestamp, resultType, search.request.scope);
+		},
+		[searchWorkspace.followByTimestamp],
 	);
 
 	return (
@@ -50,29 +62,35 @@ const SearchPanel = () => {
 				<SearchPanelForm />
 			</div>
 			{searchStore.currentSearch && (
-				<SearchPanelResults
-					resultGroups={searchStore.sortedResultGroups}
-					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={onResultItemClick}
-					onResultGroupClick={searchWorkspace.followByTimestamp}
-					onResultDelete={() => {
-						if (searchStore.currentSearch) {
-							searchStore.deleteHistoryItem(searchStore.currentSearch);
+				<EventsScopeProvider scope={searchStore.currentSearch.request.scope || ''}>
+					<SearchPanelResults
+						resultGroups={searchStore.sortedResultGroups}
+						timestamp={searchStore.currentSearch.timestamp}
+						onResultItemClick={(bookmark: BookmarkedItem) =>
+							onResultItemClick(bookmark, searchStore.currentSearch!)
 						}
-					}}
-					next={searchStore.nextSearch}
-					prev={searchStore.prevSearch}
-					currentIndex={searchStore.currentIndex}
-					searchHistoryLength={searchStore.searchHistory.length}
-					disableNext={
-						searchStore.isSearching ||
-						searchStore.currentIndex === searchStore.searchHistory.length - 1
-					}
-					disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
-					disabledRemove={searchStore.isSearching}
-					showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
-					loadMore={() => searchStore.startSearch(true)}
-				/>
+						onResultGroupClick={(timestamp, resultType) =>
+							onResultGroupClick(timestamp, resultType, searchStore.currentSearch!)
+						}
+						onResultDelete={() => {
+							if (searchStore.currentSearch) {
+								searchStore.deleteHistoryItem(searchStore.currentSearch);
+							}
+						}}
+						next={searchStore.nextSearch}
+						prev={searchStore.prevSearch}
+						disableNext={
+							searchStore.isSearching ||
+							searchStore.currentIndex === searchStore.searchHistory.length - 1
+						}
+						disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
+						disabledRemove={searchStore.isSearching}
+						showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
+						loadMore={() => searchStore.startSearch(true)}
+						currentIndex={searchStore.currentIndex}
+						searchHistoryLength={searchStore.searchHistory.length}
+					/>
+				</EventsScopeProvider>
 			)}
 		</div>
 	);

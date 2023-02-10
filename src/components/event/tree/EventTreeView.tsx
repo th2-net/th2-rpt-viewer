@@ -24,6 +24,7 @@ import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks'
 import EventDetailInfoCard from '../EventDetailInfoCard';
 import EventWindowHeader from '../EventWindowHeader';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
+import { EventsScopeProvider } from '../../../contexts/eventsScopeProvider';
 
 function EventTreeView() {
 	const eventsStore = useWorkspaceEventStore();
@@ -43,21 +44,25 @@ function EventTreeView() {
 				<EventList />
 			</SplitViewPane>
 			<SplitViewPane>
-				{isError ? (
-					<Empty description='Error occured while loading event' />
-				) : !eventsStore.selectedNode ? (
-					<Empty description='Select event' />
-				) : null}
-				{!isError && eventsStore.selectedNode && (
-					<EventDetailInfoCard
-						node={eventsStore.selectedNode}
-						event={eventsStore.selectedEvent}
-						eventTreeNode={eventsStore.selectedNode}
-						childrenCount={
-							(eventsDataStore.parentChildrensMap.get(eventsStore.selectedNode.eventId) || [])
-								.length
-						}
-					/>
+				{eventsStore.selectedNode === null &&
+					!eventsDataStore.isLoadingSelectedEvent &&
+					(!isError ? (
+						<Empty description='Select event' />
+					) : (
+						<Empty description='Error occured while loading event' />
+					))}
+				{!isError && eventsStore.selectedNode && eventsStore.scope && (
+					<EventsScopeProvider scope={eventsStore.scope}>
+						<EventDetailInfoCard
+							node={eventsStore.selectedNode}
+							event={eventsStore.selectedEvent}
+							eventTreeNode={eventsStore.selectedNode}
+							childrenCount={
+								(eventsDataStore.parentChildrensMap.get(eventsStore.selectedNode.eventId) || [])
+									.length
+							}
+						/>
+					</EventsScopeProvider>
 				)}
 			</SplitViewPane>
 		</SplitView>

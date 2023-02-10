@@ -38,7 +38,9 @@ interface AutocompleteListProps {
 export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteListProps>(
 	(props, ref) => {
 		const { items, value, anchor, onSelect, className, minWidth = 250, alwaysShow = false } = props;
+
 		const [isOpen, setIsOpen] = React.useState(alwaysShow);
+
 		const [focusedOption, setFocusedOption] = React.useState<string | null>(null);
 
 		const rootRef = React.useRef<HTMLDivElement>(null);
@@ -52,7 +54,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 
 		React.useLayoutEffect(() => {
 			adjustAutocompleteListPosition(anchor);
-		}, [anchor, isOpen]);
+		}, [anchor, isOpen, alwaysShow]);
 
 		React.useEffect(() => {
 			if (anchor) {
@@ -115,6 +117,13 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 			[list],
 		);
 
+		const handleSelect = React.useCallback(
+			(item: string) => {
+				onSelect?.(item);
+			},
+			[onSelect],
+		);
+
 		const handleKeyDown = React.useCallback(
 			(event: KeyboardEvent) => {
 				if (event.keyCode === KeyCodes.UP) {
@@ -147,8 +156,12 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 						handleSelect(focusedOption);
 					}
 				}
+
+				if (event.keyCode === KeyCodes.ESCAPE) {
+					setIsOpen(false);
+				}
 			},
-			[focusedOption, setFocusedOption, isOpen, list, scrollToOption],
+			[focusedOption, setFocusedOption, isOpen, list, scrollToOption, handleSelect],
 		);
 
 		React.useEffect(() => {
@@ -161,10 +174,10 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		}, [handleKeyDown]);
 
 		React.useEffect(() => {
-			const showAutocomplete = Boolean(alwaysShow || (anchor && value));
+			const showAutocomplete = Boolean(alwaysShow || (anchor && list.length));
 
 			toggleAutocompleteList(showAutocomplete);
-		}, [value, list, focusedOption, anchor]);
+		}, [value, list, focusedOption, anchor, alwaysShow]);
 
 		function toggleAutocompleteList(showAutocomplete: boolean) {
 			if (showAutocomplete) {
@@ -200,15 +213,12 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 			}
 		}, [isOpen]);
 
-		function handleSelect(item: string) {
-			onSelect?.(item);
-		}
-
 		const renderAutocompleteOption = React.useCallback(
 			(index: number) => {
 				const option = list[index];
 				return (
 					<div
+						title={option}
 						className={createBemElement(
 							'autocomplete-list',
 							'option',
@@ -219,7 +229,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 					</div>
 				);
 			},
-			[list, focusedOption],
+			[list, focusedOption, handleSelect],
 		);
 
 		const listHeight = Math.min(
@@ -235,9 +245,10 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 						isOpen ? 'opened' : 'closed',
 						className || null,
 					)}
-					style={{ height: `${listHeight}px`, zIndex: 1000 }}
+					style={{ zIndex: 1000, height: `${listHeight}px` }}
 					ref={rootRef}>
 					<Virtuoso
+						style={{ height: `${listHeight}px` }}
 						ref={virtuosoRef}
 						totalCount={list.length}
 						overscan={0}

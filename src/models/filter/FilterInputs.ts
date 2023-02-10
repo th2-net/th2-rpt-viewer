@@ -20,7 +20,8 @@ export type FitlerRowItem =
 	| FilterRowStringConfig
 	| FilterRowMultipleStringsConfig
 	| FilterRowTogglerConfig
-	| FilterRowSwitcherConfig;
+	| FilterRowSwitcherConfig
+	| FilterRowSelectConfig;
 
 export type CompoundFilterRow = Array<FitlerRowItem>;
 
@@ -95,6 +96,16 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	setValue: (nextValue: string) => void;
 	labelClassName?: string;
 	autocompleteList?: string[];
+	hint?: string;
+};
+
+export type FilterRowSelectConfig = FilterRowBaseConfig & {
+	type: 'select';
+	options: string[];
+	className?: string;
+	value: string;
+	setValue: (nextValue: string) => void;
+	labelClassName?: string;
 	hint?: string;
 };
 

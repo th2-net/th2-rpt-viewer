@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import throttle from 'lodash.throttle';
 import { observer } from 'mobx-react-lite';
 import { EventStatus, eventStatusValues, StatusType } from '../../../models/Status';
 import { createStyleSelector } from '../../../helpers/styleCreators';
@@ -27,6 +26,7 @@ import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { VerificationPayload, VerificationPayloadField } from '../../../models/EventActionPayload';
 import '../../../styles/tables.scss';
 import Popover from '../../util/Popover';
+import { ColumnSeparator } from './ColumnSeparator';
 
 const PADDING_LEVEL_VALUE = 10;
 
@@ -63,6 +63,8 @@ interface State {
 	prevColumns: Array<React.RefObject<HTMLTableHeaderCellElement>>;
 	nextColumns: Array<React.RefObject<HTMLTableHeaderCellElement>>;
 	tooltip: Tooltip;
+	columnWidth: number[];
+	columnMinWidth: number[];
 }
 
 interface Tooltip {
@@ -77,9 +79,9 @@ export interface TableNode extends VerificationPayloadField {
 	name: string;
 }
 
-class VerificationTableBase extends React.Component<Props, State> {
-	state: State = {
-		nodes: this.props.nodes,
+const VerificationTableBase = (props: Props) => {
+	const [state, setState] = React.useState<State>({
+		nodes: props.nodes,
 		prevColumns: [],
 		nextColumns: [],
 		tooltip: {
@@ -87,17 +89,19 @@ class VerificationTableBase extends React.Component<Props, State> {
 			message: '',
 			isOpen: false,
 		},
-	};
+		columnWidth: [130, 125, 125, 60, 80, 50, 70],
+		columnMinWidth: [130, 125, 125, 60, 80, 50, 70],
+	});
 
-	columnsRefs: Array<React.RefObject<HTMLTableHeaderCellElement>> = Array(7)
+	const columnsRefs: Array<React.RefObject<HTMLTableHeaderCellElement>> = Array(7)
 		.fill(null)
 		.map(() => React.createRef());
 
-	rootRef = React.createRef<HTMLDivElement>();
+	const rootRef = React.createRef<HTMLDivElement>();
 
-	resizeObserver: ResizeObserver | null = null;
+	const [resizeObserver, setResizeObserver] = React.useState<ResizeObserver | null>(null);
 
-	findNode(node: TableNode, targetNode: TableNode): TableNode {
+	const findNode = (node: TableNode, targetNode: TableNode): TableNode => {
 		if (node === targetNode) {
 			return {
 				...targetNode,
@@ -107,70 +111,74 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 		return {
 			...node,
-			subEntries:
-				node.subEntries && node.subEntries.map(subNode => this.findNode(subNode, targetNode)),
+			subEntries: node.subEntries && node.subEntries.map(subNode => findNode(subNode, targetNode)),
 		};
-	}
+	};
 
-	setExpandStatus(isCollapsed: boolean) {
-		this.setState({
-			nodes: this.state.nodes.map(node =>
-				node.subEntries ? this.setNodeExpandStatus(node, isCollapsed) : node,
+	const setExpandStatus = (isCollapsed: boolean) => {
+		setState({
+			...state,
+			nodes: state.nodes.map(node =>
+				node.subEntries ? setNodeExpandStatus(node, isCollapsed) : node,
 			),
 		});
-	}
+	};
 
-	setNodeExpandStatus(node: TableNode, isExpanded: boolean): TableNode {
+	const setNodeExpandStatus = (node: TableNode, isExpanded: boolean): TableNode => {
 		return {
 			...node,
 			isExpanded,
 			subEntries:
 				node.subEntries &&
 				node.subEntries.map(subNode =>
-					subNode.subEntries ? this.setNodeExpandStatus(subNode, isExpanded) : subNode,
+					subNode.subEntries ? setNodeExpandStatus(subNode, isExpanded) : subNode,
 				),
 		};
-	}
+	};
 
-	componentDidMount() {
-		this.getHiddenColumns();
+	React.useEffect(() => {
+		getHiddenColumns();
 
-		this.resizeObserver = new ResizeObserver(() => this.getHiddenColumns());
-		this.resizeObserver.observe(this.rootRef.current as HTMLDivElement);
-	}
+		setResizeObserver(new ResizeObserver(() => getHiddenColumns()));
+		if (resizeObserver) resizeObserver.observe(rootRef.current as HTMLDivElement);
 
-	componentDidUpdate(prevProps: Props) {
-		if (this.props.expandPath !== prevProps.expandPath && this.props.expandPath.length > 0) {
-			this.setState({
-				nodes: this.updateExpandPath(this.props.expandPath, this.state.nodes),
+		return () => {
+			props.stateSaver(state.nodes);
+			resizeObserver?.unobserve(rootRef.current as HTMLDivElement);
+		};
+	}, []);
+
+	React.useEffect(() => {
+		if (props.expandPath.length > 0) {
+			setState({
+				...state,
+				nodes: updateExpandPath(props.expandPath, state.nodes),
 			});
 		}
-	}
+	}, [props.expandPath]);
 
-	componentWillUnmount() {
-		this.props.stateSaver(this.state.nodes);
-		this.resizeObserver?.unobserve(this.rootRef.current as HTMLDivElement);
-	}
-
-	updateExpandPath([currentIndex, ...expandPath]: number[], prevState: TableNode[]): TableNode[] {
+	const updateExpandPath = (
+		[currentIndex, ...expandPath]: number[],
+		prevState: TableNode[],
+	): TableNode[] => {
 		return prevState.map(
 			(node, index): TableNode =>
 				index === currentIndex
 					? {
 							...node,
 							isExpanded: true,
-							subEntries: node.subEntries && this.updateExpandPath(expandPath, node.subEntries),
+							subEntries: node.subEntries && updateExpandPath(expandPath, node.subEntries),
 					  }
 					: node,
 		);
-	}
+	};
 
-	getHiddenColumns = () => {
-		if (!this.rootRef.current) return;
-		const { left, right } = this.rootRef.current.getBoundingClientRect();
+	const getHiddenColumns = () => {
+		if (!rootRef.current) return;
+		const { left, right } = rootRef.current.getBoundingClientRect();
 		const prevColumns: Array<React.RefObject<HTMLTableHeaderCellElement>> = [];
 		const nextColumns: Array<React.RefObject<HTMLTableHeaderCellElement>> = [];
-		this.columnsRefs.forEach(col => {
+		columnsRefs.forEach(col => {
 			if (!col.current) return 0;
 			const rect = col.current?.getBoundingClientRect();
 			const isVisible = left <= rect.left && rect.left + rect.width * 0.9 <= right;
@@ -183,131 +191,46 @@ class VerificationTableBase extends React.Component<Props, State> {
 			}
 			return 0;
 		});
-		this.setState({ prevColumns, nextColumns });
+		setState({ ...state, prevColumns, nextColumns });
 	};
 
-	throttledGetHiddenColumns = throttle(this.getHiddenColumns, 20);
-
-	onNextColumnCick = () => {
-		const nextColumn = this.state.nextColumns[0]?.current;
-		if (!nextColumn || !this.rootRef.current) return;
-		const { left, width } = this.rootRef.current.getBoundingClientRect();
+	const onNextColumnCick = () => {
+		const nextColumn = state.nextColumns[0]?.current;
+		if (!nextColumn || !rootRef.current) return;
+		const { left, width } = rootRef.current.getBoundingClientRect();
 		const columnRect = nextColumn.getBoundingClientRect();
-		this.rootRef.current.scrollLeft =
-			columnRect.left + columnRect.width - left - width + this.rootRef.current.scrollLeft;
-		this.getHiddenColumns();
+		rootRef.current.scrollLeft =
+			columnRect.left + columnRect.width - left - width + rootRef.current.scrollLeft;
+		getHiddenColumns();
 	};
 
-	onPrevColumnClick = () => {
-		const prevColumn = this.state.prevColumns[this.state.prevColumns.length - 1]?.current;
-		const rootRef = this.rootRef.current;
-		if (!prevColumn || !rootRef) return;
-		const { left } = rootRef.getBoundingClientRect();
+	const onPrevColumnClick = () => {
+		const prevColumn = state.prevColumns[state.prevColumns.length - 1]?.current;
+		const rootRefCurrent = rootRef.current;
+		if (!prevColumn || !rootRefCurrent || !!rootRef) return;
+		const { left } = rootRefCurrent.getBoundingClientRect();
 		const columnRect = prevColumn.getBoundingClientRect();
-		rootRef.scrollLeft = rootRef?.scrollLeft - (left - columnRect.left);
-		this.getHiddenColumns();
+		rootRefCurrent.scrollLeft = rootRefCurrent?.scrollLeft - (left - columnRect.left);
+		getHiddenColumns();
 	};
 
-	render() {
-		const { status, keyPrefix, precision } = this.props;
-		const { nodes, tooltip } = this.state;
+	const changeWidth = (index: number, value: number) => {
+		setState({
+			...state,
+			columnWidth: [
+				...state.columnWidth.slice(0, index),
+				Math.max(state.columnWidth[index] + value, state.columnMinWidth[index]),
+				...state.columnWidth.slice(index + 1),
+			],
+		});
+	};
 
-		const rootClass = createStyleSelector('ver-table', status);
-
-		if (!nodes.length) return null;
-		return (
-			<div className={rootClass}>
-				<div className='ver-table__nav'>
-					{this.state.prevColumns.length > 0 && (
-						<button
-							onClick={this.onPrevColumnClick}
-							className='ver-table__button'
-							style={{ gridArea: 'prev' }}>
-							<span className='ver-table__button-icon'>
-								<i className='ver-table__button-icon-prev'></i>
-							</span>
-							<span className='ver-table__button-label'>Previous</span>
-							<span className='ver-table__counter'>{this.state.prevColumns.length}</span>
-						</button>
-					)}
-					{this.state.nextColumns.length > 0 && (
-						<button
-							onClick={this.onNextColumnCick}
-							className='ver-table__button'
-							style={{ gridArea: 'next' }}>
-							<span className='ver-table__counter'>{this.state.nextColumns.length}</span>
-							<span className='ver-table__button-label'>Next</span>
-							<span className='ver-table__button-icon'>
-								<i className='ver-table__button-icon-next'></i>
-							</span>
-						</button>
-					)}
-				</div>
-				<div className='ver-table-header'>
-					<div className='ver-table-header-control'>
-						<span
-							className='ver-table-header-control-button'
-							onClick={this.onControlButtonClick(false)}>
-							Collapse
-						</span>
-						<span> | </span>
-						<span
-							className='ver-table-header-control-button'
-							onClick={this.onControlButtonClick(true)}>
-							Expand
-						</span>
-						<span> all groups</span>
-					</div>
-					<div className='ver-table-header-precision'>
-						<span className='ver-table-header-precision-value'>{precision}</span>
-					</div>
-				</div>
-				<div className='ver-table__wrapper' ref={this.rootRef} onScroll={this.getHiddenColumns}>
-					<table>
-						<thead>
-							<tr>
-								<th className='ver-table-flexible' ref={this.columnsRefs[0]}>
-									Name
-								</th>
-								<th className='ver-table-expected' ref={this.columnsRefs[1]}>
-									Expected
-								</th>
-								<th className='ver-table-actual' ref={this.columnsRefs[2]}>
-									Actual
-								</th>
-								<th className='ver-table-status' ref={this.columnsRefs[3]}>
-									Status
-								</th>
-								<th className='ver-table-operation' ref={this.columnsRefs[4]}>
-									Operation
-								</th>
-								<th className='ver-table-key' ref={this.columnsRefs[5]}>
-									Key
-								</th>
-								<th className='ver-table-hint' ref={this.columnsRefs[6]}>
-									Hint
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{nodes.map((param, index) => this.renderTableNodes(param, `${keyPrefix}-${index}`))}
-						</tbody>
-					</table>
-				</div>
-				{tooltip && (
-					<Popover
-						isOpen={tooltip.isOpen}
-						anchorEl={tooltip.target}
-						onClickOutside={() => this.hideTooltip()}>
-						<div className='ver-table__tooltip'>{tooltip.message}</div>
-					</Popover>
-				)}
-			</div>
-		);
-	}
-
-	private renderTableNodes(node: TableNode, key: string, paddingLevel = 1): React.ReactNodeArray {
-		if (node.status != null && !this.props.visibilityFilter.has(node.status as any)) {
+	const renderTableNodes = (
+		node: TableNode,
+		key: string,
+		paddingLevel = 1,
+	): React.ReactNodeArray => {
+		if (node.status != null && !props.visibilityFilter.has(node.status as any)) {
 			return [];
 		}
 
@@ -315,18 +238,18 @@ class VerificationTableBase extends React.Component<Props, State> {
 			const subNodes = node.isExpanded
 				? node.subEntries.reduce(
 						(list, n, index) =>
-							list.concat(this.renderTableNodes(n, `${key}-${index}`, paddingLevel + 1)),
+							list.concat(renderTableNodes(n, `${key}-${index}`, paddingLevel + 1)),
 						[] as React.ReactNodeArray,
 				  )
 				: [];
 
-			return [this.renderNode(node, paddingLevel, key), ...subNodes];
+			return [renderNode(node, paddingLevel, key), ...subNodes];
 		}
-		return [this.renderNode(node, paddingLevel, key)];
-	}
+		return [renderNode(node, paddingLevel, key)];
+	};
 
-	private renderNode(node: TableNode, paddingLevel: number, key: string): React.ReactNode {
-		const { transparencyFilter } = this.props;
+	const renderNode = (node: TableNode, paddingLevel: number, key: string): React.ReactNode => {
+		const { transparencyFilter } = props;
 		const {
 			name,
 			expected,
@@ -392,86 +315,91 @@ class VerificationTableBase extends React.Component<Props, State> {
 		return (
 			<tr className={rootClassName} key={key}>
 				{isToggler ? (
-					<td className={togglerClassName} onClick={this.onTogglerClick(node)}>
+					<td className={togglerClassName} onClick={onTogglerClick(node)}>
 						<p style={{ marginLeft: PADDING_LEVEL_VALUE * (paddingLevel - 1) }}>
-							{this.renderContent(`${key}-name`, name)}
+							{renderContent(`${key}-name`, name)}
 						</p>
 						<span className='ver-table-row-count'>{subEntries.length}</span>
 						<div className='ver-table-row-spacer' />
 						<div
-							onClick={e => hint && this.showTooltip(e, hint)}
+							onClick={e => hint && showTooltip(e, hint)}
 							title={hint}
 							className='ver-table-row-wrapper inner'>
-							{this.renderContent(`${key}-hint`, '', hintClassName)}
+							{renderContent(`${key}-hint`, '', hintClassName)}
 						</div>
 					</td>
 				) : (
-					<td
-						className={statusAlias.className}
-						style={{ paddingLeft: PADDING_LEVEL_VALUE * paddingLevel }}>
-						{this.renderContent(`${key}-name`, name)}
-					</td>
+					<>
+						<td
+							className={statusAlias.className}
+							style={{ paddingLeft: PADDING_LEVEL_VALUE * paddingLevel }}>
+							{renderContent(`${key}-name`, name)}
+						</td>
+						<ColumnSeparator index={0} onChange={changeWidth} isHeader={false} />
+					</>
 				)}
 				{!isToggler && (
 					<>
-						<td className={expectedClassName} onCopy={this.onCopyFor(expected)}>
+						<td className={expectedClassName} onCopy={onCopyFor(expected)}>
 							<div className='ver-table-row-wrapper'>
-								{this.renderContent(
+								{renderContent(
 									`${key}-expected`,
 									expected,
 									expectedValueClassName,
 									expectedReplaced,
 								)}
-								{isToggler ? null : this.renderContent(`${key}-expectedType`, '', typeClassName)}
+								{isToggler ? null : renderContent(`${key}-expectedType`, '', typeClassName)}
 							</div>
 						</td>
-						<td className={actualClassName} onCopy={this.onCopyFor(actual)}>
+						<ColumnSeparator index={1} onChange={changeWidth} isHeader={false} />
+						<td className={actualClassName} onCopy={onCopyFor(actual)}>
 							<div className='ver-table-row-wrapper'>
-								{this.renderContent(`${key}-actual`, actual, actualValueClassName, actualReplaced)}
-								{this.renderContent(`${key}-actualType`, '', typeClassName)}
+								{renderContent(`${key}-actual`, actual, actualValueClassName, actualReplaced)}
+								{renderContent(`${key}-actualType`, '', typeClassName)}
 							</div>
 						</td>
+						<ColumnSeparator index={2} onChange={changeWidth} isHeader={false} />
 						<td className={statusClassName}>
-							{this.renderContent(
-								`${key}-status`,
-								statusAlias.alias as string,
-								statusWrapperClassName,
-							)}
+							{renderContent(`${key}-status`, statusAlias.alias as string, statusWrapperClassName)}
 						</td>
-						<td className={actualClassName} onCopy={this.onCopyFor(operation)}>
+						<ColumnSeparator index={3} onChange={changeWidth} isHeader={false} />
+						<td className={actualClassName} onCopy={onCopyFor(operation)}>
 							<div className='ver-table-row-wrapper'>
-								{this.renderContent(`${key}-operation`, '', operationClassName, '', true)}
+								{renderContent(`${key}-operation`, '', operationClassName, '', true)}
 							</div>
 						</td>
+						<ColumnSeparator index={4} onChange={changeWidth} isHeader={false} />
 						<td className={statusClassName}>{keyField && <div className='ver-table__check' />}</td>
+						<ColumnSeparator index={5} onChange={changeWidth} isHeader={false} />
 						<td className={actualClassName}>
 							<div
-								onClick={e => hint && this.showTooltip(e, hint)}
+								onClick={e => hint && showTooltip(e, hint)}
 								title={hint}
 								className='ver-table-row-wrapper'>
-								{this.renderContent(`${key}-hint`, '', hintClassName)}
+								{renderContent(`${key}-hint`, '', hintClassName)}
 							</div>
 						</td>
+						<ColumnSeparator index={6} onChange={changeWidth} isHeader={false} />
 					</>
 				)}
 			</tr>
 		);
-	}
+	};
 
-	private hideTooltip(): void {
-		this.setState({
-			...this.state,
+	const hideTooltip = (): void => {
+		setState({
+			...state,
 			tooltip: {
 				target: null,
 				message: '',
 				isOpen: false,
 			},
 		});
-	}
+	};
 
-	private showTooltip(e: React.MouseEvent<HTMLDivElement>, message: string): void {
-		this.setState({
-			...this.state,
+	const showTooltip = (e: React.MouseEvent<HTMLDivElement>, message: string): void => {
+		setState({
+			...state,
 			tooltip: {
 				target: e.currentTarget,
 				message,
@@ -480,7 +408,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 		});
 
 		e.stopPropagation();
-	}
+	};
 
 	/**
 	 * We need this for optimization - render SearchableContent component
@@ -493,13 +421,13 @@ class VerificationTableBase extends React.Component<Props, State> {
 	 *     it's needed to render fake dots and squares instead of real non-printable characters
 	 * @param isEmpty - confirms the absence of content in the cells
 	 */
-	private renderContent(
+	const renderContent = (
 		contentKey: string,
 		content: string | null,
 		wrapperClassName: string | null = null,
 		fakeContent: string = content || '',
 		isEmpty: Boolean = false,
-	): React.ReactNode {
+	): React.ReactNode => {
 		if (content === null) {
 			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'null');
 		}
@@ -517,9 +445,9 @@ class VerificationTableBase extends React.Component<Props, State> {
 		function wrap(className: string | null, data: React.ReactNode): React.ReactNode {
 			return className == null ? data : <div className={className}>{data}</div>;
 		}
-	}
+	};
 
-	private onCopyFor = (realText: string) => (e: React.ClipboardEvent<HTMLDivElement>) => {
+	const onCopyFor = (realText: string) => (e: React.ClipboardEvent<HTMLDivElement>) => {
 		const selectionRange = window.getSelection()!.getRangeAt(0);
 		const copiedText = realText.substring(selectionRange.startOffset, selectionRange.endOffset);
 
@@ -527,20 +455,121 @@ class VerificationTableBase extends React.Component<Props, State> {
 		copyTextToClipboard(copiedText);
 	};
 
-	private onTogglerClick = (targetNode: TableNode) => (e: React.MouseEvent) => {
-		this.setState({
-			...this.state,
-			nodes: this.state.nodes.map(node => this.findNode(node, targetNode)),
+	const onTogglerClick = (targetNode: TableNode) => (e: React.MouseEvent) => {
+		setState({
+			...state,
+			nodes: state.nodes.map(node => findNode(node, targetNode)),
 		});
 
 		e.stopPropagation();
 	};
 
-	private onControlButtonClick = (expandStatus: boolean) => (e: React.MouseEvent) => {
-		this.setExpandStatus(expandStatus);
+	const onControlButtonClick = (expandStatus: boolean) => (e: React.MouseEvent) => {
+		setExpandStatus(expandStatus);
 		e.stopPropagation();
 	};
-}
+
+	const rootClass = createStyleSelector('ver-table', props.status);
+
+	if (!state.nodes.length) return null;
+	return (
+		<div className={rootClass}>
+			<div className='ver-table__nav'>
+				{state.prevColumns.length > 0 && (
+					<button
+						onClick={onPrevColumnClick}
+						className='ver-table__button'
+						style={{ gridArea: 'prev' }}>
+						<span className='ver-table__button-icon'>
+							<i className='ver-table__button-icon-prev'></i>
+						</span>
+						<span className='ver-table__button-label'>Previous</span>
+						<span className='ver-table__counter'>{state.prevColumns.length}</span>
+					</button>
+				)}
+				{state.nextColumns.length > 0 && (
+					<button
+						onClick={onNextColumnCick}
+						className='ver-table__button'
+						style={{ gridArea: 'next' }}>
+						<span className='ver-table__counter'>{state.nextColumns.length}</span>
+						<span className='ver-table__button-label'>Next</span>
+						<span className='ver-table__button-icon'>
+							<i className='ver-table__button-icon-next'></i>
+						</span>
+					</button>
+				)}
+			</div>
+			<div className='ver-table-header'>
+				<div className='ver-table-header-control'>
+					<span className='ver-table-header-control-button' onClick={onControlButtonClick(false)}>
+						Collapse
+					</span>
+					<span> | </span>
+					<span className='ver-table-header-control-button' onClick={onControlButtonClick(true)}>
+						Expand
+					</span>
+					<span> all groups</span>
+				</div>
+				<div className='ver-table-header-precision'>
+					<span className='ver-table-header-precision-value'>{props.precision}</span>
+				</div>
+			</div>
+			<div className='ver-table__wrapper' ref={rootRef} onScroll={getHiddenColumns}>
+				<table
+					style={{
+						gridTemplateColumns: state.columnWidth.map(val => `${val}px 2px`).join(' '),
+					}}>
+					<thead>
+						<tr>
+							<th className='ver-table-flexible' ref={columnsRefs[0]}>
+								Name
+							</th>
+							<ColumnSeparator index={0} onChange={changeWidth} isHeader={true} />
+							<th className='ver-table-expected' ref={columnsRefs[1]}>
+								Expected
+							</th>
+							<ColumnSeparator index={1} onChange={changeWidth} isHeader={true} />
+							<th className='ver-table-actual' ref={columnsRefs[2]}>
+								Actual
+							</th>
+							<ColumnSeparator index={2} onChange={changeWidth} isHeader={true} />
+							<th className='ver-table-status' ref={columnsRefs[3]}>
+								Status
+							</th>
+							<ColumnSeparator index={3} onChange={changeWidth} isHeader={true} />
+							<th className='ver-table-operation' ref={columnsRefs[4]}>
+								Operation
+							</th>
+							<ColumnSeparator index={4} onChange={changeWidth} isHeader={true} />
+							<th className='ver-table-key' ref={columnsRefs[5]}>
+								Key
+							</th>
+							<ColumnSeparator index={5} onChange={changeWidth} isHeader={true} />
+							<th className='ver-table-hint' ref={columnsRefs[6]}>
+								Hint
+							</th>
+							<ColumnSeparator index={6} onChange={changeWidth} isHeader={true} />
+						</tr>
+					</thead>
+					<tbody>
+						{state.nodes.map((param, index) =>
+							renderTableNodes(param, `${props.keyPrefix}-${index}`),
+						)}
+					</tbody>
+				</table>
+			</div>
+			{state.tooltip && (
+				<Popover
+					isOpen={state.tooltip.isOpen}
+					anchorEl={state.tooltip.target}
+					onClickOutside={() => hideTooltip()}>
+					<div className='ver-table__tooltip'>{state.tooltip.message}</div>
+				</Popover>
+			)}
+		</div>
+	);
+};
 
 export const RecoverableVerificationTable = ({ stateKey, ...props }: RecoveredProps) => (
 	// at first table render, we need to generate table nodes if we don't find previous table's state

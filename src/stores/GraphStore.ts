@@ -17,11 +17,12 @@
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventNode } from '../helpers/event';
+import { isEvent } from '../helpers/event';
 import { calculateTimeRange, getRangeCenter } from '../helpers/graph';
 import { Chunk, GraphItem, GraphItemType } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { SelectedStore } from './SelectedStore';
+import { isBookmark } from '../helpers/bookmarks';
 
 export class GraphStore {
 	constructor(
@@ -164,12 +165,13 @@ export class GraphStore {
 	};
 
 	public getGraphItemType = (item: GraphItem): GraphItemType => {
-		if (isEventNode(item)) {
+		if (isBookmark(item)) return this.getGraphItemType(item.item);
+		if (isEvent(item)) {
 			return item.eventId === this.selectedStore.hoveredEvent?.eventId
 				? item.successful
 					? GraphItemType.HOVERED_EVENT_PASSED
 					: GraphItemType.HOVERED_EVENT_FAILED
-				: this.selectedStore.savedItems.includes(item)
+				: this.selectedStore.savedItems.includes(item as any)
 				? item.successful
 					? GraphItemType.BOOKMARKED_PASSED
 					: GraphItemType.BOOKMARKED_FAILED
@@ -177,6 +179,7 @@ export class GraphStore {
 				? GraphItemType.PASSED
 				: GraphItemType.FAILED;
 		}
+
 		return item.messageId === this.selectedStore.hoveredMessage?.messageId
 			? GraphItemType.HOVERED_MESSAGE
 			: this.selectedStore.attachedMessages.findIndex(

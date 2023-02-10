@@ -58,9 +58,10 @@ const SessionEditor: React.FC<SessionEditorProps> = ({
 			}}
 			submitKeyCodes={[KeyCodes.ENTER]}
 			autoFocus={autofocus}
-			autoCompleteList={sessions}
+			autocompleteList={sessions}
 			autocompleteClassName='rules-autocomplete'
 			datalistKey='session-input'
+			closedOnClick={true}
 		/>
 	);
 };

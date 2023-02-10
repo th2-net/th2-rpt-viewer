@@ -19,6 +19,7 @@ import { IndexedDB } from './indexedDb';
 import eventHttpApi from './event';
 import messageHttpApi from './message';
 import sseApi from './sse';
+import booksHttpApi from './books';
 
 const envName =
 	process.env.NODE_ENV === 'development'
@@ -28,6 +29,7 @@ const envName =
 const api: ApiSchema = {
 	events: eventHttpApi,
 	messages: messageHttpApi,
+	books: booksHttpApi,
 	sse: sseApi,
 	indexedDb: new IndexedDB(envName),
 };

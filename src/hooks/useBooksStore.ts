@@ -11,15 +11,13 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
-// TODO: fix messages update store
+import { useRootStore } from '.';
 
-// import { useMessagesWorkspaceStore } from './useMessagesStore';
+export function useBooksStore() {
+	const rootStore = useRootStore();
 
-// export const useMessageUpdateStore = () => {
-// 	const messageStore = useMessagesWorkspaceStore();
-
-// 	return messageStore.messageUpdateStore;
-// };
+	return rootStore.bookStore;
+}

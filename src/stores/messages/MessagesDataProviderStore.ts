@@ -20,6 +20,7 @@ import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isAbortError } from '../../helpers/fetch';
 import { EventMessage } from '../../models/EventMessage';
+import BooksStore from '../BooksStore';
 import notificationsStore from '../NotificationsStore';
 import { MessageSSEEventListeners, MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
@@ -27,13 +28,21 @@ import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
+import { SearchDirection } from '../../models/search/SearchDirection';
 import { timestampToNumber } from '../../helpers/date';
+import { notEmpty } from '../../helpers/object';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore implements MessagesDataStore {
-	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
-		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
+	private readonly messagesLimit = 250;
+
+	constructor(
+		private messagesStore: MessagesStore,
+		private api: ApiSchema,
+		private booksStore: BooksStore,
+	) {
+		this.updateStore = new MessagesUpdateStore(this, this.messagesStore, booksStore);
 
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
 	}
@@ -114,6 +123,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	) => {
 		this.stopMessagesLoading();
 		this.resetState();
+		const bookId = this.booksStore.selectedBook.name;
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
@@ -122,7 +132,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.createPreviousMessageChannelEventSource(
 			{
 				...queryParams,
-				searchDirection: 'previous',
+				searchDirection: SearchDirection.Previous,
+				bookId,
 			},
 			FIFTEEN_SECONDS,
 			prevListeners,
@@ -130,7 +141,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
-				searchDirection: 'next',
+				searchDirection: SearchDirection.Next,
+				bookId,
 			},
 			FIFTEEN_SECONDS,
 			nextListeners,
@@ -149,10 +161,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		if (this.messagesStore.selectedMessageId) {
 			try {
 				if (
-					await this.api.messages.matchMessage(
-						this.messagesStore.selectedMessageId.valueOf(),
-						this.messagesStore.filterStore.filterParams,
-					)
+					await this.api.messages.matchMessage(this.messagesStore.selectedMessageId.valueOf(), {
+						...this.messagesStore.filterStore.filterParams,
+						bookId,
+					})
 				) {
 					this.messageAC = new AbortController();
 					message = await this.api.messages.getMessage(
@@ -172,13 +184,17 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		try {
 			this.messageAC = new AbortController();
-			messageIds = await this.api.messages.getResumptionMessageIds({
-				streams: queryParams.stream,
-				abortSignal: this.messageAC.signal,
-				...(this.messagesStore.selectedMessageId
-					? { messageId: this.messagesStore.selectedMessageId.valueOf() }
-					: { startTimestamp }),
-			});
+			messageIds = await this.api.messages.getResumptionMessageIds(
+				{
+					streams: queryParams.stream,
+					bookId,
+
+					...(this.messagesStore.selectedMessageId
+						? { messageId: this.messagesStore.selectedMessageId.valueOf() }
+						: { startTimestamp }),
+				},
+				this.messageAC.signal,
+			);
 		} catch (error) {
 			if (!isAbortError(error)) {
 				this.isError = true;
@@ -200,7 +216,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		]);
 
 		runInAction(() => {
-			this.messages = [...nextMessages, ...prevMessages];
+			this.messages = [...nextMessages, ...[message].filter(notEmpty), ...prevMessages].filter(
+				(msg, index, array) => index === array.findIndex(m => m.messageId === msg.messageId),
+			);
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
@@ -216,6 +234,25 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.searchChannelNext?.stop();
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
+	};
+
+	private getMessagesIds = async (bookId: string, stream: string, dir: SearchDirection) => {
+		this.messageAC = new AbortController();
+
+		const messages =
+			dir === SearchDirection.Next ? this.sortedMessages : this.sortedMessages.slice().reverse();
+
+		const lastMessage = messages.find(msg => msg.sessionId === stream);
+		return this.api.messages.getResumptionMessageIds(
+			{
+				streams: [stream],
+				bookId,
+				...(lastMessage
+					? { messageId: lastMessage?.messageId }
+					: { startTimestamp: this.messagesStore.filterStore.filterParams.startTimestamp }),
+			},
+			this.messageAC.signal,
+		);
 	};
 
 	@action
@@ -251,13 +288,17 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		requestTimeoutMs?: number,
 		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
-		this.searchChannelPrev = new MessagesSSEChannel(query, {
-			onResponse: this.onPrevChannelResponse,
-			onError: this.onLoadingError,
-			onKeepAliveResponse: heartbeat =>
-				this.onKeepAliveMessagePrevious(heartbeat, requestTimeoutMs),
-			...listeners,
-		});
+		this.searchChannelPrev = new MessagesSSEChannel(
+			query,
+			{
+				onResponse: this.onPrevChannelResponse,
+				onError: this.onLoadingError,
+				onKeepAliveResponse: heartbeat =>
+					this.onKeepAliveMessagePrevious(heartbeat, requestTimeoutMs),
+				...listeners,
+			},
+			this.getMessagesIds,
+		);
 	};
 
 	@action
@@ -286,18 +327,23 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	@action
 	public onPrevChannelResponse = (messages: EventMessage[]) => {
 		this.lastPreviousChannelResponseTimestamp = null;
-		const firstPrevMessage = messages[0];
+
+		const prevMessages = messages.filter(
+			message => !this.messages.find(msg => msg.messageId === message.messageId),
+		);
+
+		const firstPrevMessage = prevMessages[0];
 
 		if (
 			firstPrevMessage &&
 			firstPrevMessage.messageId === this.messages[this.messages.length - 1]?.messageId
 		) {
-			messages.shift();
+			prevMessages.shift();
 		}
 
 		if (messages.length) {
-			this.startIndex += messages.length;
-			this.messages = [...this.messages, ...messages];
+			this.startIndex += prevMessages.length;
+			this.messages = [...this.messages, ...prevMessages];
 		}
 	};
 
@@ -307,12 +353,16 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		requestTimeoutMs?: number,
 		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
-		this.searchChannelNext = new MessagesSSEChannel(query, {
-			onResponse: this.onNextChannelResponse,
-			onError: this.onLoadingError,
-			onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat, requestTimeoutMs),
-			...listeners,
-		});
+		this.searchChannelNext = new MessagesSSEChannel(
+			query,
+			{
+				onResponse: this.onNextChannelResponse,
+				onError: this.onLoadingError,
+				onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat, requestTimeoutMs),
+				...listeners,
+			},
+			this.getMessagesIds,
+		);
 	};
 
 	@action
@@ -421,7 +471,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@action
-	public keepLoading = (direction: 'next' | 'previous') => {
+	public keepLoading = async (direction: SearchDirection) => {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
@@ -433,7 +483,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			throw new Error('Load could not continue because loadHeartbeat is missing');
 
 		const keepLoadingStartTimestamp =
-			direction === 'previous'
+			direction === SearchDirection.Previous
 				? this.prevLoadHeartbeat!.timestamp
 				: this.nextLoadHeartbeat!.timestamp;
 
@@ -449,7 +499,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			this.nextLoadHeartbeat = defaultHearbeat;
 		}
 
-		if (direction === 'previous') {
+		if (direction === SearchDirection.Previous) {
 			this.noMatchingMessagesPrev = false;
 			const idsMap = this.messages
 				.slice(Math.max(0, this.messages.length - 20))
@@ -476,6 +526,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	@action
 	public matchMessage = async (messageId: string, abortSignal: AbortSignal) => {
+		const bookId = this.booksStore.selectedBook.name;
 		if (this.isSoftFiltered.get(messageId) !== undefined) return;
 		this.isMatchingMessages.set(messageId, true);
 
@@ -485,7 +536,11 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				searchDirection,
 				...filterParams
 			} = this.messagesStore.filterStore.filterParams;
-			const isMatch = await this.api.messages.matchMessage(messageId, filterParams, abortSignal);
+			const isMatch = await this.api.messages.matchMessage(
+				messageId,
+				{ ...filterParams, bookId },
+				abortSignal,
+			);
 
 			runInAction(() => {
 				this.isSoftFiltered.set(messageId, isMatch);

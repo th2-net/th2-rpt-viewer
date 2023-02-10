@@ -16,16 +16,15 @@
 
 import React, { useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useOutsideClickListener } from '../../hooks';
+import { useOutsideClickListener, useSessionsStore } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
 import RulesList from './RulesList';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import BodySortConfig from './BodySortConfig';
-import { useSearchStore } from '../../hooks/useSearchStore';
 import '../../styles/messages-view-configurator.scss';
 
 const MessageViewConfigurator = () => {
-	const searchStore = useSearchStore();
+	const sessionsStore = useSessionsStore();
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');
@@ -33,13 +32,17 @@ const MessageViewConfigurator = () => {
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 
-	useOutsideClickListener(modalRef, (e: MouseEvent) => {
-		const isFromAutocomplete = Boolean((e.target as HTMLElement).closest('.rules-autocomplete'));
-		const isFromSelect = Boolean((e.target as HTMLElement).closest('.rules-select-options-list'));
-		if (e.target !== buttonRef.current && !isFromAutocomplete && !isFromSelect) {
-			setIsOpen(false);
-		}
-	});
+	useOutsideClickListener(
+		modalRef,
+		(e: MouseEvent) => {
+			const isFromAutocomplete = Boolean((e.target as HTMLElement).closest('.rules-autocomplete'));
+			const isFromSelect = Boolean((e.target as HTMLElement).closest('.rules-select-options-list'));
+			if (e.target !== buttonRef.current && !isFromAutocomplete && !isFromSelect) {
+				setIsOpen(false);
+			}
+		},
+		isOpen,
+	);
 
 	const rulesButtonClassName = createStyleSelector(
 		'switcher',
@@ -74,7 +77,7 @@ const MessageViewConfigurator = () => {
 					</div>
 					<div className='messages-view-configurator-body'>
 						{mode === 'display-rules' ? (
-							<RulesList sessions={searchStore.messageSessions} />
+							<RulesList sessions={sessionsStore.messageSessions} />
 						) : (
 							<BodySortConfig />
 						)}

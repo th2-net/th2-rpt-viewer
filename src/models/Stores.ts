@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { MessagesSSEParams } from '../api/sse';
+// import { MessagesSSEParams } from '../api/sse';
 import { MessageSSEEventListeners } from '../stores/SSEChannel/MessagesSSEChannel';
 import { EventMessage } from './EventMessage';
 
@@ -27,11 +27,7 @@ export interface MessagesDataStore {
 	onNextChannelResponse: (messages: EventMessage[]) => void;
 	onPrevChannelResponse: (messages: EventMessage[]) => void;
 	resetState: () => void;
-	getFilterParams: () => MessagesSSEParams;
+	getFilterParams: () => any;
 	getNextMessages: () => Promise<EventMessage[]>;
 	getPreviousMessages: () => Promise<EventMessage[]>;
-}
-
-export interface MessageIdsStore {
-	readonly idList: string[];
 }

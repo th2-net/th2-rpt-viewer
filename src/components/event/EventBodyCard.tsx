@@ -48,7 +48,7 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 				})
 				.catch(() => setReferencedEvent(null));
 		}
-		return ac.abort;
+		return () => ac.abort();
 	}, [body]);
 
 	switch (body.type) {

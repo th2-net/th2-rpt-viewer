@@ -30,13 +30,15 @@ type Props = Override<
 	setValue: (newValue: string) => void;
 	autoresize?: boolean;
 	alwaysShowAutocomplete?: boolean;
-	autoCompleteList?: string[];
+	autocompleteList?: string[];
 	autocompleteClassName?: string;
 	datalistKey?: string;
 	submitKeyCodes?: number[];
 	onRemove?: () => void;
 	onEmptyBlur?: () => void;
 	anchor?: HTMLElement;
+	autocompleteListMinWidth?: number;
+	closedOnClick?: boolean;
 };
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -48,10 +50,11 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onRemove,
 		onEmptyBlur,
 		onFocus,
-		autoCompleteList,
+		autocompleteList,
 		autocompleteClassName,
 		autoresize = true,
 		spellCheck = false,
+		closedOnClick,
 		datalistKey,
 		className = '',
 		inputStyle = {},
@@ -59,6 +62,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		submitKeyCodes = [KeyCodes.ENTER],
 		anchor,
 		alwaysShowAutocomplete,
+		autocompleteListMinWidth,
 		...lastInputProps
 	} = props;
 
@@ -68,8 +72,11 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLElement | null>(null);
 
+	const isFocused = Boolean(autocompleteAnchor);
+
 	const onClickOutside = React.useCallback(
 		(e: MouseEvent) => {
+			if (!isFocused) return;
 			if (
 				autocompleteListRef.current &&
 				e.target instanceof HTMLElement &&
@@ -80,14 +87,11 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			}
 
 			if (value.trim().length > 0) {
-				if (onEmptyBlur) {
-					onEmptyBlur();
-				}
 				onSubmit(value);
 			}
 			setAutocompleteAnchor(null);
 		},
-		[value],
+		[value, isFocused, onSubmit],
 	);
 
 	useOutsideClickListener(ref, onClickOutside);
@@ -107,7 +111,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			onSubmit(value.trim());
 		}
 
-		if (e.keyCode === KeyCodes.BACKSPACE && value.length < 1 && onRemove) {
+		if (e.keyCode === KeyCodes.BACKSPACE && value.length === 0 && onRemove) {
 			onRemove();
 			e.preventDefault();
 		}
@@ -116,7 +120,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const onAutocompleteSelect = React.useCallback(
 		(selectedOption: string) => {
 			onSubmit(selectedOption);
-			setAutocompleteAnchor(null);
+			if (closedOnClick) {
+				setAutocompleteAnchor(null);
+			}
 			selectedOptionRef.current = selectedOption;
 		},
 		[setValue, onSubmit],
@@ -158,15 +164,16 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			) : (
 				<input {...inputProps} ref={ref} className={className} />
 			)}
-			{autoCompleteList && autoCompleteList.length > 0 && (
+			{autocompleteList && autocompleteList.length > 0 && (
 				<AutocompleteList
 					className={autocompleteClassName}
 					ref={autocompleteListRef}
-					items={autoCompleteList}
+					items={autocompleteList}
 					value={value.trim()}
 					anchor={autocompleteAnchor}
 					onSelect={onAutocompleteSelect}
-					alwaysShow={alwaysShowAutocomplete}
+					alwaysShow={isFocused && alwaysShowAutocomplete}
+					minWidth={autocompleteListMinWidth}
 				/>
 			)}
 		</React.Fragment>

@@ -19,14 +19,14 @@ import { observer } from 'mobx-react-lite';
 import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import Empty from '../util/Empty';
 import SplashScreen from '../SplashScreen';
-import StateSaverProvider from '../util/StateSaverProvider';
 import { useWorkspaceEventStore } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import { EventTreeNode } from '../../models/EventAction';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
-import '../../styles/action.scss';
 import EventTree from './tree/EventTree';
 import FlatEventListItem from './flat-event-list/FlatEventListItem';
+import { EventsScopeProvider } from '../../contexts/eventsScopeProvider';
+import '../../styles/action.scss';
 
 interface Props {
 	scrolledIndex: Number | null;
@@ -134,24 +134,27 @@ function EventTreeListBase(props: Props) {
 		eventsInViewport.current = listItems;
 	}, []);
 
-	return (
-		<div className='actions-list' ref={listRef}>
-			<StateSaverProvider>
-				<Virtuoso
-					firstItemIndex={firstItemIndex}
-					initialTopMostItemIndex={initialItemCount.current - 1}
-					data={currentNodes}
-					ref={virtuosoRef}
-					totalCount={currentNodes.length}
-					computeItemKey={computeKey}
-					overscan={3}
-					itemContent={renderEvent}
-					style={virtuosoStyles}
-					itemsRendered={onItemsRendered}
-				/>
-			</StateSaverProvider>
-		</div>
-	);
+	if (eventStore.scope) {
+		return (
+			<div className='actions-list' ref={listRef}>
+				<EventsScopeProvider scope={eventStore.scope}>
+					<Virtuoso
+						firstItemIndex={firstItemIndex}
+						initialTopMostItemIndex={initialItemCount.current - 1}
+						data={currentNodes}
+						ref={virtuosoRef}
+						totalCount={currentNodes.length}
+						computeItemKey={computeKey}
+						overscan={3}
+						itemContent={renderEvent}
+						style={virtuosoStyles}
+						itemsRendered={onItemsRendered}
+					/>
+				</EventsScopeProvider>
+			</div>
+		);
+	}
+	return null;
 }
 
 const EventTreeList = observer(EventTreeListBase);

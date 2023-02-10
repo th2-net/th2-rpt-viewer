@@ -39,6 +39,7 @@
 		border-radius: 5px 5px 0 0;
 		display: flex;
 		align-items: center;
+		min-width: 100px;
 
 		&.active {
 			@include card-shadow;
@@ -621,4 +622,12 @@
 
 .event-filters-panel-label {
 	width: 145px;
+}
+
+.filter-row-select {
+	min-width: 150px;
+	color: #4d4d4d;
+	background-color: white;
+	height: 22px;
+	outline: none;
 }

@@ -24,8 +24,9 @@ import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { WorkspaceInitialState } from './WorkspaceStore';
 import { isEvent, isEventMessage } from '../../helpers/event';
-import { getTimestampAsNumber, timestampToNumber, getRangeFromTimestamp } from '../../helpers/date';
+import { timestampToNumber, getRangeFromTimestamp, getTimestampAsNumber } from '../../helpers/date';
 import RootStore from '../RootStore';
+import BooksStore from '../BooksStore';
 
 export const SEARCH_STORE_INTERVAL = 15;
 
@@ -39,6 +40,7 @@ export default class SearchWorkspaceStore {
 	constructor(
 		private rootStore: RootStore,
 		private workspacesStore: WorkspacesStore,
+		private booksStore: BooksStore,
 		api: ApiSchema,
 	) {
 		this.searchStore = new SearchStore(
@@ -46,6 +48,7 @@ export default class SearchWorkspaceStore {
 			api,
 			this.workspacesStore.filtersHistoryStore,
 			this.rootStore.sessionsStore,
+			this.booksStore,
 		);
 
 		this.viewStore = new WorkspaceViewStore(undefined);
@@ -95,36 +98,43 @@ export default class SearchWorkspaceStore {
 	};
 
 	@action
-	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
+	public onSearchResultItemSelect = (
+		resultItem: EventTreeNode | EventAction | EventMessage,
+		bookId: string,
+		scope: string,
+	) => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		if (isEventMessage(resultItem)) {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
 				timestampToNumber(resultItem.timestamp),
+				bookId,
 				resultItem,
 			);
 		} else {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
 				timestampToNumber(resultItem.startTimestamp),
+				scope,
 				resultItem,
 			);
 		}
-
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
 		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
 	};
 
 	@action
-	public followByTimestamp = (timestamp: number, resultType: ActionType) => {
+	public followByTimestamp = (timestamp: number, resultType: ActionType, scope: string) => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		switch (resultType) {
 			case ActionType.EVENT_ACTION:
 			case ActionType.EVENT_TREE_NODE:
-				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp);
+				if (scope) {
+					initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp, scope);
+				}
 				break;
 			case ActionType.MESSAGE:
-				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp);
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp, '');
 				break;
 			default:
 				break;

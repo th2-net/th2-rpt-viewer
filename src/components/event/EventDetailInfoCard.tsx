@@ -23,6 +23,7 @@ import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { useBookmarksStore, useWorkspaceEventStore } from '../../hooks';
+import { useScope } from '../../hooks/useScope';
 
 interface Props {
 	node: EventTreeNode;
@@ -35,6 +36,8 @@ interface Props {
 function EventDetailInfoCard(props: Props) {
 	const bookmarksStore = useBookmarksStore();
 	const eventStore = useWorkspaceEventStore();
+
+	const { bookId, scope } = useScope();
 
 	const { event, eventTreeNode, node, children } = props;
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
@@ -56,7 +59,7 @@ function EventDetailInfoCard(props: Props) {
 	function onEventPin() {
 		if (event === null) return;
 
-		bookmarksStore.toggleEventPin(node);
+		bookmarksStore.toggleEventPin(node, bookId, scope);
 	}
 
 	function onMouseEnter() {

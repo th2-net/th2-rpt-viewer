@@ -25,6 +25,7 @@ import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { Session } from '../stores/messages/SessionsStore';
 import { EventBookmark, MessageBookmark } from '../models/Bookmarks';
+import { Book } from '../models/Books';
 import notificationsStore from '../stores/NotificationsStore';
 
 export enum IndexedDbStores {
@@ -36,6 +37,7 @@ export enum IndexedDbStores {
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTERS_HISTORY = 'filters-history',
 	SESSIONS_HISTORY = 'sessions-history',
+	SELECTED_BOOK = 'selected-book',
 	SETTINGS = 'settings',
 }
 
@@ -58,6 +60,7 @@ export type DbData =
 	| MessageSortOrderItem
 	| FiltersHistoryType<FilterState>
 	| Session
+	| Book
 	| Settings;
 
 interface TH2DB extends DBSchema {
@@ -124,6 +127,13 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
+	[IndexedDbStores.SELECTED_BOOK]: {
+		key: string;
+		value: Book;
+		indexes: {
+			timestamp: number;
+		};
+	};
 }
 
 export const indexedDbLimits = {
@@ -131,7 +141,7 @@ export const indexedDbLimits = {
 	[IndexedDbStores.FILTERS_HISTORY]: 40,
 	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 100,
-	[IndexedDbStores.SEARCH_HISTORY]: 5,
+	[IndexedDbStores.SEARCH_HISTORY]: 15,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
 	[IndexedDbStores.SESSIONS_HISTORY]: 20,
 } as const;
@@ -145,10 +155,11 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
 	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
+	[IndexedDbStores.SELECTED_BOOK]: 'id',
 	[IndexedDbStores.SETTINGS]: 'timestamp',
 };
 
-const dbVersion = 4;
+const dbVersion = 5;
 
 export class IndexedDB {
 	@observable
@@ -303,6 +314,7 @@ export class IndexedDB {
 		if (store.clear) {
 			store.clear();
 		}
+		await tx.done;
 	};
 
 	private resetDatabse = async () => {

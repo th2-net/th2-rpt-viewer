@@ -19,10 +19,11 @@ import * as React from 'react';
 export function useOutsideClickListener(
 	ref: React.MutableRefObject<HTMLElement | null>,
 	handler: (e: MouseEvent) => void,
+	isOpen?: boolean,
 	eventType: 'mousedown' | 'mouseup' = 'mousedown',
 ) {
 	const onOutsideClick = (e: MouseEvent) => {
-		if (ref && !ref.current?.contains(e.target as Element)) {
+		if ((isOpen === undefined || isOpen) && ref && !ref.current?.contains(e.target as Element)) {
 			handler(e);
 		}
 	};

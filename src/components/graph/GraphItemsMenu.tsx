@@ -17,20 +17,20 @@
 import React from 'react';
 import moment from 'moment';
 import { getTimestampAsNumber } from '../../helpers/date';
+import { getGraphItemId } from '../../helpers/graph';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
 import { GraphItem } from '../../models/Graph';
-import { isEventMessage } from '../../helpers/event';
+import { isEvent } from '../../helpers/event';
 import { GraphStore } from '../../stores/GraphStore';
 import Popover from '../util/Popover';
+import { isBookmark } from '../../helpers/bookmarks';
 
 interface MenuProps {
 	items: GraphItem[];
 	onClose: () => void;
 	isMenuOpened: boolean;
 	anchorEl?: HTMLElement | null;
-	onMenuItemClick: (item: EventTreeNode | EventMessage) => void;
+	onMenuItemClick: (item: GraphItem) => void;
 	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 	maxWidth?: number;
 }
@@ -60,6 +60,14 @@ export default function GraphItemsMenu({
 
 	const menuClassName = createStyleSelector('graph-menu', isMenuOpened ? 'active' : null);
 
+	const getItemTitle = (graphItem: GraphItem): string => {
+		if (isBookmark(graphItem)) {
+			return getItemTitle(graphItem.item);
+		}
+		if (isEvent(graphItem)) return graphItem.eventName;
+		return graphItem.messageId;
+	};
+
 	return (
 		<Popover
 			isOpen={isMenuOpened}
@@ -69,7 +77,7 @@ export default function GraphItemsMenu({
 			<ul className='graph-item-group__list'>
 				{items.map(item => (
 					<li
-						key={isEventMessage(item) ? item.messageId : item.eventId}
+						key={getGraphItemId(item)}
 						className='graph-menu__item'
 						onClick={ev => handleClick(ev, item)}>
 						<div
@@ -78,9 +86,7 @@ export default function GraphItemsMenu({
 								`${getGraphItemType(item)}-icon`,
 							)}
 						/>
-						<div className='graph-menu__item-name'>
-							{isEventMessage(item) ? item.messageId : item.eventName}
-						</div>
+						<div className='graph-menu__item-name'>{getItemTitle(item)}</div>
 						<div className='graph-menu__item-timestamp'>
 							{moment(getTimestampAsNumber(item)).utc().format('DD.MM.YYYY HH:mm:ss:SSS')}
 						</div>

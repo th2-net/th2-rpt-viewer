@@ -28,7 +28,6 @@ import { useDebouncedCallback, useRootStore } from '../../../hooks';
 import KeyCodes from '../../../util/KeyCodes';
 import { indexedDbLimits, IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
-import { SearchDirection } from '../../../models/search/SearchDirection';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
 
 const isTimestamp = (searchValue: string) => {
@@ -58,7 +57,6 @@ const GraphSearchDialog = (props: Props) => {
 		closeModal,
 		submittedId,
 		isIdMode,
-		submittedTimestamp,
 	} = props;
 
 	const initialValue = React.useRef(value);
@@ -169,80 +167,82 @@ const GraphSearchDialog = (props: Props) => {
 		}
 	}, [submittedId]);
 
-	React.useEffect(() => {
-		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		if (!submittedTimestamp) return () => {};
-		let isCancelled = false;
+	// React.useEffect(() => {
+	// 	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	// 	if (!submittedTimestamp) return () => {};
+	// 	let isCancelled = false;
 
-		const queryParams = {
-			startTimestamp: submittedTimestamp,
-			resultCountLimit: 1,
-			searchDirection: SearchDirection.Previous,
-		} as const;
+	// 	const queryParams = {
+	// 		startTimestamp: submittedTimestamp,
+	// 		resultCountLimit: 1,
+	// 		searchDirection: SearchDirection.Previous,
+	// 	} as const;
 
-		const channels = [
-			api.sse.getEventSource({
-				type: 'event',
-				queryParams,
-			}),
-			api.sse.getEventSource({
-				type: 'event',
-				queryParams: {
-					...queryParams,
-					endTimestamp: Date.now(),
-					searchDirection: SearchDirection.Next,
-				},
-			}),
-		];
+	// 	const channels = [
+	// 		api.sse.getEventSource({
+	// 			type: 'event',
+	// 			queryParams,
+	// 		}),
+	// 		api.sse.getEventSource({
+	// 			type: 'event',
+	// 			queryParams: {
+	// 				...queryParams,
+	// 				endTimestamp: Date.now(),
+	// 				searchDirection: SearchDirection.Next,
+	// 			},
+	// 		}),
+	// 	];
 
-		const results: EventAction[] = [];
+	// 	const results: EventAction[] = [];
 
-		const getClosestResult = (events: EventAction[]): EventAction => {
-			events.sort((eventA, eventB) => {
-				const diffA = Math.abs(getTimestampAsNumber(eventA) - submittedTimestamp);
-				const diffB = Math.abs(getTimestampAsNumber(eventB) - submittedTimestamp);
-				if (diffA < diffB) {
-					return -1;
-				}
-				if (diffA > diffB) {
-					return 1;
-				}
-				return 0;
-			});
-			return events[0];
-		};
+	// 	const getClosestResult = (events: EventAction[]): EventAction => {
+	// 		events.sort((eventA, eventB) => {
+	// 			const diffA = Math.abs(getTimestampAsNumber(eventA) - submittedTimestamp);
+	// 			const diffB = Math.abs(getTimestampAsNumber(eventB) - submittedTimestamp);
+	// 			if (diffA < diffB) {
+	// 				return -1;
+	// 			}
+	// 			if (diffA > diffB) {
+	// 				return 1;
+	// 			}
+	// 			return 0;
+	// 		});
+	// 		return events[0];
+	// 	};
 
-		const stopSearch = (eventSource: EventSource) => () => {
-			eventSource.close();
+	// 	const stopSearch = (eventSource: EventSource) => () => {
+	// 		eventSource.close();
 
-			if (channels.every(ch => ch.readyState === 2) && !isCancelled) {
-				const event = getClosestResult(results);
-				if (event) {
-					ac.current = new AbortController();
-					onSearchSuccess(event, submittedTimestamp);
-					setFoundId(event.eventId);
-				}
-			}
-		};
+	// 		if (channels.every(ch => ch.readyState === 2) && !isCancelled) {
+	// 			const event = getClosestResult(results);
+	// 			if (event) {
+	// 				ac.current = new AbortController();
+	// 				onSearchSuccess(event, submittedTimestamp);
+	// 				setFoundId(event.eventId);
+	// 			} else {
+	// 				setIsLoading(false);
+	// 			}
+	// 		}
+	// 	};
 
-		const onResponse = (ev: Event) => {
-			if (ev instanceof MessageEvent) {
-				const parsedEvent = JSON.parse(ev.data) as EventAction;
-				results.push(parsedEvent);
-			}
-		};
+	// 	const onResponse = (ev: Event) => {
+	// 		if (ev instanceof MessageEvent) {
+	// 			const parsedEvent = JSON.parse(ev.data) as EventAction;
+	// 			results.push(parsedEvent);
+	// 		}
+	// 	};
 
-		channels.forEach(c => {
-			c.addEventListener('event', onResponse);
-			c.addEventListener('close', stopSearch(c));
-			c.addEventListener('error', stopSearch(c));
-		});
+	// 	channels.forEach(c => {
+	// 		c.addEventListener('event', onResponse);
+	// 		c.addEventListener('close', stopSearch(c));
+	// 		c.addEventListener('error', stopSearch(c));
+	// 	});
 
-		return () => {
-			isCancelled = true;
-			channels.forEach(c => c.close());
-		};
-	}, [submittedTimestamp]);
+	// 	return () => {
+	// 		isCancelled = true;
+	// 		channels.forEach(c => c.close());
+	// 	};
+	// }, [submittedTimestamp]);
 
 	const onKeyDown = React.useCallback(
 		(event: KeyboardEvent) => {

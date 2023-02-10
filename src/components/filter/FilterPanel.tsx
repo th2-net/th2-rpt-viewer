@@ -70,11 +70,20 @@ const FilterPanel = (props: Props) => {
 		}
 	}, [showFilter]);
 
-	useOutsideClickListener(filterBaseRef, (e: MouseEvent) => {
-		if (!filterButtonRef.current?.contains(e.target as Element)) {
-			setShowFilter(false);
-		}
-	});
+	useOutsideClickListener(
+		filterBaseRef,
+		(e: MouseEvent) => {
+			if (
+				e.target instanceof Element &&
+				!filterBaseRef.current?.contains(e.target) &&
+				!e.target.className.includes('autocomplete') &&
+				!filterButtonRef.current?.contains(e.target)
+			) {
+				setShowFilter(false);
+			}
+		},
+		showFilter,
+	);
 
 	function onSubmitClick() {
 		onSubmit();
