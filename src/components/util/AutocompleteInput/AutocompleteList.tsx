@@ -70,7 +70,9 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 
 		const list = React.useMemo(() => {
 			if (!value || alwaysShow) return items;
-			return items.filter(item => item.toLowerCase().includes(value.toLowerCase()));
+			return items.filter(
+				item => item.toLowerCase().includes(value.toLowerCase()) && value !== item,
+			);
 		}, [value, items]);
 
 		const onClickOutside = React.useCallback(
