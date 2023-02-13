@@ -1,4 +1,4 @@
-FROM node:14.18 AS build
+FROM node:14.21 AS build
 ARG app_version=0.0.0
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends make build-essential
@@ -6,7 +6,7 @@ WORKDIR /home/node
 COPY ./ .
 RUN npm ci && npm run build
 
-FROM nginx:1.17.10-alpine
+FROM nginx:1.23.3-alpine
 COPY --from=build /home/node/build/out /usr/share/nginx/html
 COPY ./metrics/metrics /usr/share/nginx/html/metrics
 COPY ./metrics/metrics.conf /etc/nginx/conf.d/metrics.conf
