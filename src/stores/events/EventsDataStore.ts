@@ -20,7 +20,7 @@ import moment from 'moment';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import {
-	convertEventActionToEventTreeNode,
+	toEventTreeNode,
 	getErrorEventTreeNode,
 	isRootEvent,
 	unknownRoot,
@@ -76,6 +76,8 @@ export default class EventsDataStore {
 				);
 			},
 		});
+
+		reaction(() => this.targetNodePath, this.onTargetNodeLoaded);
 	}
 
 	@observable.ref
@@ -108,19 +110,20 @@ export default class EventsDataStore {
 	@observable
 	public rootEventIds: string[] = [];
 
-	@observable.ref
-	public targetNode: EventTreeNode | null = null;
-
-	@observable.ref
-	public targetNodeParents: EventTreeNode[] = [];
+	@observable
+	public targetNodeId: string | null = null;
 
 	@computed
 	public get targetNodePath() {
-		if (!this.targetNode) return null;
+		if (!this.targetNodeId) return null;
 		const parentIds = this.eventStore
-			.getParentNodes(this.targetNode.eventId, this.eventsCache)
+			.getParentNodes(this.targetNodeId, this.eventsCache)
 			.map(parentEventNode => parentEventNode.eventId);
-		return [...parentIds, this.targetNode.eventId];
+		return [...parentIds, this.targetNodeId];
+	}
+
+	public get isLoadingTargetNode(): boolean {
+		return this.targetNodeId !== null;
 	}
 
 	@computed
@@ -308,7 +311,7 @@ export default class EventsDataStore {
 
 	private parentNodesLoaderScheduler: number | null = null;
 
-	private loadedParentNodes: EventTreeNode[][] = [];
+	private loadedParentNodesQueue: EventTreeNode[][] = [];
 
 	private parentNodesUpdateScheduler: number | null = null;
 
@@ -359,7 +362,7 @@ export default class EventsDataStore {
 					) {
 						this.eventIdsOutOfRange.push(currentParentEvent.eventId);
 					}
-					parentNode = convertEventActionToEventTreeNode(currentParentEvent);
+					parentNode = toEventTreeNode(currentParentEvent);
 					parentNodes.unshift(parentNode);
 					currentParentId = parentNode.parentId;
 				}
@@ -378,51 +381,44 @@ export default class EventsDataStore {
 				isAborted = true;
 			}
 		} finally {
-			if (!isAborted) {
-				let rootNode = getItemAt(parentNodes, 0);
+			// eslint-disable-next-line no-unsafe-finally
+			if (isAborted) return;
 
-				if (!rootNode || !isRootEvent(rootNode)) {
-					const cachedRootNode =
-						rootNode && rootNode.parentId !== null ? this.eventsCache.get(rootNode.parentId) : null;
-					if (cachedRootNode) {
-						rootNode = cachedRootNode;
-					} else {
-						rootNode = unknownRoot;
-						parentNodes.unshift(getErrorEventTreeNode(rootNode?.parentId || parentId));
-					}
-					parentNodes.unshift(rootNode);
-				}
+			let rootNode = getItemAt(parentNodes, 0);
 
-				parentNodes.forEach(eventNode => {
-					if (!this.eventsCache.has(eventNode.eventId)) {
-						this.eventsCache.set(eventNode.eventId, eventNode);
-					}
-				});
-				if (isTargetNodes) {
-					parentNodes.forEach(parentNode => {
-						this.eventStore.isExpandedMap.set(parentNode.eventId, true);
-						this.loadingParentEvents.set(parentNode.eventId, false);
-					});
-					this.targetNodeParents = parentNodes;
-					if (
-						rootNode &&
-						(isRootEvent(rootNode) || rootNode.isUnknown) &&
-						!this.rootEventIds.includes(rootNode.eventId)
-					) {
-						if (this.eventStore.targetNodeId) {
-							this.eventStore.scrollToEvent(this.eventStore.targetNodeId);
-						}
-						this.rootEventIds.push(rootNode.eventId);
-					}
+			if (!rootNode || !isRootEvent(rootNode)) {
+				const cachedRootNode =
+					rootNode && rootNode.parentId !== null ? this.eventsCache.get(rootNode.parentId) : null;
+				if (cachedRootNode) {
+					rootNode = cachedRootNode;
+				} else {
+					rootNode = unknownRoot;
+					parentNodes.unshift(getErrorEventTreeNode(rootNode?.parentId || parentId));
 				}
-				this.loadedParentNodes.push(parentNodes);
+				parentNodes.unshift(rootNode);
+			}
+
+			parentNodes.forEach(eventNode => {
+				if (!this.eventsCache.has(eventNode.eventId)) {
+					this.eventsCache.set(eventNode.eventId, eventNode);
+				}
+			});
+
+			if (isTargetNodes) {
+				this.updateParentChildrenMap([parentNodes]);
+			} else {
+				this.loadedParentNodesQueue.push(parentNodes);
 			}
 		}
 	};
 
-	@action
 	private parentNodesUpdater = () => {
-		const parentNodes = this.loadedParentNodes;
+		this.updateParentChildrenMap(this.loadedParentNodesQueue);
+		this.loadedParentNodesQueue = [];
+	};
+
+	@action
+	private updateParentChildrenMap = (parentNodes: EventTreeNode[][]) => {
 		if (!parentNodes.length) return;
 
 		const parentChildrenMapUpdate: Map<string, string[]> = new Map();
@@ -471,7 +467,6 @@ export default class EventsDataStore {
 		this.loadingParentEvents = observable.map(
 			new Map([...this.loadingParentEvents, ...parentLoadingStatusUpdate]),
 		);
-		this.loadedParentNodes = [];
 	};
 
 	private childrenLoaders: {
@@ -579,55 +574,34 @@ export default class EventsDataStore {
 
 	private targetEventAC: AbortController | null = null;
 
-	private targetEventLoadSubscription: IReactionDisposer | null = null;
-
 	@action
-	public loadTargetNode = async (targetEventId: string | null) => {
-		if (this.targetEventLoadSubscription) {
-			this.targetEventLoadSubscription();
-		}
+	public loadTargetNode = async (targetEventId: string) => {
 		this.isPreloadingTargetEventsChildren.clear();
-		this.targetNode = null;
 		this.targetEventAC?.abort();
 
-		this.eventStore.targetNodeId = targetEventId;
-		if (targetEventId) {
-			this.targetEventLoadSubscription = when(
-				() => this.targetNodePath !== null && this.rootEventIds.includes(this.targetNodePath[0]),
-				() => {
-					if (this.targetNodePath) {
-						this.eventStore.onTargetNodeAddedToTree(this.targetNodePath);
-					}
-				},
-			);
-			try {
-				this.targetEventAC = new AbortController();
-				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
-				const targetEventTimestamp = timestampToNumber(event.startTimestamp);
-				if (
-					targetEventTimestamp < this.filterStore.timestampFrom ||
-					targetEventTimestamp > this.filterStore.timestampTo
-				) {
-					this.targetEventLoadSubscription();
-					this.targetEventAC = null;
-					this.targetNode = null;
-					this.eventStore.targetNodeId = null;
-					return;
+		this.targetNodeId = targetEventId;
+
+		try {
+			this.targetEventAC = new AbortController();
+			const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
+			const targetNode = toEventTreeNode(event);
+			if (targetNode.parentId !== null) {
+				this.loadParentNodes(targetNode.parentId, true);
+
+				const siblings = this.parentChildrensMap.get(targetNode.parentId) || [];
+				if (!siblings.includes(targetNode.eventId)) {
+					siblings.push(targetNode.eventId);
 				}
-				const targetNode = convertEventActionToEventTreeNode(event);
-				if (targetNode.parentId !== null) {
-					this.loadParentNodes(targetNode.parentId, true);
-				}
-				this.eventsCache.set(targetNode.eventId, targetNode);
-				this.eventStore.onTargetEventLoad(event, targetNode);
-				this.targetNode = targetNode;
-			} catch (error) {
-				console.error(`Couldnt fetch target event node ${targetEventId}`);
-				this.eventStore.targetNodeId = null;
-				this.targetEventLoadSubscription();
+				this.parentChildrensMap.set(targetNode.parentId, siblings);
 			}
-		} else {
-			this.targetEventAC?.abort();
+
+			this.eventsCache.set(targetNode.eventId, targetNode);
+			this.eventStore.onTargetEventLoad(event, targetNode);
+		} catch (error) {
+			if (!isAbortError) {
+				console.error(`Couldnt fetch target event node ${targetEventId}`);
+				this.targetNodeId = null;
+			}
 		}
 	};
 
@@ -674,7 +648,7 @@ export default class EventsDataStore {
 		if (this.parentNodesLoaderAC) {
 			this.parentNodesLoaderAC.abort();
 		}
-		this.loadedParentNodes = [];
+		this.loadedParentNodesQueue = [];
 		if (this.parentNodesUpdateScheduler) {
 			window.clearInterval(this.parentNodesUpdateScheduler);
 			this.parentNodesUpdateScheduler = null;
@@ -686,10 +660,6 @@ export default class EventsDataStore {
 		}
 
 		this.targetEventAC?.abort();
-
-		if (this.targetEventLoadSubscription) {
-			this.targetEventLoadSubscription();
-		}
 
 		this.parentEventsQueue.clear();
 	};
@@ -708,8 +678,6 @@ export default class EventsDataStore {
 		this.isLoadingChildren.clear();
 		this.hasMoreChildren.clear();
 		this.eventStore.isExpandedMap.clear();
-		this.targetNode = null;
-		this.targetNodeParents = [];
 		this.isPreloadingTargetEventsChildren.clear();
 		this.parentsToLoad.clear();
 		this.childrenData.clear();
@@ -735,6 +703,15 @@ export default class EventsDataStore {
 						this.isPreloadingTargetEventsChildren.set(eventId, true);
 					}
 				});
+		}
+	};
+
+	private onTargetNodeLoaded = (path: string[] | null) => {
+		if (!path || !path.length) return;
+
+		if (this.rootEventIds.includes(path[0]) && path[path.length - 1] === this.targetNodeId) {
+			this.eventStore.onTargetNodeAddedToTree(path);
+			this.targetNodeId = null;
 		}
 	};
 

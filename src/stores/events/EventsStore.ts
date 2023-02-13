@@ -21,7 +21,7 @@ import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
-import { isEventNode, isRootEvent, sortEventsByTimestamp, isEvent } from '../../helpers/event';
+import { isEventNode, sortEventsByTimestamp, isEvent } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange, getRangeCenter } from '../../helpers/graph';
@@ -35,7 +35,6 @@ import FiltersHistoryStore from '../FiltersHistoryStore';
 import BooksStore from '../BooksStore';
 import { Book } from '../../models/Books';
 import { isAbortError } from '../../helpers/fetch';
-import { notEmpty } from '../../helpers/object';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -54,13 +53,13 @@ type EventStoreDefaultState = EventStoreURLState & {
 export type EventStoreDefaultStateType = EventStoreDefaultState | null | undefined;
 
 export default class EventsStore {
-	public filterStore!: EventsFilterStore;
+	public filterStore: EventsFilterStore;
 
-	public viewStore!: ViewStore;
+	public viewStore: ViewStore;
 
-	public searchStore!: EventsSearchStore;
+	public searchStore: EventsSearchStore;
 
-	public eventDataStore!: EventsDataStore;
+	public eventDataStore: EventsDataStore;
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
@@ -109,33 +108,18 @@ export default class EventsStore {
 
 	@observable isExpandedMap: Map<string, boolean> = new Map();
 
-	@observable eventTreeStatusCode: number | null = null;
-
-	@observable targetNodeId: string | null = null;
-
 	@observable scope: string | null = null;
 
 	@computed
 	public get isLoadingTargetNode(): boolean {
-		return this.targetNodeId !== null;
+		return this.eventDataStore.isLoadingTargetNode;
 	}
 
 	@computed
 	public get flattenedEventList() {
 		return sortEventsByTimestamp(
 			this.flatExpandedList.filter(eventNode => {
-				let children = this.eventDataStore.parentChildrensMap.get(eventNode.eventId) || [];
-
-				const targetNodes = [
-					...this.eventDataStore.targetNodeParents,
-					this.eventDataStore.targetNode,
-				].filter(notEmpty);
-
-				const targetChild = targetNodes.find(node => node.parentId === eventNode.eventId);
-
-				if (targetChild && !children.includes(targetChild.eventId)) {
-					children = [...children, targetChild.eventId];
-				}
+				const children = this.eventDataStore.parentChildrensMap.get(eventNode.eventId) || [];
 
 				return children.length === 0;
 			}),
@@ -151,29 +135,11 @@ export default class EventsStore {
 	public get flatExpandedList() {
 		const rootIds = this.eventDataStore.rootEventIds.slice();
 
-		if (this.eventDataStore.targetNodeParents.length) {
-			const rootNode = this.eventDataStore.targetNodeParents[0];
-
-			if (
-				(isRootEvent(rootNode) || rootNode.isUnknown) &&
-				!this.eventDataStore.rootEventIds.includes(rootNode.eventId)
-			) {
-				rootIds.push(rootNode.eventId);
-			}
-		}
 		const rootNodes = sortEventsByTimestamp(
 			rootIds.map(eventId => this.eventDataStore.eventsCache.get(eventId)).filter(isEventNode),
 			'desc',
 		);
-		return rootNodes.flatMap(eventNode =>
-			this.getFlatExpandedList(
-				eventNode,
-				[],
-				[...this.eventDataStore.targetNodeParents.slice(1), this.eventDataStore.targetNode].filter(
-					notEmpty,
-				),
-			),
-		);
+		return rootNodes.flatMap(eventNode => this.getFlatExpandedList(eventNode, []));
 	}
 
 	// we need this property for correct virtualized tree render -
@@ -182,31 +148,12 @@ export default class EventsStore {
 	public get nodesList() {
 		const rootIds = this.eventDataStore.rootEventIds.slice();
 
-		if (this.eventDataStore.targetNodeParents.length) {
-			const rootNode = this.eventDataStore.targetNodeParents[0];
-
-			if (
-				(isRootEvent(rootNode) || rootNode.isUnknown) &&
-				!this.eventDataStore.rootEventIds.includes(rootNode.eventId)
-			) {
-				rootIds.push(rootNode.eventId);
-			}
-		}
-
 		const rootNodes = sortEventsByTimestamp(
 			rootIds.map(eventId => this.eventDataStore.eventsCache.get(eventId)).filter(isEventNode),
 			'desc',
 		);
 
-		return rootNodes.flatMap(eventNode =>
-			this.getNodesList(
-				eventNode,
-				[],
-				[...this.eventDataStore.targetNodeParents, this.eventDataStore.targetNode].filter(
-					isEventNode,
-				),
-			),
-		);
+		return rootNodes.flatMap(eventNode => this.getNodesList(eventNode, []));
 	}
 
 	@computed
@@ -372,7 +319,6 @@ export default class EventsStore {
 			children = (headNode && this.getChildrenNodes(headNode.eventId)) || [];
 		}
 		if (headNode) {
-			this.selectNode(headNode);
 			this.scrollToEvent(headNode.eventId);
 		}
 	};
@@ -408,14 +354,7 @@ export default class EventsStore {
 
 	@action
 	public onTargetNodeAddedToTree = (targetPath: string[]) => {
-		if (this.targetNodeId) {
-			this.expandPath(targetPath);
-
-			const targetNode = this.eventDataStore.eventsCache.get(this.targetNodeId);
-			if (targetNode) {
-				this.targetNodeId = null;
-			}
-		}
+		this.expandPath(targetPath);
 	};
 
 	isNodeSelected(eventTreeNode: EventTreeNode) {
@@ -513,20 +452,13 @@ export default class EventsStore {
 	private getFlatExpandedList = (
 		eventTreeNode: EventTreeNode,
 		parents: string[] = [],
-		targetNodes: EventTreeNode[],
 	): EventTreeNode[] => {
-		let childList = this.getChildrenNodes(eventTreeNode.eventId);
-
-		const targetNode = targetNodes.find(node => node.parentId === eventTreeNode.eventId);
-
-		if (targetNode && !childList.find(event => event.eventId === targetNode.eventId)) {
-			childList = sortEventsByTimestamp([...childList, targetNode]);
-		}
+		const childList = this.getChildrenNodes(eventTreeNode.eventId);
 
 		return [
 			eventTreeNode,
 			...childList.flatMap(node =>
-				this.getFlatExpandedList(node, [...parents, eventTreeNode.eventId], targetNodes),
+				this.getFlatExpandedList(node, [...parents, eventTreeNode.eventId]),
 			),
 		];
 	};

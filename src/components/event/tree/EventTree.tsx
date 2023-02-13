@@ -63,13 +63,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	const childrenCount = computed(() => {
 		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
-		if (children) return children.length;
-
-		return eventsDataStore.targetNodeParents.some(
-			parentNode => parentNode.eventId === eventTreeNode.eventId,
-		)
-			? 1
-			: 0;
+		return children?.length || 0;
 	}).get();
 
 	const isLoadingSiblings = computed(() =>
