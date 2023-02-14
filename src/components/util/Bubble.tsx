@@ -27,8 +27,8 @@ interface Props {
 	style?: React.CSSProperties;
 	removeIconType?: 'default' | 'white';
 	value: string;
-	setBubbleOpen: React.Dispatch<React.SetStateAction<boolean | undefined>>;
-	bubbleOpen: boolean;
+	setIsBubbleEditing: React.Dispatch<React.SetStateAction<boolean>>;
+	isBubbleEditing: boolean;
 	selectNext?: () => void;
 	selectPrev?: () => void;
 	isValid?: boolean;
@@ -43,7 +43,7 @@ export type BubbleRef = { focus: () => void };
 const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	const {
 		value,
-		setBubbleOpen,
+		setIsBubbleEditing,
 		selectNext,
 		selectPrev,
 		autocompleteVariants,
@@ -87,7 +87,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	React.useImperativeHandle(ref, () => ({
 		focus: () => {
 			setIsEditing(true);
-			setBubbleOpen(true);
+			setIsBubbleEditing(true);
 		},
 	}));
 
@@ -101,7 +101,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		e.stopPropagation();
 		if (!isEditing) {
 			setIsEditing(true);
-			setBubbleOpen(true);
+			setIsBubbleEditing(true);
 		}
 	};
 
@@ -116,7 +116,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 			}
 			onSubmit(nextValue);
 			setIsEditing(false);
-			setBubbleOpen(false);
+			setIsBubbleEditing(false);
 		},
 		[onSubmit],
 	);
@@ -130,7 +130,6 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					if (selectionStart === 0 && typeof selectPrev !== 'undefined') {
 						selectPrev();
 						setIsEditing(false);
-						setBubbleOpen(false);
 					}
 
 					break;
@@ -139,7 +138,6 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					if (selectionStart === currentValue.length && typeof selectNext !== 'undefined') {
 						selectNext();
 						setIsEditing(false);
-						setBubbleOpen(false);
 					}
 
 					break;

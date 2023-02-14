@@ -38,6 +38,7 @@ type Props = Override<
 	onEmptyBlur?: () => void;
 	anchor?: HTMLElement;
 	autocompleteListMinWidth?: number;
+	isBubbleEditing?: boolean;
 };
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -61,6 +62,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		anchor,
 		alwaysShowAutocomplete,
 		autocompleteListMinWidth,
+		isBubbleEditing,
 		...lastInputProps
 	} = props;
 
@@ -162,7 +164,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			) : (
 				<input {...inputProps} ref={ref} className={className} />
 			)}
-			{autocompleteList && autocompleteList.length > 0 && (
+			{autocompleteList && autocompleteList.length > 0 && !isBubbleEditing && (
 				<AutocompleteList
 					className={autocompleteClassName}
 					ref={autocompleteListRef}
