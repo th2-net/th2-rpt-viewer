@@ -184,23 +184,23 @@ export default class WorkspaceStore {
 				...this.messagesStore.filterStore.filter.streams,
 			]);
 
-			messages
+			const streamsNotIncluded = messages
 				.map(message => message.sessionId)
 				.filter(
 					(stream, index, self) =>
 						index === self.findIndex(str => str === stream) &&
 						!newStreams.slice(0, this.messagesStore.filterStore.SESSIONS_LIMIT).includes(stream),
-				)
-				.forEach(stream =>
-					notificationsStore.addMessage({
-						notificationType: 'genericError',
-						type: 'error',
-						header: `Sessions limit of ${this.messagesStore.filterStore.SESSIONS_LIMIT} reached.`,
-						description: `Session ${stream} not included in current sessions. 
-						 Attached messages from this session not included in workspace.`,
-						id: nanoid(),
-					}),
 				);
+			if (streamsNotIncluded.length > 0)
+				notificationsStore.addMessage({
+					notificationType: 'genericError',
+					type: 'error',
+					header: `Sessions limit of ${this.messagesStore.filterStore.SESSIONS_LIMIT} reached.`,
+					description: `Sessions not included in current sessions: ${streamsNotIncluded.join(
+						', ',
+					)}. Attached messages from this session not included in workspace.`,
+					id: nanoid(),
+				});
 
 			const messagesFiltered = messages.filter(message =>
 				newStreams
