@@ -59,6 +59,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 	constructor(props: Props) {
 		super(props);
+		this.state = { isBubbleEditing: false, isReactFunctioning: true };
 	}
 
 	componentDidMount() {
@@ -100,10 +101,8 @@ export class SearchInputBase extends React.PureComponent<Props> {
 									style={{ backgroundColor: color, color: '#FFF' }}
 									onSubmit={this.bubbleOnChangeFor(index)}
 									onRemove={this.bubbleOnRemoveFor(index)}
-									setBubbleOpen={bubbleOpen => {
-										return !bubbleOpen;
-									}}
-									bubbleOpen={false}
+									setIsBubbleEditing={bool => this.setState({ isBubbleEditing: bool })}
+									isBubbleEditing={false}
 								/>
 							))}
 							<AutosizeInput
