@@ -103,7 +103,7 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 			</div>
 			<ModalPortal isOpen={showSearch}>
 				<div className='search' ref={searchBaseRef}>
-					<SearchInput disabled={isDisabled} isActive={showSearch} />
+					<SearchInput disabled={isDisabled} />
 				</div>
 			</ModalPortal>
 		</div>

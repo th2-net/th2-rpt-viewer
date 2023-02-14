@@ -90,11 +90,23 @@ export default class EventsSearchStore {
 
 	@action
 	updateTokens = (nextTokens: SearchToken[]) => {
-		this.onSearchTokensUpdate(nextTokens);
-
-		this.tokens = nextTokens.filter(
-			(token, index, tokens) => tokens.findIndex(t => t.pattern === token.pattern) === index,
+		const tokens = nextTokens.filter(
+			(token, index, newTokens) => newTokens.findIndex(t => t.pattern === token.pattern) === index,
 		);
+
+		const currentPatterns = this.tokens.map(t => t.pattern);
+		const newPatterns = tokens.map(t => t.pattern);
+
+		this.tokens = tokens;
+
+		if (
+			!(
+				newPatterns.length === currentPatterns.length &&
+				newPatterns.every(newPattern => currentPatterns.includes(newPattern))
+			)
+		) {
+			this.onSearchTokensUpdate(nextTokens);
+		}
 	};
 
 	@action
