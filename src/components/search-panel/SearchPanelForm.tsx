@@ -224,9 +224,22 @@ const SearchPanelForm = () => {
 		commonProgress = Math.floor(progressBarConfig.rightProgress.progress);
 	}
 
+	const wrongLimits = React.useMemo(() => {
+		if (!form.startTimestamp) return false;
+		const prevLimitCheck = form.timeLimits.previous
+			? form.timeLimits.previous.valueOf() < form.startTimestamp.valueOf()
+			: true;
+		const nextLimitCheck = form.timeLimits.next
+			? form.timeLimits.next.valueOf() > form.startTimestamp.valueOf()
+			: true;
+		return prevLimitCheck && nextLimitCheck;
+	}, [form.startTimestamp, form.timeLimits]);
+
+	React.useEffect(() => console.log(wrongLimits), [form.startTimestamp, form.timeLimits]);
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
 		disabled:
+			!wrongLimits ||
 			isHistorySearch ||
 			!form.searchDirection ||
 			(formType === 'message' && form.stream.length === 0),
