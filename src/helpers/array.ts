@@ -107,19 +107,6 @@ export function findPrevCyclicItem<T>(
 	return prevCyclicItem(array, item);
 }
 
-/**
- * Returns scrolled id for selected items.
- * @param array selected items ids
- * @param prevScrolledId previous scrolled item id
- */
-export function getScrolledId(array: Array<number>, prevScrolledId: number): Number {
-	if (array.includes(prevScrolledId)) {
-		return new Number(nextCyclicItem(array, prevScrolledId));
-	}
-
-	return new Number(array[0]);
-}
-
 export function replaceByIndex<T>(arr: T[], targetIndex: number, targetItem: T): T[] {
 	return arr.map((item, index) => (index === targetIndex ? targetItem : item));
 }
@@ -140,16 +127,6 @@ export function move<T>(arr: T[], from: number, to: number) {
 	const clone = [...arr];
 	Array.prototype.splice.call(clone, to, 0, Array.prototype.splice.call(clone, from, 1)[0]);
 	return clone;
-}
-
-export function sliceToChunks<T>(arr: T[], chunkSize: number): T[][] {
-	const chunks = [];
-
-	for (let i = 0; i < arr.length; i += chunkSize) {
-		chunks.push(arr.slice(i, i + chunkSize));
-	}
-
-	return chunks;
 }
 
 export function areArraysEqual<T extends unknown[]>(arr1: T, arr2: T): boolean {

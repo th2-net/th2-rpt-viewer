@@ -40,15 +40,12 @@ describe('[React] <SearchInput/>', () => {
 		value: 'default value',
 		setValue: () => {},
 		disabled: false,
-		isActive: false,
 	};
 
 	test('Reactive delay test', done => {
 		const updateMock = jest.fn();
 
-		const wrapper = mount(
-			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={true} />,
-		);
+		const wrapper = mount(<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} />);
 
 		const field = wrapper.find('.search-field');
 
@@ -71,9 +68,7 @@ describe('[React] <SearchInput/>', () => {
 	test('Submit by SPACE key down', () => {
 		const updateMock = jest.fn();
 
-		const wrapper = mount(
-			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={true} />,
-		);
+		const wrapper = mount(<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} />);
 
 		const field = wrapper.find('.search-field');
 		field.simulate('click', { target: field.getDOMNode() });
@@ -94,9 +89,7 @@ describe('[React] <SearchInput/>', () => {
 	test('Submit by reactive delay, change input and after that submit by space', async () => {
 		const updateMock = jest.fn();
 
-		const wrapper = mount(
-			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={true} />,
-		);
+		const wrapper = mount(<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} />);
 
 		const field = wrapper.find('.search-field');
 		field.simulate('click', { target: field.getDOMNode() });
