@@ -100,6 +100,10 @@ export class SearchInputBase extends React.PureComponent<Props> {
 									style={{ backgroundColor: color, color: '#FFF' }}
 									onSubmit={this.bubbleOnChangeFor(index)}
 									onRemove={this.bubbleOnRemoveFor(index)}
+									setBubbleOpen={bubbleOpen => {
+										return !bubbleOpen;
+									}}
+									bubbleOpen={false}
 								/>
 							))}
 							<AutosizeInput
