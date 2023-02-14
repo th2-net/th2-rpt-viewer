@@ -158,7 +158,7 @@ function GraphSearch(props: Props) {
 	};
 
 	const timestampSearch = (startTimestamp: number) => {
-		onTimestampSubmit(startTimestamp, true);
+		onTimestampSubmit(startTimestamp);
 		setShowModal(false);
 	};
 
