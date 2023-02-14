@@ -132,7 +132,7 @@ const SearchDatetimeControls = ({
 					readonly={isSearching}
 					hidden={!searchDirection || searchDirection === SearchDirection.Next}
 					showError={isLeftTimeLimitInvalid}
-					errorTextRows={['Should be less than start timestamp']}
+					errorTextRows={['Should be less than central timestamp']}
 					errorPosition='left'
 				/>
 			</div>
@@ -160,7 +160,7 @@ const SearchDatetimeControls = ({
 					readonly={isSearching}
 					hidden={!searchDirection || searchDirection === SearchDirection.Previous}
 					showError={isRightTimeControlInvalid}
-					errorTextRows={['Should be greater than start timestamp']}
+					errorTextRows={['Should be greater than central timestamp']}
 					errorPosition='right'
 				/>
 			</div>
