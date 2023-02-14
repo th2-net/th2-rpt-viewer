@@ -235,7 +235,6 @@ const SearchPanelForm = () => {
 		return prevLimitCheck && nextLimitCheck;
 	}, [form.startTimestamp, form.timeLimits]);
 
-	React.useEffect(() => console.log(wrongLimits), [form.startTimestamp, form.timeLimits]);
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
 		disabled:
