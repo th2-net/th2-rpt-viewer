@@ -285,6 +285,11 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	@action
 	public onPrevChannelResponse = (messages: EventMessage[]) => {
+		// eslint-disable-next-line no-param-reassign
+		messages = messages.filter(
+			message => !this.messages.find(msg => msg.messageId === message.messageId),
+		);
+
 		this.lastPreviousChannelResponseTimestamp = null;
 		const firstPrevMessage = messages[0];
 
