@@ -226,14 +226,20 @@ const SearchPanelForm = () => {
 
 	const wrongLimits = React.useMemo(() => {
 		if (!form.startTimestamp) return false;
-		const prevLimitCheck = form.timeLimits.previous
-			? form.timeLimits.previous.valueOf() < form.startTimestamp.valueOf()
-			: true;
-		const nextLimitCheck = form.timeLimits.next
-			? form.timeLimits.next.valueOf() > form.startTimestamp.valueOf()
-			: true;
+		const prevLimitCheck =
+			form.timeLimits.previous &&
+			(form.searchDirection === SearchDirection.Both ||
+				form.searchDirection === SearchDirection.Previous)
+				? form.timeLimits.previous.valueOf() < form.startTimestamp.valueOf()
+				: true;
+		const nextLimitCheck =
+			form.timeLimits.next &&
+			(form.searchDirection === SearchDirection.Both ||
+				form.searchDirection === SearchDirection.Next)
+				? form.timeLimits.next.valueOf() > form.startTimestamp.valueOf()
+				: true;
 		return prevLimitCheck && nextLimitCheck;
-	}, [form.startTimestamp, form.timeLimits]);
+	}, [form.startTimestamp, form.timeLimits, form.searchDirection]);
 
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
