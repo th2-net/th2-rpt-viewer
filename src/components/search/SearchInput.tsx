@@ -50,7 +50,6 @@ interface DispatchProps {
 
 export interface Props extends StateProps, DispatchProps {
 	disabled: boolean;
-	isActive: boolean;
 }
 
 export class SearchInputBase extends React.PureComponent<Props> {
@@ -62,10 +61,8 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		super(props);
 	}
 
-	componentDidUpdate(prevProps: Props) {
-		if (this.props.isActive && !prevProps.isActive) {
-			this.focus();
-		}
+	componentDidMount() {
+		this.focus();
 	}
 
 	focus() {
@@ -89,9 +86,9 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 		return (
 			<div className='search-field-wrapper'>
-				<div className='search-field' ref={this.root} onMouseDown={this.onMouseDown}>
+				<div className='search-field' ref={this.root}>
 					<React.Fragment>
-						<div className='search-field__child-wrapper'>
+						<div className='search-field__child-wrapper' onMouseDown={this.onMouseDown}>
 							{notActiveTokens.map(({ color, pattern }, index) => (
 								<Bubble
 									key={`${color}-${pattern}`}
@@ -327,7 +324,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 interface SearchInputProps {
 	disabled: boolean;
-	isActive: boolean;
 }
 
 const SearchInput = (props: SearchInputProps) => {
@@ -345,7 +341,7 @@ const SearchInput = (props: SearchInputProps) => {
 			clear={searchStore.clear}
 			value={searchStore.inputValue}
 			setValue={searchStore.setInputValue}
-			{...props}
+			disabled={props.disabled}
 		/>
 	);
 };
