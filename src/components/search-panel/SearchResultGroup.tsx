@@ -22,17 +22,15 @@ import { createBemElement } from '../../helpers/styleCreators';
 import { useBookmarksStore, useSelectedStore } from '../../hooks';
 import { SearchResult } from '../../stores/SearchStore';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { ActionType } from '../../models/EventAction';
 import { BookmarkedItem } from '../../models/Bookmarks';
 import { BookmarkItem } from '../bookmarks/BookmarksPanel';
 
 interface SearchResultGroup {
 	results: SearchResult[];
 	onResultClick: (searchResult: BookmarkedItem) => void;
-	onGroupClick: (timestamp: number, resultType: ActionType) => void;
 }
 
-const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResultGroup) => {
+const SearchResultGroup = ({ results, onResultClick }: SearchResultGroup) => {
 	const { savedItems } = useSelectedStore();
 	const bookmarksStore = useBookmarksStore();
 	const [isExpanded, setIsExpanded] = React.useState(false);
@@ -91,10 +89,6 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 		return timestamp;
 	})();
 
-	const onSearchGroupClick = () => {
-		onGroupClick(averageTimestamp, results[0].type);
-	};
-
 	const groupTimestamp =
 		`${moment(averageTimestamp).utc().format('DD.MM.YYYY')} ` +
 		`${moment(getTimestampAsNumber(results[0])).utc().format('HH:mm:ss.SSS')}-` +
@@ -123,7 +117,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 				<button className={expandButtonClass} onClick={() => setIsExpanded(!isExpanded)} />
 				<div className='search-result-group__header'>
 					<span className='search-result-group__results-count'>{results.length}</span>
-					<div className='search-result-group__most-popular-names' onClick={onSearchGroupClick}>
+					<div className='search-result-group__most-popular-names'>
 						{mostPopularNames.map((name, index) => (
 							<span key={index} className='search-result-group__name' title={name}>
 								{name}

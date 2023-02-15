@@ -19,13 +19,11 @@ import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
 import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
-import { ActionType } from '../../models/EventAction';
 import { BookmarkedItem } from '../../models/Bookmarks';
 import { createStyleSelector } from '../../helpers/styleCreators';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: BookmarkedItem) => void;
-	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;
 	disableNext: boolean;
 	disablePrev: boolean;
@@ -45,7 +43,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		resultGroups,
 		timestamp,
 		onResultItemClick,
-		onResultGroupClick,
 		onResultDelete,
 		disablePrev,
 		disableNext,
@@ -102,7 +99,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 						key={computeKey(index)}
 						results={results}
 						onResultClick={onResultItemClick}
-						onGroupClick={onResultGroupClick}
 					/>
 				))}
 				{showLoadMoreButton && (
