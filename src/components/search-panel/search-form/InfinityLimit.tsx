@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2021-2021 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,29 @@
  * limitations under the License.
  ***************************************************************************** */
 
-type StreamDirection = 'FIRST' | 'SECOND';
+import React from 'react';
 
-export type StreamInfo = {
-	streamPointer: {
-		bookId: {
-			name: string;
-		};
-		name: string;
-		direction: StreamDirection;
-	};
-	lastElement: string;
+export type InfinityLimitConfig = {
+	value: string;
+	setValue: (value: string) => void;
+	disabled: boolean;
 };
 
-export type DirectionalStreamInfo = {
-	previous: StreamInfo[];
-	next: StreamInfo[];
+const InfinityLimit = ({ value, setValue, disabled }: InfinityLimitConfig) => {
+	return (
+		<div className='search-infinity-limit'>
+			<span className='search-infinity-limit__label'>Note: Limit is </span>
+			<input
+				type='text'
+				className='search-infinity-limit__input'
+				id='search-infinity-limit'
+				value={value}
+				onChange={e => setValue(e.target.value)}
+				disabled={disabled}
+			/>
+			<span className='search-infinity-limit__label'> days</span>
+		</div>
+	);
 };
+
+export default InfinityLimit;

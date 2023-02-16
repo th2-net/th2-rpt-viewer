@@ -26,7 +26,7 @@ interface BaseSSEParams {
 	startTimestamp?: number;
 	endTimestamp?: number | null;
 	resultCountLimit?: number;
-	searchDirection?: SearchDirection; // defaults to next
+	searchDirection: SearchDirection;
 	resumeFromId?: string;
 	bookId: string;
 }
@@ -108,7 +108,7 @@ export interface SSEParamsEvents {
 	parentEvent?: string;
 	resultCountLimit?: number;
 	resumeFromId?: string;
-	searchDirection?: 'next' | 'previous'; // defaults to next
+	searchDirection: 'next' | 'previous'; // defaults to next
 	limitForParent?: number;
 	bookId: string;
 	scope: string;

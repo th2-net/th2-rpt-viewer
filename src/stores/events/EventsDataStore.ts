@@ -81,7 +81,7 @@ export default class EventsDataStore {
 	@observable.ref
 	private eventTreeEventSource: EventsSSEChannel | null = null;
 
-	@observable
+	@observable.shallow
 	public eventsCache: Map<string, EventTreeNode> = new Map();
 
 	@observable
@@ -314,6 +314,8 @@ export default class EventsDataStore {
 
 	private onParentEventsLoadedSub: IReactionDisposer | null = null;
 
+	public eventIdsOutOfRange: string[] = [];
+
 	@action
 	private loadParentNodes = async (parentId: string, isTargetNodes = false) => {
 		if (!this.parentNodesUpdateScheduler) {
@@ -352,6 +354,11 @@ export default class EventsDataStore {
 						{ probe: true },
 					);
 					if (!currentParentEvent) break;
+					if (
+						timestampToNumber(currentParentEvent.startTimestamp) < this.filterStore.timestampFrom
+					) {
+						this.eventIdsOutOfRange.push(currentParentEvent.eventId);
+					}
 					parentNode = convertEventActionToEventTreeNode(currentParentEvent);
 					parentNodes.unshift(parentNode);
 					currentParentId = parentNode.parentId;
@@ -597,7 +604,6 @@ export default class EventsDataStore {
 				this.targetEventAC = new AbortController();
 				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
 				const targetEventTimestamp = timestampToNumber(event.startTimestamp);
-				// TODO: add filtering too see if target event matches current filter
 				if (
 					targetEventTimestamp < this.filterStore.timestampFrom ||
 					targetEventTimestamp > this.filterStore.timestampTo
@@ -708,6 +714,7 @@ export default class EventsDataStore {
 		this.parentsToLoad.clear();
 		this.childrenData.clear();
 		this.mainSourceEvents.clear();
+		this.eventIdsOutOfRange = [];
 	};
 
 	private isPreloadingTargetEventsChildren: Map<string, boolean> = new Map();

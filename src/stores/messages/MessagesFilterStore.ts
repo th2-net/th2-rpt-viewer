@@ -135,15 +135,18 @@ export default class MessagesFilterStore {
 	) {
 		this.isSoftFilter = isSoftFilterApplied;
 		this.sseMessagesFilter = sseFilters;
-		filter.streams.slice(this.SESSIONS_LIMIT).forEach(session =>
+
+		if (filter.streams.length > this.SESSIONS_LIMIT)
 			notificationsStore.addMessage({
 				notificationType: 'genericError',
 				type: 'error',
 				header: `Sessions limit of ${this.SESSIONS_LIMIT} reached.`,
-				description: `Session ${session} not included in current sessions.`,
+				description: `Sessions not included in current sessions: ${filter.streams
+					.slice(this.SESSIONS_LIMIT)
+					.join(', ')}.`,
 				id: nanoid(),
-			}),
-		);
+			});
+
 		this.filter = {
 			...filter,
 			streams: filter.streams.slice(0, this.SESSIONS_LIMIT),
