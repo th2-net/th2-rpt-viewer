@@ -91,8 +91,6 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		if (inputRef.current?.value === '') {
 			onRemove();
 		}
-
-		setIsEditing(false);
 	};
 
 	const rootOnClick = (e: React.MouseEvent) => {
@@ -125,6 +123,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 				case KeyCodes.LEFT:
 					if (selectionStart === 0 && typeof selectPrev !== 'undefined') {
 						selectPrev();
+						setIsEditing(false);
 					}
 
 					break;
@@ -132,6 +131,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 				case KeyCodes.RIGHT:
 					if (selectionStart === currentValue.length && typeof selectNext !== 'undefined') {
 						selectNext();
+						setIsEditing(false);
 					}
 
 					break;
