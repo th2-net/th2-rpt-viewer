@@ -16,15 +16,27 @@
 
 import * as React from 'react';
 import '../../../styles/tables.scss';
+import { ColumnSeparator } from './ColumnSeparator';
 
 interface CustomTableProps {
 	content: { [key: string]: string | number | null | undefined }[];
 }
 
 export function CustomTable({ content }: CustomTableProps) {
+	const [columnWidth, setColumnWidth] = React.useState<number[]>(
+		Object.keys(content[0]).map(() => 150),
+	);
 	if (!content || content.length < 1) {
 		return null;
 	}
+
+	const changeWidth = (index: number, value: number) => {
+		setColumnWidth([
+			...columnWidth.slice(0, index),
+			Math.max(columnWidth[index] + value, 150),
+			...columnWidth.slice(index + 1),
+		]);
+	};
 
 	const headers = Object.keys(content[0]);
 
@@ -32,20 +44,26 @@ export function CustomTable({ content }: CustomTableProps) {
 		<div className='user-table'>
 			<table
 				style={{
-					gridTemplateColumns: `repeat(${headers.length}, minmax(150px, 250px))`,
+					gridTemplateColumns: columnWidth.map(val => `${val}px 2px`).join(' '),
 				}}>
 				<thead>
 					<tr>
-						{headers.map(header => (
-							<th key={header}>{header}</th>
+						{headers.map((header, ind) => (
+							<React.Fragment key={header}>
+								<th>{header}</th>
+								<ColumnSeparator index={ind} onChange={changeWidth} isHeader={true} />
+							</React.Fragment>
 						))}
 					</tr>
 				</thead>
 				<tbody>
 					{content.map((row, index) => (
 						<tr key={index}>
-							{headers.map(cell => (
-								<td key={row[cell] ?? index}>{row[cell]}</td>
+							{headers.map((cell, ind) => (
+								<React.Fragment key={row[cell] ?? index}>
+									<td>{row[cell]}</td>
+									<ColumnSeparator index={ind} onChange={changeWidth} isHeader={false} />
+								</React.Fragment>
 							))}
 						</tr>
 					))}

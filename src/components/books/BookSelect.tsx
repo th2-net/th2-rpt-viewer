@@ -57,6 +57,7 @@ const BookSelect = () => {
 				autoresize={false}
 				submitKeyCodes={[]}
 				autocompleteListMinWidth={320}
+				closedOnClick={true}
 			/>
 		</div>
 	);

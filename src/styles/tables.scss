@@ -60,7 +60,13 @@
 
 	table {
 		width: fit-content;
-		grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px 70px;
+	}
+
+	.columnSeparator {
+		background-color: #cccccc;
+		cursor: e-resize;
+		padding: 0; 
+		min-width: 1px;
 	}
 
 	&-indicator {
@@ -83,8 +89,16 @@
 				background-color: $tableRowPassedBackgroundColor;
 			}
 
+			.columnSeparator {
+				background-color: #cccccc;
+			}
+
 			&:hover td {
 				background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 10);
+			}
+
+			&:hover .columnSeparator {
+				background-color: #888888;
 			}
 		}
 
@@ -93,14 +107,26 @@
 				background-color: $tableRowFailedBackgroundColor;
 			}
 
+			.columnSeparator {
+				background-color: #999999;
+			}
+
 			&:hover td {
 				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
+			}
+
+			&:hover .columnSeparator {
+				background-color: #888888;
 			}
 		}
 
 		&.na {
 			& td {
 				background-color: #fff;
+			}
+
+			.columnSeparator {
+				background-color: #cccccc;
 			}
 		}
 
@@ -240,7 +266,7 @@
 			padding-bottom: 4px;
 			cursor: pointer;
 			color: $tableTitleColor;
-			grid-column: 1 / 8;
+			grid-column: 1 / 15;
 
 			p {
 				display: inline;
@@ -378,6 +404,14 @@
 		text-align: left;
 	}
 
+	.columnSeparator {
+		background-color: #cccccc;
+		cursor: e-resize;
+		padding: 0; 
+		min-width: 1px;
+	}
+
+
 	display: block;
 	width: 100%;
 	height: auto;
@@ -425,6 +459,19 @@
 		td {
 			cursor: pointer;
 		}
+
+		.columnSeparator {
+			background-color: #cccccc;
+			cursor: e-resize;
+			padding: 0; 
+			min-width: 1px;
+		}
+	
+
+		&:hover .columnSeparator {
+			background-color: #cccccc;
+		}
+	
 	}
 
 	&-row-value {
@@ -455,7 +502,14 @@
 		text-align: left;
 	}
 
-	td {
-		min-width: 150px;
+	.columnSeparator {
+		background-color: #cccccc;
+		cursor: e-resize;
+		padding: 0; 
+		min-width: 1px;
+	}
+
+	&:hover .columnSeparator {
+		background-color: #cccccc;
 	}
 }

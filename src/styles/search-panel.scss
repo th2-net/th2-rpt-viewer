@@ -211,6 +211,36 @@
 	}
 }
 
+.search-infinity-limit {
+	display: flex;
+	white-space: nowrap;
+	color: red;
+	font-weight: bold;
+
+	& > * {
+		margin-right: 10px;
+	}
+
+	&__input {
+		text-align: center;
+		width: 50px;
+		font-size: 13px;
+		background-color: inherit;
+		color: $searchInfinityLimitTextColor;
+		border-bottom: 1px solid $searchInfinityLimitTextColor;
+		font-weight: bold;
+
+		&:focus {
+			background-color: white;
+			color: $alternativeTextColor;
+		}
+
+		&:disabled {
+			opacity: 0.5;
+		}
+	}
+}
+
 .switch-search-type-button {
 	border: none;
 	outline: none;
@@ -322,6 +352,12 @@
 		@include icon(url(../../resources/icons/infinite.svg), 25px, 25px);
 		filter: brightness(300%);
 		transition: filter 0.3s;
+		margin: 0 3px;
+	}
+	
+	&__limit {
+		font-weight: 900;
+		font-size: 16px;
 		margin: 0 3px;
 	}
 

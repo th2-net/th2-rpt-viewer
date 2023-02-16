@@ -17,6 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import AutosizeInput from 'react-input-autosize';
+import debounce from 'lodash.debounce';
 import KeyCodes from '../../util/KeyCodes';
 import SearchToken from '../../models/search/SearchToken';
 import Bubble from '../util/Bubble';
@@ -49,7 +50,6 @@ interface DispatchProps {
 
 export interface Props extends StateProps, DispatchProps {
 	disabled: boolean;
-	isActive: boolean;
 }
 
 export class SearchInputBase extends React.PureComponent<Props> {
@@ -61,10 +61,8 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		super(props);
 	}
 
-	componentDidUpdate(prevProps: Props) {
-		if (this.props.isActive && !prevProps.isActive) {
-			this.focus();
-		}
+	componentDidMount() {
+		this.focus();
 	}
 
 	focus() {
@@ -82,18 +80,18 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			value,
 		} = this.props;
 		const notActiveTokens = searchTokens.filter(searchToken => !searchToken.isActive);
-		const activeTokens = searchTokens.find(searchToken => searchToken.isActive);
+		const activeToken = searchTokens.find(searchToken => searchToken.isActive);
 
 		const showControls = resultsCount > 0;
 
 		return (
 			<div className='search-field-wrapper'>
-				<div className='search-field' ref={this.root} onMouseDown={this.onMouseDown}>
+				<div className='search-field' ref={this.root}>
 					<React.Fragment>
 						<div className='search-field__child-wrapper' onMouseDown={this.onMouseDown}>
 							{notActiveTokens.map(({ color, pattern }, index) => (
 								<Bubble
-									key={index}
+									key={`${color}-${pattern}`}
 									className='search-bubble'
 									size='small'
 									removeIconType='white'
@@ -111,7 +109,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 								inputStyle={
 									value.length > 0
 										? {
-												backgroundColor: activeTokens?.color ?? this.getNextColor(),
+												backgroundColor: activeToken?.color ?? this.getNextColor(),
 												color: '#FFF',
 										  }
 										: undefined
@@ -125,7 +123,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 								onChange={this.inputOnChange}
 								onKeyDown={this.onKeyDown}
 								autoFocus={true}
-								onMouseDown={this.onMouseDown}
 							/>
 						</div>
 						<div className='search-field__search-controls search-controls'>
@@ -151,8 +148,26 @@ export class SearchInputBase extends React.PureComponent<Props> {
 	}
 
 	private onMouseDown = (e: React.MouseEvent) => {
-		if (e.target === this.root.current) {
-			e.preventDefault();
+		const isInputFocused = Boolean(
+			this.inputElement.current && this.inputElement.current === document.activeElement,
+		);
+		if (e.target === this.inputElement.current && !isInputFocused) {
+			this.focus();
+		} else {
+			this.updateTokens.cancel();
+
+			const tokens = this.props.searchTokens
+				.slice()
+				.map(t => (t.isActive ? { ...t, isActive: false } : t));
+
+			if (this.props.value) {
+				const val = this.props.value;
+				this.props.setValue('');
+				tokens.push(this.createToken(val, undefined, false));
+			}
+
+			this.props.updateSearchTokens(tokens);
+
 			this.focus();
 		}
 	};
@@ -208,11 +223,12 @@ export class SearchInputBase extends React.PureComponent<Props> {
 				return;
 			}
 
-			const [lastItem, ...restItems] = [...this.props.searchTokens].reverse();
+			const tokens = this.props.searchTokens.slice();
+			const lastItem = tokens.pop();
 
 			if (lastItem?.isActive) {
 				this.props.updateSearchTokens([
-					...restItems.reverse(),
+					...tokens,
 					{
 						...lastItem,
 						isActive: false,
@@ -230,46 +246,48 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		}
 	};
 
+	updateTokens = debounce((currentValue: string) => {
+		if (this.props.value === currentValue) {
+			// clear last active value
+			if (currentValue === '') {
+				this.props.updateSearchTokens(this.props.searchTokens.filter(({ isActive }) => !isActive));
+
+				return;
+			}
+
+			if (this.props.searchTokens.length === 0) {
+				this.props.updateSearchTokens([this.createToken(this.props.value)]);
+				return;
+			}
+
+			const activeItem = this.props.searchTokens.find(({ isActive }) => isActive);
+
+			if (activeItem != null) {
+				this.props.updateSearchTokens(
+					replaceByIndex(
+						this.props.searchTokens,
+						this.props.searchTokens.indexOf(activeItem),
+						this.createToken(this.props.value, activeItem.color),
+					),
+				);
+				return;
+			}
+
+			this.props.updateSearchTokens([
+				...this.props.searchTokens,
+				this.createToken(this.props.value),
+			]);
+		}
+	}, REACTIVE_SEARCH_DELAY);
+
 	private inputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const currentValue = e.target.value;
 
 		this.props.setValue(currentValue.trimLeft());
-
-		setTimeout(() => {
-			if (this.props.value === currentValue) {
-				// clear last active value
-				if (currentValue === '') {
-					this.props.updateSearchTokens(
-						this.props.searchTokens.filter(({ isActive }) => !isActive),
-					);
-
-					return;
-				}
-
-				if (this.props.searchTokens.length === 0) {
-					this.props.updateSearchTokens([this.createToken(this.props.value)]);
-					return;
-				}
-
-				const activeItem = this.props.searchTokens.find(({ isActive }) => isActive);
-
-				if (activeItem != null) {
-					this.props.updateSearchTokens(
-						replaceByIndex(
-							this.props.searchTokens,
-							this.props.searchTokens.indexOf(activeItem),
-							this.createToken(this.props.value, activeItem.color),
-						),
-					);
-					return;
-				}
-
-				this.props.updateSearchTokens([
-					...this.props.searchTokens,
-					this.createToken(this.props.value),
-				]);
-			}
-		}, REACTIVE_SEARCH_DELAY);
+		if (this.updateTokens) {
+			this.updateTokens.cancel();
+		}
+		this.updateTokens(currentValue);
 	};
 
 	private bubbleOnChangeFor = (index: number) => (nextValue: string) => {
@@ -306,7 +324,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 interface SearchInputProps {
 	disabled: boolean;
-	isActive: boolean;
 }
 
 const SearchInput = (props: SearchInputProps) => {
@@ -324,7 +341,7 @@ const SearchInput = (props: SearchInputProps) => {
 			clear={searchStore.clear}
 			value={searchStore.inputValue}
 			setValue={searchStore.setInputValue}
-			{...props}
+			disabled={props.disabled}
 		/>
 	);
 };

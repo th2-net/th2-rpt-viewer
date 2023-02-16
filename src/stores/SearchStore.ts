@@ -48,7 +48,7 @@ import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
-import { getItemAt } from '../helpers/array';
+import { getArrayOfUniques, getItemAt } from '../helpers/array';
 import BooksStore from './BooksStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
@@ -63,6 +63,7 @@ export type SearchPanelFormState = {
 	searchDirection: SearchDirection | null;
 	stream: string[];
 	scope: string;
+	infinityLimit: number;
 };
 
 export type SearchResult = EventTreeNode | EventMessage;
@@ -117,6 +118,7 @@ function getDefaultFormState(): SearchPanelFormState {
 			previous: null,
 			next: null,
 		},
+		infinityLimit: 7,
 		stream: [],
 		scope: '',
 	};
@@ -486,6 +488,8 @@ export class SearchStore {
 		const bookId = this.booksStore.selectedBook.name;
 		const scope = this.searchForm.scope;
 
+		this.searchForm.stream = getArrayOfUniques(this.searchForm.stream);
+
 		if (this.isSearching || !filterParams || (this.formType === 'event' && !scope.trim())) return;
 		const isPaused = this.isPaused;
 		this.setCompleted(false);
@@ -532,6 +536,7 @@ export class SearchStore {
 			resultCountLimit,
 			timeLimits,
 			stream,
+			infinityLimit,
 		} = this.searchForm;
 
 		const filtersToAdd = !this.filters
@@ -562,7 +567,11 @@ export class SearchStore {
 				startTimestamp: _startTimestamp,
 				searchDirection: direction,
 				resultCountLimit,
-				endTimestamp: timeLimits[direction],
+				endTimestamp: timeLimits[direction]
+					? timeLimits[direction]
+					: direction === SearchDirection.Next
+					? moment(_startTimestamp).add(infinityLimit, 'days').valueOf()
+					: moment(_startTimestamp).subtract(infinityLimit, 'days').valueOf(),
 				filters: filtersToAdd,
 				bookId: this.booksStore.selectedBook.name,
 				scope,
