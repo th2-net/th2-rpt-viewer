@@ -130,6 +130,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					if (selectionStart === 0 && typeof selectPrev !== 'undefined') {
 						selectPrev();
 						setIsEditing(false);
+						onSubmit(currentValue.trim());
 					}
 
 					break;
@@ -138,6 +139,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					if (selectionStart === currentValue.length && typeof selectNext !== 'undefined') {
 						selectNext();
 						setIsEditing(false);
+						onSubmit(currentValue.trim());
 					}
 
 					break;
