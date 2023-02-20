@@ -46,6 +46,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 	const valueBubbleOnChangeFor = (index: number) => (nextValue: string) => {
 		config.setValues(replaceByIndex(config.values, index, nextValue));
 		focusBubbleOrInput(index);
+		input.current?.focus();
 	};
 
 	const valueBubbleOnRemoveFor = (index: number) => () => {
