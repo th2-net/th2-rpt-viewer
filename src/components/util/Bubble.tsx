@@ -118,7 +118,6 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 			}
 			onSubmit(nextValue);
 			setIsEditing(false);
-			console.log('setIsBubbleEditing = false');
 			setIsBubbleEditing(false);
 		},
 		[onSubmit],
