@@ -129,6 +129,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 				case KeyCodes.LEFT:
 					if (selectionStart === 0 && typeof selectPrev !== 'undefined') {
 						onSubmit(currentValue.trim());
+						e.preventDefault();
 						selectPrev();
 						setIsEditing(false);
 					}
@@ -138,6 +139,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 				case KeyCodes.RIGHT:
 					if (selectionStart === currentValue.length && typeof selectNext !== 'undefined') {
 						onSubmit(currentValue.trim());
+						e.preventDefault();
 						selectNext();
 						setIsEditing(false);
 					}

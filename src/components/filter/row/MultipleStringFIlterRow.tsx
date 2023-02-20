@@ -86,6 +86,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 
 	const focusBubbles: React.KeyboardEventHandler<HTMLInputElement> = e => {
 		if (e.keyCode === KeyCodes.LEFT && input.current?.selectionStart === 0) {
+			e.preventDefault();
 			focusBubbleOrInput(config.values.length - 1);
 		}
 	};
