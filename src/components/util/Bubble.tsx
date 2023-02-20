@@ -36,6 +36,7 @@ interface Props {
 	submitKeyCodes?: number[];
 	onSubmit?: (nextValue: string) => void;
 	onRemove: () => void;
+	outerInputRef?: React.MutableRefObject<HTMLInputElement | undefined>;
 }
 
 export type BubbleRef = { focus: () => void };
@@ -55,6 +56,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		isValid = true,
 		style = {},
 		submitKeyCodes = [KeyCodes.ENTER],
+		outerInputRef,
 	} = props;
 
 	const [anchor, setAnchor] = React.useState<HTMLDivElement>();
@@ -116,6 +118,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 			}
 			onSubmit(nextValue);
 			setIsEditing(false);
+			console.log('setIsBubbleEditing = false');
 			setIsBubbleEditing(false);
 		},
 		[onSubmit],
@@ -166,6 +169,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 				<AutocompleteInput
 					anchor={anchor}
 					ref={inputRef}
+					outerInputRef={outerInputRef}
 					className='bubble__input'
 					inputStyle={{ maxWidth: '100%' }}
 					value={currentValue}

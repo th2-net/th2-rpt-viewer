@@ -40,6 +40,7 @@ type Props = Override<
 	autocompleteListMinWidth?: number;
 	closedOnClick?: boolean;
 	isBubbleEditing?: boolean;
+	outerInputRef?: React.MutableRefObject<HTMLInputElement | undefined>;
 };
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -65,6 +66,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		alwaysShowAutocomplete,
 		autocompleteListMinWidth,
 		isBubbleEditing,
+		outerInputRef,
 		...lastInputProps
 	} = props;
 
@@ -78,6 +80,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	const onClickOutside = React.useCallback(
 		(e: MouseEvent) => {
+			console.log('onclickoutside');
 			if (!isFocused) return;
 			if (
 				autocompleteListRef.current &&
@@ -110,6 +113,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		}
 
 		if (value.trim().length > 0 && submitKeyCodes.includes(e.keyCode)) {
+			if (outerInputRef) {
+				outerInputRef.current?.focus();
+			}
 			onSubmit(value.trim());
 		}
 
@@ -149,7 +155,10 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			setAutocompleteAnchor(anchor || null);
 		}
 	}, [value]);
-
+	console.log('isBubbleEditing');
+	console.log(isBubbleEditing, outerInputRef);
+	console.log('autocompleteList');
+	console.log(autocompleteList);
 	return (
 		<React.Fragment>
 			{autoresize ? (
@@ -166,7 +175,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			) : (
 				<input {...inputProps} ref={ref} className={className} />
 			)}
-			{autocompleteList && autocompleteList.length > 0 && !isBubbleEditing && (
+			{autocompleteList && autocompleteList.length > 0 && (outerInputRef || !isBubbleEditing) && (
 				<AutocompleteList
 					className={autocompleteClassName}
 					ref={autocompleteListRef}

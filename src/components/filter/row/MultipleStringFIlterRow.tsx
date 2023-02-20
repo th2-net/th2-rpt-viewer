@@ -46,7 +46,6 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 	const valueBubbleOnChangeFor = (index: number) => (nextValue: string) => {
 		config.setValues(replaceByIndex(config.values, index, nextValue));
 		focusBubbleOrInput(index);
-		input.current?.focus();
 	};
 
 	const valueBubbleOnRemoveFor = (index: number) => () => {
@@ -119,6 +118,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 					{config.values.map((value, index) => (
 						<Bubble
 							ref={ref => (bubbleRefs.current[index] = ref)}
+							outerInputRef={input}
 							key={index}
 							setIsBubbleEditing={setIsBubbleEditing}
 							isBubbleEditing={isBubbleEditing}
