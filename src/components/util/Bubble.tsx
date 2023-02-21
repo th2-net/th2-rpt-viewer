@@ -35,7 +35,7 @@ interface Props {
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
 	onSubmit?: (nextValue: string) => void;
-	bubbleSwitch?: (
+	bubbleSwitch: (
 		currentValue: string,
 		bubbleIndex?: number,
 	) => (e: React.KeyboardEvent<HTMLInputElement>) => void;

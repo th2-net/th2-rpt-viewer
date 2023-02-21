@@ -18,9 +18,10 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import AutosizeInput from 'react-input-autosize';
 import debounce from 'lodash.debounce';
+import { toJS } from 'mobx';
 import KeyCodes from '../../util/KeyCodes';
 import SearchToken from '../../models/search/SearchToken';
-import Bubble from '../util/Bubble';
+import Bubble, { BubbleRef } from '../util/Bubble';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
 import { raf } from '../../helpers/raf';
 import { useWorkspaceEventStore } from '../../hooks/useEventWindowStore';
@@ -55,11 +56,16 @@ export interface Props extends StateProps, DispatchProps {
 export class SearchInputBase extends React.PureComponent<Props> {
 	private inputElement: React.MutableRefObject<HTMLInputElement | null> = React.createRef();
 
+	private bubbleRefs: React.MutableRefObject<{
+		[index: number]: BubbleRef | null;
+	} | null> = React.createRef();
+
 	private root = React.createRef<HTMLDivElement>();
 
 	constructor(props: Props) {
 		super(props);
 		this.state = { isBubbleEditing: false, isReactFunctioning: true };
+		this.bubbleRefs.current = {};
 	}
 
 	componentDidMount() {
@@ -80,10 +86,53 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			isLoading,
 			value,
 		} = this.props;
+
 		const notActiveTokens = searchTokens.filter(searchToken => !searchToken.isActive);
 		const activeToken = searchTokens.find(searchToken => searchToken.isActive);
 
 		const showControls = resultsCount > 0;
+
+		const focusBubbleOrInput = (index: number) => {
+			console.log('focusBubbleOrInput');
+			if (index >= notActiveTokens.length) this.inputElement.current?.focus();
+			else if (this.bubbleRefs.current) {
+				console.log('else if is executed for index', toJS(searchTokens[index]));
+				this.bubbleRefs.current[index]?.focus();
+			}
+		};
+
+		const bubbleSwitch = (currentValue: string, bubbleIndex: number) => (
+			e: React.KeyboardEvent<HTMLInputElement>,
+		) => {
+			if (e.target instanceof HTMLInputElement) {
+				const selectionStart = e.target.selectionStart;
+
+				switch (e.keyCode) {
+					case KeyCodes.LEFT:
+						if (selectionStart === 0) {
+							this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
+							e.preventDefault();
+							focusBubbleOrInput(bubbleIndex - 1);
+						}
+
+						break;
+
+					case KeyCodes.RIGHT:
+						if (selectionStart === currentValue.length) {
+							this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
+							e.preventDefault();
+							if (currentValue.trim().length > 0) {
+								this.valueBubbleOnChangeFor(bubbleIndex);
+							}
+							focusBubbleOrInput(bubbleIndex + 1);
+						}
+
+						break;
+					default:
+						break;
+				}
+			}
+		};
 
 		return (
 			<div className='search-field-wrapper'>
@@ -92,6 +141,12 @@ export class SearchInputBase extends React.PureComponent<Props> {
 						<div className='search-field__child-wrapper' onMouseDown={this.onMouseDown}>
 							{notActiveTokens.map(({ color, pattern }, index) => (
 								<Bubble
+									ref={ref => {
+										if (this.bubbleRefs.current) {
+											this.bubbleRefs.current[index] = ref;
+											console.log(`bubble __${index}__ added to the refs array`);
+										}
+									}}
 									key={`${color}-${pattern}`}
 									className='search-bubble'
 									size='small'
@@ -99,8 +154,11 @@ export class SearchInputBase extends React.PureComponent<Props> {
 									submitKeyCodes={[KeyCodes.ENTER]}
 									value={pattern}
 									style={{ backgroundColor: color, color: '#FFF' }}
-									onSubmit={this.bubbleOnChangeFor(index)}
+									onSubmit={this.valueBubbleOnChangeFor(index)}
 									onRemove={this.bubbleOnRemoveFor(index)}
+									bubbleSwitch={(currentValue, bubbleIndex = index) =>
+										bubbleSwitch(currentValue, bubbleIndex)
+									}
 									setIsBubbleEditing={bool => this.setState({ isBubbleEditing: bool })}
 									isBubbleEditing={false}
 								/>
@@ -293,7 +351,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		this.updateTokens(currentValue);
 	};
 
-	private bubbleOnChangeFor = (index: number) => (nextValue: string) => {
+	private valueBubbleOnChangeFor = (index: number) => (nextValue: string) => {
 		this.props.updateSearchTokens(
 			replaceByIndex(
 				this.props.searchTokens,
