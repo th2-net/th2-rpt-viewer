@@ -35,6 +35,10 @@ interface Props {
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
 	onSubmit?: (nextValue: string) => void;
+	bubbleSwitch?: (
+		currentValue: string,
+		bubbleIndex?: number,
+	) => (e: React.KeyboardEvent<HTMLInputElement>) => void;
 	onRemove: () => void;
 	outerInputRef?: React.MutableRefObject<HTMLInputElement | undefined>;
 }
@@ -45,11 +49,10 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	const {
 		value,
 		setIsBubbleEditing,
-		selectNext,
-		selectPrev,
 		autocompleteVariants,
 		onRemove,
 		onSubmit = () => null,
+		bubbleSwitch,
 		className = '',
 		size = 'medium',
 		removeIconType = 'default',
@@ -123,36 +126,6 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		[onSubmit],
 	);
 
-	const bubbleSwitch: React.KeyboardEventHandler<HTMLInputElement> = e => {
-		if (e.target instanceof HTMLInputElement) {
-			const selectionStart = e.target.selectionStart;
-
-			switch (e.keyCode) {
-				case KeyCodes.LEFT:
-					if (selectionStart === 0 && typeof selectPrev !== 'undefined') {
-						onSubmit(currentValue.trim());
-						e.preventDefault();
-						selectPrev();
-						setIsEditing(false);
-					}
-
-					break;
-
-				case KeyCodes.RIGHT:
-					if (selectionStart === currentValue.length && typeof selectNext !== 'undefined') {
-						onSubmit(currentValue.trim());
-						e.preventDefault();
-						selectNext();
-						setIsEditing(false);
-					}
-
-					break;
-				default:
-					break;
-			}
-		}
-	};
-
 	const rootClass = createBemBlock('bubble', size, !isValid && !isEditing ? 'invalid' : null);
 
 	const iconClass = createBemElement('bubble', 'remove-icon', removeIconType);
@@ -173,7 +146,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					inputStyle={{ maxWidth: '100%' }}
 					value={currentValue}
 					setValue={setCurrentValue}
-					onKeyDown={bubbleSwitch}
+					onKeyDown={bubbleSwitch(currentValue)}
 					onSubmit={inputOnSubmit}
 					onRemove={onRemove}
 					onEmptyBlur={onRemove}

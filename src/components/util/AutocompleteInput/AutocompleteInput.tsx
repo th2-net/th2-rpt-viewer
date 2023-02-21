@@ -112,9 +112,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		}
 
 		if (value.trim().length > 0 && submitKeyCodes.includes(e.keyCode)) {
-			if (outerInputRef) {
-				outerInputRef.current?.focus();
-			}
+			// if (outerInputRef) {
+			// 	outerInputRef.current?.focus();
+			// }
 			onSubmit(value.trim());
 		}
 
@@ -170,7 +170,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			) : (
 				<input {...inputProps} ref={ref} className={className} />
 			)}
-			{autocompleteList && autocompleteList.length > 0 && (outerInputRef || !isBubbleEditing) && (
+			{autocompleteList && autocompleteList.length > 0 && !isBubbleEditing && (
 				<AutocompleteList
 					className={autocompleteClassName}
 					ref={autocompleteListRef}

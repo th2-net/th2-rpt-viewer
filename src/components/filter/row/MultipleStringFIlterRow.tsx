@@ -91,6 +91,42 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		}
 	};
 
+	const bubbleSwitch = (currentValue: string, bubbleIndex: number) => (
+		e: React.KeyboardEvent<HTMLInputElement>,
+	) => {
+		if (e.target instanceof HTMLInputElement) {
+			const selectionStart = e.target.selectionStart;
+
+			switch (e.keyCode) {
+				case KeyCodes.LEFT:
+					if (selectionStart === 0) {
+						valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
+						e.preventDefault();
+						focusBubbleOrInput(bubbleIndex - 1);
+					}
+
+					break;
+
+				case KeyCodes.RIGHT:
+					if (selectionStart === currentValue.length) {
+						valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
+						e.preventDefault();
+						if (currentValue.trim().length > 0) {
+							valueBubbleOnChangeFor(bubbleIndex);
+						}
+						focusBubbleOrInput(bubbleIndex + 1);
+						if (bubbleIndex + 1 > config.values.length - 1) {
+							setIsBubbleEditing(false);
+						}
+					}
+
+					break;
+				default:
+					break;
+			}
+		}
+	};
+
 	const inputRootClassName = createBemElement(
 		'filter-row',
 		'multiple-values',
@@ -139,6 +175,9 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							value={value}
 							onSubmit={valueBubbleOnChangeFor(index)}
 							onRemove={valueBubbleOnRemoveFor(index)}
+							bubbleSwitch={(currentValue, bubbleIndex = index) =>
+								bubbleSwitch(currentValue, bubbleIndex)
+							}
 							autocompleteVariants={config.autocompleteList?.filter(
 								item => item === value || !config.values.includes(item),
 							)}
