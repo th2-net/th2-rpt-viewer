@@ -112,9 +112,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		}
 
 		if (value.trim().length > 0 && submitKeyCodes.includes(e.keyCode)) {
-			// if (outerInputRef) {
-			// 	outerInputRef.current?.focus();
-			// }
 			onSubmit(value.trim());
 		}
 

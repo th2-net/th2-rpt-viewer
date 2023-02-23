@@ -29,8 +29,6 @@ interface Props {
 	value: string;
 	setIsBubbleEditing: React.Dispatch<React.SetStateAction<boolean>>;
 	isBubbleEditing: boolean;
-	selectNext?: () => void;
-	selectPrev?: () => void;
 	isValid?: boolean;
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
@@ -40,10 +38,9 @@ interface Props {
 		bubbleIndex?: number,
 	) => (e: React.KeyboardEvent<HTMLInputElement>) => void;
 	onRemove: () => void;
-	outerInputRef?: React.MutableRefObject<HTMLInputElement | undefined>;
 }
 
-export type BubbleRef = { focus: () => void };
+export type BubbleRef = { focus: () => void; unfocus: () => void };
 
 const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	const {
@@ -59,7 +56,6 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		isValid = true,
 		style = {},
 		submitKeyCodes = [KeyCodes.ENTER],
-		outerInputRef,
 	} = props;
 
 	const [anchor, setAnchor] = React.useState<HTMLDivElement>();
@@ -93,6 +89,9 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		focus: () => {
 			setIsEditing(true);
 			setIsBubbleEditing(true);
+		},
+		unfocus: () => {
+			setIsEditing(false);
 		},
 	}));
 
@@ -141,7 +140,6 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 				<AutocompleteInput
 					anchor={anchor}
 					ref={inputRef}
-					outerInputRef={outerInputRef}
 					className='bubble__input'
 					inputStyle={{ maxWidth: '100%' }}
 					value={currentValue}

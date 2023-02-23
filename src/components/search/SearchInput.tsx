@@ -18,7 +18,6 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import AutosizeInput from 'react-input-autosize';
 import debounce from 'lodash.debounce';
-import { toJS } from 'mobx';
 import KeyCodes from '../../util/KeyCodes';
 import SearchToken from '../../models/search/SearchToken';
 import Bubble, { BubbleRef } from '../util/Bubble';
@@ -93,10 +92,8 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		const showControls = resultsCount > 0;
 
 		const focusBubbleOrInput = (index: number) => {
-			console.log('focusBubbleOrInput');
 			if (index >= notActiveTokens.length) this.inputElement.current?.focus();
 			else if (this.bubbleRefs.current) {
-				console.log('else if is executed for index', toJS(searchTokens[index]));
 				this.bubbleRefs.current[index]?.focus();
 			}
 		};
@@ -113,6 +110,9 @@ export class SearchInputBase extends React.PureComponent<Props> {
 							this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
 							e.preventDefault();
 							focusBubbleOrInput(bubbleIndex - 1);
+							if (this.bubbleRefs.current) {
+								this.bubbleRefs.current[bubbleIndex]?.unfocus();
+							}
 						}
 
 						break;
@@ -125,6 +125,9 @@ export class SearchInputBase extends React.PureComponent<Props> {
 								this.valueBubbleOnChangeFor(bubbleIndex);
 							}
 							focusBubbleOrInput(bubbleIndex + 1);
+							if (this.bubbleRefs.current) {
+								this.bubbleRefs.current[bubbleIndex]?.unfocus();
+							}
 						}
 
 						break;
@@ -144,7 +147,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 									ref={ref => {
 										if (this.bubbleRefs.current) {
 											this.bubbleRefs.current[index] = ref;
-											console.log(`bubble __${index}__ added to the refs array`);
 										}
 									}}
 									key={`${color}-${pattern}`}
@@ -246,6 +248,21 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 		if (e.keyCode === KeyCodes.ESCAPE) {
 			this.clear();
+			return;
+		}
+
+		if (e.keyCode === KeyCodes.LEFT) {
+			if (this.bubbleRefs.current) {
+				e.preventDefault();
+				this.bubbleRefs.current[this.props.searchTokens.length - 1]?.focus();
+			}
+			return;
+		}
+
+		if (e.keyCode === KeyCodes.RIGHT) {
+			if (this.bubbleRefs.current) {
+				e.preventDefault();
+			}
 			return;
 		}
 

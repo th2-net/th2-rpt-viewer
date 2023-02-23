@@ -103,6 +103,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
 						e.preventDefault();
 						focusBubbleOrInput(bubbleIndex - 1);
+						bubbleRefs.current[bubbleIndex]?.unfocus();
 					}
 
 					break;
@@ -115,6 +116,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							valueBubbleOnChangeFor(bubbleIndex);
 						}
 						focusBubbleOrInput(bubbleIndex + 1);
+						bubbleRefs.current[bubbleIndex]?.unfocus();
 						if (bubbleIndex + 1 > config.values.length - 1) {
 							setIsBubbleEditing(false);
 						}
@@ -154,20 +156,9 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 					{config.values.map((value, index) => (
 						<Bubble
 							ref={ref => (bubbleRefs.current[index] = ref)}
-							outerInputRef={input}
 							key={index}
 							setIsBubbleEditing={setIsBubbleEditing}
 							isBubbleEditing={isBubbleEditing}
-							selectNext={() => {
-								if (value.trim().length > 0) {
-									valueBubbleOnChangeFor(index);
-								}
-								focusBubbleOrInput(index + 1);
-								if (index + 1 > config.values.length - 1) {
-									setIsBubbleEditing(false);
-								}
-							}}
-							selectPrev={() => focusBubbleOrInput(index - 1)}
 							size='small'
 							removeIconType='white'
 							submitKeyCodes={[KeyCodes.TAB]}
