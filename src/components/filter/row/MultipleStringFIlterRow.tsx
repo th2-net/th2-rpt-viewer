@@ -101,7 +101,6 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 				case KeyCodes.LEFT:
 					if (selectionStart === 0) {
 						valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
-						e.preventDefault();
 						focusBubbleOrInput(bubbleIndex - 1);
 						bubbleRefs.current[bubbleIndex]?.unfocus();
 					}
@@ -111,7 +110,6 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 				case KeyCodes.RIGHT:
 					if (selectionStart === currentValue.length) {
 						valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
-						e.preventDefault();
 						if (currentValue.trim().length > 0) {
 							valueBubbleOnChangeFor(bubbleIndex);
 						}
@@ -121,6 +119,16 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							setIsBubbleEditing(false);
 						}
 					}
+
+					break;
+
+				case KeyCodes.TAB:
+					valueBubbleOnChangeFor(bubbleIndex);
+					setIsBubbleEditing(false);
+					if (bubbleIndex + 1 > config.values.length - 1) {
+						setIsBubbleEditing(false);
+					}
+					input.current?.focus();
 
 					break;
 				default:

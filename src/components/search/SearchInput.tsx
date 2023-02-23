@@ -108,7 +108,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 					case KeyCodes.LEFT:
 						if (selectionStart === 0) {
 							this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
-							e.preventDefault();
 							focusBubbleOrInput(bubbleIndex - 1);
 							if (this.bubbleRefs.current) {
 								this.bubbleRefs.current[bubbleIndex]?.unfocus();
@@ -120,7 +119,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 					case KeyCodes.RIGHT:
 						if (selectionStart === currentValue.length) {
 							this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
-							e.preventDefault();
 							if (currentValue.trim().length > 0) {
 								this.valueBubbleOnChangeFor(bubbleIndex);
 							}
@@ -128,6 +126,15 @@ export class SearchInputBase extends React.PureComponent<Props> {
 							if (this.bubbleRefs.current) {
 								this.bubbleRefs.current[bubbleIndex]?.unfocus();
 							}
+						}
+
+						break;
+
+					case KeyCodes.TAB:
+						this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
+						this.inputElement.current?.focus();
+						if (this.bubbleRefs.current) {
+							this.bubbleRefs.current[bubbleIndex]?.unfocus();
 						}
 
 						break;
