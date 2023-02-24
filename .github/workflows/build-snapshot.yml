@@ -52,4 +52,11 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ steps.snapshot_name.outputs.value }}
           labels: com.exactpro.th2.${{ steps.repo.outputs.REPOSITORY_NAME }}=${{ steps.version.outputs.prop }}
+  scan:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Scan current project
+        uses: anchore/scan-action@v3
+        with:
+          path: "."
 
