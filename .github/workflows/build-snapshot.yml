@@ -55,9 +55,15 @@ jobs:
   scan:
     runs-on: ubuntu-20.04
     steps:
+      - name: checkout
+        uses: actions/checkout@v3
       - name: Scan current project
         uses: anchore/scan-action@v3
         with:
           path: "."
           output-format: table
-
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'table'
