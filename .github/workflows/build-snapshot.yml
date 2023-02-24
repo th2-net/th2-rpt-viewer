@@ -53,19 +53,5 @@ jobs:
           tags: ghcr.io/${{ github.repository }}:${{ steps.snapshot_name.outputs.value }}
           labels: com.exactpro.th2.${{ steps.repo.outputs.REPOSITORY_NAME }}=${{ steps.version.outputs.prop }}
   scan:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: Scan current project
-        continue-on-error: true
-        uses: anchore/scan-action@v3
-        with:
-          path: "."
-          output-format: table
-      - name: Run Trivy vulnerability scanner in repo mode
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          format: 'table'
+    name: Vulnerabilities scanning
+    uses: th2-net/.github/.github/workflows/js-anchore-scan.yml@js-scanning
