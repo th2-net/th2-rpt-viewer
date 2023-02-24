@@ -63,7 +63,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 	constructor(props: Props) {
 		super(props);
-		this.state = { isBubbleEditing: false, isReactFunctioning: true };
+		this.state = { isBubbleEditing: false };
 		this.bubbleRefs.current = {};
 	}
 
@@ -169,7 +169,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 										bubbleSwitch(currentValue, bubbleIndex)
 									}
 									setIsBubbleEditing={bool => this.setState({ isBubbleEditing: bool })}
-									isBubbleEditing={false}
 								/>
 							))}
 							<AutosizeInput
@@ -262,13 +261,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			if (this.bubbleRefs.current) {
 				e.preventDefault();
 				this.bubbleRefs.current[this.props.searchTokens.length - 1]?.focus();
-			}
-			return;
-		}
-
-		if (e.keyCode === KeyCodes.RIGHT) {
-			if (this.bubbleRefs.current) {
-				e.preventDefault();
 			}
 			return;
 		}

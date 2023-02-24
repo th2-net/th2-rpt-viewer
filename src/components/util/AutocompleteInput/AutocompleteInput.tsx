@@ -35,12 +35,10 @@ type Props = Override<
 	datalistKey?: string;
 	submitKeyCodes?: number[];
 	onRemove?: () => void;
-	onEmptyBlur?: () => void;
 	anchor?: HTMLElement;
 	autocompleteListMinWidth?: number;
 	closedOnClick?: boolean;
 	isBubbleEditing?: boolean;
-	outerInputRef?: React.MutableRefObject<HTMLInputElement | undefined>;
 };
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -50,7 +48,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		setValue,
 		onSubmit,
 		onRemove,
-		onEmptyBlur,
 		onFocus,
 		autocompleteList,
 		autocompleteClassName,
@@ -66,7 +63,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		alwaysShowAutocomplete,
 		autocompleteListMinWidth,
 		isBubbleEditing,
-		outerInputRef,
 		...lastInputProps
 	} = props;
 

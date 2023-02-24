@@ -28,7 +28,6 @@ interface Props {
 	removeIconType?: 'default' | 'white';
 	value: string;
 	setIsBubbleEditing: React.Dispatch<React.SetStateAction<boolean>>;
-	isBubbleEditing: boolean;
 	isValid?: boolean;
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
@@ -147,7 +146,6 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					onKeyDown={bubbleSwitch(currentValue)}
 					onSubmit={inputOnSubmit}
 					onRemove={onRemove}
-					onEmptyBlur={onRemove}
 					autocompleteList={autocompleteVariants as string[]}
 					datalistKey='bubble-autocomplete'
 					submitKeyCodes={submitKeyCodes}

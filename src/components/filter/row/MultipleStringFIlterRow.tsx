@@ -166,7 +166,6 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							ref={ref => (bubbleRefs.current[index] = ref)}
 							key={index}
 							setIsBubbleEditing={setIsBubbleEditing}
-							isBubbleEditing={isBubbleEditing}
 							size='small'
 							removeIconType='white'
 							submitKeyCodes={[KeyCodes.TAB]}
