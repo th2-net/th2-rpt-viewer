@@ -35,10 +35,10 @@ type Props = Override<
 	datalistKey?: string;
 	submitKeyCodes?: number[];
 	onRemove?: () => void;
-	onEmptyBlur?: () => void;
 	anchor?: HTMLElement;
 	autocompleteListMinWidth?: number;
 	closedOnClick?: boolean;
+	isBubbleEditing?: boolean;
 };
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -48,7 +48,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		setValue,
 		onSubmit,
 		onRemove,
-		onEmptyBlur,
 		onFocus,
 		autocompleteList,
 		autocompleteClassName,
@@ -63,6 +62,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		anchor,
 		alwaysShowAutocomplete,
 		autocompleteListMinWidth,
+		isBubbleEditing,
 		...lastInputProps
 	} = props;
 
@@ -147,7 +147,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			setAutocompleteAnchor(anchor || null);
 		}
 	}, [value]);
-
 	return (
 		<React.Fragment>
 			{autoresize ? (
@@ -164,7 +163,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			) : (
 				<input {...inputProps} ref={ref} className={className} />
 			)}
-			{autocompleteList && autocompleteList.length > 0 && (
+			{autocompleteList && autocompleteList.length > 0 && !isBubbleEditing && (
 				<AutocompleteList
 					className={autocompleteClassName}
 					ref={autocompleteListRef}

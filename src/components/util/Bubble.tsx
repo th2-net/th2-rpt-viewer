@@ -27,25 +27,28 @@ interface Props {
 	style?: React.CSSProperties;
 	removeIconType?: 'default' | 'white';
 	value: string;
-	selectNext?: () => void;
-	selectPrev?: () => void;
+	setIsBubbleEditing: React.Dispatch<React.SetStateAction<boolean>>;
 	isValid?: boolean;
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
 	onSubmit?: (nextValue: string) => void;
+	bubbleSwitch: (
+		currentValue: string,
+		bubbleIndex?: number,
+	) => (e: React.KeyboardEvent<HTMLInputElement>) => void;
 	onRemove: () => void;
 }
 
-export type BubbleRef = { focus: () => void };
+export type BubbleRef = { focus: () => void; unfocus: () => void };
 
 const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	const {
 		value,
-		selectNext,
-		selectPrev,
+		setIsBubbleEditing,
 		autocompleteVariants,
 		onRemove,
 		onSubmit = () => null,
+		bubbleSwitch,
 		className = '',
 		size = 'medium',
 		removeIconType = 'default',
@@ -84,6 +87,10 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	React.useImperativeHandle(ref, () => ({
 		focus: () => {
 			setIsEditing(true);
+			setIsBubbleEditing(true);
+		},
+		unfocus: () => {
+			setIsEditing(false);
 		},
 	}));
 
@@ -97,6 +104,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		e.stopPropagation();
 		if (!isEditing) {
 			setIsEditing(true);
+			setIsBubbleEditing(true);
 		}
 	};
 
@@ -111,35 +119,10 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 			}
 			onSubmit(nextValue);
 			setIsEditing(false);
+			setIsBubbleEditing(false);
 		},
 		[onSubmit],
 	);
-
-	const bubbleSwitch: React.KeyboardEventHandler<HTMLInputElement> = e => {
-		if (e.target instanceof HTMLInputElement) {
-			const selectionStart = e.target.selectionStart;
-
-			switch (e.keyCode) {
-				case KeyCodes.LEFT:
-					if (selectionStart === 0 && typeof selectPrev !== 'undefined') {
-						selectPrev();
-						setIsEditing(false);
-					}
-
-					break;
-
-				case KeyCodes.RIGHT:
-					if (selectionStart === currentValue.length && typeof selectNext !== 'undefined') {
-						selectNext();
-						setIsEditing(false);
-					}
-
-					break;
-				default:
-					break;
-			}
-		}
-	};
 
 	const rootClass = createBemBlock('bubble', size, !isValid && !isEditing ? 'invalid' : null);
 
@@ -160,10 +143,9 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					inputStyle={{ maxWidth: '100%' }}
 					value={currentValue}
 					setValue={setCurrentValue}
-					onKeyDown={bubbleSwitch}
+					onKeyDown={bubbleSwitch(currentValue)}
 					onSubmit={inputOnSubmit}
 					onRemove={onRemove}
-					onEmptyBlur={onRemove}
 					autocompleteList={autocompleteVariants as string[]}
 					datalistKey='bubble-autocomplete'
 					submitKeyCodes={submitKeyCodes}
