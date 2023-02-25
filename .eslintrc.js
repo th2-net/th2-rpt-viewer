@@ -83,6 +83,7 @@ module.exports = {
 			'error',
 			{ argsIgnorePattern: '^_', ignoreRestSiblings: true },
 		],
+		'no-shadow': ['warn', { ignoreOnInitialization: false }],
 		'no-unused-expressions': 'off',
 		'@typescript-eslint/no-unused-expressions': ['error'],
 		'import/no-unassigned-import': [

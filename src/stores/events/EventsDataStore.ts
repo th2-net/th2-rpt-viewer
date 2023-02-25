@@ -671,7 +671,7 @@ export default class EventsDataStore {
 		initialState: Partial<{ isError: boolean; isLoading: boolean }> = {},
 	) => {
 		this.stopCurrentRequests();
-		const { isError = false, isLoading = false } = initialState;
+		const { isError = false } = initialState;
 
 		this.isError = isError;
 
