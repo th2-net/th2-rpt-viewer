@@ -77,6 +77,7 @@
 		"babel-loader": "^8.1.0",
 		"babel-plugin-const-enum": "^1.0.1",
 		"babel-preset-minify": "^0.5.1",
+		"base": "^3.0.0",
 		"clean-webpack-plugin": "^4.0.0-alpha.0",
 		"css-loader": "^3.5.2",
 		"cssnano": "^5.1.15",
@@ -122,6 +123,7 @@
 	},
 	"overrides": {
 		"jest-environment-jsdom": "$jest-environment-jsdom",
-		"postcss": "$postcss"
+		"postcss": "$postcss",
+		"base": "$base"
 	}
 }
