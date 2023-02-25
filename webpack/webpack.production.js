@@ -61,7 +61,7 @@ module.exports = webpackMerge(commonConfig, {
 				return {
 					version: packageJSON.version,
 				};
-			}
-		})
-	]
+			},
+		}),
+	],
 });

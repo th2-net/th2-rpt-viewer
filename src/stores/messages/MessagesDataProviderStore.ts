@@ -419,11 +419,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@action
-	public getFilterParams = () => {
-		return this.messagesStore.filterStore.isSoftFilter
+	public getFilterParams = () =>
+		this.messagesStore.filterStore.isSoftFilter
 			? this.messagesStore.filterStore.softFilterParams
 			: this.messagesStore.filterStore.filterParams;
-	};
 
 	@action
 	public keepLoading = (direction: 'next' | 'previous') => {
@@ -485,11 +484,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.isMatchingMessages.set(messageId, true);
 
 		try {
-			const {
-				resultCountLimit,
-				searchDirection,
-				...filterParams
-			} = this.messagesStore.filterStore.filterParams;
+			const { resultCountLimit, searchDirection, ...filterParams } =
+				this.messagesStore.filterStore.filterParams;
 			const isMatch = await this.api.messages.matchMessage(messageId, filterParams, abortSignal);
 
 			runInAction(() => {

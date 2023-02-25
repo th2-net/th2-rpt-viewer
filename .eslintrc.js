@@ -17,6 +17,7 @@
 module.exports = {
 	parser: '@typescript-eslint/parser',
 	extends: [
+		'eslint:recommended',
 		'airbnb-base',
 		'prettier',
 		'plugin:react/recommended',
@@ -30,13 +31,11 @@ module.exports = {
 	env: {
 		browser: true,
 		jest: true,
+		es2021: true,
 	},
 	parserOptions: {
-		ecmaVersion: 2018,
+		ecmaVersion: 'latest',
 		sourceType: 'module',
-		ecmaFeatures: {
-			jsx: true,
-		},
 	},
 	rules: {
 		'import/no-unresolved': 'error',
@@ -71,6 +70,7 @@ module.exports = {
 				},
 			},
 		],
+		'no-use-before-define': 'off',
 		'@typescript-eslint/no-use-before-define': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'off',
 		'@typescript-eslint/ban-types': 'off',

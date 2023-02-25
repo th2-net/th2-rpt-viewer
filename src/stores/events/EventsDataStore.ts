@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import { action, computed, IReactionDisposer, observable, reaction, runInAction, when } from 'mobx';
-import PQueue from 'p-queue/dist';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
+import PQueue from 'p-queue';
 import ApiSchema from '../../api/ApiSchema';
 import {
 	convertEventActionToEventTreeNode,
@@ -64,13 +64,10 @@ export default class EventsDataStore {
 		private api: ApiSchema,
 	) {
 		reaction(() => this.targetNodePath, this.preloadSelectedPathChildren, {
-			equals: (pathA: string[], pathB: string[]) => {
-				return (
-					Boolean(pathA && pathB) &&
-					pathA.length === pathB.length &&
-					pathA.every((id, index) => id === pathB[index])
-				);
-			},
+			equals: (pathA: string[], pathB: string[]) =>
+				Boolean(pathA && pathB) &&
+				pathA.length === pathB.length &&
+				pathA.every((id, index) => id === pathB[index]),
 		});
 	}
 

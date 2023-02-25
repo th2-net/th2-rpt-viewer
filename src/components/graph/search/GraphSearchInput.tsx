@@ -31,15 +31,11 @@ export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
 const TIME_PLACEHOLDER = '00:00:00.000';
 const DATE_TIME_PLACEHOLDER = `01.01.${moment().year().toString()} 00:00:00.000`;
 
-type KeyboardHandler = {
-	[key: string]: (keyEvent?: KeyboardEvent | undefined) => void;
-};
-
 const isCompletable = (
 	dateStr: string,
 	dateMask: typeof TIME_MASK | typeof DATE_TIME_MASK,
-): boolean => {
-	return new RegExp(
+): boolean =>
+	new RegExp(
 		dateMask
 			.split('')
 			.slice(0, dateStr.length)
@@ -47,7 +43,6 @@ const isCompletable = (
 			.join(''),
 		'gi',
 	).test(dateStr);
-};
 
 const replaceBlankTimeCharsWithDefaults = (
 	dateStr: string,

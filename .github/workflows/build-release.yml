@@ -44,4 +44,3 @@ jobs:
   scan:
     name: Vulnerabilities scanning
     uses: th2-net/.github/.github/workflows/js-anchore-scan.yml@main
-

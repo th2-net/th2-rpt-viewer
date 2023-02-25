@@ -137,9 +137,8 @@ export default class EventsFilterStore {
 	};
 
 	@action
-	public resetEventsFilter = (): EventsFilter | null => {
-		return getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
-	};
+	public resetEventsFilter = (): EventsFilter | null =>
+		getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
 
 	@action
 	public setIsOpen = (state: boolean) => {

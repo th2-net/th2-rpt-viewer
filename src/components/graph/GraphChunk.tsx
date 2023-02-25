@@ -59,17 +59,20 @@ function GraphChunk(props: Props) {
 		};
 	}, []);
 
-	const graphItems = React.useMemo(() => {
-		return filterListByChunkRange([chunk.from, chunk.to], selectedStore.graphItems);
-	}, [chunk.from, chunk.to, selectedStore.graphItems]);
+	const graphItems = React.useMemo(
+		() => filterListByChunkRange([chunk.from, chunk.to], selectedStore.graphItems),
+		[chunk.from, chunk.to, selectedStore.graphItems],
+	);
 
-	const ticks: Array<string> = React.useMemo(() => {
-		return getGraphTimeTicks([chunk.from, chunk.to], interval, tickSize);
-	}, [chunk.from, chunk.to, interval, tickSize]);
+	const ticks: Array<string> = React.useMemo(
+		() => getGraphTimeTicks([chunk.from, chunk.to], interval, tickSize),
+		[chunk.from, chunk.to, interval, tickSize],
+	);
 
-	const graphItemsGroups: Array<GraphGroup> = React.useMemo(() => {
-		return groupGraphItems([chunk.from, chunk.to], chunkWidth, graphItems, ATTACHED_ITEM_SIZE);
-	}, [chunk.from, chunk.to, chunkWidth, graphItems]);
+	const graphItemsGroups: Array<GraphGroup> = React.useMemo(
+		() => groupGraphItems([chunk.from, chunk.to], chunkWidth, graphItems, ATTACHED_ITEM_SIZE),
+		[chunk.from, chunk.to, chunkWidth, graphItems],
+	);
 
 	return (
 		<div
