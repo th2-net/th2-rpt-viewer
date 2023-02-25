@@ -105,9 +105,10 @@ export function filterUniqueGraphItems(items: GraphItem[]) {
 		return item.eventId;
 	}
 
-	return items.filter((item, index, self) => {
-		return index === self.findIndex(selfItem => getGraphItemId(item) === getGraphItemId(selfItem));
-	});
+	return items.filter(
+		(item, index, self) =>
+			index === self.findIndex(selfItem => getGraphItemId(item) === getGraphItemId(selfItem)),
+	);
 }
 
 export function getRangeCenter(timerange: TimeRange) {

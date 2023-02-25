@@ -204,7 +204,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 		if (!prevColumn || !rootRef) return;
 		const { left } = rootRef.getBoundingClientRect();
 		const columnRect = prevColumn.getBoundingClientRect();
-		rootRef.scrollLeft = rootRef?.scrollLeft - (left - columnRect.left);
+		rootRef.scrollLeft -= left - columnRect.left;
 		this.getHiddenColumns();
 	};
 

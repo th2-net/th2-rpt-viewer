@@ -22,21 +22,19 @@ export type ResultCountLimitConfig = {
 	disabled: boolean;
 };
 
-const SearchResultCountLimit = ({ value, setValue, disabled }: ResultCountLimitConfig) => {
-	return (
-		<div className='search-result-count-limit'>
-			<span className='search-result-count-limit__label'>Stop at</span>
-			<input
-				type='text'
-				className='search-result-count-limit__input'
-				id='result-count-limit'
-				value={value}
-				onChange={e => setValue(e.target.value)}
-				disabled={disabled}
-			/>
-			<span className='search-result-count-limit__label'>results</span>
-		</div>
-	);
-};
+const SearchResultCountLimit = ({ value, setValue, disabled }: ResultCountLimitConfig) => (
+	<div className='search-result-count-limit'>
+		<span className='search-result-count-limit__label'>Stop at</span>
+		<input
+			type='text'
+			className='search-result-count-limit__input'
+			id='result-count-limit'
+			value={value}
+			onChange={e => setValue(e.target.value)}
+			disabled={disabled}
+		/>
+		<span className='search-result-count-limit__label'>results</span>
+	</div>
+);
 
 export default SearchResultCountLimit;

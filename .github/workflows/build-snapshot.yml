@@ -52,4 +52,6 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ steps.snapshot_name.outputs.value }}
           labels: com.exactpro.th2.${{ steps.repo.outputs.REPOSITORY_NAME }}=${{ steps.version.outputs.prop }}
-
+  scan:
+    name: Vulnerabilities scanning
+    uses: th2-net/.github/.github/workflows/js-anchore-scan.yml@main

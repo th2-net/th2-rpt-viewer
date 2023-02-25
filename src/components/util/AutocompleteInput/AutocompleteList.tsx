@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import { IndexLocationWithAlign, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { FlatIndexLocationWithAlign, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import KeyCodes from '../../../util/KeyCodes';
 import { ModalPortal } from '../Portal';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
@@ -94,7 +94,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		}, [list]);
 
 		const scrollToOption = React.useCallback(
-			(location: IndexLocationWithAlign) => {
+			(location: FlatIndexLocationWithAlign) => {
 				const { index, align } = location;
 				const optionEl = rootRef.current?.querySelector(`*[data-index="${index}"]`);
 

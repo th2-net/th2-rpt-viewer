@@ -39,10 +39,8 @@ const Heatmap = ({ onElementClick, selectedItem }: Props) => {
 			return;
 		const { startIndex, endIndex } = visibleRange;
 
-		const {
-			top: heatmapOffsetTop,
-			bottom: heatmapOffsetBottom,
-		} = heatmapRef.current.getBoundingClientRect();
+		const { top: heatmapOffsetTop, bottom: heatmapOffsetBottom } =
+			heatmapRef.current.getBoundingClientRect();
 		let scrollIndicatorTop = heatmapOffsetTop;
 		let scrollIndicatorHeight = 0;
 

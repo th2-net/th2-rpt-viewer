@@ -82,9 +82,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 			</div>
 			<div className='history-point'>
 				<p className='history-point__timestamp'>
-					{moment(+timestamp)
-						.utc()
-						.format('DD.MM.YYYY HH:mm:ss.SSS')}
+					{moment(+timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}
 				</p>
 				<button
 					className='bookmark-item__remove-btn'

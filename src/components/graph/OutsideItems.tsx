@@ -53,12 +53,13 @@ const OutsideItems = (props: OverlayPanelProps) => {
 		goToGraphItem,
 	} = props;
 
-	const outsideItems: IOutsideItems = React.useMemo(() => {
-		return {
+	const outsideItems: IOutsideItems = React.useMemo(
+		() => ({
 			left: graphItems.filter(item => getTimestampAsNumber(item) < from),
 			right: graphItems.filter(item => getTimestampAsNumber(item) > to),
-		};
-	}, [from, to, graphItems]);
+		}),
+		[from, to, graphItems],
+	);
 
 	const outsidePanels = React.useMemo(() => {
 		const outsidePan = {

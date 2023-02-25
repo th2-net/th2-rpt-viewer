@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
-const webpackMerge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const commonConfig = require('./webpack.common');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const path = require('path');
@@ -22,7 +22,7 @@ const packageJSON = require('../package.json');
 
 const { appBuild, appPath, appSrc } = require('./paths');
 
-module.exports = webpackMerge(commonConfig, {
+module.exports = merge(commonConfig, {
 	output: {
 		path: path.resolve(appBuild, 'out'),
 		publicPath: '',
@@ -42,10 +42,10 @@ module.exports = webpackMerge(commonConfig, {
 					{
 						loader: 'postcss-loader',
 						options: {
-							config: {
-								path: path.resolve(appPath, 'postcss.config.js'),
+							postcssOptions: {
+								config: path.resolve(appPath, 'postcss.config.js'),
 							},
-						},
+						}
 					},
 					'sass-loader',
 				].filter(loader => loader),
@@ -61,7 +61,7 @@ module.exports = webpackMerge(commonConfig, {
 				return {
 					version: packageJSON.version,
 				};
-			}
-		})
-	]
+			},
+		}),
+	],
 });
