@@ -31,12 +31,9 @@ import { GraphSearchResult } from './GraphSearch';
 import { SearchDirection } from '../../../models/search/SearchDirection';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
 
-const isTimestamp = (searchValue: string) => {
-	return (
-		moment(searchValue, DateTimeMask.TIME_MASK, true).isValid() ||
-		moment(searchValue, DateTimeMask.DATE_TIME_MASK, true).isValid()
-	);
-};
+const isTimestamp = (searchValue: string) =>
+	moment(searchValue, DateTimeMask.TIME_MASK, true).isValid() ||
+	moment(searchValue, DateTimeMask.DATE_TIME_MASK, true).isValid();
 
 interface Props {
 	value: string;

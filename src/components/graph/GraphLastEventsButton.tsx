@@ -20,12 +20,10 @@ type GraphLastEventsButtonProps = {
 	findLastEvents: () => void;
 };
 
-const GraphLastEventsButton = ({ findLastEvents }: GraphLastEventsButtonProps) => {
-	return (
-		<button onClick={findLastEvents} className='graph-last-events-button graph-button'>
-			Show last events
-		</button>
-	);
-};
+const GraphLastEventsButton = ({ findLastEvents }: GraphLastEventsButtonProps) => (
+	<button onClick={findLastEvents} className='graph-last-events-button graph-button'>
+		Show last events
+	</button>
+);
 
 export default GraphLastEventsButton;
