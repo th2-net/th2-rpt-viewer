@@ -17,8 +17,6 @@
 import React from 'react';
 import { ViewModeContext } from '../contexts/viewModeContext';
 
-const useViewMode = () => {
-	return React.useContext(ViewModeContext);
-};
+const useViewMode = () => React.useContext(ViewModeContext);
 
 export default useViewMode;

@@ -16,6 +16,7 @@
 
 import React from 'react';
 
+// eslint-disable-next-line no-shadow
 export enum ViewMode {
 	Full = 'full',
 	Embedded = 'embedded',
@@ -28,6 +29,6 @@ interface ViewModeProviderProps {
 	children: React.ReactNode;
 	value: ViewMode;
 }
-export const ViewModeProvider = ({ children, value }: ViewModeProviderProps) => {
-	return <ViewModeContext.Provider value={value}>{children}</ViewModeContext.Provider>;
-};
+export const ViewModeProvider = ({ children, value }: ViewModeProviderProps) => (
+	<ViewModeContext.Provider value={value}>{children}</ViewModeContext.Provider>
+);

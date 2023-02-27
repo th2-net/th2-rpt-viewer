@@ -192,7 +192,7 @@ export default class RootStore {
 					layout: messageId ? [0, 100] : defaultPanelsLayout,
 				},
 			];
-		} catch (error) {
+		} catch (error: any) {
 			this.notificationsStore.addMessage({
 				notificationType: 'urlError',
 				type: 'error',

@@ -16,6 +16,5 @@
 
 import WorkspaceStore from '../stores/workspace/WorkspaceStore';
 
-export const isWorkspaceStore = (object: unknown): object is WorkspaceStore => {
-	return object instanceof WorkspaceStore;
-};
+export const isWorkspaceStore = (object: unknown): object is WorkspaceStore =>
+	object instanceof WorkspaceStore;

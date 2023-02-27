@@ -71,9 +71,8 @@ const SearchResultGroup = ({ results, onResultClick }: SearchResultGroup) => {
 		}
 	};
 
-	const getIsToggled = (searchResult: SearchResult): boolean => {
-		return Boolean(savedItems.find(savedItem => getItemId(savedItem) === getItemId(searchResult)));
-	};
+	const getIsToggled = (searchResult: SearchResult): boolean =>
+		Boolean(savedItems.find(savedItem => getItemId(savedItem) === getItemId(searchResult)));
 
 	const averageTimestamp = (() => {
 		const groupTimestamps = results.map(getTimestampAsNumber);

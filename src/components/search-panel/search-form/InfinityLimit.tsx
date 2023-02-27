@@ -22,21 +22,19 @@ export type InfinityLimitConfig = {
 	disabled: boolean;
 };
 
-const InfinityLimit = ({ value, setValue, disabled }: InfinityLimitConfig) => {
-	return (
-		<div className='search-infinity-limit'>
-			<span className='search-infinity-limit__label'>Note: Limit is </span>
-			<input
-				type='text'
-				className='search-infinity-limit__input'
-				id='search-infinity-limit'
-				value={value}
-				onChange={e => setValue(e.target.value)}
-				disabled={disabled}
-			/>
-			<span className='search-infinity-limit__label'> days</span>
-		</div>
-	);
-};
+const InfinityLimit = ({ value, setValue, disabled }: InfinityLimitConfig) => (
+	<div className='search-infinity-limit'>
+		<span className='search-infinity-limit__label'>Note: Limit is </span>
+		<input
+			type='text'
+			className='search-infinity-limit__input'
+			id='search-infinity-limit'
+			value={value}
+			onChange={e => setValue(e.target.value)}
+			disabled={disabled}
+		/>
+		<span className='search-infinity-limit__label'> days</span>
+	</div>
+);
 
 export default InfinityLimit;

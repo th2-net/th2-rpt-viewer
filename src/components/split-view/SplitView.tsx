@@ -79,11 +79,13 @@ export default class SplitView extends React.Component<Props, State> {
 	}
 
 	get panelsAvailableWidth() {
-		return this.root.current?.offsetWidth! - this.splitterThickness;
+		const offsetWidth = this.root.current?.offsetWidth || 0;
+		return offsetWidth - this.splitterThickness;
 	}
 
 	get panelsAvailableHeight() {
-		return this.root.current?.offsetHeight! - this.splitterThickness;
+		const offsetHeight = this.root.current?.offsetHeight || 0;
+		return offsetHeight - this.splitterThickness;
 	}
 
 	private splitterMouseDown = (e: React.MouseEvent) => {
@@ -188,9 +190,8 @@ export default class SplitView extends React.Component<Props, State> {
 				const [topHeight, bottomHeight] = this.getPanelsHeightByArea(panelArea);
 				rootStyle = { gridTemplateRows: `${topHeight}px auto ${bottomHeight}px` };
 
-				const [topPreviewHeight, bottomPreviewHeight] = this.getPanelsHeightByArea(
-					previewPanelArea,
-				);
+				const [topPreviewHeight, bottomPreviewHeight] =
+					this.getPanelsHeightByArea(previewPanelArea);
 				previewStyle = {
 					gridTemplateRows: `${topPreviewHeight}px auto ${bottomPreviewHeight}px`,
 				};

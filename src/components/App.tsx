@@ -28,24 +28,22 @@ import WorkspaceLinkGetter from './WorkspaceLinkGetter';
 import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
 import '../styles/root.scss';
 
-const AppRootBase = () => {
-	return (
-		<div className='app'>
-			<ToastProvider
-				placement='top-right'
-				components={{ Toast, ToastContainer }}
-				transitionDuration={400}>
-				<Graph />
-				<WorkspaceLinkGetter />
-				<MessagesViewConfigurator />
-				<div className='app__workspaces'>
-					<WorkspacesLayout />
-				</div>
-				<Notifier />
-			</ToastProvider>
-		</div>
-	);
-};
+const AppRootBase = () => (
+	<div className='app'>
+		<ToastProvider
+			placement='top-right'
+			components={{ Toast, ToastContainer }}
+			transitionDuration={400}>
+			<Graph />
+			<WorkspaceLinkGetter />
+			<MessagesViewConfigurator />
+			<div className='app__workspaces'>
+				<WorkspacesLayout />
+			</div>
+			<Notifier />
+		</ToastProvider>
+	</div>
+);
 
 AppRootBase.displayName = 'AppRootBase';
 

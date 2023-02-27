@@ -37,12 +37,8 @@ const panelColors = {
 
 function Workspace() {
 	const { activePanel } = useActivePanel(null);
-	const {
-		panelsLayout,
-		setPanelsLayout,
-		resetToDefaulLayout,
-		collapsePanel,
-	} = useWorkspaceViewStore();
+	const { panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } =
+		useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
 
 	return (
