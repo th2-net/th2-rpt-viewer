@@ -510,10 +510,11 @@ function TimeSelector(props: TimeSelectorProps) {
 		const withoutOff = e.pageX - (pointerEl?.offsetWidth || 6) / 2;
 		const offset = e.clientX - startOffset.current;
 		const x0 = (panelRange[0] + panelRange[1]) / 2;
-		const choosenTimestamp =
+		const choosenTimestamp = Math.floor(
 			Math.abs(offset) > 10
 				? x0 + getTimeOffset(offset) - windowTimeRange[0]
-				: getTimeOffset(withoutOff);
+				: getTimeOffset(withoutOff),
+		);
 
 		onClick(Math.min(choosenTimestamp, moment.utc().valueOf()));
 		startOffset.current = 0;
