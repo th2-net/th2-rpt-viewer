@@ -40,7 +40,7 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 			raf(() => {
 				if (searchBaseRef.current && searchButtonRef.current) {
 					const clientWidth = document.documentElement.clientWidth;
-					const { left, bottom } = searchButtonRef.current?.getBoundingClientRect();
+					const { left, bottom } = searchButtonRef.current.getBoundingClientRect();
 
 					searchBaseRef.current.style.right = `${Math.max(clientWidth - left - PANEL_WIDTH, 10)}px`;
 					searchBaseRef.current.style.top = `${bottom}px`;

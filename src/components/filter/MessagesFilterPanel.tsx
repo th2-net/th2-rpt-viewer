@@ -163,9 +163,7 @@ const MessagesFilterPanel = () => {
 		};
 
 		return searchStore.messagesFilterInfo
-			.sort((a, b) => {
-				return priority.indexOf(a.name) - priority.indexOf(b.name);
-			})
+			.sort((a, b) => priority.indexOf(a.name) - priority.indexOf(b.name))
 			.map<CompoundFilterRow>((filterInfo: MessagesFilterInfo) => {
 				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
@@ -237,20 +235,22 @@ const MessagesFilterPanel = () => {
 		};
 	}, [streams, setStreams, currentStream, setCurrentStream, sessionsStore.bookStreams]);
 
-	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
-		return {
+	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(
+		() => ({
 			type: 'action',
 			id: 'sse-filtler-error',
 			message: 'Failed to load sse filters',
 			actionButtonText: 'Try again',
 			action: searchStore.getMessagesFilters,
 			isLoading: searchStore.isMessageFiltersLoading,
-		};
-	}, [searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading]);
+		}),
+		[searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading],
+	);
 
-	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig];
-	}, [compoundFilterRow, sseFiltersErrorConfig]);
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(
+		() => (compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig]),
+		[compoundFilterRow, sseFiltersErrorConfig],
+	);
 
 	const renderFooter = React.useCallback(() => {
 		if (!filter) return null;

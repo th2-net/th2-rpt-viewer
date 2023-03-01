@@ -166,8 +166,8 @@ const EmbeddedMessagesFilterPanel = ({
 
 	const areSessionInvalid: boolean = streams.length === 0;
 
-	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
-		return {
+	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(
+		() => ({
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
@@ -179,23 +179,26 @@ const EmbeddedMessagesFilterPanel = ({
 			required: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
-		};
-	}, [streams, setStreams, currentStream, setCurrentStream]);
+		}),
+		[streams, setStreams, currentStream, setCurrentStream],
+	);
 
-	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
-		return {
+	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(
+		() => ({
 			type: 'action',
 			id: 'sse-filtler-error',
 			message: 'Failed to load sse filters',
 			actionButtonText: 'Try again',
 			action: () => null,
 			isLoading: false,
-		};
-	}, []);
+		}),
+		[],
+	);
 
-	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig];
-	}, [compoundFilterRow, sseFiltersErrorConfig]);
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(
+		() => (compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig]),
+		[compoundFilterRow, sseFiltersErrorConfig],
+	);
 
 	return (
 		<>

@@ -44,13 +44,8 @@ export interface GraphSearchResult {
 }
 
 function GraphSearch(props: Props) {
-	const {
-		onTimestampSubmit,
-		onFoundItemClick,
-		windowRange,
-		hoveredTimestamp,
-		activeTabIndex,
-	} = props;
+	const { onTimestampSubmit, onFoundItemClick, windowRange, hoveredTimestamp, activeTabIndex } =
+		props;
 
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValidDate: false,
@@ -159,7 +154,7 @@ function GraphSearch(props: Props) {
 	};
 
 	const timestampSearch = (startTimestamp: number) => {
-		onTimestampSubmit(startTimestamp, true);
+		onTimestampSubmit(startTimestamp);
 		setShowModal(false);
 	};
 

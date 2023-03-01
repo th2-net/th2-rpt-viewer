@@ -121,26 +121,4 @@ export default class SearchWorkspaceStore {
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
 		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
 	};
-
-	@action
-	public followByTimestamp = (timestamp: number, resultType: ActionType, scope: string) => {
-		let initialWorkspaceState: WorkspaceInitialState = {};
-
-		switch (resultType) {
-			case ActionType.EVENT_ACTION:
-			case ActionType.EVENT_TREE_NODE:
-				if (scope) {
-					initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp, scope);
-				}
-				break;
-			case ActionType.MESSAGE:
-				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp, '');
-				break;
-			default:
-				break;
-		}
-
-		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
-		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
-	};
 }

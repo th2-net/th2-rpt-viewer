@@ -21,7 +21,7 @@ import { Bookmark } from './Bookmarks';
 
 export const intervalOptions = [15, 30, 60] as const;
 
-export type IntervalOption = typeof intervalOptions[number];
+export type IntervalOption = (typeof intervalOptions)[number];
 
 export interface Chunk {
 	from: number;

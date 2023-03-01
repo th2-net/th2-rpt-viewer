@@ -1,5 +1,5 @@
 variables:
-  APP_NAME: "th2-rpt-viewer"
+  APP_NAME: 'th2-rpt-viewer'
   INSPECTION_ENABLED: 'false'
 
 include:

@@ -49,13 +49,6 @@ const SearchPanel = () => {
 		[searchWorkspace.onSearchResultItemSelect],
 	);
 
-	const onResultGroupClick = React.useCallback(
-		(timestamp: number, resultType: ActionType, search: SearchHistory) => {
-			searchWorkspace.followByTimestamp(timestamp, resultType, search.request.scope);
-		},
-		[searchWorkspace.followByTimestamp],
-	);
-
 	return (
 		<div className='search-panel-wrapper'>
 			<div className='search-panel' ref={searchPanelRef}>
@@ -68,9 +61,6 @@ const SearchPanel = () => {
 						timestamp={searchStore.currentSearch.timestamp}
 						onResultItemClick={(bookmark: BookmarkedItem) =>
 							onResultItemClick(bookmark, searchStore.currentSearch!)
-						}
-						onResultGroupClick={(timestamp, resultType) =>
-							onResultGroupClick(timestamp, resultType, searchStore.currentSearch!)
 						}
 						onResultDelete={() => {
 							if (searchStore.currentSearch) {

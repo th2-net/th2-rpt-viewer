@@ -38,7 +38,7 @@ const defaultState = {
 	rawResults: [],
 };
 
-type initialState = Partial<{
+type InitialState = Partial<{
 	tokens: SearchToken[];
 	scrolledIndex: number | null;
 	searchPatterns: string[];
@@ -49,7 +49,7 @@ export default class EventsSearchStore {
 		private api: ApiSchema,
 		private eventsStore: EventsStore,
 		private booksStore: BooksStore,
-		initialState?: initialState,
+		initialState?: InitialState,
 	) {
 		this.init(initialState);
 
@@ -136,7 +136,7 @@ export default class EventsSearchStore {
 	};
 
 	@action
-	private init = (initialState?: initialState) => {
+	private init = (initialState?: InitialState) => {
 		if (!initialState) return;
 		const {
 			scrolledIndex = defaultState.scrolledIndex,

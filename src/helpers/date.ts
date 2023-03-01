@@ -91,20 +91,14 @@ export const getTimeWindow = (
 	};
 };
 
-export const isTimeIntersected = (firstRange: TimeRange, secondRange: TimeRange) => {
-	return (
-		(firstRange[0] >= secondRange[0] && firstRange[0] <= secondRange[1]) ||
-		(secondRange[0] >= firstRange[0] && secondRange[0] <= secondRange[1])
-	);
-};
+export const isTimeIntersected = (firstRange: TimeRange, secondRange: TimeRange) =>
+	(firstRange[0] >= secondRange[0] && firstRange[0] <= secondRange[1]) ||
+	(secondRange[0] >= firstRange[0] && secondRange[0] <= secondRange[1]);
 
-export const isTimeInsideInterval = (timestamp: number, interval: [number, number]) => {
-	return timestamp >= interval[0] && timestamp <= interval[1];
-};
+export const isTimeInsideInterval = (timestamp: number, interval: [number, number]) =>
+	timestamp >= interval[0] && timestamp <= interval[1];
 
-export const toUTC = (date: Moment) => {
-	return date.subtract(moment().utcOffset(), 'minutes');
-};
+export const toUTC = (date: Moment) => date.subtract(moment().utcOffset(), 'minutes');
 
 export function getRangeFromTimestamp(timestamp: number, interval: number): TimeRange {
 	return [

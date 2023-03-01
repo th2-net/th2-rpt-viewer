@@ -85,6 +85,7 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 	return (
 		<>
 			<MaskedInput
+				title='Central timestamp'
 				ref={inputRef}
 				id={id}
 				className={`filter-row__input ${maskedInputClassName}`}

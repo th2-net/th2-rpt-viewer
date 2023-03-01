@@ -131,9 +131,7 @@ function MessageBodyCardField(props: FieldProps) {
 
 	const [areSameContext, highlightSameContext] = React.useState(false);
 
-	const highlight = React.useMemo(() => {
-		return debounce(() => setIsHighlighted(true), 60);
-	}, []);
+	const highlight = React.useMemo(() => debounce(() => setIsHighlighted(true), 60), []);
 
 	const removeHighlight = React.useCallback(() => {
 		highlight.cancel();

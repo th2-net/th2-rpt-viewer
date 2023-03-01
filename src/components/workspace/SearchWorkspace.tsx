@@ -37,36 +37,35 @@ const panelColors = {
 function SearchWorkspace() {
 	const searchWorkspaceStore = useSearchWorkspace();
 	const selectedStore = useWorkspaces().selectedStore;
-	const {
-		panelsLayout,
-		setPanelsLayout,
-		resetToDefaulLayout,
-		collapsePanel,
-	} = searchWorkspaceStore.viewStore;
+	const { panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } =
+		searchWorkspaceStore.viewStore;
 
 	const bookmarksCounter = selectedStore.bookmarksStore.filteredBookmarks.length;
 
-	const searchPanel = React.useMemo(() => {
-		return {
+	const searchPanel = React.useMemo(
+		() => ({
 			title: 'Search',
 			color: panelColors.search,
 			component: <SearchPanel />,
 			isActive: false,
-		};
-	}, []);
+		}),
+		[],
+	);
 
-	const bookmarksPanel = React.useMemo(() => {
-		return {
+	const bookmarksPanel = React.useMemo(
+		() => ({
 			title: `Bookmarks (${bookmarksCounter}/1000)`,
 			color: panelColors.bookmarks,
 			component: <BookmarksPanel />,
 			isActive: false,
-		};
-	}, [bookmarksCounter]);
+		}),
+		[bookmarksCounter],
+	);
 
-	const searchWorkspacePanels = React.useMemo(() => {
-		return [searchPanel, bookmarksPanel];
-	}, [searchPanel, bookmarksPanel]);
+	const searchWorkspacePanels = React.useMemo(
+		() => [searchPanel, bookmarksPanel],
+		[searchPanel, bookmarksPanel],
+	);
 
 	return (
 		<div className='workspace'>

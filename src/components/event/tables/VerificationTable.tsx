@@ -210,7 +210,7 @@ const VerificationTableBase = (props: Props) => {
 		if (!prevColumn || !rootRefCurrent || !!rootRef) return;
 		const { left } = rootRefCurrent.getBoundingClientRect();
 		const columnRect = prevColumn.getBoundingClientRect();
-		rootRefCurrent.scrollLeft = rootRefCurrent?.scrollLeft - (left - columnRect.left);
+		rootRefCurrent.scrollLeft -= left - columnRect.left;
 		getHiddenColumns();
 	};
 
