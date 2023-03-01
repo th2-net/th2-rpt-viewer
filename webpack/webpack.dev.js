@@ -14,12 +14,13 @@
  * limitations under the License.
  ******************************************************************************/
 
-const webpackMerge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const commonConfig = require('./webpack.common');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { appSrc } = require('./paths');
+const ESLintWebpackPlugin = require('eslint-webpack-plugin');
 
-module.exports = webpackMerge(commonConfig, {
+module.exports = merge(commonConfig, {
 	output: {
 		publicPath: '/',
 	},
@@ -74,10 +75,9 @@ module.exports = webpackMerge(commonConfig, {
 		],
 	},
 	plugins: [
-		new ForkTsCheckerWebpackPlugin({
-			eslint: {
-				files: './src/**/*',
-			},
-		}),
+		new ESLintWebpackPlugin({
+			extensions: ['tsx'],
+			formatter: require('eslint-formatter-pretty'),
+		})
 	],
 });

@@ -35,12 +35,13 @@ export const EventsScopeProvider = observer((props: Props) => {
 	const { scope, children } = props;
 	const booksStore = useBooksStore();
 
-	const state: EventsScopeContextState = React.useMemo(() => {
-		return {
+	const state: EventsScopeContextState = React.useMemo(
+		() => ({
 			scope,
 			bookId: booksStore.selectedBook.name,
-		};
-	}, [scope, booksStore.selectedBook.name]);
+		}),
+		[scope, booksStore.selectedBook.name],
+	);
 
 	return <EventsScopeContext.Provider value={state}>{children}</EventsScopeContext.Provider>;
 });

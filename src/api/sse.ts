@@ -222,12 +222,8 @@ const sseApi: SSESchema = {
 
 		throw res;
 	},
-	getEventFilters: () => {
-		return sseApi.getFilters<EventSSEFilters>('events');
-	},
-	getMessagesFilters: () => {
-		return sseApi.getFilters<MessagesSSEFilters>('messages');
-	},
+	getEventFilters: () => sseApi.getFilters<EventSSEFilters>('events'),
+	getMessagesFilters: () => sseApi.getFilters<MessagesSSEFilters>('messages'),
 	getEventsFiltersInfo: async filters => {
 		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
 			filters.map(filterName =>
@@ -251,13 +247,12 @@ const sseApi: SSESchema = {
 			return filterInfo;
 		});
 	},
-	getMessagesFiltersInfo: filters => {
-		return Promise.all(
+	getMessagesFiltersInfo: filters =>
+		Promise.all(
 			filters.map(filterName =>
 				fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json()),
 			),
-		);
-	},
+		),
 };
 
 export default sseApi;

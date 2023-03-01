@@ -58,7 +58,7 @@ const FilterPanel = (props: Props) => {
 			raf(() => {
 				if (filterBaseRef.current && filterButtonRef.current) {
 					const clientWidth = document.documentElement.clientWidth;
-					const { left, bottom } = filterButtonRef.current?.getBoundingClientRect();
+					const { left, bottom } = filterButtonRef.current.getBoundingClientRect();
 
 					filterBaseRef.current.style.right = `${Math.max(clientWidth - left - PANEL_WIDTH, 10)}px`;
 					filterBaseRef.current.style.top = `${bottom}px`;

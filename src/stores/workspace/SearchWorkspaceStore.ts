@@ -18,7 +18,7 @@ import { action } from 'mobx';
 import { nanoid } from 'nanoid';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
-import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
 import WorkspacesStore from './WorkspacesStore';
 import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
@@ -118,28 +118,6 @@ export default class SearchWorkspaceStore {
 				resultItem,
 			);
 		}
-		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
-		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
-	};
-
-	@action
-	public followByTimestamp = (timestamp: number, resultType: ActionType, scope: string) => {
-		let initialWorkspaceState: WorkspaceInitialState = {};
-
-		switch (resultType) {
-			case ActionType.EVENT_ACTION:
-			case ActionType.EVENT_TREE_NODE:
-				if (scope) {
-					initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp, scope);
-				}
-				break;
-			case ActionType.MESSAGE:
-				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp, '');
-				break;
-			default:
-				break;
-		}
-
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
 		newWorkspace.then(workspace => this.workspacesStore.addWorkspace(workspace));
 	};

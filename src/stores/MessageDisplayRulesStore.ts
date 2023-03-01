@@ -178,7 +178,7 @@ class MessageDisplayRulesStore {
 	private saveRule = async (rule: MessageDisplayRule) => {
 		try {
 			await this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule));
-		} catch (error) {
+		} catch (error: any) {
 			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
@@ -196,7 +196,7 @@ class MessageDisplayRulesStore {
 	private updateRule = async (rule: MessageDisplayRule | OrderRule) => {
 		try {
 			await this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule));
-		} catch (error) {
+		} catch (error: any) {
 			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {

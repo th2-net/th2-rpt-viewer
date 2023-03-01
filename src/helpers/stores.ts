@@ -17,10 +17,8 @@
 import EventsStore from '../stores/events/EventsStore';
 import MessagesStore from '../stores/messages/MessagesStore';
 
-export const isEventsStore = (object: unknown): object is EventsStore => {
-	return object instanceof EventsStore;
-};
+export const isEventsStore = (object: unknown): object is EventsStore =>
+	object instanceof EventsStore;
 
-export const isMessagesStore = (object: unknown): object is MessagesStore => {
-	return object instanceof MessagesStore;
-};
+export const isMessagesStore = (object: unknown): object is MessagesStore =>
+	object instanceof MessagesStore;

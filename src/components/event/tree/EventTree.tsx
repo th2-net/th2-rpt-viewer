@@ -57,9 +57,10 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		}
 	}, [isChildrenUnknown, isLoading, eventTreeNode, isOutOfMainChannel]);
 
-	const parents = useMemo(() => {
-		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
-	}, [eventTreeNode]);
+	const parents = useMemo(
+		() => eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache),
+		[eventTreeNode],
+	);
 
 	const childrenCount = computed(() => {
 		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
@@ -78,9 +79,10 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		),
 	).get();
 
-	const onExpandClick = React.useCallback(() => eventsStore.toggleNode(eventTreeNode), [
-		eventTreeNode,
-	]);
+	const onExpandClick = React.useCallback(
+		() => eventsStore.toggleNode(eventTreeNode),
+		[eventTreeNode],
+	);
 
 	const showLoadButton = computed(() => {
 		if (eventTreeNode.parentId) {
