@@ -124,17 +124,15 @@ const VerificationTableBase = (props: Props) => {
 		});
 	};
 
-	const setNodeExpandStatus = (node: TableNode, isExpanded: boolean): TableNode => {
-		return {
-			...node,
-			isExpanded,
-			subEntries:
-				node.subEntries &&
-				node.subEntries.map(subNode =>
-					subNode.subEntries ? setNodeExpandStatus(subNode, isExpanded) : subNode,
-				),
-		};
-	};
+	const setNodeExpandStatus = (node: TableNode, isExpanded: boolean): TableNode => ({
+		...node,
+		isExpanded,
+		subEntries:
+			node.subEntries &&
+			node.subEntries.map(subNode =>
+				subNode.subEntries ? setNodeExpandStatus(subNode, isExpanded) : subNode,
+			),
+	});
 
 	React.useEffect(() => {
 		getHiddenColumns();
@@ -160,8 +158,8 @@ const VerificationTableBase = (props: Props) => {
 	const updateExpandPath = (
 		[currentIndex, ...expandPath]: number[],
 		prevState: TableNode[],
-	): TableNode[] => {
-		return prevState.map(
+	): TableNode[] =>
+		prevState.map(
 			(node, index): TableNode =>
 				index === currentIndex
 					? {
@@ -171,7 +169,6 @@ const VerificationTableBase = (props: Props) => {
 					  }
 					: node,
 		);
-	};
 
 	const getHiddenColumns = () => {
 		if (!rootRef.current) return;

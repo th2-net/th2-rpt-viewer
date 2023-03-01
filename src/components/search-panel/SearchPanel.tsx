@@ -24,7 +24,6 @@ import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import { isBookmark } from '../../helpers/bookmarks';
 import { EventsScopeProvider } from '../../contexts/eventsScopeProvider';
 import { SearchHistory } from '../../stores/SearchStore';
-import { ActionType } from '../../models/EventAction';
 import { BookmarkedItem } from '../../models/Bookmarks';
 import '../../styles/search-panel.scss';
 

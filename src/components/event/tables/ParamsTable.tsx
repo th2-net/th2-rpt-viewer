@@ -76,19 +76,17 @@ const ParamsTableBase = (props: Props) => {
 		setNodes(nodes.map(node => setNodeExpandStatus(node, isCollapsed)));
 	};
 
-	const setNodeExpandStatus = (node: ParamsTableRow, isExpanded: boolean): ParamsTableRow => {
-		return {
-			...node,
-			isExpanded,
-			subRows: node.subRows.map(subNode => setNodeExpandStatus(subNode, isExpanded)),
-		};
-	};
+	const setNodeExpandStatus = (node: ParamsTableRow, isExpanded: boolean): ParamsTableRow => ({
+		...node,
+		isExpanded,
+		subRows: node.subRows.map(subNode => setNodeExpandStatus(subNode, isExpanded)),
+	});
 
 	const updateExpandPath = (
 		[currentIndex, ...expandPath]: number[],
 		prevState: ParamsTableRow[],
-	): ParamsTableRow[] => {
-		return prevState.map((node, index) =>
+	): ParamsTableRow[] =>
+		prevState.map((node, index) =>
 			index === currentIndex
 				? {
 						...node,
@@ -97,11 +95,8 @@ const ParamsTableBase = (props: Props) => {
 				  }
 				: node,
 		);
-	};
 
-	React.useEffect(() => {
-		return () => props.saveState(nodes);
-	}, []);
+	React.useEffect(() => () => props.saveState(nodes), []);
 
 	React.useEffect(() => {
 		if (props.expandPath && props.expandPath.length > 0) {

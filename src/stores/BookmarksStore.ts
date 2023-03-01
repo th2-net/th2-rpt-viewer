@@ -230,28 +230,24 @@ export class BookmarksStore {
 		this.getSavedMessages(book);
 	};
 
-	private createMessageBookmark = (message: EventMessage, bookId: string): MessageBookmark => {
-		return {
-			id: message.messageId,
-			timestamp: moment.utc().valueOf(),
-			item: toJS(message),
-			bookId,
-		};
-	};
+	private createMessageBookmark = (message: EventMessage, bookId: string): MessageBookmark => ({
+		id: message.messageId,
+		timestamp: moment.utc().valueOf(),
+		item: toJS(message),
+		bookId,
+	});
 
 	private createEventBookmark = (
 		event: EventTreeNode,
 		bookId: string,
 		scope: string,
-	): EventBookmark => {
-		return {
-			id: event.eventId,
-			timestamp: moment.utc().valueOf(),
-			item: toJS(event),
-			bookId,
-			scope,
-		};
-	};
+	): EventBookmark => ({
+		id: event.eventId,
+		timestamp: moment.utc().valueOf(),
+		item: toJS(event),
+		bookId,
+		scope,
+	});
 
 	public syncData = async (unsavedData?: DbData) => {
 		await Promise.all([

@@ -535,11 +535,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.isMatchingMessages.set(messageId, true);
 
 		try {
-			const {
-				resultCountLimit,
-				searchDirection,
-				...filterParams
-			} = this.messagesStore.filterStore.filterParams;
+			const { resultCountLimit, searchDirection, ...filterParams } =
+				this.messagesStore.filterStore.filterParams;
 			const isMatch = await this.api.messages.matchMessage(
 				messageId,
 				{ ...filterParams, bookId },

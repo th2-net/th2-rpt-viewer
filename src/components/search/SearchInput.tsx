@@ -98,51 +98,50 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			}
 		};
 
-		const bubbleSwitch = (currentValue: string, bubbleIndex: number) => (
-			e: React.KeyboardEvent<HTMLInputElement>,
-		) => {
-			if (e.target instanceof HTMLInputElement) {
-				const selectionStart = e.target.selectionStart;
+		const bubbleSwitch =
+			(currentValue: string, bubbleIndex: number) => (e: React.KeyboardEvent<HTMLInputElement>) => {
+				if (e.target instanceof HTMLInputElement) {
+					const selectionStart = e.target.selectionStart;
 
-				switch (e.keyCode) {
-					case KeyCodes.LEFT:
-						if (selectionStart === 0) {
+					switch (e.keyCode) {
+						case KeyCodes.LEFT:
+							if (selectionStart === 0) {
+								this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
+								focusBubbleOrInput(bubbleIndex - 1);
+								if (this.bubbleRefs.current) {
+									this.bubbleRefs.current[bubbleIndex]?.unfocus();
+								}
+							}
+
+							break;
+
+						case KeyCodes.RIGHT:
+							if (selectionStart === currentValue.length) {
+								this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
+								if (currentValue.trim().length > 0) {
+									this.valueBubbleOnChangeFor(bubbleIndex);
+								}
+								focusBubbleOrInput(bubbleIndex + 1);
+								if (this.bubbleRefs.current) {
+									this.bubbleRefs.current[bubbleIndex]?.unfocus();
+								}
+							}
+
+							break;
+
+						case KeyCodes.TAB:
 							this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
-							focusBubbleOrInput(bubbleIndex - 1);
+							this.inputElement.current?.focus();
 							if (this.bubbleRefs.current) {
 								this.bubbleRefs.current[bubbleIndex]?.unfocus();
 							}
-						}
 
-						break;
-
-					case KeyCodes.RIGHT:
-						if (selectionStart === currentValue.length) {
-							this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
-							if (currentValue.trim().length > 0) {
-								this.valueBubbleOnChangeFor(bubbleIndex);
-							}
-							focusBubbleOrInput(bubbleIndex + 1);
-							if (this.bubbleRefs.current) {
-								this.bubbleRefs.current[bubbleIndex]?.unfocus();
-							}
-						}
-
-						break;
-
-					case KeyCodes.TAB:
-						this.valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
-						this.inputElement.current?.focus();
-						if (this.bubbleRefs.current) {
-							this.bubbleRefs.current[bubbleIndex]?.unfocus();
-						}
-
-						break;
-					default:
-						break;
+							break;
+						default:
+							break;
+					}
 				}
-			}
-		};
+			};
 
 		return (
 			<div className='search-field-wrapper'>

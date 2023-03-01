@@ -211,15 +211,15 @@ const MessagesFilterPanel = () => {
 			});
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
-	const areSessionInvalid: boolean = React.useMemo(() => {
-		return (
+	const areSessionInvalid: boolean = React.useMemo(
+		() =>
 			streams.length === 0 ||
-			streams.some(stream => !messagesStore.messageSessions.includes(stream.trim()))
-		);
-	}, [streams, messagesStore.messageSessions]);
+			streams.some(stream => !messagesStore.messageSessions.includes(stream.trim())),
+		[streams, messagesStore.messageSessions],
+	);
 
-	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
-		return {
+	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(
+		() => ({
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
@@ -232,8 +232,9 @@ const MessagesFilterPanel = () => {
 			required: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
-		};
-	}, [streams, setStreams, currentStream, setCurrentStream, sessionsStore.bookStreams]);
+		}),
+		[streams, setStreams, currentStream, setCurrentStream, sessionsStore.bookStreams],
+	);
 
 	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(
 		() => ({

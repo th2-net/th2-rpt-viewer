@@ -91,51 +91,50 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		}
 	};
 
-	const bubbleSwitch = (currentValue: string, bubbleIndex: number) => (
-		e: React.KeyboardEvent<HTMLInputElement>,
-	) => {
-		if (e.target instanceof HTMLInputElement) {
-			const selectionStart = e.target.selectionStart;
+	const bubbleSwitch =
+		(currentValue: string, bubbleIndex: number) => (e: React.KeyboardEvent<HTMLInputElement>) => {
+			if (e.target instanceof HTMLInputElement) {
+				const selectionStart = e.target.selectionStart;
 
-			switch (e.keyCode) {
-				case KeyCodes.LEFT:
-					if (selectionStart === 0) {
-						valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
-						focusBubbleOrInput(bubbleIndex - 1);
-						bubbleRefs.current[bubbleIndex]?.unfocus();
-					}
-
-					break;
-
-				case KeyCodes.RIGHT:
-					if (selectionStart === currentValue.length) {
-						valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
-						if (currentValue.trim().length > 0) {
-							valueBubbleOnChangeFor(bubbleIndex);
+				switch (e.keyCode) {
+					case KeyCodes.LEFT:
+						if (selectionStart === 0) {
+							valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
+							focusBubbleOrInput(bubbleIndex - 1);
+							bubbleRefs.current[bubbleIndex]?.unfocus();
 						}
-						focusBubbleOrInput(bubbleIndex + 1);
-						bubbleRefs.current[bubbleIndex]?.unfocus();
+
+						break;
+
+					case KeyCodes.RIGHT:
+						if (selectionStart === currentValue.length) {
+							valueBubbleOnChangeFor(bubbleIndex)(currentValue.trim());
+							if (currentValue.trim().length > 0) {
+								valueBubbleOnChangeFor(bubbleIndex);
+							}
+							focusBubbleOrInput(bubbleIndex + 1);
+							bubbleRefs.current[bubbleIndex]?.unfocus();
+							if (bubbleIndex + 1 > config.values.length - 1) {
+								setIsBubbleEditing(false);
+							}
+						}
+
+						break;
+
+					case KeyCodes.TAB:
+						valueBubbleOnChangeFor(bubbleIndex);
+						setIsBubbleEditing(false);
 						if (bubbleIndex + 1 > config.values.length - 1) {
 							setIsBubbleEditing(false);
 						}
-					}
+						input.current?.focus();
 
-					break;
-
-				case KeyCodes.TAB:
-					valueBubbleOnChangeFor(bubbleIndex);
-					setIsBubbleEditing(false);
-					if (bubbleIndex + 1 > config.values.length - 1) {
-						setIsBubbleEditing(false);
-					}
-					input.current?.focus();
-
-					break;
-				default:
-					break;
+						break;
+					default:
+						break;
+				}
 			}
-		}
-	};
+		};
 
 	const inputRootClassName = createBemElement(
 		'filter-row',

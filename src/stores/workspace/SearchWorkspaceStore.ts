@@ -18,7 +18,7 @@ import { action } from 'mobx';
 import { nanoid } from 'nanoid';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
-import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
 import WorkspacesStore from './WorkspacesStore';
 import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
