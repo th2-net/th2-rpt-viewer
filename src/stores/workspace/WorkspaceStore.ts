@@ -223,13 +223,24 @@ export default class WorkspaceStore {
 	};
 
 	@action
+	private getBookmarkedItem = (graphItem: GraphItem) => {
+		return isEvent(graphItem)
+			? this.selectedStore.bookmarksStore.events.find(val => val.id === graphItem.eventId)
+			: isEventMessage(graphItem)
+			? this.selectedStore.bookmarksStore.messages.find(val => val.id === graphItem.messageId)
+			: null;
+	};
+
+	@action
 	public onSavedItemSelect = (graphItem: GraphItem) => {
 		let event = isEvent(graphItem) ? graphItem : null;
 		let scope: string | null = null;
 
-		if (isEventBookmark(graphItem)) {
-			event = graphItem.item as EventAction | EventTreeNode;
-			scope = graphItem.scope;
+		const bookmark = this.getBookmarkedItem(graphItem);
+
+		if (isEventBookmark(bookmark)) {
+			event = bookmark.item as EventAction | EventTreeNode;
+			scope = bookmark.scope;
 		}
 
 		if (event) {
@@ -238,11 +249,7 @@ export default class WorkspaceStore {
 			return;
 		}
 
-		const message = isMessageBookmark(graphItem)
-			? graphItem.item
-			: isEventMessage(graphItem)
-			? graphItem
-			: null;
+		const message = isMessageBookmark(bookmark) ? bookmark.item : null;
 
 		if (message) {
 			this.viewStore.activePanel = this.messagesStore;
