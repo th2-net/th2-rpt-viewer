@@ -223,13 +223,12 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	private getBookmarkedItem = (graphItem: GraphItem) => {
-		return isEvent(graphItem)
+	private getBookmarkedItem = (graphItem: GraphItem) =>
+		isEvent(graphItem)
 			? this.selectedStore.bookmarksStore.events.find(val => val.id === graphItem.eventId)
 			: isEventMessage(graphItem)
 			? this.selectedStore.bookmarksStore.messages.find(val => val.id === graphItem.messageId)
 			: null;
-	};
 
 	@action
 	public onSavedItemSelect = (graphItem: GraphItem) => {
