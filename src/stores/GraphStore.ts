@@ -152,17 +152,15 @@ export class GraphStore {
 		this.chunks = chunks;
 	}
 
-	private createChunk = (timestamp: number, interval: number) => {
-		return {
-			from: moment.utc(timestamp).valueOf(),
-			to: moment
-				.utc(timestamp)
-				.add(interval - 1, 'minutes')
-				.endOf('minute')
-				.valueOf(),
-			data: [],
-		};
-	};
+	private createChunk = (timestamp: number, interval: number) => ({
+		from: moment.utc(timestamp).valueOf(),
+		to: moment
+			.utc(timestamp)
+			.add(interval - 1, 'minutes')
+			.endOf('minute')
+			.valueOf(),
+		data: [],
+	});
 
 	public getGraphItemType = (item: GraphItem): GraphItemType => {
 		if (isBookmark(item)) return this.getGraphItemType(item.item);

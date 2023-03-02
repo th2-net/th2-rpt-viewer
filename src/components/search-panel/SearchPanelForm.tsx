@@ -75,27 +75,27 @@ const SearchPanelForm = () => {
 
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
-	const sessionsAutocomplete: string[] = React.useMemo(() => {
-		return [
+	const sessionsAutocomplete: string[] = React.useMemo(
+		() => [
 			...sessionsStore.sessions.map(s => s.session),
 			...messageSessions.filter(
 				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
 			),
-		];
-	}, [messageSessions, sessionsStore.sessions]);
+		],
+		[messageSessions, sessionsStore.sessions],
+	);
 
-	const areSessionInvalid: boolean = React.useMemo(() => {
-		return (
+	const areSessionInvalid: boolean = React.useMemo(
+		() =>
 			form.stream.length === 0 ||
-			form.stream.some(stream => !messageSessions.includes(stream.trim()))
-		);
-	}, [form.stream, messageSessions]);
+			form.stream.some(stream => !messageSessions.includes(stream.trim())),
+		[form.stream, messageSessions],
+	);
 
-	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
-		formType,
-		eventsHistory,
-		messagesHistory,
-	]);
+	const autocompletes = useMemo(
+		() => (formType === 'event' ? eventsHistory : messagesHistory),
+		[formType, eventsHistory, messagesHistory],
+	);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -155,14 +155,8 @@ const SearchPanelForm = () => {
 		},
 	};
 
-	const {
-		startTimestamp,
-		completed,
-		progress,
-		timeLimits,
-		timeIntervals,
-		processedObjectCount,
-	} = searchProgress;
+	const { startTimestamp, completed, progress, timeLimits, timeIntervals, processedObjectCount } =
+		searchProgress;
 
 	const searchDatetimeControlsConfig: SearchDatetimeControlsConfig = {
 		infinityLimit: {
@@ -228,9 +222,27 @@ const SearchPanelForm = () => {
 		commonProgress = Math.floor(progressBarConfig.rightProgress.progress);
 	}
 
+	const wrongLimits = React.useMemo(() => {
+		if (!form.startTimestamp) return false;
+		const prevLimitCheck =
+			form.timeLimits.previous &&
+			(form.searchDirection === SearchDirection.Both ||
+				form.searchDirection === SearchDirection.Previous)
+				? form.timeLimits.previous.valueOf() < form.startTimestamp.valueOf()
+				: true;
+		const nextLimitCheck =
+			form.timeLimits.next &&
+			(form.searchDirection === SearchDirection.Both ||
+				form.searchDirection === SearchDirection.Next)
+				? form.timeLimits.next.valueOf() > form.startTimestamp.valueOf()
+				: true;
+		return prevLimitCheck && nextLimitCheck;
+	}, [form.startTimestamp, form.timeLimits, form.searchDirection]);
+
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
 		disabled:
+			!wrongLimits ||
 			isHistorySearch ||
 			!form.searchDirection ||
 			(formType === 'message' && form.stream.length === 0) ||

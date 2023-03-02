@@ -186,7 +186,7 @@ export class BookmarksStore {
 		const store = isEventBookmark(bookmark) ? IndexedDbStores.EVENTS : IndexedDbStores.MESSAGES;
 		try {
 			await this.db.addDbStoreItem(store, toJS(bookmark));
-		} catch (error) {
+		} catch (error: any) {
 			if (error.name === 'QuotaExceededError') {
 				this.workspacesStore.onQuotaExceededError(bookmark);
 			} else {
@@ -230,28 +230,24 @@ export class BookmarksStore {
 		this.getSavedMessages(book);
 	};
 
-	private createMessageBookmark = (message: EventMessage, bookId: string): MessageBookmark => {
-		return {
-			id: message.messageId,
-			timestamp: moment.utc().valueOf(),
-			item: toJS(message),
-			bookId,
-		};
-	};
+	private createMessageBookmark = (message: EventMessage, bookId: string): MessageBookmark => ({
+		id: message.messageId,
+		timestamp: moment.utc().valueOf(),
+		item: toJS(message),
+		bookId,
+	});
 
 	private createEventBookmark = (
 		event: EventTreeNode,
 		bookId: string,
 		scope: string,
-	): EventBookmark => {
-		return {
-			id: event.eventId,
-			timestamp: moment.utc().valueOf(),
-			item: toJS(event),
-			bookId,
-			scope,
-		};
-	};
+	): EventBookmark => ({
+		id: event.eventId,
+		timestamp: moment.utc().valueOf(),
+		item: toJS(event),
+		bookId,
+		scope,
+	});
 
 	public syncData = async (unsavedData?: DbData) => {
 		await Promise.all([

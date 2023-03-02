@@ -17,6 +17,4 @@
 import React from 'react';
 import { EventsScopeContext } from '../contexts/eventsScopeProvider';
 
-export const useScope = () => {
-	return React.useContext(EventsScopeContext);
-};
+export const useScope = () => React.useContext(EventsScopeContext);

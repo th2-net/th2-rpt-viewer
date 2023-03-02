@@ -87,16 +87,8 @@ interface State {
 }
 
 const GraphChunksVirtualizer = (props: Props) => {
-	const {
-		settings,
-		chunkWidth,
-		timestamp,
-		interval,
-		setRange,
-		getChunk,
-		panelsRange,
-		range,
-	} = props;
+	const { settings, chunkWidth, timestamp, interval, setRange, getChunk, panelsRange, range } =
+		props;
 
 	const viewportElementRef = React.useRef<HTMLDivElement>(null);
 	const rangeElementRef = React.useRef<HTMLDivElement>(null);
@@ -510,11 +502,13 @@ function TimeSelector(props: TimeSelectorProps) {
 		const withoutOff = e.pageX - (pointerEl?.offsetWidth || 6) / 2;
 		const offset = e.clientX - startOffset.current;
 		const x0 = (panelRange[0] + panelRange[1]) / 2;
-		if (Math.abs(offset) > 10) {
-			onClick(Math.floor(x0 + getTimeOffset(offset) - windowTimeRange[0]));
-		} else {
-			onClick(Math.floor(getTimeOffset(withoutOff)));
-		}
+		const choosenTimestamp = Math.floor(
+			Math.abs(offset) > 10
+				? x0 + getTimeOffset(offset) - windowTimeRange[0]
+				: getTimeOffset(withoutOff),
+		);
+
+		onClick(Math.min(choosenTimestamp, moment.utc().valueOf()));
 		startOffset.current = 0;
 		setX(0);
 		document.removeEventListener('mousemove', handleMouseDrag);

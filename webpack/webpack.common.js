@@ -66,6 +66,9 @@ module.exports = {
 			template: path.resolve(appSrc, 'index.html'),
 			favicon: path.resolve(appPath, 'resources', 'icons', 'favicon.svg'),
 		}),
-		new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+		new webpack.IgnorePlugin({
+			resourceRegExp: /^\.\/locale$/,
+			contextRegExp: /moment$/,
+		}),
 	],
 };
