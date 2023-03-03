@@ -190,7 +190,7 @@ const VerificationTableBase = (props: Props) => {
 		});
 		setState({ ...state, prevColumns, nextColumns });
 	};
-
+	/*
 	const onNextColumnCick = () => {
 		const nextColumn = state.nextColumns[0]?.current;
 		if (!nextColumn || !rootRef.current) return;
@@ -210,7 +210,7 @@ const VerificationTableBase = (props: Props) => {
 		rootRefCurrent.scrollLeft -= left - columnRect.left;
 		getHiddenColumns();
 	};
-
+	*/
 	const changeWidth = (index: number, value: number) => {
 		setState({
 			...state,
@@ -468,9 +468,17 @@ const VerificationTableBase = (props: Props) => {
 
 	const rootClass = createStyleSelector('ver-table', props.status);
 
+	const resetWidth = () => {
+		setState({
+			...state,
+			columnWidth: [130, 125, 125, 60, 80, 50, 70],
+		});
+	};
+
 	if (!state.nodes.length) return null;
 	return (
 		<div className={rootClass}>
+			{/*
 			<div className='ver-table__nav'>
 				{state.prevColumns.length > 0 && (
 					<button
@@ -497,6 +505,7 @@ const VerificationTableBase = (props: Props) => {
 					</button>
 				)}
 			</div>
+			*/}
 			<div className='ver-table-header'>
 				<div className='ver-table-header-control'>
 					<span className='ver-table-header-control-button' onClick={onControlButtonClick(false)}>
@@ -506,7 +515,10 @@ const VerificationTableBase = (props: Props) => {
 					<span className='ver-table-header-control-button' onClick={onControlButtonClick(true)}>
 						Expand
 					</span>
-					<span> all groups</span>
+					<span> all groups </span>
+					<span className='ver-table-header-control-button' onClick={resetWidth}>
+						Reset columns&#39; width
+					</span>
 				</div>
 				<div className='ver-table-header-precision'>
 					<span className='ver-table-header-precision-value'>{props.precision}</span>
