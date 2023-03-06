@@ -465,14 +465,12 @@ const VerificationTableBase = (props: Props) => {
 					</span>
 					<span> | </span>
 					<span className='ver-table-header-control-button' onClick={onControlButtonClick(true)}>
-						Expand
+						Expand all groups
 					</span>
-					<span> all groups </span>
 					<span> | </span>
 					<span className='ver-table-header-control-button' onClick={resetWidth}>
-						Reset
+						Reset columns&#39; width
 					</span>
-					<span> columns&#39; width </span>
 				</div>
 				<div className='ver-table-header-precision'>
 					<span className='ver-table-header-precision-value'>{props.precision}</span>
