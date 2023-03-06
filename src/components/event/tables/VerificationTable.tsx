@@ -190,27 +190,7 @@ const VerificationTableBase = (props: Props) => {
 		});
 		setState({ ...state, prevColumns, nextColumns });
 	};
-	/*
-	const onNextColumnCick = () => {
-		const nextColumn = state.nextColumns[0]?.current;
-		if (!nextColumn || !rootRef.current) return;
-		const { left, width } = rootRef.current.getBoundingClientRect();
-		const columnRect = nextColumn.getBoundingClientRect();
-		rootRef.current.scrollLeft =
-			columnRect.left + columnRect.width - left - width + rootRef.current.scrollLeft;
-		getHiddenColumns();
-	};
 
-	const onPrevColumnClick = () => {
-		const prevColumn = state.prevColumns[state.prevColumns.length - 1]?.current;
-		const rootRefCurrent = rootRef.current;
-		if (!prevColumn || !rootRefCurrent || !!rootRef) return;
-		const { left } = rootRefCurrent.getBoundingClientRect();
-		const columnRect = prevColumn.getBoundingClientRect();
-		rootRefCurrent.scrollLeft -= left - columnRect.left;
-		getHiddenColumns();
-	};
-	*/
 	const changeWidth = (index: number, value: number) => {
 		setState({
 			...state,
@@ -478,34 +458,6 @@ const VerificationTableBase = (props: Props) => {
 	if (!state.nodes.length) return null;
 	return (
 		<div className={rootClass}>
-			{/*
-			<div className='ver-table__nav'>
-				{state.prevColumns.length > 0 && (
-					<button
-						onClick={onPrevColumnClick}
-						className='ver-table__button'
-						style={{ gridArea: 'prev' }}>
-						<span className='ver-table__button-icon'>
-							<i className='ver-table__button-icon-prev'></i>
-						</span>
-						<span className='ver-table__button-label'>Previous</span>
-						<span className='ver-table__counter'>{state.prevColumns.length}</span>
-					</button>
-				)}
-				{state.nextColumns.length > 0 && (
-					<button
-						onClick={onNextColumnCick}
-						className='ver-table__button'
-						style={{ gridArea: 'next' }}>
-						<span className='ver-table__counter'>{state.nextColumns.length}</span>
-						<span className='ver-table__button-label'>Next</span>
-						<span className='ver-table__button-icon'>
-							<i className='ver-table__button-icon-next'></i>
-						</span>
-					</button>
-				)}
-			</div>
-			*/}
 			<div className='ver-table-header'>
 				<div className='ver-table-header-control'>
 					<span className='ver-table-header-control-button' onClick={onControlButtonClick(false)}>
