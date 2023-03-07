@@ -184,9 +184,9 @@ const VerificationTableBase = (props: Props) => {
 			const isVisible = left <= rect.left && rect.left + rect.width * 0.9 <= right;
 			if (!isVisible) {
 				if (rect.left + rect.width > right) {
-					nextColumns.push(col);
+					nextColumns.push({ current: col.current });
 				} else {
-					prevColumns.push(col);
+					prevColumns.push({ current: col.current });
 				}
 			}
 			return 0;
@@ -207,7 +207,7 @@ const VerificationTableBase = (props: Props) => {
 	const onPrevColumnClick = () => {
 		const prevColumn = state.prevColumns[state.prevColumns.length - 1]?.current;
 		const rootRefCurrent = rootRef.current;
-		if (!prevColumn || !rootRefCurrent || !!rootRef) return;
+		if (!prevColumn || !rootRefCurrent) return;
 		const { left } = rootRefCurrent.getBoundingClientRect();
 		const columnRect = prevColumn.getBoundingClientRect();
 		rootRefCurrent.scrollLeft = rootRefCurrent?.scrollLeft - (left - columnRect.left);
