@@ -274,20 +274,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 				? this.props.searchTokens.slice(0, -1)
 				: [...this.props.searchTokens];
 
-			if (nextTokens.length > 0) {
-				const [lastItem, ...restItems] = nextTokens.reverse();
-
-				this.props.updateSearchTokens([
-					...restItems.reverse(),
-					{
-						...lastItem,
-						isActive: true,
-					},
-				]);
-				this.props.setValue(lastItem.pattern);
-			} else {
-				this.props.updateSearchTokens([]);
-			}
+			this.props.updateSearchTokens([...nextTokens.reverse().slice(1).reverse()]);
 
 			e.preventDefault();
 		}
