@@ -102,9 +102,10 @@ export function getGraphTimeTicks(timeRange: TimeRange, interval: number, tickSi
 }
 
 export function filterUniqueGraphItems(items: GraphItem[]) {
-	return items.filter((item, index, self) => {
-		return index === self.findIndex(selfItem => getGraphItemId(item) === getGraphItemId(selfItem));
-	});
+	return items.filter(
+		(item, index, self) =>
+			index === self.findIndex(selfItem => getGraphItemId(item) === getGraphItemId(selfItem)),
+	);
 }
 
 export function getGraphItemId(item: GraphItem): string {

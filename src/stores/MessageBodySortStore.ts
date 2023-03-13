@@ -125,7 +125,7 @@ class MessageBodySortOrderStore {
 	private saveRule = async (rule: MessageSortOrderItem) => {
 		try {
 			await this.indexedDb.addDbStoreItem(IndexedDbStores.MESSAGE_BODY_SORT_ORDER, toJS(rule));
-		} catch (error) {
+		} catch (error: any) {
 			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
@@ -143,7 +143,7 @@ class MessageBodySortOrderStore {
 	private updateRule = async (rule: MessageSortOrderItem | OrderRule) => {
 		try {
 			await this.indexedDb.updateDbStoreItem(IndexedDbStores.MESSAGE_BODY_SORT_ORDER, toJS(rule));
-		} catch (error) {
+		} catch (error: any) {
 			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {

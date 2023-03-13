@@ -151,15 +151,14 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.channel.addEventListener('message_ids', this._onMessageIdsEvent);
 	};
 
-	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
-		return new Promise(res => {
+	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> =>
+		new Promise(res => {
 			this.initialResponseTimeout = window.setTimeout(() => {
 				res(this.getNextChunk());
 				this.clearFetchedChunkSubscription();
 				this.initUpdateScheduler();
 			}, timeout);
 		});
-	};
 
 	private getFetchedChunk = async (): Promise<EventMessage[]> => {
 		this.fetchedChunkSubscription = when(() => !this.isLoading);

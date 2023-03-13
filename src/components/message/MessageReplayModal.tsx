@@ -190,8 +190,8 @@ function MessageReplayModal() {
 		});
 	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
 
-	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
-		return {
+	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(
+		() => ({
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
@@ -201,11 +201,12 @@ function MessageReplayModal() {
 			autocompleteList: messagesStore.messageSessions,
 			wrapperClassName: 'messages-window-header__session-filter',
 			label: 'Session names',
-		};
-	}, [streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions]);
+		}),
+		[streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions],
+	);
 
-	const timestampFromConfig: FilterRowTimeWindowConfig[] = React.useMemo(() => {
-		return [
+	const timestampFromConfig: FilterRowTimeWindowConfig[] = React.useMemo(
+		() => [
 			{
 				id: 'replay-timerange',
 				inputs: [
@@ -230,12 +231,14 @@ function MessageReplayModal() {
 				],
 				type: 'time-window',
 			},
-		];
-	}, [startTimestamp, endTimestamp]);
+		],
+		[startTimestamp, endTimestamp],
+	);
 
-	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return [timestampFromConfig, sessionFilterConfig, ...compoundFilterRow];
-	}, [compoundFilterRow, timestampFromConfig, sessionFilterConfig]);
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(
+		() => [timestampFromConfig, sessionFilterConfig, ...compoundFilterRow],
+		[compoundFilterRow, timestampFromConfig, sessionFilterConfig],
+	);
 
 	const textToCopy = React.useMemo(() => {
 		const link = [

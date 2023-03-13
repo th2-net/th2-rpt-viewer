@@ -14,12 +14,13 @@
  * limitations under the License.
  ******************************************************************************/
 
-const webpackMerge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const commonConfig = require('./webpack.common');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { appSrc } = require('./paths');
+const ESLintWebpackPlugin = require('eslint-webpack-plugin');
 
-module.exports = webpackMerge(commonConfig, {
+module.exports = merge(commonConfig, {
 	output: {
 		publicPath: '/',
 	},
@@ -42,7 +43,7 @@ module.exports = webpackMerge(commonConfig, {
 		historyApiFallback: true,
 		proxy: {
 			'/': {
-				target: 'http://th2-kuber-test03:30000/th2-demo-books/',
+				target: 'http://de-th2-qa:30000/th2-demo-books/',
 				changeOrigin: true,
 				secure: false,
 			},
@@ -74,10 +75,9 @@ module.exports = webpackMerge(commonConfig, {
 		],
 	},
 	plugins: [
-		new ForkTsCheckerWebpackPlugin({
-			eslint: {
-				files: './src/**/*',
-			},
-		}),
+		new ESLintWebpackPlugin({
+			extensions: ['tsx'],
+			formatter: require('eslint-formatter-pretty'),
+		})
 	],
 });

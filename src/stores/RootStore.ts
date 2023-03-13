@@ -180,7 +180,7 @@ export default class RootStore {
 				workspaces: workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : undefined,
 				bookId,
 			};
-		} catch (error) {
+		} catch (error: any) {
 			this.notificationsStore.addMessage({
 				notificationType: 'urlError',
 				type: 'error',
