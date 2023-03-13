@@ -191,6 +191,10 @@ const ParamsTableBase = (props: Props) => {
 		]);
 	};
 
+	const resetWidth = () => {
+		setColumnWidth(props.columns.map(() => 150));
+	};
+
 	return (
 		<div className='params-table'>
 			<div className='params-table-header'>
@@ -203,6 +207,10 @@ const ParamsTableBase = (props: Props) => {
 					<span> | </span>
 					<span className='params-table-header-control-button' onClick={onControlButtonClick(true)}>
 						Expand
+					</span>
+					<span> | </span>
+					<span className='params-table-header-control-button' onClick={resetWidth}>
+						Reset columns&#39; width
 					</span>
 				</div>
 			</div>
