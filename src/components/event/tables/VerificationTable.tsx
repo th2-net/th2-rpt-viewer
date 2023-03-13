@@ -189,20 +189,18 @@ const VerificationTableBase = (props: Props) => {
 	const onNextColumnCick = () => {
 		const nextColumn = state.nextColumns[0]?.current;
 		if (!nextColumn || !rootRef.current) return;
-		const { left, width } = rootRef.current.getBoundingClientRect();
+		const { left } = rootRef.current.getBoundingClientRect();
 		const columnRect = nextColumn.getBoundingClientRect();
-		rootRef.current.scrollLeft =
-			columnRect.left + columnRect.width - left - width + rootRef.current.scrollLeft;
+		rootRef.current.scrollLeft -= left - columnRect.left;
 		getHiddenColumns();
 	};
 
 	const onPrevColumnClick = () => {
 		const prevColumn = state.prevColumns[state.prevColumns.length - 1]?.current;
-		const rootRefCurrent = rootRef.current;
-		if (!prevColumn || !rootRefCurrent) return;
-		const { left } = rootRefCurrent.getBoundingClientRect();
+		if (!prevColumn || !rootRef.current) return;
+		const { left } = rootRef.current.getBoundingClientRect();
 		const columnRect = prevColumn.getBoundingClientRect();
-		rootRefCurrent.scrollLeft -= left - columnRect.left;
+		rootRef.current.scrollLeft -= left - columnRect.left;
 		getHiddenColumns();
 	};
 
@@ -327,7 +325,7 @@ const VerificationTableBase = (props: Props) => {
 							style={{ paddingLeft: PADDING_LEVEL_VALUE * paddingLevel }}>
 							{renderContent(`${key}-name`, name)}
 						</td>
-						<ColumnSeparator index={0} onChange={changeWidth} isHeader={false} />
+						<ColumnSeparator index={0} onChange={changeWidth} />
 					</>
 				)}
 				{!isToggler && (
@@ -343,26 +341,26 @@ const VerificationTableBase = (props: Props) => {
 								{isToggler ? null : renderContent(`${key}-expectedType`, '', typeClassName)}
 							</div>
 						</td>
-						<ColumnSeparator index={1} onChange={changeWidth} isHeader={false} />
+						<ColumnSeparator index={1} onChange={changeWidth} />
 						<td className={actualClassName} onCopy={onCopyFor(actual)}>
 							<div className='ver-table-row-wrapper'>
 								{renderContent(`${key}-actual`, actual, actualValueClassName, actualReplaced)}
 								{renderContent(`${key}-actualType`, '', typeClassName)}
 							</div>
 						</td>
-						<ColumnSeparator index={2} onChange={changeWidth} isHeader={false} />
+						<ColumnSeparator index={2} onChange={changeWidth} />
 						<td className={statusClassName}>
 							{renderContent(`${key}-status`, statusAlias.alias as string, statusWrapperClassName)}
 						</td>
-						<ColumnSeparator index={3} onChange={changeWidth} isHeader={false} />
+						<ColumnSeparator index={3} onChange={changeWidth} />
 						<td className={actualClassName} onCopy={onCopyFor(operation)}>
 							<div className='ver-table-row-wrapper'>
 								{renderContent(`${key}-operation`, '', operationClassName, '', true)}
 							</div>
 						</td>
-						<ColumnSeparator index={4} onChange={changeWidth} isHeader={false} />
+						<ColumnSeparator index={4} onChange={changeWidth} />
 						<td className={statusClassName}>{keyField && <div className='ver-table__check' />}</td>
-						<ColumnSeparator index={5} onChange={changeWidth} isHeader={false} />
+						<ColumnSeparator index={5} onChange={changeWidth} />
 						<td className={actualClassName}>
 							<div
 								onClick={e => hint && showTooltip(e, hint)}
@@ -371,7 +369,7 @@ const VerificationTableBase = (props: Props) => {
 								{renderContent(`${key}-hint`, '', hintClassName)}
 							</div>
 						</td>
-						<ColumnSeparator index={6} onChange={changeWidth} isHeader={false} />
+						<ColumnSeparator index={6} onChange={changeWidth} />
 					</>
 				)}
 			</tr>

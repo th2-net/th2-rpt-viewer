@@ -3,10 +3,10 @@ import * as React from 'react';
 interface SeparatorProps {
 	index: number;
 	onChange: (indexes: number, value: number) => void;
-	isHeader: boolean;
+	isHeader?: boolean;
 }
 
-export const ColumnSeparator = ({ index, onChange, isHeader }: SeparatorProps) => {
+export const ColumnSeparator = ({ index, onChange, isHeader = false }: SeparatorProps) => {
 	const pointerRef = React.useRef<HTMLTableCellElement>(null);
 	const startOffset = React.useRef(0);
 	const isDown = React.useRef(false);
