@@ -176,7 +176,7 @@ const VerificationTableBase = (props: Props) => {
 		for (const col of rowRef.current.children) {
 			if (col.className !== 'columnSeparator') {
 				const rect = col.getBoundingClientRect();
-				const isVisible = left <= rect.left && rect.left + rect.width * 0.9 <= right;
+				const isVisible = left <= rect.left && rect.left <= right;
 				if (!isVisible) {
 					if (rect.left + rect.width > right) {
 						nextColumns.push({ current: col });
