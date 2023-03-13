@@ -3,10 +3,11 @@ import * as React from 'react';
 interface SeparatorProps {
 	index: number;
 	onChange: (indexes: number, value: number) => void;
+	onBtnUp: () => void;
 	isHeader?: boolean;
 }
 
-export const ColumnSeparator = ({ index, onChange, isHeader = false }: SeparatorProps) => {
+export const ColumnSeparator = ({ index, onChange, onBtnUp, isHeader = false }: SeparatorProps) => {
 	const pointerRef = React.useRef<HTMLTableCellElement>(null);
 	const startOffset = React.useRef(0);
 	const isDown = React.useRef(false);
@@ -34,6 +35,7 @@ export const ColumnSeparator = ({ index, onChange, isHeader = false }: Separator
 	function handleMouseUp() {
 		isDown.current = false;
 		startOffset.current = 0;
+		onBtnUp();
 		document.removeEventListener('mousemove', handleMouseDrag);
 		document.removeEventListener('mouseup', handleMouseUp);
 	}

@@ -79,7 +79,12 @@ export interface TableNode extends VerificationPayloadField {
 }
 
 const VerificationTableBase = (props: Props) => {
-	const [state, setState] = React.useState<State>({
+	const reducer = (state: State, action: Partial<State>): State => ({
+		...state,
+		...action,
+	});
+
+	const [state, setState] = React.useReducer(reducer, {
 		nodes: props.nodes,
 		prevColumns: [],
 		nextColumns: [],
@@ -112,7 +117,6 @@ const VerificationTableBase = (props: Props) => {
 
 	const setExpandStatus = (isCollapsed: boolean) => {
 		setState({
-			...state,
 			nodes: state.nodes.map(node =>
 				node.subEntries ? setNodeExpandStatus(node, isCollapsed) : node,
 			),
@@ -143,7 +147,6 @@ const VerificationTableBase = (props: Props) => {
 	React.useEffect(() => {
 		if (props.expandPath.length > 0) {
 			setState({
-				...state,
 				nodes: updateExpandPath(props.expandPath, state.nodes),
 			});
 		}
@@ -183,7 +186,7 @@ const VerificationTableBase = (props: Props) => {
 				}
 			}
 		}
-		setState({ ...state, prevColumns, nextColumns });
+		setState({ prevColumns, nextColumns });
 	};
 
 	const onNextColumnCick = () => {
@@ -206,7 +209,6 @@ const VerificationTableBase = (props: Props) => {
 
 	const changeWidth = (index: number, value: number) => {
 		setState({
-			...state,
 			columnWidth: [
 				...state.columnWidth.slice(0, index),
 				Math.max(state.columnWidth[index] + value, state.columnMinWidth[index]),
@@ -325,7 +327,7 @@ const VerificationTableBase = (props: Props) => {
 							style={{ paddingLeft: PADDING_LEVEL_VALUE * paddingLevel }}>
 							{renderContent(`${key}-name`, name)}
 						</td>
-						<ColumnSeparator index={0} onChange={changeWidth} />
+						<ColumnSeparator index={0} onChange={changeWidth} onBtnUp={getHiddenColumns} />
 					</>
 				)}
 				{!isToggler && (
@@ -341,26 +343,26 @@ const VerificationTableBase = (props: Props) => {
 								{isToggler ? null : renderContent(`${key}-expectedType`, '', typeClassName)}
 							</div>
 						</td>
-						<ColumnSeparator index={1} onChange={changeWidth} />
+						<ColumnSeparator index={1} onChange={changeWidth} onBtnUp={getHiddenColumns} />
 						<td className={actualClassName} onCopy={onCopyFor(actual)}>
 							<div className='ver-table-row-wrapper'>
 								{renderContent(`${key}-actual`, actual, actualValueClassName, actualReplaced)}
 								{renderContent(`${key}-actualType`, '', typeClassName)}
 							</div>
 						</td>
-						<ColumnSeparator index={2} onChange={changeWidth} />
+						<ColumnSeparator index={2} onChange={changeWidth} onBtnUp={getHiddenColumns} />
 						<td className={statusClassName}>
 							{renderContent(`${key}-status`, statusAlias.alias as string, statusWrapperClassName)}
 						</td>
-						<ColumnSeparator index={3} onChange={changeWidth} />
+						<ColumnSeparator index={3} onChange={changeWidth} onBtnUp={getHiddenColumns} />
 						<td className={actualClassName} onCopy={onCopyFor(operation)}>
 							<div className='ver-table-row-wrapper'>
 								{renderContent(`${key}-operation`, '', operationClassName, '', true)}
 							</div>
 						</td>
-						<ColumnSeparator index={4} onChange={changeWidth} />
+						<ColumnSeparator index={4} onChange={changeWidth} onBtnUp={getHiddenColumns} />
 						<td className={statusClassName}>{keyField && <div className='ver-table__check' />}</td>
-						<ColumnSeparator index={5} onChange={changeWidth} />
+						<ColumnSeparator index={5} onChange={changeWidth} onBtnUp={getHiddenColumns} />
 						<td className={actualClassName}>
 							<div
 								onClick={e => hint && showTooltip(e, hint)}
@@ -369,7 +371,7 @@ const VerificationTableBase = (props: Props) => {
 								{renderContent(`${key}-hint`, '', hintClassName)}
 							</div>
 						</td>
-						<ColumnSeparator index={6} onChange={changeWidth} />
+						<ColumnSeparator index={6} onChange={changeWidth} onBtnUp={getHiddenColumns} />
 					</>
 				)}
 			</tr>
@@ -378,7 +380,6 @@ const VerificationTableBase = (props: Props) => {
 
 	const hideTooltip = (): void => {
 		setState({
-			...state,
 			tooltip: {
 				target: null,
 				message: '',
@@ -389,7 +390,6 @@ const VerificationTableBase = (props: Props) => {
 
 	const showTooltip = (e: React.MouseEvent<HTMLDivElement>, message: string): void => {
 		setState({
-			...state,
 			tooltip: {
 				target: e.currentTarget,
 				message,
@@ -447,7 +447,6 @@ const VerificationTableBase = (props: Props) => {
 
 	const onTogglerClick = (targetNode: TableNode) => (e: React.MouseEvent) => {
 		setState({
-			...state,
 			nodes: state.nodes.map(node => findNode(node, targetNode)),
 		});
 
@@ -513,19 +512,54 @@ const VerificationTableBase = (props: Props) => {
 					<thead>
 						<tr ref={rowRef}>
 							<th className='ver-table-flexible'>Name</th>
-							<ColumnSeparator index={0} onChange={changeWidth} isHeader={true} />
+							<ColumnSeparator
+								index={0}
+								onChange={changeWidth}
+								onBtnUp={getHiddenColumns}
+								isHeader={true}
+							/>
 							<th className='ver-table-expected'>Expected</th>
-							<ColumnSeparator index={1} onChange={changeWidth} isHeader={true} />
+							<ColumnSeparator
+								index={1}
+								onChange={changeWidth}
+								onBtnUp={getHiddenColumns}
+								isHeader={true}
+							/>
 							<th className='ver-table-actual'>Actual</th>
-							<ColumnSeparator index={2} onChange={changeWidth} isHeader={true} />
+							<ColumnSeparator
+								index={2}
+								onChange={changeWidth}
+								onBtnUp={getHiddenColumns}
+								isHeader={true}
+							/>
 							<th className='ver-table-status'>Status</th>
-							<ColumnSeparator index={3} onChange={changeWidth} isHeader={true} />
+							<ColumnSeparator
+								index={3}
+								onChange={changeWidth}
+								onBtnUp={getHiddenColumns}
+								isHeader={true}
+							/>
 							<th className='ver-table-operation'>Operation</th>
-							<ColumnSeparator index={4} onChange={changeWidth} isHeader={true} />
+							<ColumnSeparator
+								index={4}
+								onChange={changeWidth}
+								onBtnUp={getHiddenColumns}
+								isHeader={true}
+							/>
 							<th className='ver-table-key'>Key</th>
-							<ColumnSeparator index={5} onChange={changeWidth} isHeader={true} />
+							<ColumnSeparator
+								index={5}
+								onChange={changeWidth}
+								onBtnUp={getHiddenColumns}
+								isHeader={true}
+							/>
 							<th className='ver-table-hint'>Hint</th>
-							<ColumnSeparator index={6} onChange={changeWidth} isHeader={true} />
+							<ColumnSeparator
+								index={6}
+								onChange={changeWidth}
+								onBtnUp={getHiddenColumns}
+								isHeader={true}
+							/>
 						</tr>
 					</thead>
 					<tbody>
