@@ -3,7 +3,7 @@ import * as React from 'react';
 interface SeparatorProps {
 	index: number;
 	onChange: (indexes: number, value: number) => void;
-	onBtnUp: () => void;
+	onBtnUp?: () => void;
 	isHeader?: boolean;
 }
 
@@ -35,7 +35,7 @@ export const ColumnSeparator = ({ index, onChange, onBtnUp, isHeader = false }: 
 	function handleMouseUp() {
 		isDown.current = false;
 		startOffset.current = 0;
-		onBtnUp();
+		if (onBtnUp) onBtnUp();
 		document.removeEventListener('mousemove', handleMouseDrag);
 		document.removeEventListener('mouseup', handleMouseUp);
 	}
