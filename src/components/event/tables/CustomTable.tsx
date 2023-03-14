@@ -38,10 +38,21 @@ export function CustomTable({ content }: CustomTableProps) {
 		]);
 	};
 
+	const resetWidth = () => {
+		setColumnWidth(Object.keys(content[0]).map(() => 150));
+	};
+
 	const headers = Object.keys(content[0]);
 
 	return (
 		<div className='user-table'>
+			<div className='ver-table-header'>
+				<div className='ver-table-header-control'>
+					<span className='ver-table-header-control-button' onClick={resetWidth}>
+						Reset columns&#39; width
+					</span>
+				</div>
+			</div>
 			<table
 				style={{
 					gridTemplateColumns: columnWidth.map(val => `${val}px 2px`).join(' '),
