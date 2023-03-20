@@ -460,6 +460,13 @@ const VerificationTableBase = (props: Props) => {
 
 	const rootClass = createStyleSelector('ver-table', props.status);
 
+	const resetWidth = () => {
+		setState({
+			...state,
+			columnWidth: [130, 125, 125, 60, 80, 50, 70],
+		});
+	};
+
 	if (!state.nodes.length) return null;
 	return (
 		<div className={rootClass}>
@@ -499,6 +506,10 @@ const VerificationTableBase = (props: Props) => {
 						Expand
 					</span>
 					<span> all groups</span>
+					<span> | </span>
+					<span className='ver-table-header-control-button' onClick={resetWidth}>
+						Reset columns&#39; width
+					</span>
 				</div>
 				<div className='ver-table-header-precision'>
 					<span className='ver-table-header-precision-value'>{props.precision}</span>
