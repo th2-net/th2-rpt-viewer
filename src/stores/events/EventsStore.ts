@@ -430,11 +430,14 @@ export default class EventsStore {
 		} else if (isEvent(initialState.targetEvent)) {
 			this.goToEvent(initialState.targetEvent);
 		} else {
-			this.eventDataStore.fetchEventTree({
-				filter: this.filterStore.filter,
-				timeRange: this.filterStore.range,
-				targetEventId: initialState.selectedEventId,
-			});
+			this.eventDataStore.fetchEventTree(
+				{
+					filter: this.filterStore.filter,
+					timeRange: this.filterStore.range,
+					targetEventId: initialState.selectedEventId,
+				},
+				true,
+			);
 		}
 	};
 

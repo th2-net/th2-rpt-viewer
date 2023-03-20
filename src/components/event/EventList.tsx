@@ -56,7 +56,7 @@ function EventTreeListBase(props: Props) {
 	const prevIsExpandedMap = React.useRef<Map<string, boolean>>(new Map());
 
 	const renderEvent = React.useCallback(
-		(index: number, node: EventTreeNode) => {
+		(_index: number, node: EventTreeNode) => {
 			if (isFlat) {
 				return <FlatEventListItem node={node} />;
 			}

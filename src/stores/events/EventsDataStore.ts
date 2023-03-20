@@ -125,7 +125,7 @@ export default class EventsDataStore {
 	}
 
 	@action
-	public fetchEventTree = (options: FetchEventTreeOptions) => {
+	public fetchEventTree = (options: FetchEventTreeOptions, init?: boolean) => {
 		const { timeRange, filter, targetEventId } = options;
 
 		this.resetEventsTreeState({ isLoading: true });
@@ -134,9 +134,8 @@ export default class EventsDataStore {
 		this.eventStore.selectedEvent = null;
 		this.filterStore.setEventsRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
-
 		if (targetEventId) {
-			this.loadTargetNode(targetEventId);
+			this.loadTargetNode(targetEventId, init);
 		}
 
 		this.eventStore.searchStore.onFilterChange();
@@ -553,7 +552,7 @@ export default class EventsDataStore {
 	private targetEventLoadSubscription: IReactionDisposer | null = null;
 
 	@action
-	public loadTargetNode = async (targetEventId: string | null) => {
+	public loadTargetNode = async (targetEventId: string | null, init?: boolean) => {
 		if (this.targetEventLoadSubscription) {
 			this.targetEventLoadSubscription();
 		}
@@ -564,7 +563,10 @@ export default class EventsDataStore {
 		this.eventStore.targetNodeId = targetEventId;
 		if (targetEventId) {
 			this.targetEventLoadSubscription = when(
-				() => this.targetNodePath !== null && this.rootEventIds.includes(this.targetNodePath[0]),
+				() => {
+					if (this.targetNodePath !== null) return !!this.eventsCache.get(this.targetNodePath[0]);
+					return false;
+				},
 				() => {
 					if (this.targetNodePath) {
 						this.eventStore.onTargetNodeAddedToTree(this.targetNodePath);
@@ -577,8 +579,9 @@ export default class EventsDataStore {
 				const targetEventTimestamp = timestampToNumber(event.startTimestamp);
 				// TODO: add filtering too see if target event matches current filter
 				if (
-					targetEventTimestamp < this.filterStore.timestampFrom ||
-					targetEventTimestamp > this.filterStore.timestampTo
+					!init &&
+					(targetEventTimestamp < this.filterStore.timestampFrom ||
+						targetEventTimestamp > this.filterStore.timestampTo)
 				) {
 					this.targetEventLoadSubscription();
 					this.targetEventAC = null;
@@ -589,6 +592,7 @@ export default class EventsDataStore {
 				const targetNode = convertEventActionToEventTreeNode(event);
 				if (targetNode.parentId !== null) {
 					this.loadParentNodes(targetNode.parentId, true);
+					this.onEventChildrenChunkLoaded([targetNode], targetNode.parentId);
 				}
 				this.eventsCache.set(targetNode.eventId, targetNode);
 				this.eventStore.onTargetEventLoad(event, targetNode);
