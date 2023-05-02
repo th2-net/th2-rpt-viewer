@@ -38,6 +38,7 @@ import { Book } from '../../models/Books';
 import { Bookmark } from '../../models/Bookmarks';
 import { isEventBookmark } from '../../helpers/bookmarks';
 import notificationsStore from '../NotificationsStore';
+import JSONViewerWorkspaceStore from './JSONViewerWorkspaceStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -54,6 +55,8 @@ export default class WorkspacesStore {
 
 	public searchWorkspace: SearchWorkspaceStore;
 
+	public JSONViewerWorkspace: JSONViewerWorkspaceStore;
+
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
@@ -67,6 +70,8 @@ export default class WorkspacesStore {
 			this.booksStore,
 			this.api,
 		);
+
+		this.JSONViewerWorkspace = new JSONViewerWorkspaceStore(this, this.api);
 
 		this.init(initialState || null);
 
@@ -88,7 +93,9 @@ export default class WorkspacesStore {
 	}
 
 	@computed get activeWorkspace() {
-		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
+		return [this.searchWorkspace, this.JSONViewerWorkspace, ...this.workspaces][
+			this.tabsStore.activeTabIndex
+		];
 	}
 
 	@action
