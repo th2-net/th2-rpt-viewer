@@ -244,6 +244,7 @@ export default class WorkspacesStore {
 						targetMessage: item,
 						streams: [item.sessionId],
 					},
+					layout: [50, 50],
 				}).then(workspace => this.addWorkspace(workspace));
 			} else {
 				this.activeWorkspace.messagesStore.onMessageSelect(item);
