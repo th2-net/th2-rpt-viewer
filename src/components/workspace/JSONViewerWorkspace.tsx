@@ -17,13 +17,15 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
+import axios from 'axios';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
 import { Tree } from '../../models/JSONSchema';
-import TreePanel from '../JSONReader/TreePanel';
-import TablePanel from '../JSONReader/TablePanel';
+import TreePanel from '../JSONViewer/TreePanel';
+import TablePanel from '../JSONViewer/TablePanel';
 import useJSONViewerWorkspace from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import FileChoosing from '../JSONViewer/FileChoosing';
 
 const panelColors = {
 	tree: {
@@ -42,9 +44,16 @@ function JSONViewerWorkspace() {
 		JSONViewerWorkspaceStore.viewStore;
 	const JSONReaderStore = useJSONViewerStore();
 
+	const [isModalOpen, setModalOpen] = React.useState(false);
+
 	const readFile = async (file: File) => {
 		const obj = JSON.parse(await file.text());
 		JSONReaderStore.setData(toJS(obj));
+	};
+
+	const onSubmit = (tree: Tree) => {
+		JSONReaderStore.setData(tree);
+		setModalOpen(false);
 	};
 
 	const treePanel = React.useMemo(
@@ -64,6 +73,13 @@ function JSONViewerWorkspace() {
 							}
 						}}
 					/>
+					<button
+						onClick={() => {
+							setModalOpen(prev => !prev);
+						}}>
+						Test
+					</button>
+					<FileChoosing isModalOpen={isModalOpen} onSubmit={onSubmit} />
 					<TreePanel
 						node={JSONReaderStore.data}
 						setNode={(nodeKey: string, nodeTree: Tree) =>
