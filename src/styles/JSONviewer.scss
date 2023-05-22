@@ -238,4 +238,77 @@
 	}
 }
 
+.fileChoosing {
+	@include scrollbar;
+	@include card-shadow;
+	max-height: 90vh;
+	overflow: auto;
+	background: white;
+	padding: 5px;
+	border-radius: 5px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 
+	&__line {
+		height: 1.5em;
+		padding: 1px;
+		width: 100%;
+		display: flex;
+	}
+
+	&__back-icon {
+		@include icon(url(../../resources/icons/arr4-up.svg), 1.3em, 1.2em);
+		margin-right: 3px;
+	}
+
+	&__close-icon {
+		@include icon(url(../../resources/icons/cross-icon-dark.svg), 1.3em, 1.2em);
+		margin-right: 3px;
+	}
+
+	&__file-icon {
+		@include icon(url(../../resources/icons/json.svg), 1.3em, 1.2em);
+		margin-right: 3px;
+	}
+
+	&__directory-icon {
+		@include icon(url(../../resources/icons/split.svg), 1.3em, 1.2em);
+		margin-right: 3px;
+	}
+
+	&__loading {
+		@include spinner(5px, 50px, 2s);
+	}
+}
+
+.expand-icon {
+	height: 15px;
+	width: 15px;
+
+	background: {
+		repeat: no-repeat;
+		size: 100%;
+		position: center;
+	}
+	flex-shrink: 0;
+	border-radius: 3px;
+	background-image: url('../../resources/icons/expand-on.svg');
+}
+
+.load-JSON-button {
+	padding: 3px 0;
+	border-radius: 3px;
+	display: flex;
+	align-items: center;
+	font-size: 14px;
+	font-weight: bold;
+	color: $alternativeTextColor;
+	background: $searchButtonColor;
+	border: 1px $alternativeTextColor solid;
+	padding: 3px;
+	font-family: 'Open Sans', sans-serif;
+	cursor: pointer;
+	outline: none;
+	margin: 5px;
+}

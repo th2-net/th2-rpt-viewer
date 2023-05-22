@@ -4,6 +4,6 @@ export enum ViewInstruction {
 }
 
 export interface Tree {
-	[name: string]: string | string[] | Tree | undefined;
+	[name: string]: string | number | string[] | Tree | undefined;
 	view_instruction?: ViewInstruction;
 }

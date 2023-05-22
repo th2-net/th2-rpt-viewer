@@ -16,8 +16,6 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { toJS } from 'mobx';
-import axios from 'axios';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
 import { Tree } from '../../models/JSONSchema';
@@ -29,7 +27,7 @@ import FileChoosing from '../JSONViewer/FileChoosing';
 
 const panelColors = {
 	tree: {
-		default: '#00FF00',
+		default: '#ADC2EB',
 		active: '#5C85D6',
 	},
 	table: {
@@ -42,18 +40,11 @@ function JSONViewerWorkspace() {
 	const JSONViewerWorkspaceStore = useJSONViewerWorkspace();
 	const { panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } =
 		JSONViewerWorkspaceStore.viewStore;
-	const JSONReaderStore = useJSONViewerStore();
-
-	const [isModalOpen, setModalOpen] = React.useState(false);
-
-	const readFile = async (file: File) => {
-		const obj = JSON.parse(await file.text());
-		JSONReaderStore.setData(toJS(obj));
-	};
+	const JSONViewerStore = useJSONViewerStore();
 
 	const onSubmit = (tree: Tree) => {
-		JSONReaderStore.setData(tree);
-		setModalOpen(false);
+		JSONViewerStore.setData(tree);
+		JSONViewerStore.setIsModalOpen(false);
 	};
 
 	const treePanel = React.useMemo(
@@ -62,38 +53,28 @@ function JSONViewerWorkspace() {
 			color: panelColors.tree,
 			component: (
 				<div className='JSON-wrapper' style={{ gap: '1px' }}>
-					<input
-						style={{ marginBottom: 10 }}
-						type='file'
-						accept='.json'
-						onChange={ev => {
-							if (ev.target.files) {
-								readFile(ev.target.files[0]);
-								JSONReaderStore.setNode(['', {}]);
-							}
-						}}
-					/>
 					<button
-						onClick={() => {
-							setModalOpen(prev => !prev);
-						}}>
-						Test
+						className='load-JSON-button'
+						onClick={() => JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen)}>
+						Load File
 					</button>
-					<FileChoosing isModalOpen={isModalOpen} onSubmit={onSubmit} />
+					{JSONViewerStore.isModalOpen && (
+						<FileChoosing onSubmit={onSubmit} close={() => JSONViewerStore.setIsModalOpen(false)} />
+					)}
 					<TreePanel
-						node={JSONReaderStore.data}
+						node={JSONViewerStore.data}
 						setNode={(nodeKey: string, nodeTree: Tree) =>
-							JSONReaderStore.setNode([nodeKey, nodeTree])
+							JSONViewerStore.setNode([nodeKey, nodeTree])
 						}
 						parentsPath={''}
 						parentKey={''}
-						selectedNode={JSONReaderStore.node}
+						selectedNode={JSONViewerStore.node}
 					/>
 				</div>
 			),
 			isActive: false,
 		}),
-		[JSONReaderStore.data],
+		[JSONViewerStore.data, JSONViewerStore.isModalOpen, JSONViewerStore.node],
 	);
 
 	const tablePanel = React.useMemo(
@@ -102,12 +83,12 @@ function JSONViewerWorkspace() {
 			color: panelColors.table,
 			component: (
 				<div className='JSON-wrapper tableView'>
-					<TablePanel node={JSONReaderStore.node} />
+					<TablePanel node={JSONViewerStore.node} />
 				</div>
 			),
 			isActive: false,
 		}),
-		[JSONReaderStore.node],
+		[JSONViewerStore.node],
 	);
 
 	const viewerWorkspacePanels = React.useMemo(
