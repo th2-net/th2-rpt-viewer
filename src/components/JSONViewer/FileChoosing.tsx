@@ -15,11 +15,11 @@ const FileChoosing = ({ onSubmit, close }: { onSubmit: (t: Tree) => void; close:
 
 	React.useEffect(() => {
 		axios
-			.get('/report_scripts_output')
+			.get('/resources/report_scripts_output')
 			.then(v => setDirectories(v.data))
 			.catch(reason => {
 				notificationsStore.addMessage({
-					header: `Failed to load directories from /report_scripts_output`,
+					header: `Failed to load directories from /resources/report_scripts_output`,
 					description: reason.message,
 					notificationType: 'genericError',
 					id: nanoid(),
@@ -34,11 +34,11 @@ const FileChoosing = ({ onSubmit, close }: { onSubmit: (t: Tree) => void; close:
 		setDirectory(dir);
 		setIsLoading(true);
 		axios
-			.get(`/report_scripts_output/${dir}`)
+			.get(`/resources/report_scripts_output/${dir}`)
 			.then(v => setFiles(v.data))
 			.catch(reason => {
 				notificationsStore.addMessage({
-					header: `Failed to load files from /report_scripts_output/${dir}`,
+					header: `Failed to load files from /resources/report_scripts_output/${dir}`,
 					description: reason.message,
 					notificationType: 'genericError',
 					id: nanoid(),
@@ -52,11 +52,11 @@ const FileChoosing = ({ onSubmit, close }: { onSubmit: (t: Tree) => void; close:
 	const loadFile = (fileName: string) => {
 		setIsLoading(true);
 		axios
-			.get(`/report_scripts_output/${directory}/${fileName}`)
+			.get(`/resources/report_scripts_output/${directory}/${fileName}`)
 			.then(v => onSubmit(v.data))
 			.catch(reason => {
 				notificationsStore.addMessage({
-					header: `Failed to load file from /report_scripts_output/${directory}/${fileName}`,
+					header: `Failed to load file from /resources/report_scripts_output/${directory}/${fileName}`,
 					description: reason.message,
 					notificationType: 'genericError',
 					id: nanoid(),
