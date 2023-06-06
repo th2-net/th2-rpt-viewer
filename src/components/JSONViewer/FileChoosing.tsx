@@ -1,10 +1,10 @@
 import * as React from 'react';
-import axios from 'axios';
-import { nanoid } from 'nanoid';
 import { Tree } from '../../models/JSONSchema';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener } from '../../hooks';
 import notificationsStore from '../../stores/NotificationsStore';
+
+const directoriesURL = '/resources/viewer_data';
 
 const FileChoosing = ({ onSubmit, close }: { onSubmit: (t: Tree) => void; close: () => void }) => {
 	const [isLoading, setIsLoading] = React.useState(true);
@@ -13,58 +13,66 @@ const FileChoosing = ({ onSubmit, close }: { onSubmit: (t: Tree) => void; close:
 	const [files, setFiles] = React.useState<string[]>([]);
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
-	React.useEffect(() => {
-		axios
-			.get('/report_scripts_output')
-			.then(v => setDirectories(v.data))
-			.catch(reason => {
-				notificationsStore.addMessage({
-					header: `Failed to load directories from /report_scripts_output`,
-					description: reason.message,
-					notificationType: 'genericError',
-					id: nanoid(),
-					type: 'error',
-				});
-				close();
-			})
-			.finally(() => setIsLoading(false));
-	}, []);
+	const fetchDirectories = async () => {
+		const res = await fetch(directoriesURL, {
+			headers: {
+				Accept: 'application/json, text/plain, */*',
+			},
+		});
 
-	const loadFiles = (dir: string) => {
-		setDirectory(dir);
-		setIsLoading(true);
-		axios
-			.get(`/report_scripts_output/${dir}`)
-			.then(v => setFiles(v.data))
-			.catch(reason => {
-				notificationsStore.addMessage({
-					header: `Failed to load files from /report_scripts_output/${dir}`,
-					description: reason.message,
-					notificationType: 'genericError',
-					id: nanoid(),
-					type: 'error',
-				});
-				close();
-			})
-			.finally(() => setIsLoading(false));
+		if (res.ok) {
+			res.json().then(data => setDirectories(data));
+			setIsLoading(false);
+			return;
+		}
+		notificationsStore.handleRequestError(res);
+		setIsLoading(false);
+
+		console.error(res.statusText);
 	};
 
-	const loadFile = (fileName: string) => {
+	React.useEffect(() => {
+		fetchDirectories();
+	}, []);
+
+	const loadFiles = async (dir: string) => {
+		setDirectory(dir);
 		setIsLoading(true);
-		axios
-			.get(`/report_scripts_output/${directory}/${fileName}`)
-			.then(v => onSubmit(v.data))
-			.catch(reason => {
-				notificationsStore.addMessage({
-					header: `Failed to load file from /report_scripts_output/${directory}/${fileName}`,
-					description: reason.message,
-					notificationType: 'genericError',
-					id: nanoid(),
-					type: 'error',
-				});
-				close();
-			})
-			.finally(() => setIsLoading(false));
+		const res = await fetch(`${directoriesURL}/${dir}`, {
+			headers: {
+				Accept: 'application/json, text/plain, */*',
+			},
+		});
+
+		if (res.ok) {
+			res.json().then(data => setFiles(data));
+			setIsLoading(false);
+			return;
+		}
+		notificationsStore.handleRequestError(res);
+		setIsLoading(false);
+
+		console.error(res.statusText);
+	};
+
+	const loadFile = async (fileName: string) => {
+		setIsLoading(true);
+
+		const res = await fetch(`${directoriesURL}/${directory}/${fileName}`, {
+			headers: {
+				Accept: 'application/json, text/plain, */*',
+			},
+		});
+
+		if (res.ok) {
+			res.json().then(data => onSubmit(data));
+			setIsLoading(false);
+			return;
+		}
+		setIsLoading(false);
+		notificationsStore.handleRequestError(res);
+
+		console.error(res.statusText);
 	};
 
 	useOutsideClickListener(modalRef, () => {
