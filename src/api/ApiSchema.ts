@@ -31,12 +31,14 @@ import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
 import { DirectionalStreamInfo } from '../models/StreamInfo';
 import { Book } from '../models/Books';
+import { Tree } from '../models/JSONSchema';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
 	books: BooksApiSchema;
 	sse: SSESchema;
+	jsonViewer: JSONViewerApiSchema;
 	indexedDb: IndexedDB;
 }
 
@@ -104,6 +106,12 @@ export interface MessageApiSchema {
 export interface BooksApiSchema {
 	getBooksList: () => Promise<Book[]>;
 	getBookScope: (bookId: string, abortSignal?: AbortSignal) => Promise<string[]>;
+}
+
+export interface JSONViewerApiSchema {
+	getDirectories: (directoriesURL: string) => Promise<string[]>;
+	getFiles: (directoriesURL: string, directory: string) => Promise<string[]>;
+	getFile: (directoriesURL: string, directory: string, file: string) => Promise<Tree>;
 }
 
 export interface SSESchema {

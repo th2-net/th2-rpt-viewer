@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Tree } from '../../models/JSONSchema';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener } from '../../hooks';
-import notificationsStore from '../../stores/NotificationsStore';
+import api from '../../api';
 
 const directoriesURL = '/resources/viewer_data';
 
@@ -13,66 +13,29 @@ const FileChoosing = ({ onSubmit, close }: { onSubmit: (t: Tree) => void; close:
 	const [files, setFiles] = React.useState<string[]>([]);
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
-	const fetchDirectories = async () => {
-		const res = await fetch(directoriesURL, {
-			headers: {
-				Accept: 'application/json, text/plain, */*',
-			},
-		});
-
-		if (res.ok) {
-			res.json().then(data => setDirectories(data));
-			setIsLoading(false);
-			return;
-		}
-		notificationsStore.handleRequestError(res);
-		setIsLoading(false);
-
-		console.error(res.statusText);
+	const getDirectories = async () => {
+		api.jsonViewer
+			.getDirectories(directoriesURL)
+			.then((data: string[]) => setDirectories(data))
+			.finally(() => setIsLoading(false));
 	};
 
 	React.useEffect(() => {
-		fetchDirectories();
+		getDirectories();
 	}, []);
 
-	const loadFiles = async (dir: string) => {
-		setDirectory(dir);
-		setIsLoading(true);
-		const res = await fetch(`${directoriesURL}/${dir}`, {
-			headers: {
-				Accept: 'application/json, text/plain, */*',
-			},
-		});
-
-		if (res.ok) {
-			res.json().then(data => setFiles(data));
-			setIsLoading(false);
-			return;
-		}
-		notificationsStore.handleRequestError(res);
-		setIsLoading(false);
-
-		console.error(res.statusText);
+	const getFiles = async (dir: string) => {
+		api.jsonViewer
+			.getFiles(directoriesURL, dir)
+			.then((data: string[]) => setFiles(data))
+			.finally(() => setIsLoading(false));
 	};
 
-	const loadFile = async (fileName: string) => {
-		setIsLoading(true);
-
-		const res = await fetch(`${directoriesURL}/${directory}/${fileName}`, {
-			headers: {
-				Accept: 'application/json, text/plain, */*',
-			},
-		});
-
-		if (res.ok) {
-			res.json().then(data => onSubmit(data));
-			setIsLoading(false);
-			return;
-		}
-		setIsLoading(false);
-		notificationsStore.handleRequestError(res);
-
-		console.error(res.statusText);
+	const getFile = async (fileName: string) => {
+		api.jsonViewer
+			.getFile(directoriesURL, directory, fileName)
+			.then((data: Tree) => onSubmit(data))
+			.finally(() => setIsLoading(false));
 	};
 
 	useOutsideClickListener(modalRef, () => {
@@ -104,7 +67,7 @@ const FileChoosing = ({ onSubmit, close }: { onSubmit: (t: Tree) => void; close:
 							Back
 						</div>
 						{files.map((file, index) => (
-							<div className='fileChoosing__line' key={index} onClick={() => loadFile(file)}>
+							<div className='fileChoosing__line' key={index} onClick={() => getFile(file)}>
 								<div className='fileChoosing__file-icon' />
 								{file}
 							</div>
@@ -117,7 +80,7 @@ const FileChoosing = ({ onSubmit, close }: { onSubmit: (t: Tree) => void; close:
 							Close
 						</div>
 						{directories.map((dir, index) => (
-							<div className='fileChoosing__line' key={index} onClick={() => loadFiles(dir)}>
+							<div className='fileChoosing__line' key={index} onClick={() => getFiles(dir)}>
 								<div className='fileChoosing__directory-icon' />
 								{dir}
 							</div>

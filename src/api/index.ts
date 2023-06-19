@@ -20,6 +20,7 @@ import eventHttpApi from './event';
 import messageHttpApi from './message';
 import sseApi from './sse';
 import booksHttpApi from './books';
+import JSONViewerHttpApi from './JSONViewer';
 
 const envName =
 	process.env.NODE_ENV === 'development'
@@ -31,6 +32,7 @@ const api: ApiSchema = {
 	messages: messageHttpApi,
 	books: booksHttpApi,
 	sse: sseApi,
+	jsonViewer: JSONViewerHttpApi,
 	indexedDb: new IndexedDB(envName),
 };
 
