@@ -13,7 +13,7 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 			return res.json();
 		}
 		notificationsStore.handleRequestError(res);
-		return null;
+		return [];
 	},
 	getFiles: async (directoriesURL: string, directory: string) => {
 		const res = await fetch(`${directoriesURL}/${directory}`, {
@@ -26,7 +26,7 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 			return res.json();
 		}
 		notificationsStore.handleRequestError(res);
-		return null;
+		return [];
 	},
 	getFile: async (directoriesURL: string, directory: string, file: string) => {
 		const res = await fetch(`${directoriesURL}/${directory}/${file}`, {
@@ -39,7 +39,7 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 			return res.json();
 		}
 		notificationsStore.handleRequestError(res);
-		return null;
+		return {};
 	},
 };
 
