@@ -32,7 +32,7 @@ import FiltersHistoryStore from '../FiltersHistoryStore';
 import BooksStore from '../BooksStore';
 import { GraphItem } from '../../models/Graph';
 import { getGraphItemId } from '../../helpers/graph';
-import { isEvent } from '../../helpers/event';
+import { getScopeFromEventId, isEvent } from '../../helpers/event';
 import { isMessage } from '../../helpers/message';
 import { Book } from '../../models/Books';
 import { Bookmark } from '../../models/Bookmarks';
@@ -44,6 +44,7 @@ export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export interface AppState {
 	workspaces: WorkspacesUrlState;
 	bookId?: string;
+	eventId?: string;
 }
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
@@ -92,14 +93,14 @@ export default class WorkspacesStore {
 	}
 
 	@action
-	private createEmptyWorkspace = () => {
-		this.createWorkspace({
+	private createEmptyWorkspace = async () => {
+		await this.createWorkspace({
 			layout: [50, 50],
 		}).then(workspace => this.addWorkspace(workspace));
 	};
 
 	@action
-	private init(initialState: AppState | null) {
+	private async init(initialState: AppState | null) {
 		if (initialState !== null && initialState.bookId) {
 			const book = this.booksStore.books.find(b => b.name === initialState.bookId);
 
@@ -117,9 +118,23 @@ export default class WorkspacesStore {
 			}
 			this.booksStore.selectBook(book);
 
-			initialState.workspaces.forEach(async workspaceState =>
-				this.addWorkspace(await this.createWorkspace(workspaceState)),
-			);
+			if (initialState.eventId) {
+				const scope = getScopeFromEventId(initialState.eventId);
+
+				const event = await this.api.events.getEvent(initialState.eventId);
+
+				const workspaceInitialState = this.getInitialWorkspaceByEvent(
+					timestampToNumber(event.startTimestamp),
+					scope,
+					event,
+				);
+
+				this.addWorkspace(await this.createWorkspace(workspaceInitialState));
+			} else {
+				initialState.workspaces.forEach(async workspaceState =>
+					this.addWorkspace(await this.createWorkspace(workspaceState)),
+				);
+			}
 		} else {
 			this.createEmptyWorkspace();
 		}

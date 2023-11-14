@@ -35,6 +35,7 @@ import {
 import { SessionsStore } from './messages/SessionsStore';
 import EventsFilter from '../models/filter/EventsFilter';
 import BooksStore from './BooksStore';
+import { getBookFromEventId } from '../helpers/event';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -152,7 +153,9 @@ export default class RootStore {
 			const searchParams = new URLSearchParams(window.location.search);
 			const filtersToPin = searchParams.get('filters');
 			const workspacesUrlState = searchParams.get('workspaces');
-			const bookId = searchParams.get('bookId') || undefined;
+			const eventId = searchParams.get('eventId') || undefined;
+			const bookId =
+				searchParams.get('bookId') || (eventId && getBookFromEventId(eventId)) || undefined;
 
 			if (filtersToPin) {
 				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
@@ -179,6 +182,7 @@ export default class RootStore {
 			return {
 				workspaces: workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : undefined,
 				bookId,
+				eventId,
 			};
 		} catch (error: any) {
 			this.notificationsStore.addMessage({

@@ -162,6 +162,14 @@ export function getEventParentId(e: EventTreeNode | EventAction) {
 	return isEventNode(e) ? e.parentId : e.parentEventId;
 }
 
+export function getBookFromEventId(eventId: string) {
+	return eventId.split(':')[0];
+}
+
+export function getScopeFromEventId(eventId: string) {
+	return eventId.split(':')[1];
+}
+
 export const isUnknownRoot = (event: string | EventTreeNode) => {
 	if (typeof event === 'string') {
 		return event === unknownRoot.eventId;
