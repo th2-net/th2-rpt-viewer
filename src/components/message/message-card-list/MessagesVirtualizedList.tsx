@@ -69,9 +69,7 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
 
-	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
-		[boolean, boolean]
-	>([false, false]);
+	const [firstChunksIsLoaded, setFirstChunksIsLoaded] = React.useState<boolean>(false);
 
 	const scrollToTop = () => {
 		if (updateStore.isActive && virtuoso.current) virtuoso.current.scrollToIndex(0);
@@ -83,13 +81,8 @@ const MessagesVirtualizedList = (props: Props) => {
 	}, [updateStore.isActive, messageList]);
 
 	React.useEffect(() => {
-		if (!searchChannelNext?.isLoading) setLoadedChunks(loadedChunks => [true, loadedChunks[1]]);
-		if (!searchChannelPrev?.isLoading) setLoadedChunks(loadedChunks => [loadedChunks[0], true]);
-	}, [searchChannelNext?.isLoading, searchChannelPrev?.isLoading]);
-
-	React.useEffect(() => {
 		const selectedMessageId = messageStore.selectedMessageId?.valueOf();
-		if (selectedMessageId) {
+		if (selectedMessageId && firstChunksIsLoaded) {
 			raf(() => {
 				const index = messageStore.dataStore.sortedMessages.findIndex(
 					m => m.messageId === selectedMessageId,
@@ -97,12 +90,7 @@ const MessagesVirtualizedList = (props: Props) => {
 				if (index !== -1) virtuoso.current?.scrollToIndex({ index, align: 'center' });
 			}, 3);
 		}
-	}, [
-		messageStore.selectedMessageId,
-		messageStore,
-		firstPrevChunkIsLoaded,
-		firstNextChunkIsLoaded,
-	]);
+	}, [messageStore.selectedMessageId, messageStore, firstChunksIsLoaded]);
 
 	const debouncedScrollHandler = useDebouncedCallback((event: React.UIEvent<'div'>) => {
 		const scroller = event.target;
@@ -114,14 +102,20 @@ const MessagesVirtualizedList = (props: Props) => {
 				!searchChannelNext.isLoading &&
 				!updateStore.isActive
 			) {
-				loadNextMessages().then(messages => onNextChannelResponse(messages));
+				loadNextMessages().then(messages => {
+					onNextChannelResponse(messages);
+					if (!firstChunksIsLoaded && !searchChannelPrev?.isLoading) setFirstChunksIsLoaded(true);
+				});
 			}
 		}
 	}, 100);
 
 	const onEndReached = () => {
 		if (searchChannelPrev && !searchChannelPrev.isLoading && !searchChannelPrev.isEndReached) {
-			loadPrevMessages().then(messages => onPrevChannelResponse(messages));
+			loadPrevMessages().then(messages => {
+				onPrevChannelResponse(messages);
+				if (!firstChunksIsLoaded && !searchChannelNext?.isLoading) setFirstChunksIsLoaded(true);
+			});
 		}
 	};
 
