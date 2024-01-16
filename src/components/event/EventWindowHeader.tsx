@@ -24,9 +24,9 @@ import { EventListArrowNav } from './EventListNavigation';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { isEventsStore } from '../../helpers/stores';
 import { EventsIntervalInput } from './EventsIntervalInput';
-import Select from '../util/Select';
 import { useBooksStore } from '../../hooks/useBooksStore';
 import { SearchDirection } from '../../models/search/SearchDirection';
+import MultiSelect from '../util/MultiSelect';
 
 function EventWindowHeader() {
 	const eventStore = useWorkspaceEventStore();
@@ -58,15 +58,15 @@ function EventWindowHeader() {
 					</div>
 					<EventsIntervalInput />
 				</div>
-				<Select
+				<MultiSelect
 					className='event-window-header__scope'
 					options={booksStore.scopeList}
 					onChange={scope => {
 						if (scope) {
-							eventStore.applyScope(scope);
+							eventStore.applyScope(scope[0]);
 						}
 					}}
-					selected={eventStore.scope || ''}
+					selected={eventStore.scope ? [eventStore.scope] : []}
 				/>
 				{eventDataStore.isLoading && (
 					<div className='event-window-header__loader'>
