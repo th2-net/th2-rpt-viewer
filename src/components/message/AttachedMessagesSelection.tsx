@@ -33,6 +33,11 @@ const AttachedMessagesSelection = () => {
 			messagesStore.selectAttachedMessage(messagesStore.attachedMessages[nextIndex]);
 			setMessageIndex(nextIndex);
 		}
+		if (messageIndex === 0) {
+			const nextIndex = messagesStore.attachedMessages.length - 1;
+			messagesStore.selectAttachedMessage(messagesStore.attachedMessages[nextIndex]);
+			setMessageIndex(nextIndex);
+		}
 	};
 
 	const onNext = () => {
@@ -40,6 +45,10 @@ const AttachedMessagesSelection = () => {
 			const nextIndex = messageIndex + 1;
 			messagesStore.selectAttachedMessage(messagesStore.attachedMessages[nextIndex]);
 			setMessageIndex(nextIndex);
+		}
+		if (messageIndex === messagesStore.attachedMessages.length - 1) {
+			messagesStore.selectAttachedMessage(messagesStore.attachedMessages[0]);
+			setMessageIndex(0);
 		}
 	};
 
