@@ -51,7 +51,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
-	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const isContentBeautified = viewType === MessageViewType.FORMATTED;
@@ -79,19 +78,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	React.useEffect(() => {
 		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === messageId) {
 			setHighlighted(true);
-
-			highlightTimer.current = setTimeout(() => {
-				setHighlighted(false);
-				messagesStore.highlightedMessageId = null;
-			}, 3000);
 		}
-
-		return () => {
-			if (highlightTimer.current) {
-				window.clearTimeout(highlightTimer.current);
-			}
-			setHighlighted(false);
-		};
 	}, [messagesStore.highlightedMessageId]);
 
 	const hoverMessage = React.useCallback(() => {
