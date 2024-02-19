@@ -16,6 +16,7 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
+import debounce from 'lodash.debounce';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEvent } from '../helpers/event';
 import { calculateTimeRange, getRangeCenter } from '../helpers/graph';
@@ -23,10 +24,12 @@ import { Chunk, GraphItem, GraphItemType } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { SelectedStore } from './SelectedStore';
 import { isBookmark } from '../helpers/bookmarks';
+import BooksStore from './BooksStore';
 
 export class GraphStore {
 	constructor(
 		private selectedStore: SelectedStore,
+		private booksStore: BooksStore,
 		timeRange: TimeRange | null = null,
 		defaultInterval: number | null | undefined,
 	) {
@@ -36,6 +39,11 @@ export class GraphStore {
 		this.eventInterval = defaultInterval || 15;
 		this.graphInterval = 15;
 
+		const debouncedUpdateScopes = debounce(
+			() => this.booksStore.getScopeList(this.booksStore.selectedBook),
+			1000,
+		);
+
 		reaction(
 			() => this.graphInterval,
 			interval => this.createChunks(interval, this.timestamp.valueOf()),
@@ -44,6 +52,13 @@ export class GraphStore {
 		reaction(
 			() => this.graphInterval,
 			() => this.createChunks(this.graphInterval, this.timestamp.valueOf()),
+		);
+
+		reaction(
+			() => this.range,
+			() => {
+				debouncedUpdateScopes();
+			},
 		);
 
 		this.createChunks(this.graphInterval, this.timestamp.valueOf());

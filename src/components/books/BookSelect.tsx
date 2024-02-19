@@ -19,22 +19,22 @@ import { observer } from 'mobx-react-lite';
 import { computed } from 'mobx';
 import { useBooksStore } from '../../hooks/useBooksStore';
 import { useWorkspaces } from '../../hooks';
-import AutocompleteInput from '../util/AutocompleteInput';
 import '../../styles/books.scss';
+import Select from '../util/Select';
 
 const BookSelect = () => {
 	const booksStore = useBooksStore();
 	const workspacesStore = useWorkspaces();
 
-	const inputRef = React.useRef<HTMLInputElement>(null);
-
 	const [currentValue, setCurrentValue] = React.useState(
 		booksStore.selectedBook ? booksStore.selectedBook.name : '',
 	);
 
-	const booksIds = computed(() => booksStore.books.map(b => b.name)).get();
+	const booksIds = computed(() =>
+		booksStore.books.map(b => b.name).sort((a, b) => a.localeCompare(b)),
+	).get();
 
-	const onSubmit = (bookName: string) => {
+	const onChange = (bookName: string) => {
 		const book = booksStore.books.find(b => b.name === bookName);
 		if (book) {
 			booksStore.selectBook(book);
@@ -47,17 +47,11 @@ const BookSelect = () => {
 
 	return (
 		<div className='books-input'>
-			<AutocompleteInput
-				onSubmit={onSubmit}
-				value={currentValue}
-				setValue={setCurrentValue}
-				autocompleteList={booksIds}
-				ref={inputRef}
-				anchor={inputRef.current || undefined}
-				autoresize={false}
-				submitKeyCodes={[]}
-				autocompleteListMinWidth={320}
-				closedOnClick={true}
+			<Select
+				className='event-window-header__scope'
+				options={booksIds}
+				onChange={onChange}
+				selected={currentValue}
 			/>
 		</div>
 	);

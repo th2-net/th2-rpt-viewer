@@ -24,7 +24,7 @@ interface Props {
 export default function SimpleMessageRaw({ rawContent }: Props) {
 	const contentRef = React.useRef<HTMLDivElement>(null);
 
-	const humanReadableContent = atob(rawContent);
+	const humanReadableContent = decodeURIComponent(escape(atob(rawContent)));
 	const convertedArr = splitOnReadableParts(humanReadableContent);
 
 	return (
