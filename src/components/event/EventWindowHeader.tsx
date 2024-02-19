@@ -16,6 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { computed } from 'mobx';
 import EventsFilterPanel from '../filter/EventsFilterPanel';
 import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
@@ -42,6 +43,10 @@ function EventWindowHeader() {
 		eventStore.viewStore.flattenedListView ? 'active' : null,
 	);
 
+	const scopeList = computed(() =>
+		[...booksStore.scopeList].sort((a, b) => a.localeCompare(b)),
+	).get();
+
 	return (
 		<div className='window__controls'>
 			<div className='event-window-header'>
@@ -60,7 +65,7 @@ function EventWindowHeader() {
 				</div>
 				<Select
 					className='event-window-header__scope'
-					options={booksStore.scopeList}
+					options={scopeList}
 					onChange={scope => {
 						if (scope) {
 							eventStore.applyScope(scope);

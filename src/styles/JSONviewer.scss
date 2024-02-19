@@ -1,0 +1,345 @@
+@import './common/vars';
+
+.lowerLevel {
+  padding-left: 20px;
+}
+
+.valueLeaf {
+	@include status-card;
+	@include event-status-icon($isParentHoverable: true);
+	line-height: 15px;
+	min-height: 15px;
+	width: 100%;
+	border-radius: 5px;
+	padding: 0px 5px;
+	display: flex;
+	align-items: center;
+	border: 2px solid transparent;
+	cursor: pointer;
+	gap: 5px;
+	position: relative;
+
+	&:hover {
+		background-color: var(--status-secondary-background-color);
+		&-table {
+			background-color: transparent;
+		}
+	}
+
+	&.selected {
+		border-color: var(--status-primary-border-color);
+	}
+	
+	color: var(--status-primary-color);
+	font-size: 11px;
+	font-weight: bold;
+}
+
+
+.tableHeader {
+	@include status-card;
+	@include event-status-icon($isParentHoverable: true);
+	line-height: 15px;
+	width: 100%;
+	border-radius: 5px;
+	padding: 0px 5px;
+	display: flex;
+	align-items: center;
+	border: 2px solid transparent;
+	overflow: hidden;
+	cursor: default;
+	gap: 5px;
+	height: 23px;
+	position: relative;
+
+	&:hover {
+		background-color: var(--status-secondary-background-color);
+	}
+
+	color: var(--status-primary-color);
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.expand-icon {
+	height: 15px;
+	width: 15px;
+
+	background: {
+		repeat: no-repeat;
+		size: 100%;
+		position: center;
+	}
+	flex-shrink: 0;
+	border-radius: 3px;
+
+	&.expanded {
+		background-image: url('../../resources/icons/expand-on.svg');
+		cursor: pointer;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+	}
+
+	&.hidden {
+		background-image: url('../../resources/icons/expand-off.svg');
+		cursor: pointer;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+	}
+	&.none {
+		background-image: none;
+		cursor: default;
+		&:hover {
+			background-color: transparent;
+		}
+	}
+
+	&.loading {
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	&.disabled {
+		cursor: default;
+
+		&:hover::before {
+			display: none;
+		}
+	}
+
+	&::before {
+        content: none;
+    }
+}
+
+.leafWrapper {
+	display: flex;
+	gap: 5px;
+	flex-direction: row;
+	align-items: center;
+	padding: 1px 5px 1px 0;
+}
+
+
+.params-table {
+	@include scrollbar;
+	@include default-table;
+
+	&-wrapper {
+		overflow-x: auto;
+	}
+
+	td,
+	th {
+		text-align: left;
+	}
+
+	display: block;
+	width: 100%;
+	height: auto;
+	overflow: auto;
+
+	&-row-value {
+		&.passed {
+			& td {
+				background-color: $tableRowPassedBackgroundColor;
+			}
+
+			&:hover td {
+				background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 10);
+			}
+		}
+
+		&.failed {
+			& td {
+				background-color: $tableRowFailedBackgroundColor;
+			}
+
+			&:hover td {
+				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
+			}
+		}
+		p {
+			margin: 0;
+			text-decoration: none;
+			font-size: 12px;
+		}
+	}
+	&-row-toogler {
+		cursor: pointer;
+		color: #fff;
+		&.passed {
+			& td {
+				background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 50);
+			}
+
+			&:hover td {
+				background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 60);
+			}
+		}
+
+		&.failed {
+			& td {
+				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 40);
+			}
+
+			&:hover td {
+				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 50);
+			}
+		}
+		.expand-icon {
+			background-color: white;
+			display: inline-block;
+			margin-right: 7px;
+			&.expanded {
+				background-color: white;
+				@include icon(url('../../resources/icons/collapse.svg'), 12px, 12px);
+				:hover {
+					background-color: white;
+				}
+			}
+		
+			&.hidden {
+				background-color: white;
+				@include icon(url('../../resources/icons/expand.svg'), 12px, 12px);
+				:hover {
+					background-color: white;
+				}
+			}
+		}
+	}
+}
+
+.tableWrapper {
+	width: 50vw;
+	height: calc(100vh - 40px);
+	overflow-y: auto;
+}
+
+.treeWrapper {
+	width: 50vw;
+	height: calc(100vh - 40px);
+	overflow-y: auto;
+}
+
+.JSON-wrapper{ 
+	@include scrollbar;
+	background-color: white;
+	height: 100%;
+	overflow: auto;
+	padding: 5px;
+	&.tableView {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
+}
+
+.fileChoosing {
+	@include scrollbar;
+	@include card-shadow;
+	max-height: 90vh;
+	overflow: auto;
+	background: white;
+	padding: 5px;
+	border-radius: 5px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	&__line {
+		min-height: 1.5em;
+		padding: 1px;
+		width: 100%;
+		display: flex;
+		border: 2px solid transparent;
+		border-radius: 5px;
+		&:hover {
+			background-color: $defaultCardBackground;
+		}
+
+		&.selected {
+			border-color: $failedBorderColor;
+		}
+	}
+
+	&__back-icon {
+		@include icon(url(../../resources/icons/arr4-up.svg), 1.3em, 1.2em);
+		margin-right: 3px;
+	}
+
+	&__close-icon {
+		@include icon(url(../../resources/icons/cross-icon-dark.svg), 1.3em, 1.2em);
+		margin-right: 3px;
+	}
+
+	&__file-icon {
+		@include icon(url(../../resources/icons/json.svg), 1.3em, 1.2em);
+		margin-right: 3px;
+	}
+
+	&__directory-icon {
+		@include icon(url(../../resources/icons/split.svg), 1.3em, 1.2em);
+		margin-right: 3px;
+	}
+
+	&__loading {
+		@include spinner(5px, 50px, 2s);
+	}
+}
+
+.expand-icon {
+	height: 15px;
+	width: 15px;
+
+	background: {
+		repeat: no-repeat;
+		size: 100%;
+		position: center;
+	}
+	flex-shrink: 0;
+	border-radius: 3px;
+	background-image: url('../../resources/icons/expand-on.svg');
+}
+
+.JSON-buttons-wrapper{ 
+	display: flex;
+	width: 100%;
+	padding: 5px;
+}
+
+.JSON-input{ 
+	border-radius: 3px;
+	width: 80%;
+	border: 1px $alternativeTextColor solid;
+	font-size: 14px;
+	padding: 0px 5px;
+}
+
+.load-JSON-button {
+	padding: 3px 0;
+	border-radius: 3px;
+	display: flex;
+	align-items: center;
+	font-size: 14px;
+	font-weight: bold;
+	color: $alternativeTextColor;
+	background: $searchButtonColor;
+	border: 1px $alternativeTextColor solid;
+	padding: 3px;
+	font-family: 'Open Sans', sans-serif;
+	cursor: pointer;
+	outline: none;
+	margin: 5px;
+}
+
+.JSON-virtuoso {
+	@include scrollbar;
+	height: calc(100% - 47px);
+}

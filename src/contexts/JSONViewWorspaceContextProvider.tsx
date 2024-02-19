@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2021 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,29 +11,20 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from './ApiSchema';
-import { IndexedDB } from './indexedDb';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
-import booksHttpApi from './books';
-import JSONViewerHttpApi from './JSONViewer';
+import React from 'react';
+import JSONViewerWorkspaceStore from '../stores/workspace/JSONViewerWorkspaceStore';
 
-const envName =
-	process.env.NODE_ENV === 'development'
-		? 'development'
-		: `${window.location.host}${window.location.pathname}`;
+const JSONViewWorspaceContext = React.createContext<JSONViewerWorkspaceStore | null>(null);
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	books: booksHttpApi,
-	sse: sseApi,
-	jsonViewer: JSONViewerHttpApi,
-	indexedDb: new IndexedDB(envName),
-};
+interface WorkspaceContextProviderProps {
+	children: React.ReactNode;
+	value: JSONViewerWorkspaceStore;
+}
+const JSONViewWorspaceContextProvider = ({ children, value }: WorkspaceContextProviderProps) => (
+	<JSONViewWorspaceContext.Provider value={value}>{children}</JSONViewWorspaceContext.Provider>
+);
 
-export default api;
+export { JSONViewWorspaceContext, JSONViewWorspaceContextProvider };

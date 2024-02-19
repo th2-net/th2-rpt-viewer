@@ -27,19 +27,11 @@
 	justify-content: space-between;
 
 	&.highlighted {
-		@keyframes highlight {
-			from {
-				background: $highlightedMessageCardBackground;
-			}
+    background: $highlightedMessageCardBackground;
 
-			50% {
-				background: rgba($highlightedMessageCardBackground, 0);
-			}
-			to {
-				background: $highlightedMessageCardBackground;
-			}
+    &:hover {
+      background: $highlightedMessageCardBackground;
 		}
-		animation: highlight 1s infinite ease-in-out;
 	}
 
 	&.soft-filtered {

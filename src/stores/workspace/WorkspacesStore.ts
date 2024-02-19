@@ -32,18 +32,20 @@ import FiltersHistoryStore from '../FiltersHistoryStore';
 import BooksStore from '../BooksStore';
 import { GraphItem } from '../../models/Graph';
 import { getGraphItemId } from '../../helpers/graph';
-import { isEvent } from '../../helpers/event';
+import { getScopeFromEventId, isEvent } from '../../helpers/event';
 import { isMessage } from '../../helpers/message';
 import { Book } from '../../models/Books';
 import { Bookmark } from '../../models/Bookmarks';
 import { isEventBookmark } from '../../helpers/bookmarks';
 import notificationsStore from '../NotificationsStore';
+import JSONViewerWorkspaceStore from './JSONViewerWorkspaceStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
 export interface AppState {
 	workspaces: WorkspacesUrlState;
 	bookId?: string;
+	eventId?: string;
 }
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
@@ -53,6 +55,8 @@ export default class WorkspacesStore {
 	public tabsStore = new TabsStore(this);
 
 	public searchWorkspace: SearchWorkspaceStore;
+
+	public JSONViewerWorkspace: JSONViewerWorkspaceStore;
 
 	constructor(
 		private rootStore: RootStore,
@@ -67,6 +71,8 @@ export default class WorkspacesStore {
 			this.booksStore,
 			this.api,
 		);
+
+		this.JSONViewerWorkspace = new JSONViewerWorkspaceStore(this, this.api);
 
 		this.init(initialState || null);
 
@@ -88,18 +94,20 @@ export default class WorkspacesStore {
 	}
 
 	@computed get activeWorkspace() {
-		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
+		return [this.searchWorkspace, this.JSONViewerWorkspace, ...this.workspaces][
+			this.tabsStore.activeTabIndex
+		];
 	}
 
 	@action
-	private createEmptyWorkspace = () => {
-		this.createWorkspace({
+	private createEmptyWorkspace = async () => {
+		await this.createWorkspace({
 			layout: [50, 50],
 		}).then(workspace => this.addWorkspace(workspace));
 	};
 
 	@action
-	private init(initialState: AppState | null) {
+	private async init(initialState: AppState | null) {
 		if (initialState !== null && initialState.bookId) {
 			const book = this.booksStore.books.find(b => b.name === initialState.bookId);
 
@@ -117,9 +125,23 @@ export default class WorkspacesStore {
 			}
 			this.booksStore.selectBook(book);
 
-			initialState.workspaces.forEach(async workspaceState =>
-				this.addWorkspace(await this.createWorkspace(workspaceState)),
-			);
+			if (initialState.eventId) {
+				const scope = getScopeFromEventId(initialState.eventId);
+
+				const event = await this.api.events.getEvent(initialState.eventId);
+
+				const workspaceInitialState = this.getInitialWorkspaceByEvent(
+					timestampToNumber(event.startTimestamp),
+					scope,
+					event,
+				);
+
+				this.addWorkspace(await this.createWorkspace(workspaceInitialState));
+			} else {
+				initialState.workspaces.forEach(async workspaceState =>
+					this.addWorkspace(await this.createWorkspace(workspaceState)),
+				);
+			}
 		} else {
 			this.createEmptyWorkspace();
 		}
@@ -133,7 +155,7 @@ export default class WorkspacesStore {
 	@action
 	public addWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.push(workspace);
-		this.tabsStore.setActiveWorkspace(this.workspaces.length);
+		this.tabsStore.setActiveWorkspace(this.workspaces.length + 1);
 	};
 
 	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {

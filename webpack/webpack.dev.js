@@ -42,6 +42,11 @@ module.exports = merge(commonConfig, {
 		host: '0.0.0.0',
 		historyApiFallback: true,
 		proxy: {
+			'/resources': {
+				target: 'http://localhost:8080/',
+				changeOrigin: true,
+				secure: false,
+			},
 			'/': {
 				target: 'http://de-th2-qa:30000/th2-demo-books/',
 				changeOrigin: true,
