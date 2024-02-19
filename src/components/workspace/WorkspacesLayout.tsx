@@ -58,7 +58,7 @@ const WorkspacesLayout = () => {
 						)}
 						<h3 className='workspace-tab__title'>
 							{isWorkspaceStore(workspace)
-								? `Workspace ${index}`
+								? `Workspace ${index - 1}`
 								: isSearchWorkspaceStore(workspace)
 								? 'Search'
 								: 'JSON Reader'}

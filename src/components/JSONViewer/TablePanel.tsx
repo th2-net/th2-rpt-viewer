@@ -12,7 +12,6 @@ const TablePanel = ({ node: [nodeKey, nodeTree] }: { node: [string, Tree] }) => 
 	const display = nodeTree.view_instruction;
 	const leafs = Object.entries(nodeTree);
 	const simpleLeafs: [string, string | number | string[]][] = [];
-	const complexLeafs: [string, Tree][] = [];
 	const combLeafs: [string, Tree | string | number | string[]][] = [];
 	leafs.forEach(([key, value]) => {
 		if (!value) return;
@@ -25,9 +24,7 @@ const TablePanel = ({ node: [nodeKey, nodeTree] }: { node: [string, Tree] }) => 
 		}
 		if (display === ViewInstruction.summaryAndTree) {
 			simpleLeafs.push([key, '']);
-			combLeafs.push([key, '']);
 		}
-		complexLeafs.push([key, value]);
 		combLeafs.push([key, value]);
 	});
 

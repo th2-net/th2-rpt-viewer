@@ -8,15 +8,15 @@ export class JSONViewerStore {
 	@observable
 	public isModalOpen = false;
 
-	@observable data: Tree = {};
+	@observable data: Tree[] = [];
 
 	@observable node: [string, Tree] = ['', {}];
 
 	@action
 	public setIsModalOpen = (v: boolean) => (this.isModalOpen = v);
 
-	@action setData(t: Tree) {
-		this.data = t;
+	@action setData(t: Tree[]) {
+		this.data = t.slice();
 		this.node = ['', {}];
 	}
 

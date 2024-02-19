@@ -109,9 +109,8 @@ export interface BooksApiSchema {
 }
 
 export interface JSONViewerApiSchema {
-	getDirectories: (directoriesURL: string) => Promise<string[]>;
-	getFiles: (directoriesURL: string, directory: string) => Promise<string[]>;
-	getFile: (directoriesURL: string, directory: string, file: string) => Promise<Tree>;
+	getLinks: (dir?: string) => Promise<string[]>;
+	getFile: (directory: string, file: string) => Promise<Tree>;
 }
 
 export interface SSESchema {

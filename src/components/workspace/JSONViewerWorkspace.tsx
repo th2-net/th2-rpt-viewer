@@ -16,14 +16,15 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { Virtuoso } from 'react-virtuoso';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
 import { Tree } from '../../models/JSONSchema';
-import TreePanel from '../JSONViewer/TreePanel';
 import TablePanel from '../JSONViewer/TablePanel';
 import useJSONViewerWorkspace from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import FileChoosing from '../JSONViewer/FileChoosing';
+import TreePanel from '../JSONViewer/TreePanel';
 
 const panelColors = {
 	tree: {
@@ -41,11 +42,42 @@ function JSONViewerWorkspace() {
 	const { panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } =
 		JSONViewerWorkspaceStore.viewStore;
 	const JSONViewerStore = useJSONViewerStore();
+	const inputRef = React.useRef<HTMLInputElement>(null);
 
-	const onSubmit = (tree: Tree) => {
+	const onSubmit = (tree: Tree[]) => {
 		JSONViewerStore.setData(tree);
 		JSONViewerStore.setIsModalOpen(false);
 	};
+
+	const readFile = async (files: FileList) => {
+		const promises: Promise<string>[] = [];
+		for (let i = 0; i < files.length; i++) {
+			const file = files.item(i);
+			if (file) {
+				promises.push(file.text());
+			}
+		}
+		JSONViewerStore.setData((await Promise.all(promises)).map(text => JSON.parse(text)));
+	};
+
+	const computeTreeKey = React.useCallback(
+		(index: number, dataNode: Tree) => `${index}/${JSON.stringify(dataNode)}`,
+		[],
+	);
+
+	const renderTree = React.useCallback(
+		(_index: number, dataNode: Tree) => (
+			<TreePanel
+				key={JSON.stringify(dataNode)}
+				node={dataNode}
+				setNode={(nodeKey: string, nodeTree: Tree) => JSONViewerStore.setNode([nodeKey, nodeTree])}
+				parentsPath={''}
+				parentKey={''}
+				selectedNode={JSONViewerStore.node}
+			/>
+		),
+		[],
+	);
 
 	const treePanel = React.useMemo(
 		() => ({
@@ -53,22 +85,40 @@ function JSONViewerWorkspace() {
 			color: panelColors.tree,
 			component: (
 				<div className='JSON-wrapper' style={{ gap: '1px' }}>
-					<button
-						className='load-JSON-button'
-						onClick={() => JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen)}>
-						Load File
-					</button>
+					<div className='JSON-buttons-wrapper'>
+						<button
+							className='load-JSON-button'
+							onClick={() => JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen)}>
+							Load File(s) From Server
+						</button>
+						<button className='load-JSON-button' onClick={() => inputRef.current?.click()}>
+							Load Local File(s)
+						</button>
+					</div>
+					<input
+						hidden
+						ref={inputRef}
+						style={{ marginBottom: 10 }}
+						type='file'
+						accept='.json'
+						multiple
+						onChange={ev => {
+							if (ev.target.files) {
+								readFile(ev.target.files);
+							}
+						}}
+					/>
 					{JSONViewerStore.isModalOpen && (
 						<FileChoosing onSubmit={onSubmit} close={() => JSONViewerStore.setIsModalOpen(false)} />
 					)}
-					<TreePanel
-						node={JSONViewerStore.data}
-						setNode={(nodeKey: string, nodeTree: Tree) =>
-							JSONViewerStore.setNode([nodeKey, nodeTree])
-						}
-						parentsPath={''}
-						parentKey={''}
-						selectedNode={JSONViewerStore.node}
+					<Virtuoso
+						className='JSON-virtuoso'
+						data={JSONViewerStore.data}
+						totalCount={JSONViewerStore.data.length}
+						computeItemKey={computeTreeKey}
+						overscan={3}
+						itemContent={renderTree}
+						style={{ height: 'calc(100% - 47px)' }}
 					/>
 				</div>
 			),

@@ -155,7 +155,7 @@ export default class WorkspacesStore {
 	@action
 	public addWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.push(workspace);
-		this.tabsStore.setActiveWorkspace(this.workspaces.length);
+		this.tabsStore.setActiveWorkspace(this.workspaces.length + 1);
 	};
 
 	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {

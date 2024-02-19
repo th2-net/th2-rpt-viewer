@@ -8,6 +8,7 @@
 	@include status-card;
 	@include event-status-icon($isParentHoverable: true);
 	line-height: 15px;
+	min-height: 15px;
 	width: 100%;
 	border-radius: 5px;
 	padding: 0px 5px;
@@ -127,6 +128,7 @@
 
 
 .params-table {
+	@include scrollbar;
 	@include default-table;
 
 	&-wrapper {
@@ -227,6 +229,7 @@
 }
 
 .JSON-wrapper{ 
+	@include scrollbar;
 	background-color: white;
 	height: 100%;
 	overflow: auto;
@@ -251,10 +254,19 @@
 	align-items: center;
 
 	&__line {
-		height: 1.5em;
+		min-height: 1.5em;
 		padding: 1px;
 		width: 100%;
 		display: flex;
+		border: 2px solid transparent;
+		border-radius: 5px;
+		&:hover {
+			background-color: $defaultCardBackground;
+		}
+
+		&.selected {
+			border-color: $failedBorderColor;
+		}
 	}
 
 	&__back-icon {
@@ -296,6 +308,20 @@
 	background-image: url('../../resources/icons/expand-on.svg');
 }
 
+.JSON-buttons-wrapper{ 
+	display: flex;
+	width: 100%;
+	padding: 5px;
+}
+
+.JSON-input{ 
+	border-radius: 3px;
+	width: 80%;
+	border: 1px $alternativeTextColor solid;
+	font-size: 14px;
+	padding: 0px 5px;
+}
+
 .load-JSON-button {
 	padding: 3px 0;
 	border-radius: 3px;
@@ -311,4 +337,9 @@
 	cursor: pointer;
 	outline: none;
 	margin: 5px;
+}
+
+.JSON-virtuoso {
+	@include scrollbar;
+	height: calc(100% - 47px);
 }

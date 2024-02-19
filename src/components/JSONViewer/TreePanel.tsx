@@ -24,18 +24,14 @@ const TreePanel = ({
 		: undefined;
 	const display = node.view_instruction;
 	const leafs = Object.entries(node);
-	const simpleLeafs: [string, string | number | string[]][] = [];
 	const complexLeafs: [string, Tree][] = [];
 	leafs.forEach(([key, value]) => {
 		if (!value) return;
 		if (key === 'view_instruction') return;
-		if (isSimpleLeaf(value)) {
-			simpleLeafs.push([key, value]);
-			return;
-		}
-		if (display === ViewInstruction.summaryAndTree) simpleLeafs.push([key, '']);
+		if (isSimpleLeaf(value)) return;
 		complexLeafs.push([key, value]);
 	});
+
 	if (display === ViewInstruction.table)
 		return (
 			<div className='lowerLevel'>

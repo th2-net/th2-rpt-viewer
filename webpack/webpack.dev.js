@@ -42,8 +42,8 @@ module.exports = merge(commonConfig, {
 		host: '0.0.0.0',
 		historyApiFallback: true,
 		proxy: {
-			'/report_scripts_output': {
-				target: 'http://localhost:3000/',
+			'/resources': {
+				target: 'http://localhost:8080/',
 				changeOrigin: true,
 				secure: false,
 			},
