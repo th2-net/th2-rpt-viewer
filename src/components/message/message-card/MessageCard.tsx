@@ -44,12 +44,15 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const { messageId } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
+	const { filterStore } = messagesStore;
 	const messagesDataStore = useMessagesDataStore();
 	const bookmarksStore = useBookmarksStore();
 	const { sortOrderItems } = useMessageBodySortStore();
 	const booksStore = useBooksStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
+
+	const [filterBodyValues, setFilterBodyValues] = React.useState<string[] | undefined>();
 
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
@@ -59,6 +62,12 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		-1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
+
+	React.useEffect(() => {
+		if (filterStore.isMessagesFilterApplied) {
+			setFilterBodyValues(filterStore.filterParams['body-values']);
+		}
+	}, [filterStore.isMessagesFilterApplied]);
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
@@ -113,6 +122,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			viewType={viewType}
 			setViewType={setViewType}
 			isHighlighted={isHighlighted}
+			filterBodyValues={filterBodyValues}
 			hoverMessage={hoverMessage}
 			unhoverMessage={unhoverMessage}
 			isBookmarked={isBookmarked}

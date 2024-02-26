@@ -26,16 +26,20 @@ import MessageBody, {
 	isMessageValue,
 	isNullValue,
 } from '../../../models/MessageBody';
+import { HighlightColorManager } from '../../../helpers/highlightUtils';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
 const SELECTED_HIGHLIGHT_COLOR = '#fff';
+
+const highlightColorManager = new HighlightColorManager();
 
 interface Props {
 	isBeautified: boolean;
 	body: MessageBody | null;
 	isSelected: boolean;
 	sortOrderItems: string[];
+	filterBodyValues: string[] | undefined;
 }
 
 const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
@@ -64,7 +68,13 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	return [...primarySortedFields, ...secondarySortedFields, ...tertiarySortedFields];
 };
 
-function MessageBodyCard({ isBeautified, body, isSelected, sortOrderItems }: Props) {
+function MessageBodyCard({
+	isBeautified,
+	body,
+	isSelected,
+	sortOrderItems,
+	filterBodyValues,
+}: Props) {
 	const [areSameContext, highlightSameContext] = React.useState(false);
 
 	const fields = React.useMemo(
@@ -93,6 +103,7 @@ function MessageBodyCard({ isBeautified, body, isSelected, sortOrderItems }: Pro
 						field={value}
 						isBeautified={isBeautified}
 						setIsHighlighted={highlightSameContext}
+						filterBodyValues={filterBodyValues}
 					/>
 					{isBeautified || idx === arr.length - 1 ? null : ', '}
 				</React.Fragment>
@@ -116,6 +127,7 @@ interface FieldProps {
 	highlightColor: string;
 	primarySort: string[];
 	renderInfo?: () => React.ReactNode;
+	filterBodyValues: string[] | undefined;
 }
 
 function MessageBodyCardField(props: FieldProps) {
@@ -127,11 +139,22 @@ function MessageBodyCardField(props: FieldProps) {
 		isRoot = true,
 		setIsHighlighted,
 		highlightColor,
+		filterBodyValues,
 	} = props;
 
 	const [areSameContext, highlightSameContext] = React.useState(false);
 
 	const highlight = React.useMemo(() => debounce(() => setIsHighlighted(true), 60), []);
+
+	const fieldColor = React.useMemo(() => {
+		if (!isSimpleValue(field)) {
+			return '';
+		}
+		if (filterBodyValues?.some(filter => field?.simpleValue?.includes(filter) || false)) {
+			return highlightColorManager.getHighlightColor(field.simpleValue);
+		}
+		return '';
+	}, [filterBodyValues]);
 
 	const removeHighlight = React.useCallback(() => {
 		highlight.cancel();
@@ -148,6 +171,7 @@ function MessageBodyCardField(props: FieldProps) {
 				label={label}
 				isRoot={false}
 				setIsHighlighted={setIsHighlighted}
+				filterBodyValues={filterBodyValues}
 			/>
 		);
 	}
@@ -165,6 +189,7 @@ function MessageBodyCardField(props: FieldProps) {
 			className='mc-body__field'
 			style={{
 				display: isBeautified ? 'block' : undefined,
+				backgroundColor: fieldColor,
 			}}>
 			<span
 				onMouseEnter={highlight}
@@ -212,6 +237,7 @@ function MessageBodyCardField(props: FieldProps) {
 									isRoot={true}
 									setIsHighlighted={highlightSameContext}
 									highlightColor={highlightColor}
+									filterBodyValues={filterBodyValues}
 								/>
 								{isBeautified || idx === arr.length - 1 ? null : ', '}
 							</React.Fragment>
@@ -251,6 +277,7 @@ function MessageBodyCardField(props: FieldProps) {
 									isRoot={false}
 									setIsHighlighted={highlightSameContext}
 									highlightColor={highlightColor}
+									filterBodyValues={filterBodyValues}
 								/>
 								{isBeautified || idx === arr.length - 1 ? null : ', '}
 							</React.Fragment>
