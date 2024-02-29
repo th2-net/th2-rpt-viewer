@@ -27,6 +27,11 @@ export enum MessageViewType {
 	BINARY = 'binary',
 }
 
+export enum MessagesOrderForExport {
+	DEFAULT = 'default',
+	CHRONOLOGICALLY = 'chronologically',
+}
+
 export interface MessageSortOrderItem {
 	id: string;
 	item: string;

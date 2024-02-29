@@ -820,12 +820,15 @@
 	}
 
 	&__export {
+    display: flex;
+
 		&-controls {
 			position: absolute;
 			background-color: white;
 			box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
 			display: flex;
 			flex-direction: column;
+      top: 100%;
 			right: 35px;
 			z-index: 2;
 		}
@@ -850,6 +853,13 @@
 			&:hover {
 				color: $controlButtonTextColorHover;
 			}
+		}
+
+    &-text {
+			color: #808080;
+			font-size: 12px;
+			line-height: 15px;
+			font-weight: bold;
 		}
 
 		&-tool {
@@ -878,10 +888,16 @@
 			display: inline-block;
 		}
 
+    &-params {
+      @include icon(url('../../resources/icons/ellipsis.svg'), 16px, 16px);
+			display: inline-block;
+    }
+
 		&-end {
 			@include icon(url('../../resources/icons/download.svg'), 16px, 16px);
 			display: inline-block;
 		}
+
 		&-json {
 			@include icon(url(../../resources/icons/json.svg), 20px, 20px);
 			margin-top: 5%;
