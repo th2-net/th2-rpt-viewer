@@ -1,6 +1,6 @@
 import { action, observable } from 'mobx';
 import moment from 'moment';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { EventMessage, MessageViewType, MessagesOrderForExport } from '../../models/EventMessage';
 import { decodeBase64RawContent, getAllRawContent } from '../../helpers/rawFormatter';
 import { downloadTxtFile } from '../../helpers/files/downloadTxt';
 
@@ -8,11 +8,18 @@ export default class MessagesExportStore {
 	@observable
 	public isExport = false;
 
+	@observable
+	private exportOrder: MessagesOrderForExport = MessagesOrderForExport.DEFAULT;
+
 	@observable.shallow
 	public exportMessages: Array<EventMessage> = [];
 
 	public isExported(message: EventMessage) {
 		return this.exportMessages.includes(message);
+	}
+
+	public get currentExportOrder() {
+		return this.exportOrder;
 	}
 
 	@action
@@ -24,6 +31,25 @@ export default class MessagesExportStore {
 			this.exportMessages.push(message);
 		}
 	}
+
+	@action
+	public addAllMessagesToExport(messages: EventMessage[]) {
+		if (!this.isExport) return;
+
+		const containsAllElements = messages.every(element => this.exportMessages.includes(element));
+
+		if (!containsAllElements) {
+			this.exportMessages.splice(0, this.exportMessages.length, ...messages);
+		} else {
+			this.exportMessages.splice(0, this.exportMessages.length);
+		}
+	}
+
+	@action
+	public setExportOrder = (order: MessagesOrderForExport) => {
+		if (order === this.exportOrder) return;
+		this.exportOrder = order;
+	};
 
 	@action
 	public enableExport = () => {
@@ -68,6 +94,11 @@ export default class MessagesExportStore {
 	public endExport = (messageViewType: MessageViewType) => {
 		this.isExport = false;
 		if (this.exportMessages.length === 0) return;
+
+		if (this.exportOrder === MessagesOrderForExport.CHRONOLOGICALLY) {
+			this.exportMessages.splice(0, this.exportMessages.length, ...this.exportMessages.reverse());
+		}
+
 		downloadTxtFile(
 			[
 				this.exportMessages
