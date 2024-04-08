@@ -8,7 +8,9 @@ export class JSONViewerStore {
 	@observable
 	public isModalOpen = false;
 
-	@observable data: Tree[] = [];
+	@observable.shallow data: Tree[] = [];
+
+	@observable notebooks: string[] = [];
 
 	@observable node: [string, Tree] = ['', {}];
 
@@ -18,6 +20,14 @@ export class JSONViewerStore {
 	@action setData(t: Tree[]) {
 		this.data = t.slice();
 		this.node = ['', {}];
+	}
+
+	@action addData(t: Tree) {
+		this.data.push(t);
+	}
+
+	@action setNotebooks(n: string[]) {
+		this.notebooks = n.slice();
 	}
 
 	@action setNode(n: [string, Tree]) {

@@ -1,0 +1,154 @@
+import * as React from 'react';
+import { observer } from 'mobx-react-lite';
+import { NotebookParameter, NotebookParameters } from '../../models/JSONSchema';
+import api from '../../api';
+import '../../styles/jupyter.scss';
+import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+
+const timeBetweenResults = 600;
+
+const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
+	const JSONViewerStore = useJSONViewerStore();
+	const [parameters, setParameters] = React.useState<NotebookParameter[]>([]);
+	const [paramsValue, setParamsValue] = React.useState<Record<string, string>>({});
+	const [isLoading, setIsLoading] = React.useState(true);
+	const [isRunLoading, setIsRunLoading] = React.useState(false);
+	const [isExpanded, setIsExpanded] = React.useState(false);
+	const [timer, setTimer] = React.useState<NodeJS.Timeout | null>(null);
+	const keys: string[] = React.useMemo(() => parameters.map(param => param.name), [parameters]);
+
+	const getParameters = async () => {
+		setIsLoading(true);
+		api.jsonViewer
+			.getParameters(notebook)
+			.then((data: NotebookParameters) => {
+				setParameters(Object.values(data).filter(param => param.name !== 'output_path'));
+			})
+			.finally(() => {
+				setIsLoading(false);
+				setIsExpanded(true);
+			});
+	};
+
+	const open = () => {
+		if (isLoading) return;
+		setIsExpanded(!isExpanded);
+	};
+
+	const getResults = async (path: string) => {
+		const result = await api.jsonViewer.getResults(path);
+		if (typeof result !== 'string') {
+			const nodeName = `Result of ${notebook}'s run`;
+			const res = {
+				...result,
+				file_path: path,
+			};
+			JSONViewerStore.addData({
+				[nodeName]: res,
+			});
+			JSONViewerStore.setNode([nodeName, res]);
+			setParamsValue({});
+			setIsRunLoading(false);
+			setIsExpanded(false);
+			return;
+		}
+		if (isRunLoading && timer) {
+			timer.refresh();
+		}
+	};
+
+	const runNotebook = async () => {
+		if (isRunLoading) {
+			setIsRunLoading(false);
+			if (timer) {
+				timer.unref();
+				setTimer(null);
+			}
+			return;
+		}
+		setIsRunLoading(true);
+		const paramsWithType = Object.fromEntries(
+			Object.entries(paramsValue)
+				.filter(val => val[1] !== '')
+				.map(([name, value]) => {
+					const ind = keys.indexOf(name);
+					switch (parameters[ind].inferred_type_name) {
+						case 'string':
+							return [name, value];
+						case 'float':
+							return [name, parseFloat(value)];
+						case 'int':
+							return [name, parseInt(value)];
+						default:
+							return [name, value];
+					}
+				}),
+		);
+		const res = await api.jsonViewer.launchNotebook(notebook, paramsWithType);
+		if (res.path !== '') setTimer(setTimeout(() => getResults(res.path), timeBetweenResults));
+	};
+
+	React.useEffect(() => {
+		getParameters();
+	}, []);
+
+	return (
+		<div className='notebookCell'>
+			<div className={`notebookCell-header ${isExpanded ? 'expanded' : ''}`} onClick={open}>
+				<label>Parameters for {notebook}</label>
+				<div
+					className={`notebookCell-icon ${
+						isLoading ? 'loading' : isExpanded ? 'expanded' : 'hidden'
+					}`}
+				/>
+			</div>
+			{isExpanded && (
+				<div className='notebookCell-body'>
+					<div className='notebookCell-body-table'>
+						<table>
+							<thead>
+								<tr style={{ textAlign: 'left' }}>
+									<th>Name</th>
+									<th>Type</th>
+									<th>Value</th>
+								</tr>
+							</thead>
+							<tbody>
+								{parameters.map(parameter => (
+									<tr key={parameter.name}>
+										<td>
+											<label>{parameter.name}</label>
+										</td>
+										<td>
+											<label>{parameter.inferred_type_name}</label>
+										</td>
+										<td>
+											<input
+												type='text'
+												placeholder={`default: ${parameter.default}`}
+												value={paramsValue[parameter.name]}
+												onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+													const newState = paramsValue;
+													newState[parameter.name] = ev.target.value;
+													setParamsValue(newState);
+												}}
+											/>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+					<div className='buttons'>
+						<button onClick={runNotebook}>
+							<label>Run</label>
+							<div className={`notebookCell-icon ${isRunLoading ? 'loading' : 'play'}`} />
+						</button>
+					</div>
+				</div>
+			)}
+		</div>
+	);
+};
+
+export default observer(NotebookParamsCell);

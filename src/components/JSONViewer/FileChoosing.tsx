@@ -8,7 +8,7 @@ const FileChoosing = ({
 	onSubmit,
 	close,
 }: {
-	onSubmit: (t: Tree[]) => void;
+	onSubmit: (t: Tree[], n: string[]) => void;
 	close: () => void;
 }) => {
 	const [isLoading, setIsLoading] = React.useState(true);
@@ -16,13 +16,14 @@ const FileChoosing = ({
 	const [search, setSearch] = React.useState('');
 	const [directory, setDirectory] = React.useState<string>('');
 	const [files, setFiles] = React.useState<string[]>([]);
-	const [selectedFiles, setSelectedFiles] = React.useState<{ dir: string; name: string }[]>([]);
+	const [selectedFiles, setSelectedFiles] = React.useState<string[]>([]);
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const filteredFiles = React.useMemo(
 		() => files.filter(file => file.includes(search)),
 		[files, search],
 	);
+
 	const filteredDirectories = React.useMemo(
 		() => directories.filter(dir => dir.includes(search)),
 		[directories, search],
@@ -33,10 +34,7 @@ const FileChoosing = ({
 		setDirectory(dir || '');
 		api.jsonViewer
 			.getLinks(dir)
-			.then((data: string[]) => {
-				setDirectories(data.filter(link => !link.includes('../') && link.slice(-1) === '/'));
-				setFiles(data.filter(link => link.includes('.json') && link.slice(-1) !== '/'));
-			})
+			.then((data: string[]) => setFiles(data))
 			.finally(() => setIsLoading(false));
 	};
 
@@ -69,28 +67,30 @@ const FileChoosing = ({
 
 	const getFiles = () => {
 		const fileData: Tree[] = [];
+		const notebookData: string[] = [];
 		const promises: Promise<Tree | void>[] = [];
 		if (selectedFiles.length > 0) {
 			setIsLoading(true);
 			selectedFiles.forEach(file =>
 				promises.push(
-					api.jsonViewer.getFile(file.dir, file.name).then((data: Tree) => {
-						fileData.push(JSON.parse(JSON.stringify(data)));
+					api.jsonViewer.getFile(file).then((data: Tree) => {
+						if (file.endsWith('.ipynb')) {
+							notebookData.push(file);
+							return;
+						}
+						fileData.push(data);
 					}),
 				),
 			);
 			Promise.all(promises).then(() => {
-				setIsLoading(false);
-				onSubmit(fileData);
+				onSubmit(fileData, notebookData);
 			});
 		}
 		// closeModal();
 	};
 
 	const selectFile = (fileName: string) => {
-		const fileIndex = selectedFiles.findIndex(
-			selectedfile => selectedfile.dir === directory && selectedfile.name === fileName,
-		);
+		const fileIndex = selectedFiles.indexOf(fileName);
 
 		if (fileIndex > -1) {
 			setSelectedFiles([
@@ -98,13 +98,7 @@ const FileChoosing = ({
 				...selectedFiles.slice(fileIndex + 1),
 			]);
 		} else {
-			setSelectedFiles([
-				...selectedFiles,
-				{
-					dir: directory,
-					name: fileName,
-				},
-			]);
+			setSelectedFiles([...selectedFiles, fileName]);
 		}
 	};
 
@@ -181,12 +175,7 @@ const FileChoosing = ({
 								{filteredFiles.map((file, index) => (
 									<div
 										className={`fileChoosing__line ${
-											selectedFiles.find(
-												selectedfile =>
-													selectedfile.dir === directory && selectedfile.name === file,
-											)
-												? 'selected'
-												: ''
+											selectedFiles.includes(file) ? 'selected' : ''
 										}`}
 										key={index}
 										title={decodeURI(file)}

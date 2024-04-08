@@ -1,4 +1,5 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { Tree, ViewInstruction } from '../../models/JSONSchema';
 import { isSimpleLeaf } from '../../helpers/JSONViewer';
@@ -101,4 +102,4 @@ const TreePanel = ({
 	);
 };
 
-export default TreePanel;
+export default observer(TreePanel);

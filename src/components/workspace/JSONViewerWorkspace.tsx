@@ -17,6 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso } from 'react-virtuoso';
+import { computed } from 'mobx';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
 import { Tree } from '../../models/JSONSchema';
@@ -25,6 +26,8 @@ import useJSONViewerWorkspace from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import FileChoosing from '../JSONViewer/FileChoosing';
 import TreePanel from '../JSONViewer/TreePanel';
+import NotebookParamsCell from '../JSONViewer/NotebookParamsCell';
+import StateSaverProvider from '../util/StateSaverProvider';
 
 const panelColors = {
 	tree: {
@@ -37,15 +40,16 @@ const panelColors = {
 	},
 } as const;
 
-function JSONViewerWorkspace() {
+const JSONViewerWorkspace = () => {
 	const JSONViewerWorkspaceStore = useJSONViewerWorkspace();
 	const { panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } =
 		JSONViewerWorkspaceStore.viewStore;
 	const JSONViewerStore = useJSONViewerStore();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
-	const onSubmit = (tree: Tree[]) => {
-		JSONViewerStore.setData(tree);
+	const onSubmit = (trees: Tree[], notebooks: string[]) => {
+		JSONViewerStore.setData(trees);
+		JSONViewerStore.setNotebooks(notebooks);
 		JSONViewerStore.setIsModalOpen(false);
 	};
 
@@ -61,85 +65,96 @@ function JSONViewerWorkspace() {
 	};
 
 	const computeTreeKey = React.useCallback(
-		(index: number, dataNode: Tree) => `${index}/${JSON.stringify(dataNode)}`,
+		(index: number, dataNode: Tree | string) => `${index}/${JSON.stringify(dataNode)}`,
 		[],
 	);
 
-	const renderTree = React.useCallback(
-		(_index: number, dataNode: Tree) => (
+	const renderTree = React.useCallback((_index: number, dataNode: Tree | string) => {
+		if (typeof dataNode === 'string') return <NotebookParamsCell notebook={dataNode} />;
+		return (
 			<TreePanel
-				key={JSON.stringify(dataNode)}
 				node={dataNode}
 				setNode={(nodeKey: string, nodeTree: Tree) => JSONViewerStore.setNode([nodeKey, nodeTree])}
 				parentsPath={''}
 				parentKey={''}
 				selectedNode={JSONViewerStore.node}
 			/>
-		),
-		[],
-	);
+		);
+	}, []);
 
 	const treePanel = React.useMemo(
-		() => ({
-			title: 'Tree',
-			color: panelColors.tree,
-			component: (
-				<div className='JSON-wrapper' style={{ gap: '1px' }}>
-					<div className='JSON-buttons-wrapper'>
-						<button
-							className='load-JSON-button'
-							onClick={() => JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen)}>
-							Load File(s) From Server
-						</button>
-						<button className='load-JSON-button' onClick={() => inputRef.current?.click()}>
-							Load Local File(s)
-						</button>
+		() =>
+			computed(() => ({
+				title: 'Tree',
+				color: panelColors.tree,
+				component: (
+					<div className='JSON-wrapper' style={{ gap: '1px' }}>
+						<div className='JSON-buttons-wrapper'>
+							<button
+								className='load-JSON-button'
+								onClick={() => JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen)}>
+								Load File(s) From Server
+							</button>
+							<button className='load-JSON-button' onClick={() => inputRef.current?.click()}>
+								Load Local File(s)
+							</button>
+						</div>
+						<input
+							hidden
+							ref={inputRef}
+							style={{ marginBottom: 10 }}
+							type='file'
+							accept='.json'
+							multiple
+							onChange={ev => {
+								if (ev.target.files) {
+									readFile(ev.target.files);
+								}
+							}}
+						/>
+						{JSONViewerStore.isModalOpen && (
+							<FileChoosing
+								onSubmit={onSubmit}
+								close={() => JSONViewerStore.setIsModalOpen(false)}
+							/>
+						)}
+						<StateSaverProvider>
+							<Virtuoso
+								className='JSON-virtuoso'
+								data={[...JSONViewerStore.notebooks, ...JSONViewerStore.data]}
+								totalCount={JSONViewerStore.notebooks.length + JSONViewerStore.data.length}
+								computeItemKey={computeTreeKey}
+								overscan={3}
+								itemContent={renderTree}
+								style={{ height: 'calc(100% - 47px)' }}
+							/>
+						</StateSaverProvider>
 					</div>
-					<input
-						hidden
-						ref={inputRef}
-						style={{ marginBottom: 10 }}
-						type='file'
-						accept='.json'
-						multiple
-						onChange={ev => {
-							if (ev.target.files) {
-								readFile(ev.target.files);
-							}
-						}}
-					/>
-					{JSONViewerStore.isModalOpen && (
-						<FileChoosing onSubmit={onSubmit} close={() => JSONViewerStore.setIsModalOpen(false)} />
-					)}
-					<Virtuoso
-						className='JSON-virtuoso'
-						data={JSONViewerStore.data}
-						totalCount={JSONViewerStore.data.length}
-						computeItemKey={computeTreeKey}
-						overscan={3}
-						itemContent={renderTree}
-						style={{ height: 'calc(100% - 47px)' }}
-					/>
-				</div>
-			),
-			isActive: false,
-		}),
-		[JSONViewerStore.data, JSONViewerStore.isModalOpen, JSONViewerStore.node],
-	);
+				),
+				isActive: false,
+			})),
+		[
+			JSONViewerStore.data,
+			JSONViewerStore.notebooks,
+			JSONViewerStore.isModalOpen,
+			JSONViewerStore.node,
+		],
+	).get();
 
 	const tablePanel = React.useMemo(
-		() => ({
-			title: `Table`,
-			color: panelColors.table,
-			component: (
-				<div className='JSON-wrapper tableView'>
-					<TablePanel node={JSONViewerStore.node} />
-				</div>
-			),
-			isActive: false,
-		}),
+		() =>
+			computed(() => ({
+				title: `Table`,
+				color: panelColors.table,
+				component: (
+					<div className='JSON-wrapper tableView'>
+						<TablePanel node={JSONViewerStore.node} />
+					</div>
+				),
+				isActive: false,
+			})),
 		[JSONViewerStore.node],
-	);
+	).get();
 
 	const viewerWorkspacePanels = React.useMemo(
 		() => [treePanel, tablePanel],
@@ -157,6 +172,6 @@ function JSONViewerWorkspace() {
 			/>
 		</div>
 	);
-}
+};
 
 export default observer(JSONViewerWorkspace);

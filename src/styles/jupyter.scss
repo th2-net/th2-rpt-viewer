@@ -1,0 +1,98 @@
+@import './common/vars';
+
+.notebookCell {
+    border: 3px $failedBorderColor solid;
+	border-radius: 5px;
+
+    &-header {
+        label {
+            font-size: 16px;
+        }
+
+        padding: 5px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        border: 0px black solid;
+        &.expanded {
+            border-bottom-width: 1px;
+        }
+	}
+
+    &-icon {
+        margin-top: 2px;
+        padding-left: 5px;
+
+        &.loading {
+            @include spinner(3px, 22px, 2s);
+        }
+
+        &.expanded {
+            @include icon(url(../../resources/icons/arr4-up.svg));
+        }
+
+        &.hidden {
+            @include icon(url(../../resources/icons/arr4-down.svg));
+        }
+
+        &.play {
+            @include icon(url(../../resources/icons/play.svg))
+        }
+    }
+    
+    &-body {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px;
+
+        &-table {
+            table {
+                border-collapse: collapse;
+                border-style: hidden;
+                table-layout: fixed;
+                border-radius: 4px;
+                min-width: 50%;
+
+                th {
+                    font-size: 14px;
+                }
+
+                td {
+                    font-size: 12px;
+
+                    input {
+                        font-size: 12px;
+                        border: 1px solid;
+                        border-radius: 5px;
+                    }
+                }
+
+                th,
+                td {
+                    padding: 2px 8px;
+                }
+            }
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+            button {
+                cursor: pointer;
+                width: 100%;
+                font-size: 12px;
+                display: flex;
+                gap: 10px;
+                justify-content: space-between;
+                border: 1px solid;
+                border-radius: 6px;
+                background-color: transparent;
+                align-items: center;
+                text-align: center;
+            }
+        }
+    }
+    
+}

@@ -28,6 +28,7 @@ module.exports = merge(commonConfig, {
 	entry: ['react-hot-loader/patch', appSrc],
 	devtool: 'inline-source-map',
 	devServer: {
+		hot: true,
 		watchFiles: {
 			options: {
 				usePolling: true,
@@ -42,8 +43,9 @@ module.exports = merge(commonConfig, {
 		host: '0.0.0.0',
 		historyApiFallback: true,
 		proxy: {
-			'/resources': {
+			'/jupyter': {
 				target: 'http://localhost:8080/',
+				pathRewrite: { '^/jupyter': '' },
 				changeOrigin: true,
 				secure: false,
 			},
@@ -53,7 +55,6 @@ module.exports = merge(commonConfig, {
 				secure: false,
 			},
 		},
-		hot: true,
 	},
 	module: {
 		rules: [
