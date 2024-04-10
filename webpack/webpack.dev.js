@@ -43,14 +43,8 @@ module.exports = merge(commonConfig, {
 		host: '0.0.0.0',
 		historyApiFallback: true,
 		proxy: {
-			'/jupyter': {
-				target: 'http://localhost:8080/',
-				pathRewrite: { '^/jupyter': '' },
-				changeOrigin: true,
-				secure: false,
-			},
 			'/': {
-				target: 'http://de-th2-qa:30000/th2-demo-books/',
+				target: 'http://kos-perftest-kuber-master:30000/th2-demo-transport/',
 				changeOrigin: true,
 				secure: false,
 			},
