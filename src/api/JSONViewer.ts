@@ -3,7 +3,7 @@ import { JSONViewerApiSchema } from './ApiSchema';
 
 const JSONViewerHttpApi: JSONViewerApiSchema = {
 	getLinks: async () => {
-		const res = await fetch(`backend/files/all`, {
+		const res = await fetch(`json-stream-provider/files/all`, {
 			cache: 'reload',
 			headers: {
 				Accept: 'application/json',
@@ -16,7 +16,7 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		return [];
 	},
 	getFile: async (path: string) => {
-		const res = await fetch(`backend/result?path=${path}`, {
+		const res = await fetch(`json-stream-provider/result?path=${path}`, {
 			headers: {
 				Accept: 'application/json',
 			},
@@ -29,7 +29,7 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		return {};
 	},
 	getParameters: async (path: string) => {
-		const res = await fetch(`backend/files?path=${path}`, {
+		const res = await fetch(`json-stream-provider/files?path=${path}`, {
 			headers: {
 				Accept: 'application/json',
 			},
@@ -42,7 +42,7 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		return {};
 	},
 	getResults: async (path: string) => {
-		const res = await fetch(`backend/result?path=${path}`);
+		const res = await fetch(`json-stream-provider/result?path=${path}`);
 		if (res.ok) {
 			return res.json();
 		}
@@ -50,7 +50,7 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		return path;
 	},
 	launchNotebook: async (path: string, parameters = {}) => {
-		const res = await fetch(`backend/execute?path=${path}`, {
+		const res = await fetch(`json-stream-provider/execute?path=${path}`, {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
