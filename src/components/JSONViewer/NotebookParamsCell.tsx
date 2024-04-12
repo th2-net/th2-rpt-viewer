@@ -85,7 +85,11 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 				}),
 		);
 		const res = await api.jsonViewer.launchNotebook(notebook, paramsWithType);
-		if (res.path !== '') setTimer(setTimeout(() => getResults(res.path), timeBetweenResults));
+		if (res.path !== '') {
+			setTimer(setTimeout(() => getResults(res.path), timeBetweenResults));
+		} else {
+			setIsRunLoading(false);
+		}
 	};
 
 	React.useEffect(() => {
