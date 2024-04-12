@@ -46,13 +46,10 @@ const FileChoosing = ({
 	}, []);
 
 	const openDirectory = async (directoryName: string) => {
-		getLinks(`${directory}${directoryName}`);
+		getLinks(`${directoryName}`);
 	};
 
 	const closeModal = () => {
-		setDirectories([]);
-		setDirectory('');
-		setFiles([]);
 		close();
 	};
 
@@ -61,10 +58,10 @@ const FileChoosing = ({
 		setFiles([]);
 		if (directory === '') {
 			closeModal();
-		} else if (directory.indexOf('/') === directory.lastIndexOf('/')) {
+		} else if (directory.indexOf('\\') === directory.lastIndexOf('\\')) {
 			getLinks();
 		} else {
-			getLinks(`${directory.slice(0, directory.slice(0, -1).lastIndexOf('/') + 1)}`);
+			getLinks(`${directory.slice(0, directory.slice(0, -1).lastIndexOf('\\'))}`);
 		}
 	};
 
@@ -168,7 +165,7 @@ const FileChoosing = ({
 										key={index}
 										onClick={() => openDirectory(dir)}>
 										<div className='fileChoosing__directory-icon' />
-										{decodeURI(dir)}
+										{decodeURI(dir).replace(directory, '')}
 									</div>
 								))}
 							</>
@@ -184,7 +181,7 @@ const FileChoosing = ({
 										title={decodeURI(file)}
 										onClick={() => selectFile(file)}>
 										<div className='fileChoosing__file-icon' />
-										{decodeURI(file)}
+										{decodeURI(file).replace(directory, '')}
 									</div>
 								))}
 							</>
