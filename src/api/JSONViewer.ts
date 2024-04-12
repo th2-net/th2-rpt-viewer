@@ -2,8 +2,8 @@ import notificationsStore from '../stores/NotificationsStore';
 import { JSONViewerApiSchema } from './ApiSchema';
 
 const JSONViewerHttpApi: JSONViewerApiSchema = {
-	getLinks: async () => {
-		const res = await fetch(`json-stream-provider/files/all`, {
+	getLinks: async (dir?: string) => {
+		const res = await fetch(`json-stream-provider/files/all${dir ? `?path=${dir}` : ''}`, {
 			cache: 'reload',
 			headers: {
 				Accept: 'application/json',

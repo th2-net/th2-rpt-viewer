@@ -109,7 +109,7 @@ export interface BooksApiSchema {
 }
 
 export interface JSONViewerApiSchema {
-	getLinks: (dir?: string) => Promise<string[]>;
+	getLinks: (dir?: string) => Promise<{ directories: string[]; files: string[] }>;
 	getFile: (path: string) => Promise<Tree>;
 	getParameters: (path: string) => Promise<NotebookParameters>;
 	getResults: (path: string) => Promise<string | Tree>;
