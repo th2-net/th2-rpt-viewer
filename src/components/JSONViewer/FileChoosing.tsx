@@ -20,12 +20,12 @@ const FileChoosing = ({
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const filteredFiles = React.useMemo(
-		() => files.filter(file => file.includes(search)),
+		() => (files ? files.filter(file => file.includes(search)) : []),
 		[files, search],
 	);
 
 	const filteredDirectories = React.useMemo(
-		() => directories.filter(dir => dir.includes(search)),
+		() => (directories ? directories.filter(dir => dir.includes(search)) : []),
 		[directories, search],
 	);
 
@@ -157,7 +157,7 @@ const FileChoosing = ({
 								</>
 							)}
 						</div>
-						{directories.length > 0 && (
+						{
 							<>
 								{filteredDirectories.map((dir, index) => (
 									<div
@@ -169,8 +169,8 @@ const FileChoosing = ({
 									</div>
 								))}
 							</>
-						)}
-						{files.length > 0 && (
+						}
+						{
 							<>
 								{filteredFiles.map((file, index) => (
 									<div
@@ -185,7 +185,7 @@ const FileChoosing = ({
 									</div>
 								))}
 							</>
-						)}
+						}
 					</>
 				)}
 			</div>
