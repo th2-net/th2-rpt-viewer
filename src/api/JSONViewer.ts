@@ -15,19 +15,6 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		notificationsStore.handleRequestError(res);
 		return [];
 	},
-	getFile: async (path: string) => {
-		const res = await fetch(`json-stream-provider/result?path=${path}`, {
-			headers: {
-				Accept: 'application/json',
-			},
-		});
-
-		if (res.ok) {
-			return res.json();
-		}
-		notificationsStore.handleRequestError(res);
-		return {};
-	},
 	getParameters: async (path: string) => {
 		const res = await fetch(`json-stream-provider/files?path=${path}`, {
 			headers: {
@@ -41,13 +28,13 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		notificationsStore.handleRequestError(res);
 		return {};
 	},
-	getResults: async (path: string) => {
+	getResults: async (path: string): Promise<{ result: string }> => {
 		const res = await fetch(`json-stream-provider/result?path=${path}`);
 		if (res.ok) {
 			return res.json();
 		}
 		notificationsStore.handleRequestError(res);
-		return path;
+		return { result: path };
 	},
 	launchNotebook: async (path: string, parameters = {}) => {
 		const res = await fetch(`json-stream-provider/execute?path=${path}`, {

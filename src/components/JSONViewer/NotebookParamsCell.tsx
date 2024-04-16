@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { NotebookParameter, NotebookParameters } from '../../models/JSONSchema';
+import { NotebookParameter, NotebookParameters, TreeNode } from '../../models/JSONSchema';
 import api from '../../api';
 import '../../styles/jupyter.scss';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import { parseText } from '../../helpers/JSONViewer';
 
 const timeBetweenResults = 600;
 
@@ -36,17 +37,22 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	};
 
 	const getResults = async (path: string) => {
-		const result = await api.jsonViewer.getResults(path);
-		if (typeof result !== 'string') {
+		const { result } = await api.jsonViewer.getResults(path);
+		if (result.includes('{')) {
 			const nodeName = `Result of ${notebook}'s run`;
-			const res = {
-				...result,
-				file_path: path,
-			};
-			JSONViewerStore.addData({
-				[nodeName]: res,
-			});
-			JSONViewerStore.setNode([nodeName, res]);
+			const fileData: TreeNode[] = [];
+			try {
+				fileData.push(...parseText(result, nodeName));
+			} catch {
+				const lines = result.split('\n');
+				const data: TreeNode[][] = [];
+				for (let i = 0; i < lines.length; i++) {
+					data.push(parseText(lines[i]));
+				}
+				fileData.push(...data.reduce((res, current) => res.concat(current), []));
+			}
+			JSONViewerStore.addNodes(fileData);
+			JSONViewerStore.selectTreeNode(fileData[0]);
 			setParamsValue({});
 			setIsRunLoading(false);
 			setIsExpanded(false);

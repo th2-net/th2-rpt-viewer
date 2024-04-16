@@ -1,14 +1,15 @@
 import * as React from 'react';
-import { Tree } from '../../models/JSONSchema';
+import { TreeNode } from '../../models/JSONSchema';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener } from '../../hooks';
 import api from '../../api';
+import { parseText } from '../../helpers/JSONViewer';
 
 const FileChoosing = ({
 	onSubmit,
 	close,
 }: {
-	onSubmit: (t: Tree[], n: string[]) => void;
+	onSubmit: (t: TreeNode[], n: string[]) => void;
 	close: () => void;
 }) => {
 	const [isLoading, setIsLoading] = React.useState(true);
@@ -66,19 +67,28 @@ const FileChoosing = ({
 	};
 
 	const getFiles = () => {
-		const fileData: Tree[] = [];
+		const fileData: TreeNode[] = [];
 		const notebookData: string[] = [];
-		const promises: Promise<Tree | void>[] = [];
+		const promises: Promise<void>[] = [];
 		if (selectedFiles.length > 0) {
 			setIsLoading(true);
-			selectedFiles.forEach(file =>
+			selectedFiles.forEach(filePath =>
 				promises.push(
-					api.jsonViewer.getFile(file).then((data: Tree) => {
-						if (file.endsWith('.ipynb')) {
-							notebookData.push(file);
+					api.jsonViewer.getResults(filePath).then(({ result }) => {
+						if (filePath.endsWith('.ipynb')) {
+							notebookData.push(filePath);
 							return;
 						}
-						fileData.push(data);
+						try {
+							fileData.push(...parseText(result, filePath));
+						} catch {
+							const lines = result.split('\n');
+							const data: TreeNode[][] = [];
+							for (let i = 0; i < lines.length; i++) {
+								data.push(parseText(lines[i]));
+							}
+							fileData.push(...data.reduce((res, current) => res.concat(current), []));
+						}
 					}),
 				),
 			);
@@ -86,7 +96,7 @@ const FileChoosing = ({
 				onSubmit(fileData, notebookData);
 			});
 		}
-		// closeModal();
+		closeModal();
 	};
 
 	const selectFile = (fileName: string) => {

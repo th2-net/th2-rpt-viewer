@@ -1,6 +1,6 @@
 import { action, observable } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
-import { Tree } from '../models/JSONSchema';
+import { TreeNode } from '../models/JSONSchema';
 
 export class JSONViewerStore {
 	constructor(private api: ApiSchema) {}
@@ -8,29 +8,34 @@ export class JSONViewerStore {
 	@observable
 	public isModalOpen = false;
 
-	@observable.shallow data: Tree[] = [];
-
 	@observable notebooks: string[] = [];
 
-	@observable node: [string, Tree] = ['', {}];
+	@observable treeNodes: TreeNode[] = [];
+
+	@observable selectedTreeNode: TreeNode = {
+		id: '',
+		key: '',
+		viewInstruction: '',
+		complexFields: [],
+		simpleFields: [],
+	};
 
 	@action
 	public setIsModalOpen = (v: boolean) => (this.isModalOpen = v);
 
-	@action setData(t: Tree[]) {
-		this.data = t.slice();
-		this.node = ['', {}];
-	}
-
-	@action addData(t: Tree) {
-		this.data.push(t);
+	@action setTreeNodes(n: TreeNode[]) {
+		this.treeNodes = n.slice();
 	}
 
 	@action setNotebooks(n: string[]) {
 		this.notebooks = n.slice();
 	}
 
-	@action setNode(n: [string, Tree]) {
-		this.node = n;
+	@action selectTreeNode(tree: TreeNode) {
+		this.selectedTreeNode = tree;
+	}
+
+	@action addNodes(tree: TreeNode[]) {
+		this.treeNodes = this.treeNodes.concat(tree);
 	}
 }

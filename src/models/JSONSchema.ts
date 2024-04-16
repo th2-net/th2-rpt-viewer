@@ -3,9 +3,18 @@ export enum ViewInstruction {
 	table = 'table',
 }
 
-export interface Tree {
-	[name: string]: string | number | string[] | Tree | undefined;
-	view_instruction?: ViewInstruction;
+export interface SimpleField {
+	key: string;
+	value: any;
+}
+
+export interface TreeNode {
+	id: string;
+	key: string;
+	failed?: boolean;
+	viewInstruction: string;
+	complexFields: TreeNode[];
+	simpleFields: SimpleField[];
 }
 
 export interface NotebookParameter {

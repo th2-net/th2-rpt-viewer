@@ -1,58 +1,35 @@
 import React from 'react';
-import { Tree, ViewInstruction } from '../../models/JSONSchema';
-import { isSimpleLeaf } from '../../helpers/JSONViewer';
 import { createBemBlock } from '../../helpers/styleCreators';
 import Table from './Table';
 import '../../styles/JSONviewer.scss';
+import { TreeNode, ViewInstruction } from '../../models/JSONSchema';
 
-const TablePanel = ({ node: [nodeKey, nodeTree] }: { node: [string, Tree] }) => {
-	const failed = nodeKey
-		? nodeKey.includes('[fail]') || nodeKey.trim().indexOf('#') === 0
-		: undefined;
-	const display = nodeTree.view_instruction;
-	const leafs = Object.entries(nodeTree);
-	const simpleLeafs: [string, string | number | string[]][] = [];
-	const combLeafs: [string, Tree | string | number | string[]][] = [];
-	leafs.forEach(([key, value]) => {
-		if (!value) return;
-		if (key === 'view_instruction') return;
-		if (isSimpleLeaf(value)) {
-			const v = key === 'raw' && Array.isArray(value) ? atob(String(value[0])) : value;
-			simpleLeafs.push([key, v]);
-			combLeafs.push([key, v]);
-			return;
-		}
-		if (display === ViewInstruction.summaryAndTree) {
-			simpleLeafs.push([key, '']);
-		}
-		combLeafs.push([key, value]);
-	});
+const TablePanel = ({ node }: { node: TreeNode }) => {
+	const { key, viewInstruction, simpleFields, complexFields } = node;
 
 	return (
 		<>
-			{nodeKey !== '' && (
+			{key !== '' && (
 				<div
-					className={createBemBlock('valueLeaf', failed ? 'failed' : 'passed', 'selected')}
+					className={createBemBlock('valueLeaf', node.failed ? 'failed' : 'passed', 'selected')}
 					style={{ cursor: 'default' }}
-					title={nodeKey}>
-					<div className={createBemBlock('event-status-icon', failed ? 'failed' : 'passed')} />
-					{nodeKey}
+					title={key}>
+					<div className={createBemBlock('event-status-icon', node.failed ? 'failed' : 'passed')} />
+					{key}
 				</div>
 			)}
-			{display === 'table' ? (
+			{viewInstruction === ViewInstruction.table ? (
 				<>
-					<Table rows={combLeafs} />
+					<Table simpleFields={simpleFields} complexFields={complexFields} />
 					<br />
 				</>
 			) : (
-				<>
-					{simpleLeafs.length > 0 && (
-						<>
-							<Table rows={simpleLeafs} />
-							<br />
-						</>
-					)}
-				</>
+				simpleFields.length > 0 && (
+					<>
+						<Table simpleFields={simpleFields} complexFields={[]} />
+						<br />
+					</>
+				)
 			)}
 		</>
 	);

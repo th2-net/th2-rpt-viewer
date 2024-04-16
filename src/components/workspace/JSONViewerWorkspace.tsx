@@ -20,13 +20,14 @@ import { Virtuoso } from 'react-virtuoso';
 import { computed } from 'mobx';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
-import { Tree } from '../../models/JSONSchema';
+import { TreeNode } from '../../models/JSONSchema';
 import TablePanel from '../JSONViewer/TablePanel';
 import useJSONViewerWorkspace from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import FileChoosing from '../JSONViewer/FileChoosing';
-import TreePanel from '../JSONViewer/TreePanel';
 import NotebookParamsCell from '../JSONViewer/NotebookParamsCell';
+import TreePanel from '../JSONViewer/TreePanel';
+import { parseText } from '../../helpers/JSONViewer';
 import StateSaverProvider from '../util/StateSaverProvider';
 
 const panelColors = {
@@ -47,8 +48,8 @@ const JSONViewerWorkspace = () => {
 	const JSONViewerStore = useJSONViewerStore();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
-	const onSubmit = (trees: Tree[], notebooks: string[]) => {
-		JSONViewerStore.setData(trees);
+	const onSubmit = (trees: TreeNode[], notebooks: string[]) => {
+		JSONViewerStore.setTreeNodes(trees);
 		JSONViewerStore.setNotebooks(notebooks);
 		JSONViewerStore.setIsModalOpen(false);
 	};
@@ -61,25 +62,31 @@ const JSONViewerWorkspace = () => {
 				promises.push(file.text());
 			}
 		}
-		JSONViewerStore.setData((await Promise.all(promises)).map(text => JSON.parse(text)));
+		const nodes: TreeNode[][] = (await Promise.all(promises)).map((text, ind) => {
+			try {
+				const file = files.item(ind);
+				return parseText(text, file ? file.name : '');
+			} catch {
+				const lines = text.split('\n');
+				const data: TreeNode[] = [];
+				for (let i = 0; i < lines.length; i++) {
+					data.push(...parseText(lines[i]));
+				}
+				return data;
+			}
+		});
+		JSONViewerStore.setTreeNodes(nodes.reduce((result, current) => result.concat(current), []));
 	};
 
 	const computeTreeKey = React.useCallback(
-		(index: number, dataNode: Tree | string) => `${index}/${JSON.stringify(dataNode)}`,
+		(index: number, dataNode: TreeNode | string) =>
+			`${index}/${typeof dataNode === 'string' ? dataNode : dataNode.id}`,
 		[],
 	);
 
-	const renderTree = React.useCallback((_index: number, dataNode: Tree | string) => {
+	const renderTree = React.useCallback((index: number, dataNode: TreeNode | string) => {
 		if (typeof dataNode === 'string') return <NotebookParamsCell notebook={dataNode} />;
-		return (
-			<TreePanel
-				node={dataNode}
-				setNode={(nodeKey: string, nodeTree: Tree) => JSONViewerStore.setNode([nodeKey, nodeTree])}
-				parentsPath={''}
-				parentKey={''}
-				selectedNode={JSONViewerStore.node}
-			/>
-		);
+		return <TreePanel nest={0} treeNode={dataNode} prevKey={`${index}/${dataNode.key}`} />;
 	}, []);
 
 	const treePanel = React.useMemo(
@@ -109,6 +116,7 @@ const JSONViewerWorkspace = () => {
 							onChange={ev => {
 								if (ev.target.files) {
 									readFile(ev.target.files);
+									if (inputRef.current) inputRef.current.value = '';
 								}
 							}}
 						/>
@@ -121,8 +129,8 @@ const JSONViewerWorkspace = () => {
 						<StateSaverProvider>
 							<Virtuoso
 								className='JSON-virtuoso'
-								data={[...JSONViewerStore.notebooks, ...JSONViewerStore.data]}
-								totalCount={JSONViewerStore.notebooks.length + JSONViewerStore.data.length}
+								data={[...JSONViewerStore.notebooks, ...JSONViewerStore.treeNodes]}
+								totalCount={JSONViewerStore.notebooks.length + JSONViewerStore.treeNodes.length}
 								computeItemKey={computeTreeKey}
 								overscan={3}
 								itemContent={renderTree}
@@ -134,10 +142,10 @@ const JSONViewerWorkspace = () => {
 				isActive: false,
 			})),
 		[
-			JSONViewerStore.data,
+			JSONViewerStore.treeNodes,
 			JSONViewerStore.notebooks,
 			JSONViewerStore.isModalOpen,
-			JSONViewerStore.node,
+			JSONViewerStore.selectedTreeNode,
 		],
 	).get();
 
@@ -148,12 +156,12 @@ const JSONViewerWorkspace = () => {
 				color: panelColors.table,
 				component: (
 					<div className='JSON-wrapper tableView'>
-						<TablePanel node={JSONViewerStore.node} />
+						<TablePanel node={JSONViewerStore.selectedTreeNode} />
 					</div>
 				),
 				isActive: false,
 			})),
-		[JSONViewerStore.node],
+		[JSONViewerStore.selectTreeNode],
 	).get();
 
 	const viewerWorkspacePanels = React.useMemo(
