@@ -15,6 +15,7 @@ export class JSONViewerStore {
 	@observable selectedTreeNode: TreeNode = {
 		id: '',
 		key: '',
+		failed: false,
 		viewInstruction: '',
 		complexFields: [],
 		simpleFields: [],
