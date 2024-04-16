@@ -85,7 +85,7 @@ const FileChoosing = ({
 							const lines = result.split('\n');
 							const data: TreeNode[][] = [];
 							for (let i = 0; i < lines.length; i++) {
-								data.push(parseText(lines[i]));
+								if (lines[i] !== '') data.push(parseText(lines[i]));
 							}
 							fileData.push(...data.reduce((res, current) => res.concat(current), []));
 						}

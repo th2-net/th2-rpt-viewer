@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid';
 import { NotebookParameter, NotebookParameters, TreeNode } from '../../models/JSONSchema';
 import api from '../../api';
 import '../../styles/jupyter.scss';
@@ -39,20 +40,29 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const getResults = async (path: string) => {
 		const { result } = await api.jsonViewer.getResults(path);
 		if (result.includes('{')) {
-			const nodeName = `Result of ${notebook}'s run`;
-			const fileData: TreeNode[] = [];
+			const node: TreeNode = {
+				id: nanoid(),
+				key: `Result of ${notebook}'s run`,
+				failed: false,
+				viewInstruction: '',
+				simpleFields: [{ key: 'filepath', value: path }],
+				complexFields: [],
+			};
 			try {
-				fileData.push(...parseText(result, nodeName));
+				node.complexFields.push(...parseText(result));
 			} catch {
 				const lines = result.split('\n');
-				const data: TreeNode[][] = [];
 				for (let i = 0; i < lines.length; i++) {
-					data.push(parseText(lines[i]));
+					if (lines[i] !== '') {
+						node.complexFields.push(...parseText(lines[i], String(i)));
+					}
 				}
-				fileData.push(...data.reduce((res, current) => res.concat(current), []));
 			}
-			JSONViewerStore.addNodes(fileData);
-			JSONViewerStore.selectTreeNode(fileData[0]);
+			node.failed = node.complexFields.some(v => v.failed);
+			if (node.complexFields.length > 0) {
+				JSONViewerStore.addNodes([node]);
+				JSONViewerStore.selectTreeNode(node);
+			}
 			setParamsValue({});
 			setIsRunLoading(false);
 			setIsExpanded(false);
@@ -117,11 +127,13 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 					<div className='notebookCell-body-table'>
 						<table>
 							<thead>
-								<tr style={{ textAlign: 'left' }}>
-									<th>Name</th>
-									<th>Type</th>
-									<th>Value</th>
-								</tr>
+								{parameters.length > 0 && (
+									<tr style={{ textAlign: 'left' }}>
+										<th>Name</th>
+										<th>Type</th>
+										<th>Value</th>
+									</tr>
+								)}
 							</thead>
 							<tbody>
 								{parameters.map(parameter => (

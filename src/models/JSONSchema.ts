@@ -11,7 +11,7 @@ export interface SimpleField {
 export interface TreeNode {
 	id: string;
 	key: string;
-	failed?: boolean;
+	failed: boolean;
 	viewInstruction: string;
 	complexFields: TreeNode[];
 	simpleFields: SimpleField[];

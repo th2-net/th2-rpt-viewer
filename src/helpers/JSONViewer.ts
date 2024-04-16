@@ -58,7 +58,7 @@ export const convertJSONtoNode = (obj: object, key = ''): TreeNode => {
 export const parseText = (text: string, name = ''): TreeNode[] => {
 	const js = JSON.parse(text);
 	const node = convertJSONtoNode(js);
-	if (node.simpleFields.length > 1) {
+	if (node.simpleFields.length > 0) {
 		return [
 			{
 				...node,

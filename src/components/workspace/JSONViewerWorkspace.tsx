@@ -70,7 +70,7 @@ const JSONViewerWorkspace = () => {
 				const lines = text.split('\n');
 				const data: TreeNode[] = [];
 				for (let i = 0; i < lines.length; i++) {
-					data.push(...parseText(lines[i]));
+					if (lines[i] !== '') data.push(...parseText(lines[i]));
 				}
 				return data;
 			}
