@@ -1,12 +1,13 @@
 import { action, observable } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
-import { TreeNode } from '../models/JSONSchema';
+import { TreeNode, TreeViewType } from '../models/JSONSchema';
 
 export class JSONViewerStore {
-	constructor(private api: ApiSchema) {}
+	constructor(private openTableTab: () => void) {}
 
 	@observable
 	public isModalOpen = false;
+
+	@observable viewType: string = TreeViewType.EVENTS_LIST;
 
 	@observable notebooks: string[] = [];
 
@@ -34,9 +35,28 @@ export class JSONViewerStore {
 
 	@action selectTreeNode(tree: TreeNode) {
 		this.selectedTreeNode = tree;
+		if (tree.id !== '') {
+			this.openTableTab();
+		}
 	}
 
 	@action addNodes(tree: TreeNode[]) {
 		this.treeNodes = this.treeNodes.concat(tree);
+	}
+
+	@action setView(v: string) {
+		this.viewType = v;
+		if (v !== TreeViewType.EVENTS_LIST) {
+			this.selectTreeNode({
+				id: '',
+				key: '',
+				failed: false,
+				viewInstruction: '',
+				complexFields: [],
+				simpleFields: [],
+			});
+		} else if (this.treeNodes.length > 0) {
+			this.selectTreeNode(this.treeNodes[0]);
+		}
 	}
 }

@@ -15,6 +15,7 @@ export const isValueFailed = (value: string) =>
 export const convertJSONtoNode = (obj: object, key = ''): TreeNode => {
 	const id = nanoid();
 	let failed = isKeyFailed(key);
+	const isArray = Array.isArray(obj);
 	const simpleFields: SimpleField[] = [];
 	const complexFields: TreeNode[] = [];
 	let viewInstruction = '';
@@ -32,16 +33,20 @@ export const convertJSONtoNode = (obj: object, key = ''): TreeNode => {
 	} else {
 		const entries = Object.entries(obj);
 		for (let i = 0; i < entries.length; i++) {
-			const entry = entries[i];
-			if (entry[0] === 'view_instruction') {
-				viewInstruction = String(entry[1]);
-			} else if (typeof entry[1] === 'object' && entry[1] !== null) {
-				const val = convertJSONtoNode(entry[1], entry[0]);
-				if (!failed && val.failed) failed = false;
-				complexFields.push(val);
+			const [entryKey, value] = entries[i];
+			if (entryKey === 'view_instruction') {
+				viewInstruction = String(value);
+			} else if (typeof value === 'object' && value !== null) {
+				if (Array.isArray(value) && value.length === 0) {
+					simpleFields.push({ key: entryKey, value });
+				} else {
+					const val = convertJSONtoNode(value, entryKey);
+					if (!failed && val.failed) failed = false;
+					complexFields.push(val);
+				}
 			} else {
-				if (!failed && typeof entry[1] === 'string') failed = isValueFailed(entry[1]);
-				simpleFields.push({ key: entry[0], value: entry[1] });
+				if (!failed && typeof value === 'string') failed = isValueFailed(value);
+				simpleFields.push({ key: entryKey, value });
 			}
 		}
 	}
@@ -49,6 +54,7 @@ export const convertJSONtoNode = (obj: object, key = ''): TreeNode => {
 		id,
 		key,
 		failed,
+		isArray,
 		viewInstruction,
 		simpleFields,
 		complexFields,

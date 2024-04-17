@@ -3,6 +3,12 @@ export enum ViewInstruction {
 	table = 'table',
 }
 
+export enum TreeViewType {
+	EVENTS_LIST = 'Event List',
+	JSON = 'Json',
+	PRETTY = 'Formatted Json',
+}
+
 export interface SimpleField {
 	key: string;
 	value: any;
@@ -15,6 +21,7 @@ export interface TreeNode {
 	viewInstruction: string;
 	complexFields: TreeNode[];
 	simpleFields: SimpleField[];
+	isArray?: boolean;
 }
 
 export interface NotebookParameter {

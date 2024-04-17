@@ -20,7 +20,7 @@ import { Virtuoso } from 'react-virtuoso';
 import { computed } from 'mobx';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
-import { TreeNode } from '../../models/JSONSchema';
+import { TreeNode, TreeViewType } from '../../models/JSONSchema';
 import TablePanel from '../JSONViewer/TablePanel';
 import useJSONViewerWorkspace from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
@@ -50,6 +50,8 @@ const JSONViewerWorkspace = () => {
 
 	const onSubmit = (trees: TreeNode[], notebooks: string[]) => {
 		JSONViewerStore.setTreeNodes(trees);
+		if (JSONViewerStore.viewType === TreeViewType.EVENTS_LIST && trees.length > 0)
+			JSONViewerStore.selectTreeNode(trees[0]);
 		JSONViewerStore.setNotebooks(notebooks);
 		JSONViewerStore.setIsModalOpen(false);
 	};
@@ -75,7 +77,10 @@ const JSONViewerWorkspace = () => {
 				return data;
 			}
 		});
-		JSONViewerStore.setTreeNodes(nodes.reduce((result, current) => result.concat(current), []));
+		const reduced = nodes.reduce((result, current) => result.concat(current), []);
+		JSONViewerStore.setTreeNodes(reduced);
+		if (JSONViewerStore.viewType === TreeViewType.EVENTS_LIST && reduced.length > 0)
+			JSONViewerStore.selectTreeNode(reduced[0]);
 	};
 
 	const computeTreeKey = React.useCallback(
@@ -88,6 +93,13 @@ const JSONViewerWorkspace = () => {
 		if (typeof dataNode === 'string') return <NotebookParamsCell notebook={dataNode} />;
 		return <TreePanel nest={0} treeNode={dataNode} prevKey={`${index}/${dataNode.key}`} />;
 	}, []);
+
+	const setView = (v: string) => {
+		JSONViewerStore.setView(v);
+		if (v !== TreeViewType.EVENTS_LIST) {
+			setPanelsLayout([100, 0]);
+		} else setPanelsLayout([50, 50]);
+	};
 
 	const treePanel = React.useMemo(
 		() =>
@@ -105,6 +117,14 @@ const JSONViewerWorkspace = () => {
 							<button className='load-JSON-button' onClick={() => inputRef.current?.click()}>
 								Load Local File(s)
 							</button>
+							<div style={{ display: 'flex', flexDirection: 'column' }}>
+								<label htmlFor='TreeViewType'>Display Type</label>
+								<select id='TreeViewType' onChange={e => setView(e.target.value)}>
+									<option value={TreeViewType.EVENTS_LIST}>{TreeViewType.EVENTS_LIST}</option>
+									<option value={TreeViewType.JSON}>{TreeViewType.JSON}</option>
+									<option value={TreeViewType.PRETTY}>{TreeViewType.PRETTY}</option>
+								</select>
+							</div>
 						</div>
 						<input
 							hidden

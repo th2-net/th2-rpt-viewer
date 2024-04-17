@@ -66,7 +66,7 @@ const TableRows = ({
 							<p>{key}</p>
 						</td>
 						<td>
-							<p>{String(value)}</p>
+							<p>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</p>
 						</td>
 					</>
 				)}
