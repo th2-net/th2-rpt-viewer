@@ -18,6 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso } from 'react-virtuoso';
 import { computed } from 'mobx';
+import { nanoid } from 'nanoid';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
 import { TreeNode, TreeViewType } from '../../models/JSONSchema';
@@ -56,31 +57,43 @@ const JSONViewerWorkspace = () => {
 		JSONViewerStore.setIsModalOpen(false);
 	};
 
+	const getFileContent = async (file: File): Promise<[string, string]> => [
+		file.name,
+		await file.text(),
+	];
+
 	const readFile = async (files: FileList) => {
-		const promises: Promise<string>[] = [];
+		const promises: Promise<[string, string]>[] = [];
 		for (let i = 0; i < files.length; i++) {
 			const file = files.item(i);
 			if (file) {
-				promises.push(file.text());
+				promises.push(getFileContent(file));
 			}
 		}
-		const nodes: TreeNode[][] = (await Promise.all(promises)).map((text, ind) => {
+		const nodes: TreeNode[] = (await Promise.all(promises)).map(([fileName, text]) => {
+			const node: TreeNode = {
+				id: nanoid(),
+				key: fileName,
+				failed: false,
+				viewInstruction: '',
+				simpleFields: [{ key: 'filepath', value: fileName }],
+				complexFields: [],
+				isGeneratedKey: true,
+			};
 			try {
-				const file = files.item(ind);
-				return parseText(text, file ? file.name : '');
+				node.complexFields.push(...parseText(text, '0', true));
 			} catch {
 				const lines = text.split('\n');
-				const data: TreeNode[] = [];
 				for (let i = 0; i < lines.length; i++) {
-					if (lines[i] !== '') data.push(...parseText(lines[i]));
+					if (lines[i] !== '') node.complexFields.push(...parseText(lines[i], String(i), true));
 				}
-				return data;
 			}
+			node.failed = node.complexFields.some(v => v.failed);
+			return node;
 		});
-		const reduced = nodes.reduce((result, current) => result.concat(current), []);
-		JSONViewerStore.setTreeNodes(reduced);
-		if (JSONViewerStore.viewType === TreeViewType.EVENTS_LIST && reduced.length > 0)
-			JSONViewerStore.selectTreeNode(reduced[0]);
+		JSONViewerStore.setTreeNodes(nodes);
+		if (JSONViewerStore.viewType === TreeViewType.EVENTS_LIST && nodes.length > 0)
+			JSONViewerStore.selectTreeNode(nodes[0]);
 	};
 
 	const computeTreeKey = React.useCallback(

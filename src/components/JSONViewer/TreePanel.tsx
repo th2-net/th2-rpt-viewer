@@ -31,6 +31,20 @@ const TreePanel = ({
 		);
 	}
 
+	const complexFieldsDisplay = () => (
+		<span title={treeNode.isArray ? 'Complex Elements amount' : `Complex Fields amount`}>
+			{treeNode.isArray ? '[' : '{'}
+			{treeNode.complexFields.length}
+			{treeNode.isArray ? ']' : '}'}
+		</span>
+	);
+
+	const simpleFieldsDisplay = () => (
+		<span title={treeNode.isArray ? 'Simple Elements amount' : `Simple Fields amount`}>
+			({treeNode.simpleFields.length})
+		</span>
+	);
+
 	if (treeNode.viewInstruction === ViewInstruction.table) {
 		return (
 			<>
@@ -47,28 +61,17 @@ const TreePanel = ({
 							JSONViewerStore.selectTreeNode(treeNode);
 						}}>
 						<div className={createBemBlock('event-status-icon')} />
-						{treeNode.key}
+						<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
+							{treeNode.key}
+						</span>{' '}
+						<span style={{ color: '#333333' }}>
+							{complexFieldsDisplay()} {simpleFieldsDisplay()}
+						</span>
 					</div>
 				</div>
 			</>
 		);
 	}
-
-	const complexFieldsDisplay = () => {
-		if (treeNode.complexFields.length === 0) return '';
-		return (
-			<span title={treeNode.isArray ? 'Elements amount' : `Complex Fields amount`}>
-				{treeNode.isArray ? '[' : '{'}
-				{treeNode.complexFields.length}
-				{treeNode.isArray ? ']' : '}'}
-			</span>
-		);
-	};
-
-	const simpleFieldsDisplay = () => {
-		if (treeNode.simpleFields.length === 0) return '';
-		return <span title={`Simple Fields amount`}>({treeNode.simpleFields.length})</span>;
-	};
 
 	return (
 		<>
@@ -93,7 +96,12 @@ const TreePanel = ({
 					<div
 						className={createBemBlock('event-status-icon', treeNode.failed ? 'failed' : 'passed')}
 					/>
-					{treeNode.key} {complexFieldsDisplay()} {simpleFieldsDisplay()}
+					<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
+						{treeNode.key}
+					</span>{' '}
+					<span style={{ color: '#333333' }}>
+						{complexFieldsDisplay()} {simpleFieldsDisplay()}
+					</span>
 				</div>
 			</div>
 			{open &&

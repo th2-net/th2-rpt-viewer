@@ -22,6 +22,7 @@ export interface TreeNode {
 	complexFields: TreeNode[];
 	simpleFields: SimpleField[];
 	isArray?: boolean;
+	isGeneratedKey?: boolean;
 }
 
 export interface NotebookParameter {

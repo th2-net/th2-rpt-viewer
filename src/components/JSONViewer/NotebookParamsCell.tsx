@@ -47,14 +47,15 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 				viewInstruction: '',
 				simpleFields: [{ key: 'filepath', value: path }],
 				complexFields: [],
+				isGeneratedKey: true,
 			};
 			try {
-				node.complexFields.push(...parseText(result));
+				node.complexFields.push(...parseText(result, '0', true));
 			} catch {
 				const lines = result.split('\n');
 				for (let i = 0; i < lines.length; i++) {
 					if (lines[i] !== '') {
-						node.complexFields.push(...parseText(lines[i], String(i)));
+						node.complexFields.push(...parseText(lines[i], String(i), true));
 					}
 				}
 			}

@@ -12,7 +12,7 @@ export const isKeyFailed = (key: string) => key.includes('[fail]') || key.trim()
 export const isValueFailed = (value: string) =>
 	value.trim().startsWith('#') || value.trim().startsWith('!#');
 
-export const convertJSONtoNode = (obj: object, key = ''): TreeNode => {
+export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false): TreeNode => {
 	const id = nanoid();
 	let failed = isKeyFailed(key);
 	const isArray = Array.isArray(obj);
@@ -22,7 +22,7 @@ export const convertJSONtoNode = (obj: object, key = ''): TreeNode => {
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
 			if (typeof obj[i] === 'object') {
-				const val = convertJSONtoNode(obj[i], i.toString());
+				const val = convertJSONtoNode(obj[i], i.toString(), true);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
 			} else {
@@ -37,13 +37,9 @@ export const convertJSONtoNode = (obj: object, key = ''): TreeNode => {
 			if (entryKey === 'view_instruction') {
 				viewInstruction = String(value);
 			} else if (typeof value === 'object' && value !== null) {
-				if (Array.isArray(value) && value.length === 0) {
-					simpleFields.push({ key: entryKey, value });
-				} else {
-					const val = convertJSONtoNode(value, entryKey);
-					if (!failed && val.failed) failed = false;
-					complexFields.push(val);
-				}
+				const val = convertJSONtoNode(value, entryKey);
+				if (!failed && val.failed) failed = false;
+				complexFields.push(val);
 			} else {
 				if (!failed && typeof value === 'string') failed = isValueFailed(value);
 				simpleFields.push({ key: entryKey, value });
@@ -55,15 +51,16 @@ export const convertJSONtoNode = (obj: object, key = ''): TreeNode => {
 		key,
 		failed,
 		isArray,
+		isGeneratedKey,
 		viewInstruction,
 		simpleFields,
 		complexFields,
 	};
 };
 
-export const parseText = (text: string, name = ''): TreeNode[] => {
+export const parseText = (text: string, name = '', isGeneratedKey = false): TreeNode[] => {
 	const js = JSON.parse(text);
-	const node = convertJSONtoNode(js);
+	const node = convertJSONtoNode(js, undefined, isGeneratedKey);
 	if (node.simpleFields.length > 0) {
 		return [
 			{

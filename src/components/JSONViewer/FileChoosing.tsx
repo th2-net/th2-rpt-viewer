@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { nanoid } from 'nanoid';
 import { TreeNode } from '../../models/JSONSchema';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener } from '../../hooks';
@@ -79,16 +80,26 @@ const FileChoosing = ({
 							notebookData.push(filePath);
 							return;
 						}
+						const node: TreeNode = {
+							id: nanoid(),
+							key: filePath,
+							failed: false,
+							viewInstruction: '',
+							simpleFields: [{ key: 'filepath', value: filePath }],
+							complexFields: [],
+							isGeneratedKey: true,
+						};
 						try {
-							fileData.push(...parseText(result, filePath));
+							node.complexFields.push(...parseText(result, '0', true));
 						} catch {
 							const lines = result.split('\n');
-							const data: TreeNode[][] = [];
 							for (let i = 0; i < lines.length; i++) {
-								if (lines[i] !== '') data.push(parseText(lines[i], String(i)));
+								if (lines[i] !== '')
+									node.complexFields.push(...parseText(lines[i], String(i), true));
 							}
-							fileData.push(...data.reduce((res, current) => res.concat(current), []));
 						}
+						node.failed = node.complexFields.some(v => v.failed);
+						fileData.push(node);
 					}),
 				),
 			);
