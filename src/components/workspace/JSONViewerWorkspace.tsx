@@ -94,6 +94,7 @@ const JSONViewerWorkspace = () => {
 			return node;
 		});
 		JSONViewerStore.setTreeNodes(nodes);
+		JSONViewerStore.setNotebooks([]);
 		if (JSONViewerStore.viewType === TreeViewType.EVENTS_LIST && nodes.length > 0)
 			JSONViewerStore.selectTreeNode(nodes[0]);
 	};
