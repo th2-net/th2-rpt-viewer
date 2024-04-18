@@ -7,6 +7,9 @@ export class JSONViewerStore {
 	@observable
 	public isModalOpen = false;
 
+	@observable
+	public modalType: 'notebooks' | 'results' = 'results';
+
 	@observable viewType: string = TreeViewType.EVENTS_LIST;
 
 	@observable notebooks: string[] = [];
@@ -23,7 +26,10 @@ export class JSONViewerStore {
 	};
 
 	@action
-	public setIsModalOpen = (v: boolean) => (this.isModalOpen = v);
+	public setIsModalOpen = (v: boolean, type: 'notebooks' | 'results') => {
+		this.isModalOpen = v;
+		this.modalType = type;
+	};
 
 	@action setTreeNodes(n: TreeNode[]) {
 		this.treeNodes = n.slice();

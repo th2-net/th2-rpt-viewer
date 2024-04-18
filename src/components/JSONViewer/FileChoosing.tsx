@@ -7,9 +7,11 @@ import api from '../../api';
 import { parseText } from '../../helpers/JSONViewer';
 
 const FileChoosing = ({
+	type,
 	onSubmit,
 	close,
 }: {
+	type: 'notebooks' | 'results';
 	onSubmit: (t: TreeNode[], n: string[]) => void;
 	close: () => void;
 }) => {
@@ -35,10 +37,12 @@ const FileChoosing = ({
 		setIsLoading(true);
 		setDirectory(dir || '');
 		api.jsonViewer
-			.getLinks(dir)
+			.getLinks(type, dir)
 			.then(data => {
-				setFiles(data.files);
-				setDirectories(data.directories);
+				setFiles(data.files ? data.files.map(f => f.replace(`/${type}`, '')) : []);
+				setDirectories(
+					data.directories ? data.directories.map(d => d.replace(`/${type}`, '')) : [],
+				);
 			})
 			.finally(() => setIsLoading(false));
 	};
@@ -73,39 +77,42 @@ const FileChoosing = ({
 		const promises: Promise<void>[] = [];
 		if (selectedFiles.length > 0) {
 			setIsLoading(true);
-			selectedFiles.forEach(filePath =>
-				promises.push(
-					api.jsonViewer.getResults(filePath).then(({ result }) => {
-						if (filePath.endsWith('.ipynb')) {
-							notebookData.push(filePath);
-							return;
-						}
-						const node: TreeNode = {
-							id: nanoid(),
-							key: filePath,
-							failed: false,
-							viewInstruction: '',
-							simpleFields: [{ key: 'filepath', value: filePath }],
-							complexFields: [],
-							isGeneratedKey: true,
-						};
-						try {
-							node.complexFields.push(...parseText(result, '0', true));
-						} catch {
-							const lines = result.split('\n');
-							for (let i = 0; i < lines.length; i++) {
-								if (lines[i] !== '')
-									node.complexFields.push(...parseText(lines[i], String(i), true));
+			if (type === 'notebooks') onSubmit([], selectedFiles);
+			else {
+				selectedFiles.forEach(filePath =>
+					promises.push(
+						api.jsonViewer.getResults(filePath).then(({ result }) => {
+							if (filePath.endsWith('.ipynb')) {
+								notebookData.push(filePath);
+								return;
 							}
-						}
-						node.failed = node.complexFields.some(v => v.failed);
-						fileData.push(node);
-					}),
-				),
-			);
-			Promise.all(promises).then(() => {
-				onSubmit(fileData, notebookData);
-			});
+							const node: TreeNode = {
+								id: nanoid(),
+								key: filePath,
+								failed: false,
+								viewInstruction: '',
+								simpleFields: [],
+								complexFields: [],
+								isGeneratedKey: true,
+							};
+							try {
+								node.complexFields.push(...parseText(result, '0', true));
+							} catch {
+								const lines = result.split('\n');
+								for (let i = 0; i < lines.length; i++) {
+									if (lines[i] !== '')
+										node.complexFields.push(...parseText(lines[i], String(i), true));
+								}
+							}
+							node.failed = node.complexFields.some(v => v.failed);
+							fileData.push(node);
+						}),
+					),
+				);
+				Promise.all(promises).then(() => {
+					onSubmit(fileData, notebookData);
+				});
+			}
 		}
 		closeModal();
 	};

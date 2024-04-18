@@ -54,7 +54,7 @@ const JSONViewerWorkspace = () => {
 		if (JSONViewerStore.viewType === TreeViewType.EVENTS_LIST && trees.length > 0)
 			JSONViewerStore.selectTreeNode(trees[0]);
 		JSONViewerStore.setNotebooks(notebooks);
-		JSONViewerStore.setIsModalOpen(false);
+		JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType);
 	};
 
 	const getFileContent = async (file: File): Promise<[string, string]> => [
@@ -76,7 +76,7 @@ const JSONViewerWorkspace = () => {
 				key: fileName,
 				failed: false,
 				viewInstruction: '',
-				simpleFields: [{ key: 'filepath', value: fileName }],
+				simpleFields: [],
 				complexFields: [],
 				isGeneratedKey: true,
 			};
@@ -124,15 +124,32 @@ const JSONViewerWorkspace = () => {
 						<div className='JSON-buttons-wrapper'>
 							<button
 								className='load-JSON-button'
-								onClick={() => JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen)}>
-								Load File(s) From Server
+								title='Load Executable(s) From Server'
+								onClick={() =>
+									JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'notebooks')
+								}>
+								Load Executable(s) From Server
 							</button>
-							<button className='load-JSON-button' onClick={() => inputRef.current?.click()}>
-								Load Local File(s)
+							<button
+								className='load-JSON-button'
+								title='Load Result(s) From Server'
+								onClick={() =>
+									JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'results')
+								}>
+								Load Result(s) From Server
 							</button>
-							<div style={{ display: 'flex', flexDirection: 'column' }}>
+							<button
+								className='load-JSON-button'
+								title='Load Local Result(s)'
+								onClick={() => inputRef.current?.click()}>
+								Load Local Result(s)
+							</button>
+							<div style={{ display: 'flex', flexDirection: 'column', fontSize: '12px' }}>
 								<label htmlFor='TreeViewType'>Display Type</label>
-								<select id='TreeViewType' onChange={e => setView(e.target.value)}>
+								<select
+									id='TreeViewType'
+									onChange={e => setView(e.target.value)}
+									style={{ fontSize: '12px' }}>
 									<option value={TreeViewType.EVENTS_LIST}>{TreeViewType.EVENTS_LIST}</option>
 									<option value={TreeViewType.JSON}>{TreeViewType.JSON}</option>
 									<option value={TreeViewType.PRETTY}>{TreeViewType.PRETTY}</option>
@@ -144,7 +161,7 @@ const JSONViewerWorkspace = () => {
 							ref={inputRef}
 							style={{ marginBottom: 10 }}
 							type='file'
-							accept='.json'
+							accept='.jsonl'
 							multiple
 							onChange={ev => {
 								if (ev.target.files) {
@@ -155,8 +172,9 @@ const JSONViewerWorkspace = () => {
 						/>
 						{JSONViewerStore.isModalOpen && (
 							<FileChoosing
+								type={JSONViewerStore.modalType}
 								onSubmit={onSubmit}
-								close={() => JSONViewerStore.setIsModalOpen(false)}
+								close={() => JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType)}
 							/>
 						)}
 						<StateSaverProvider>
