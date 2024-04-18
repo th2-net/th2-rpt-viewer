@@ -50,6 +50,8 @@ const JSONViewerWorkspace = () => {
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
 	const onSubmit = (trees: TreeNode[], notebooks: string[]) => {
+		JSONViewerStore.setTreeNodes([]);
+		JSONViewerStore.setNotebooks([]);
 		JSONViewerStore.setTreeNodes(trees);
 		if (JSONViewerStore.viewType === TreeViewType.EVENTS_LIST && trees.length > 0)
 			JSONViewerStore.selectTreeNode(trees[0]);

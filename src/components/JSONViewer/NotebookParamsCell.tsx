@@ -38,6 +38,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	};
 
 	const getResults = async (path: string) => {
+		if (!isRunLoading) return;
 		const { result } = await api.jsonViewer.getResults(path);
 		if (result.includes('{')) {
 			const node: TreeNode = {
@@ -109,6 +110,11 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		}
 	};
 
+	const refreshNotebook = () => {
+		getParameters();
+		setIsRunLoading(false);
+	};
+
 	React.useEffect(() => {
 		getParameters();
 	}, []);
@@ -117,13 +123,18 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		<div className='notebookCell'>
 			<div className={`notebookCell-header ${isExpanded ? 'expanded' : ''}`} onClick={open}>
 				<label>Parameters for {notebook}</label>
-				<div
-					className={`notebookCell-icon ${
-						isLoading ? 'loading' : isExpanded ? 'expanded' : 'hidden'
-					}`}
-				/>
+				<div className='buttons'>
+					<button onClick={refreshNotebook} disabled={isLoading}>
+						<label>Refresh</label>
+					</button>
+					<div
+						className={`notebookCell-icon ${
+							isLoading ? 'loading' : isExpanded ? 'expanded' : 'hidden'
+						}`}
+					/>
+				</div>
 			</div>
-			{isExpanded && (
+			{isExpanded && !isLoading && (
 				<div className='notebookCell-body'>
 					<div className='notebookCell-body-table'>
 						<table>
