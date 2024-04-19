@@ -39,10 +39,8 @@ const FileChoosing = ({
 		api.jsonViewer
 			.getLinks(type, dir)
 			.then(data => {
-				setFiles(data.files ? data.files.map(f => f.replace(`/${type}`, '')) : []);
-				setDirectories(
-					data.directories ? data.directories.map(d => d.replace(`/${type}`, '')) : [],
-				);
+				setFiles(data.files ? data.files : []);
+				setDirectories(data.directories ? data.directories : []);
 			})
 			.finally(() => setIsLoading(false));
 	};
