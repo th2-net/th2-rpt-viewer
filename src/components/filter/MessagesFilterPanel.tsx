@@ -311,6 +311,11 @@ const MessagesFilterPanel = () => {
 				disableExport={messagesStore.exportStore.disableExport}
 				endExport={messagesStore.exportStore.endExport}
 				exportAmount={messagesStore.exportStore.exportMessages.length}
+				selectAll={() =>
+					messagesStore.exportStore.addAllMessagesToExport(messagesStore.dataStore.messages)
+				}
+				setExportOrder={messagesStore.exportStore.setExportOrder}
+				currentExportOrder={messagesStore.exportStore.currentExportOrder}
 			/>
 		</>
 	);
