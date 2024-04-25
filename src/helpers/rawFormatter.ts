@@ -68,7 +68,7 @@ export function decodeBase64RawContent(rawBase64Content: string): string[][] {
 	const offset = [];
 	const hexadecimal = [];
 	const humanReadable = [];
-	const raw = Uint16Array.from(decodeURIComponent(escape(atob(rawBase64Content))), c =>
+	const raw = Uint16Array.from(decodeURIComponent(encodeURIComponent(atob(rawBase64Content))), c =>
 		c.charCodeAt(0),
 	);
 	let index = 0;
