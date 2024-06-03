@@ -83,7 +83,7 @@ const JSONView = ({ node, isBeautified, setIsHighlighted, isArrayElement }: JSON
 				onMouseEnter={highlight}
 				onMouseLeave={removeHighlight}>
 				<span className='mc-body__field-label'>
-					{node.key !== '' && !isArrayElement ? `${node.key}:` : ''}
+					{!node.isGeneratedKey && node.key !== '' && !isArrayElement ? `${node.key}:` : ''}
 				</span>
 				<span
 					className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>

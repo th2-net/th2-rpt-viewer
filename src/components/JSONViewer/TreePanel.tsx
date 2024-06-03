@@ -18,7 +18,7 @@ const TreePanel = ({
 	const JSONViewerStore = useJSONViewerStore();
 	const [open, setOpen] = React.useState(false);
 
-	if (JSONViewerStore.viewType !== TreeViewType.EVENTS_LIST) {
+	if (!treeNode.isRoot && JSONViewerStore.viewType !== TreeViewType.EVENTS_LIST) {
 		return (
 			<div className='message-card-wrapper'>
 				<div className='mc__mc-body mc-body'>

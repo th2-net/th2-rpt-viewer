@@ -81,6 +81,7 @@ const JSONViewerWorkspace = () => {
 				simpleFields: [],
 				complexFields: [],
 				isGeneratedKey: true,
+				isRoot: true,
 			};
 			try {
 				node.complexFields.push(...parseText(text, '0', true));

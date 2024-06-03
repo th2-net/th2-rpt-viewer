@@ -92,6 +92,7 @@ const FileChoosing = ({
 								simpleFields: [],
 								complexFields: [],
 								isGeneratedKey: true,
+								isRoot: true,
 							};
 							try {
 								node.complexFields.push(...parseText(result, '0', true));
