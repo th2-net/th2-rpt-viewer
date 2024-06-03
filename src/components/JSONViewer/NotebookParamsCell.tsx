@@ -7,7 +7,8 @@ import '../../styles/jupyter.scss';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import { parseText } from '../../helpers/JSONViewer';
 
-const timeBetweenResults = 600;
+const timeBetweenResults = 1000;
+const maxFetchResults = 5;
 
 const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -37,7 +38,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		setIsExpanded(!isExpanded);
 	};
 
-	const getResults = async (path: string) => {
+	const getResults = async (path: string, launchN = 1) => {
 		const { result } = await api.jsonViewer.getResults(path);
 		if (result.includes('{')) {
 			const node: TreeNode = {
@@ -48,6 +49,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 				simpleFields: [{ key: 'filepath', value: path }],
 				complexFields: [],
 				isGeneratedKey: true,
+				isRoot: true,
 			};
 			try {
 				node.complexFields.push(...parseText(result, '0', true));
@@ -69,7 +71,9 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 			setIsExpanded(false);
 			return;
 		}
-		setTimeout(() => getResults(path), timeBetweenResults);
+		if (launchN < maxFetchResults) {
+			setTimeout(() => getResults(path, launchN + 1), 2 * launchN * timeBetweenResults);
+		}
 	};
 
 	const runNotebook = async () => {
@@ -101,7 +105,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		);
 		const res = await api.jsonViewer.launchNotebook(notebook, paramsWithType);
 		if (res.path !== '') {
-			setTimer(setTimeout(() => getResults(res.path), timeBetweenResults));
+			setTimeout(() => getResults(res.path), timeBetweenResults);
 		} else {
 			setIsRunLoading(false);
 		}
