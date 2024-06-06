@@ -164,6 +164,11 @@
 			}
 		}
 
+		&.tree {
+			@include icon(url(../../resources/icons/tree-view-icon.svg));
+			opacity: 0.7;
+		}
+
 		&.json {
 			@include icon(url(../../resources/icons/json.svg));
 		}

@@ -5,6 +5,7 @@ import { TreeNode, TreeViewType, ViewInstruction } from '../../models/JSONSchema
 import { createBemBlock } from '../../helpers/styleCreators';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import JSONView from './JSONView';
+import LeafTools from './LeafTools';
 
 const TreePanel = ({
 	nest,
@@ -16,18 +17,23 @@ const TreePanel = ({
 	prevKey?: string;
 }) => {
 	const JSONViewerStore = useJSONViewerStore();
+	const [viewType, setViewType] = React.useState(TreeViewType.EVENTS_LIST);
 	const [open, setOpen] = React.useState(false);
 
-	if (!treeNode.isRoot && JSONViewerStore.viewType !== TreeViewType.EVENTS_LIST) {
+	if (
+		!(treeNode.isRoot && treeNode.isGeneratedKey) &&
+		(viewType === TreeViewType.JSON || viewType === TreeViewType.PRETTY)
+	) {
 		return (
-			<div className='message-card-wrapper'>
-				<div className='mc__mc-body mc-body'>
-					<JSONView
-						isBeautified={JSONViewerStore.viewType === TreeViewType.PRETTY}
-						node={treeNode}
-					/>
+			<>
+				<div style={{ width: `${20 * nest + 23}px` }} />
+				<div className='message-card-wrapper'>
+					<div className='mc__mc-body mc-body'>
+						<JSONView isBeautified={viewType === TreeViewType.PRETTY} node={treeNode} />
+					</div>
+					<LeafTools treeViewType={viewType} toggleViewType={setViewType} />
 				</div>
-			</div>
+			</>
 		);
 	}
 
@@ -60,13 +66,21 @@ const TreePanel = ({
 						onClick={() => {
 							JSONViewerStore.selectTreeNode(treeNode);
 						}}>
-						<div className={createBemBlock('event-status-icon')} />
-						<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
-							{treeNode.key}
-						</span>{' '}
-						<span style={{ color: '#333333' }}>
-							{complexFieldsDisplay()} {simpleFieldsDisplay()}
-						</span>
+						<div
+							style={{
+								display: 'flex',
+								gap: 5,
+								alignItems: 'center',
+							}}>
+							<div className={createBemBlock('event-status-icon')} />
+							<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
+								{treeNode.key}
+							</span>{' '}
+							<span style={{ color: '#333333' }}>
+								{complexFieldsDisplay()} {simpleFieldsDisplay()}
+							</span>
+						</div>
+						<LeafTools treeViewType={viewType} toggleViewType={setViewType} />
 					</div>
 				</div>
 			</>
@@ -86,7 +100,6 @@ const TreePanel = ({
 				<div
 					className={createBemBlock(
 						'valueLeaf',
-						treeNode.failed ? 'failed' : 'passed',
 						treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
 					)}
 					title={treeNode.key}
@@ -94,14 +107,22 @@ const TreePanel = ({
 						JSONViewerStore.selectTreeNode(treeNode);
 					}}>
 					<div
-						className={createBemBlock('event-status-icon', treeNode.failed ? 'failed' : 'passed')}
-					/>
-					<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
-						{treeNode.key}
-					</span>{' '}
-					<span style={{ color: '#333333' }}>
-						{complexFieldsDisplay()} {simpleFieldsDisplay()}
-					</span>
+						style={{
+							display: 'flex',
+							gap: 5,
+							alignItems: 'center',
+						}}>
+						<div className={createBemBlock('event-status-icon')} />
+						<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
+							{treeNode.key}
+						</span>{' '}
+						<span style={{ color: '#333333' }}>
+							{complexFieldsDisplay()} {simpleFieldsDisplay()}
+						</span>
+					</div>
+					{!(treeNode.isRoot && treeNode.isGeneratedKey) && (
+						<LeafTools treeViewType={viewType} toggleViewType={setViewType} />
+					)}
 				</div>
 			</div>
 			{open &&
