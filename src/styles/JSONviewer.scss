@@ -18,6 +18,7 @@
 	cursor: pointer;
 	gap: 5px;
 	position: relative;
+	justify-content: space-between;
 
 	&:hover {
 		background-color: var(--status-secondary-background-color);
@@ -28,6 +29,18 @@
 
 	&.selected {
 		border-color: var(--status-primary-border-color);
+	}
+
+	&.header {
+		justify-content: flex-start;
+		height: 20px;
+		
+		.title {
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			overflow: hidden;
+		}
+
 	}
 	
 	color: var(--status-primary-color);
@@ -127,7 +140,7 @@
 }
 
 
-.params-table {
+.json-table {
 	@include scrollbar;
 	@include default-table;
 
@@ -140,59 +153,41 @@
 		text-align: left;
 	}
 
+	tr {
+		&:hover td {
+			background-color: white;
+		}
+	}
+
 	display: block;
 	width: 100%;
 	height: auto;
 	overflow: auto;
 
 	&-row-value {
-		&.passed {
-			& td {
-				background-color: $tableRowPassedBackgroundColor;
-			}
-
-			&:hover td {
-				background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 10);
-			}
-		}
-
-		&.failed {
-			& td {
-				background-color: $tableRowFailedBackgroundColor;
-			}
-
-			&:hover td {
-				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
-			}
-		}
 		p {
 			margin: 0;
 			text-decoration: none;
 			font-size: 12px;
 		}
+		
+		&:hover td {
+			background-color: darken(white, 10px) !important;
+		}
 	}
+
 	&-row-toogler {
 		cursor: pointer;
 		color: #fff;
-		&.passed {
-			& td {
-				background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 50);
-			}
-
-			&:hover td {
-				background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 60);
-			}
+		
+		&:hover td {
+			background-color: darken($tableHeaderBackgroundSecondary, 10px) !important;
 		}
 
-		&.failed {
-			& td {
-				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 40);
-			}
-
-			&:hover td {
-				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 50);
-			}
+		& td {
+			background-color: $tableHeaderBackgroundSecondary !important;
 		}
+		
 		.expand-icon {
 			background-color: white;
 			display: inline-block;

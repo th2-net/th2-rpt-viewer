@@ -1,7 +1,6 @@
 import React from 'react';
 import { SimpleField, TreeNode } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
-import { isKeyFailed, isValueFailed } from '../../helpers/JSONViewer';
 
 const Table = ({
 	simpleFields,
@@ -10,12 +9,14 @@ const Table = ({
 	simpleFields: SimpleField[];
 	complexFields: TreeNode[];
 }) => (
-	<div className='params-table'>
-		<div className='params-table-wrapper'>
+	<div className='json-table'>
+		<div className='json-table-wrapper'>
 			<table style={{ gridTemplateColumns: '0.2fr 0.8fr' }}>
 				<thead>
 					<tr>
-						<th style={{ gridColumn: '1 / 2' }}></th>
+						<th style={{ gridColumn: '1 / 2' }} key='fieldKey'>
+							fieldKey
+						</th>
 						<th style={{ gridColumn: `2 / 3` }} key='fieldValue'>
 							fieldValue
 						</th>
@@ -38,24 +39,7 @@ const TableRows = ({
 }) => (
 	<>
 		{simpleFields.map(({ key, value }) => (
-			<tr
-				key={`${key}:${value}`}
-				className={createBemBlock(
-					'params-table-row-value',
-					typeof value === 'string'
-						? value === ''
-							? isKeyFailed(key)
-								? 'failed'
-								: 'passed'
-							: isValueFailed(value)
-							? 'failed'
-							: 'passed'
-						: typeof value === 'number'
-						? isKeyFailed(key)
-							? 'failed'
-							: 'passed'
-						: null,
-				)}>
+			<tr key={`${key}:${value}`} className={createBemBlock('json-table-row-value')}>
 				{value === '' ? (
 					<td style={{ gridColumn: `1/3` }}>
 						<p>{key}</p>
@@ -82,9 +66,7 @@ const ExpandRow = ({ field }: { field: TreeNode }) => {
 	const [isOpen, setIsOpen] = React.useState(false);
 	return (
 		<>
-			<tr
-				className={createBemBlock('params-table-row-toogler', field.failed ? 'failed' : 'passed')}
-				onClick={() => setIsOpen(!isOpen)}>
+			<tr className={createBemBlock('json-table-row-toogler')} onClick={() => setIsOpen(!isOpen)}>
 				<td style={{ gridColumn: `1/3` }}>
 					<div className='leafWrapper'>
 						<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
@@ -97,8 +79,8 @@ const ExpandRow = ({ field }: { field: TreeNode }) => {
 			{isOpen && (
 				<tr>
 					<td style={{ gridColumn: `1/3` }}>
-						<div className='params-table'>
-							<div className='params-table-wrapper'>
+						<div className='json-table'>
+							<div className='json-table-wrapper'>
 								<table style={{ gridTemplateColumns: '0.2fr 0.8fr' }}>
 									<tbody>
 										<TableRows
