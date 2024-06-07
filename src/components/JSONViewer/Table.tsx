@@ -1,9 +1,8 @@
 import React from 'react';
-import { SimpleField, TreeNode } from '../../models/JSONSchema';
+import { SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
 import { decodeBase64RawContent } from '../../helpers/rawFormatter';
-import { MessageViewType } from '../../models/EventMessage';
 import SimpleMessageRaw from '../message/message-card/raw/SimpleMessageRaw';
 import LeafTools from './LeafTools';
 
@@ -36,29 +35,31 @@ const Table = ({
 );
 
 const Base64Cell = ({ value }: { value: string }) => {
-	const [viewType, setViewType] = React.useState(MessageViewType.ASCII);
+	const [viewType, setViewType] = React.useState(TreeViewType.ASCII);
+	const viewTypes = [TreeViewType.ORIGIN, TreeViewType.BINARY, TreeViewType.ASCII];
 
 	switch (viewType) {
-		case MessageViewType.ASCII:
+		case TreeViewType.ASCII:
 			return (
 				<div className='json-table-Base64Cell'>
 					<SimpleMessageRaw rawContent={value} />
-					<LeafTools
-						activeViewType={viewType}
-						toggleViewType={setViewType}
-						viewTypes={[MessageViewType.BINARY, MessageViewType.ASCII]}
-					/>
+					<LeafTools activeViewType={viewType} toggleViewType={setViewType} viewTypes={viewTypes} />
 				</div>
 			);
-		case MessageViewType.BINARY:
+		case TreeViewType.BINARY:
 			return (
 				<div className='json-table-Base64Cell'>
 					<DetailedMessageRaw rawContent={value} />
-					<LeafTools
-						activeViewType={viewType}
-						toggleViewType={setViewType}
-						viewTypes={[MessageViewType.BINARY, MessageViewType.ASCII]}
-					/>
+					<LeafTools activeViewType={viewType} toggleViewType={setViewType} viewTypes={viewTypes} />
+				</div>
+			);
+		case TreeViewType.ORIGIN:
+			return (
+				<div className='json-table-Base64Cell'>
+					<div>
+						<p>{String(value)}</p>
+					</div>
+					<LeafTools activeViewType={viewType} toggleViewType={setViewType} viewTypes={viewTypes} />
 				</div>
 			);
 		default:

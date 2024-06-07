@@ -7,6 +7,9 @@ export enum TreeViewType {
 	EVENTS_LIST = 'Tree',
 	JSON = 'Json',
 	PRETTY = 'Formatted Json',
+	ASCII = 'ASCII',
+	BINARY = 'binary',
+	ORIGIN = 'Origin',
 }
 
 export interface SimpleField {
