@@ -1,6 +1,7 @@
 import React from 'react';
 import { SimpleField, TreeNode } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
+import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
 
 const Table = ({
 	simpleFields,
@@ -11,7 +12,7 @@ const Table = ({
 }) => (
 	<div className='json-table'>
 		<div className='json-table-wrapper'>
-			<table style={{ gridTemplateColumns: '0.2fr 0.8fr' }}>
+			<table style={{ gridTemplateColumns: '1fr 1fr' }}>
 				<thead>
 					<tr>
 						<th style={{ gridColumn: '1 / 2' }} key='fieldKey'>
@@ -36,31 +37,37 @@ const TableRows = ({
 }: {
 	simpleFields: SimpleField[];
 	complexFields: TreeNode[];
-}) => (
-	<>
-		{simpleFields.map(({ key, value }, index) => (
-			<tr key={`${key}:${value}:${index}`} className={createBemBlock('json-table-row-value')}>
-				{value === '' ? (
-					<td style={{ gridColumn: `1/3` }}>
-						<p>{key}</p>
-					</td>
-				) : (
-					<>
-						<td>
+}) => {
+	const getValue = ({ key, value }: SimpleField) => {
+		if (key.endsWith('Base64')) return <DetailedMessageRaw rawContent={value} />;
+		if (typeof value === 'object') return <p>{JSON.stringify(value)}</p>;
+		return <p>{String(value)}</p>;
+	};
+
+	return (
+		<>
+			{simpleFields.map(({ key, value }, index) => (
+				<tr key={`${key}:${value}:${index}`} className={createBemBlock('json-table-row-value')}>
+					{value === '' ? (
+						<td style={{ gridColumn: `1/3` }}>
 							<p>{key}</p>
 						</td>
-						<td>
-							<p>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</p>
-						</td>
-					</>
-				)}
-			</tr>
-		))}
-		{complexFields.map(field => (
-			<ExpandRow field={field} key={`${field.id}`} />
-		))}
-	</>
-);
+					) : (
+						<>
+							<td>
+								<p>{key}</p>
+							</td>
+							<td>{getValue({ key, value })}</td>
+						</>
+					)}
+				</tr>
+			))}
+			{complexFields.map(field => (
+				<ExpandRow field={field} key={`${field.id}`} />
+			))}
+		</>
+	);
+};
 
 const ExpandRow = ({ field }: { field: TreeNode }) => {
 	const [isOpen, setIsOpen] = React.useState(false);
@@ -81,7 +88,7 @@ const ExpandRow = ({ field }: { field: TreeNode }) => {
 					<td style={{ gridColumn: `1/3` }}>
 						<div className='json-table'>
 							<div className='json-table-wrapper'>
-								<table style={{ gridTemplateColumns: '0.2fr 0.8fr' }}>
+								<table style={{ gridTemplateColumns: '1fr 1fr' }}>
 									<tbody>
 										<TableRows
 											simpleFields={field.simpleFields}
