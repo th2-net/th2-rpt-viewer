@@ -19,6 +19,7 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 	const simpleFields: SimpleField[] = [];
 	const complexFields: TreeNode[] = [];
 	let viewInstruction = '';
+	let displayName: string | undefined;
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
 			if (typeof obj[i] === 'object') {
@@ -34,7 +35,9 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 		const entries = Object.entries(obj);
 		for (let i = 0; i < entries.length; i++) {
 			const [entryKey, value] = entries[i];
-			if (entryKey === 'view_instruction') {
+			if (entryKey === '#display_name') {
+				displayName = String(value);
+			} else if (entryKey === 'view_instruction') {
 				viewInstruction = String(value);
 			} else if (typeof value === 'object' && value !== null) {
 				const val = convertJSONtoNode(value, entryKey);
@@ -49,6 +52,7 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 	return {
 		id,
 		key,
+		displayName,
 		failed,
 		isArray,
 		isGeneratedKey,
@@ -61,13 +65,10 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 export const parseText = (text: string, name = '', isGeneratedKey = false): TreeNode[] => {
 	const js = JSON.parse(text);
 	const node = convertJSONtoNode(js, undefined, isGeneratedKey);
-	if (node.simpleFields.length > 0) {
-		return [
-			{
-				...node,
-				key: name,
-			},
-		];
-	}
-	return node.complexFields;
+	return [
+		{
+			...node,
+			key: name,
+		},
+	];
 };

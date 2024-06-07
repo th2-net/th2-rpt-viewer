@@ -38,8 +38,8 @@ const TableRows = ({
 	complexFields: TreeNode[];
 }) => (
 	<>
-		{simpleFields.map(({ key, value }) => (
-			<tr key={`${key}:${value}`} className={createBemBlock('json-table-row-value')}>
+		{simpleFields.map(({ key, value }, index) => (
+			<tr key={`${key}:${value}:${index}`} className={createBemBlock('json-table-row-value')}>
 				{value === '' ? (
 					<td style={{ gridColumn: `1/3` }}>
 						<p>{key}</p>
@@ -57,7 +57,7 @@ const TableRows = ({
 			</tr>
 		))}
 		{complexFields.map(field => (
-			<ExpandRow field={field} key={field.key} />
+			<ExpandRow field={field} key={`${field.id}`} />
 		))}
 	</>
 );

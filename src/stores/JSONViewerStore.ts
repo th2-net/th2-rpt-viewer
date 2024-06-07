@@ -1,6 +1,15 @@
 import { action, observable } from 'mobx';
 import { TreeNode } from '../models/JSONSchema';
 
+const nullTreeNode: TreeNode = {
+	id: '',
+	key: '',
+	failed: false,
+	viewInstruction: '',
+	complexFields: [],
+	simpleFields: [],
+};
+
 export class JSONViewerStore {
 	constructor(private openTableTab: () => void) {}
 
@@ -14,14 +23,7 @@ export class JSONViewerStore {
 
 	@observable treeNodes: TreeNode[] = [];
 
-	@observable selectedTreeNode: TreeNode = {
-		id: '',
-		key: '',
-		failed: false,
-		viewInstruction: '',
-		complexFields: [],
-		simpleFields: [],
-	};
+	@observable selectedTreeNode: TreeNode = nullTreeNode;
 
 	@action
 	public setIsModalOpen = (v: boolean, type: 'notebooks' | 'results') => {
@@ -37,10 +39,14 @@ export class JSONViewerStore {
 		this.notebooks = n.slice();
 	}
 
-	@action selectTreeNode(tree: TreeNode) {
-		this.selectedTreeNode = tree;
-		if (tree.id !== '') {
-			this.openTableTab();
+	@action selectTreeNode(tree?: TreeNode) {
+		if (tree) {
+			this.selectedTreeNode = tree;
+			if (tree.id !== '') {
+				this.openTableTab();
+			}
+		} else {
+			this.selectedTreeNode = nullTreeNode;
 		}
 	}
 

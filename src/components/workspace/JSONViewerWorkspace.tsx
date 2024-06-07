@@ -50,6 +50,7 @@ const JSONViewerWorkspace = () => {
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
 	const onSubmit = (trees: TreeNode[], notebooks: string[]) => {
+		JSONViewerStore.selectTreeNode();
 		JSONViewerStore.setTreeNodes([]);
 		JSONViewerStore.setNotebooks([]);
 		JSONViewerStore.setTreeNodes(trees);
@@ -92,8 +93,7 @@ const JSONViewerWorkspace = () => {
 			node.failed = node.complexFields.some(v => v.failed);
 			return node;
 		});
-		JSONViewerStore.setTreeNodes(nodes);
-		JSONViewerStore.setNotebooks([]);
+		onSubmit(nodes, []);
 	};
 
 	const computeTreeKey = React.useCallback(
@@ -194,7 +194,7 @@ const JSONViewerWorkspace = () => {
 				),
 				isActive: false,
 			})),
-		[JSONViewerStore.selectTreeNode],
+		[JSONViewerStore.selectedTreeNode],
 	).get();
 
 	const viewerWorkspacePanels = React.useMemo(

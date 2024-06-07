@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import '../../styles/JSONviewer.scss';
 import { TreeNode, TreeViewType, ViewInstruction } from '../../models/JSONSchema';
@@ -19,6 +19,11 @@ const TreePanel = ({
 	const JSONViewerStore = useJSONViewerStore();
 	const [viewType, setViewType] = React.useState(TreeViewType.EVENTS_LIST);
 	const [open, setOpen] = React.useState(false);
+	const nodeName = useMemo(() => {
+		if (treeNode.displayName) return treeNode.displayName;
+		if (treeNode.key && !(treeNode.isGeneratedKey && !treeNode.isRoot)) return treeNode.key;
+		return 'no display name';
+	}, [treeNode.displayName, treeNode.key, treeNode.isGeneratedKey]);
 
 	if (
 		!(treeNode.isRoot && treeNode.isGeneratedKey) &&
@@ -62,7 +67,7 @@ const TreePanel = ({
 							treeNode.failed ? 'failed' : 'passed',
 							treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
 						)}
-						title={treeNode.key}
+						title={nodeName}
 						onClick={() => {
 							JSONViewerStore.selectTreeNode(treeNode);
 						}}>
@@ -74,7 +79,7 @@ const TreePanel = ({
 							}}>
 							<div className={createBemBlock('event-status-icon')} />
 							<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
-								{treeNode.key}
+								{nodeName}
 							</span>{' '}
 							<span style={{ color: '#333333' }}>
 								{complexFieldsDisplay()} {simpleFieldsDisplay()}
@@ -102,7 +107,7 @@ const TreePanel = ({
 						'valueLeaf',
 						treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
 					)}
-					title={treeNode.key}
+					title={nodeName}
 					onClick={() => {
 						JSONViewerStore.selectTreeNode(treeNode);
 					}}>
@@ -114,7 +119,7 @@ const TreePanel = ({
 						}}>
 						<div className={createBemBlock('event-status-icon')} />
 						<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
-							{treeNode.key}
+							{nodeName}
 						</span>{' '}
 						<span style={{ color: '#333333' }}>
 							{complexFieldsDisplay()} {simpleFieldsDisplay()}
@@ -130,7 +135,7 @@ const TreePanel = ({
 					<TreePanel
 						nest={nest + 1}
 						treeNode={field}
-						key={prevKey ? prevKey + field.key : treeNode.key + field.key}
+						key={`${field.id}`}
 						prevKey={prevKey ? prevKey + field.key : treeNode.key + field.key}
 					/>
 				))}
