@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
@@ -119,14 +119,20 @@ const TableRows = ({
 
 const ExpandRow = ({ field }: { field: TreeNode }) => {
 	const [isOpen, setIsOpen] = React.useState(false);
+	const nodeName = useMemo(() => {
+		if (field.displayName) return field.displayName;
+		if (field.key && !(field.isGeneratedKey && !field.isRoot)) return field.key;
+		return 'no display name';
+	}, [field.displayName, field.key, field.isGeneratedKey]);
+
 	return (
 		<>
 			<tr className={createBemBlock('json-table-row-toogler')} onClick={() => setIsOpen(!isOpen)}>
 				<td style={{ gridColumn: `1/3` }}>
 					<div className='leafWrapper'>
 						<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
-						<div className={'valueLeaf-table'} title={field.key}>
-							{field.key}
+						<div className={'valueLeaf-table'} title={nodeName}>
+							{nodeName}
 						</div>
 					</div>
 				</td>
