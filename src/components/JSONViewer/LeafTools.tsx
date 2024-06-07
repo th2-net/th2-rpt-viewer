@@ -19,13 +19,15 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { TreeViewType } from '../../models/JSONSchema';
 import { useOutsideClickListener } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
+import { MessageViewType } from '../../models/EventMessage';
 
 export type LeafToolsConfig = {
-	treeViewType: TreeViewType;
-	toggleViewType: (viewType: TreeViewType) => void;
+	activeViewType: TreeViewType | MessageViewType;
+	toggleViewType: (viewType: any) => void;
+	viewTypes: TreeViewType[] | MessageViewType[];
 };
 
-const LeafTools = ({ treeViewType, toggleViewType }: LeafToolsConfig) => {
+const LeafTools = ({ activeViewType, toggleViewType, viewTypes }: LeafToolsConfig) => {
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 
@@ -38,8 +40,6 @@ const LeafTools = ({ treeViewType, toggleViewType }: LeafToolsConfig) => {
 		},
 		isViewMenuOpen,
 	);
-
-	const viewTypes = [TreeViewType.EVENTS_LIST, TreeViewType.JSON, TreeViewType.PRETTY];
 
 	return (
 		<div className='message-card-tools' ref={rootRef}>
@@ -62,7 +62,7 @@ const LeafTools = ({ treeViewType, toggleViewType }: LeafToolsConfig) => {
 						const indicatorClassName = createBemElement(
 							'message-card-tools',
 							'indicator',
-							viewType === treeViewType ? 'active' : null,
+							viewType === activeViewType ? 'active' : null,
 						);
 
 						return (

@@ -36,7 +36,11 @@ const TreePanel = ({
 					<div className='mc__mc-body mc-body'>
 						<JSONView isBeautified={viewType === TreeViewType.PRETTY} node={treeNode} />
 					</div>
-					<LeafTools treeViewType={viewType} toggleViewType={setViewType} />
+					<LeafTools
+						activeViewType={viewType}
+						toggleViewType={setViewType}
+						viewTypes={[TreeViewType.EVENTS_LIST, TreeViewType.JSON, TreeViewType.PRETTY]}
+					/>
 				</div>
 			</>
 		);
@@ -85,7 +89,11 @@ const TreePanel = ({
 								{complexFieldsDisplay()} {simpleFieldsDisplay()}
 							</span>
 						</div>
-						<LeafTools treeViewType={viewType} toggleViewType={setViewType} />
+						<LeafTools
+							activeViewType={viewType}
+							toggleViewType={setViewType}
+							viewTypes={[TreeViewType.EVENTS_LIST, TreeViewType.JSON, TreeViewType.PRETTY]}
+						/>
 					</div>
 				</div>
 			</>
@@ -126,7 +134,11 @@ const TreePanel = ({
 						</span>
 					</div>
 					{!(treeNode.isRoot && treeNode.isGeneratedKey) && (
-						<LeafTools treeViewType={viewType} toggleViewType={setViewType} />
+						<LeafTools
+							activeViewType={viewType}
+							toggleViewType={setViewType}
+							viewTypes={[TreeViewType.EVENTS_LIST, TreeViewType.JSON, TreeViewType.PRETTY]}
+						/>
 					)}
 				</div>
 			</div>

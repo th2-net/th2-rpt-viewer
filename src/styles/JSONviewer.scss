@@ -146,6 +146,9 @@
 
 	&-wrapper {
 		overflow-x: auto;
+		table {
+			grid-template-columns: 20% 80%;
+		}
 	}
 
 	td,
@@ -178,6 +181,10 @@
 		td .mc-raw__content {
 			letter-spacing: 0;
 		}
+	}
+
+	&-Base64Cell {
+		display: flex;
 	}
 
 	&-row-toogler {

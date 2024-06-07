@@ -35,9 +35,9 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 		const entries = Object.entries(obj);
 		for (let i = 0; i < entries.length; i++) {
 			const [entryKey, value] = entries[i];
-			if (entryKey === '#display_name') {
+			if (entryKey === '#display-name') {
 				displayName = String(value);
-			} else if (entryKey === 'view_instruction') {
+			} else if (entryKey === '#view-instruction') {
 				viewInstruction = String(value);
 			} else if (typeof value === 'object' && value !== null) {
 				const val = convertJSONtoNode(value, entryKey);

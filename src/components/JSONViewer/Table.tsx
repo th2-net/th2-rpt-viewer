@@ -2,6 +2,10 @@ import React from 'react';
 import { SimpleField, TreeNode } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
+import { decodeBase64RawContent } from '../../helpers/rawFormatter';
+import { MessageViewType } from '../../models/EventMessage';
+import SimpleMessageRaw from '../message/message-card/raw/SimpleMessageRaw';
+import LeafTools from './LeafTools';
 
 const Table = ({
 	simpleFields,
@@ -12,7 +16,7 @@ const Table = ({
 }) => (
 	<div className='json-table'>
 		<div className='json-table-wrapper'>
-			<table style={{ gridTemplateColumns: '1fr 1fr' }}>
+			<table>
 				<thead>
 					<tr>
 						<th style={{ gridColumn: '1 / 2' }} key='fieldKey'>
@@ -31,6 +35,37 @@ const Table = ({
 	</div>
 );
 
+const Base64Cell = ({ value }: { value: string }) => {
+	const [viewType, setViewType] = React.useState(MessageViewType.ASCII);
+
+	switch (viewType) {
+		case MessageViewType.ASCII:
+			return (
+				<div className='json-table-Base64Cell'>
+					<SimpleMessageRaw rawContent={value} />
+					<LeafTools
+						activeViewType={viewType}
+						toggleViewType={setViewType}
+						viewTypes={[MessageViewType.BINARY, MessageViewType.ASCII]}
+					/>
+				</div>
+			);
+		case MessageViewType.BINARY:
+			return (
+				<div className='json-table-Base64Cell'>
+					<DetailedMessageRaw rawContent={value} />
+					<LeafTools
+						activeViewType={viewType}
+						toggleViewType={setViewType}
+						viewTypes={[MessageViewType.BINARY, MessageViewType.ASCII]}
+					/>
+				</div>
+			);
+		default:
+			return <></>;
+	}
+};
+
 const TableRows = ({
 	simpleFields,
 	complexFields,
@@ -39,7 +74,19 @@ const TableRows = ({
 	complexFields: TreeNode[];
 }) => {
 	const getValue = ({ key, value }: SimpleField) => {
-		if (key.endsWith('Base64')) return <DetailedMessageRaw rawContent={value} />;
+		if (key.endsWith('Base64')) {
+			try {
+				decodeBase64RawContent(value);
+				return <Base64Cell value={value} />;
+			} catch (error) {
+				return (
+					<div style={{ display: 'flex', flexDirection: 'column' }}>
+						<p style={{ color: 'red' }}>Failed to decode Base64:</p>
+						<p>{String(value)}</p>
+					</div>
+				);
+			}
+		}
 		if (typeof value === 'object') return <p>{JSON.stringify(value)}</p>;
 		return <p>{String(value)}</p>;
 	};
@@ -88,7 +135,7 @@ const ExpandRow = ({ field }: { field: TreeNode }) => {
 					<td style={{ gridColumn: `1/3` }}>
 						<div className='json-table'>
 							<div className='json-table-wrapper'>
-								<table style={{ gridTemplateColumns: '1fr 1fr' }}>
+								<table>
 									<tbody>
 										<TableRows
 											simpleFields={field.simpleFields}
