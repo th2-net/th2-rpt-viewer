@@ -139,6 +139,24 @@
 	padding: 1px 5px 1px 0;
 }
 
+.leaf {
+	display: flex;
+	flex-direction: column;
+	border-radius: 5px;
+	&.expanded {
+		border: 2px solid;
+		border-color: $attachedMessageCardBorderColor;
+		.leafWrapper {
+			border-style: solid;
+			border-width: 0px 0px 1px 0px;
+			border-color: $alternativeTextColor;
+		}
+	}
+	&.selected {
+		border: 2px solid;
+		border-color: var(--status-primary-border-color);
+	}
+}
 
 .json-table {
 	@include scrollbar;
