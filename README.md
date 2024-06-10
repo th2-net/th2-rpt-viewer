@@ -1,7 +1,7 @@
 # Report-viewer
 
-![](https://img.shields.io/github/package-json/v/th2-net/th2-rpt-viewer/version-5.1)
-![](https://img.shields.io/github/actions/workflow/status/th2-net/th2-rpt-viewer/build-release.yml?branch=version-5.1)
+![](https://img.shields.io/github/package-json/v/th2-net/th2-rpt-viewer/version-5.2)
+![](https://img.shields.io/github/actions/workflow/status/th2-net/th2-rpt-viewer/build-release.yml?branch=version-5.2)
 This is a web app that displays the stored test data (events and messages) using `report-data-provider`.
 
 # API
