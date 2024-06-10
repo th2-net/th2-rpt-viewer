@@ -31,7 +31,7 @@ import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
 import { DirectionalStreamInfo } from '../models/StreamInfo';
 import { Book } from '../models/Books';
-import { Tree } from '../models/JSONSchema';
+import { NotebookParameters } from '../models/JSONSchema';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -109,8 +109,10 @@ export interface BooksApiSchema {
 }
 
 export interface JSONViewerApiSchema {
-	getLinks: (dir?: string) => Promise<string[]>;
-	getFile: (directory: string, file: string) => Promise<Tree>;
+	getLinks: (type: string, dir?: string) => Promise<{ directories: string[]; files: string[] }>;
+	getParameters: (path: string) => Promise<NotebookParameters>;
+	getResults: (path: string) => Promise<{ result: string }>;
+	launchNotebook: (path: string, parameters?: Object) => Promise<{ path: string }>;
 }
 
 export interface SSESchema {

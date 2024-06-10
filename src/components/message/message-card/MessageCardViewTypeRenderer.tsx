@@ -32,6 +32,7 @@ export type MessageCardViewTypeRendererProps = {
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
 	sortOrderItems: string[];
+	filterBodyValues: string[] | undefined;
 };
 
 const MessageCardViewTypeRenderer = ({
@@ -41,6 +42,7 @@ const MessageCardViewTypeRenderer = ({
 	isSelected,
 	messageBody,
 	sortOrderItems,
+	filterBodyValues,
 }: MessageCardViewTypeRendererProps) => {
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
@@ -53,6 +55,7 @@ const MessageCardViewTypeRenderer = ({
 							isSelected={isSelected}
 							body={messageBody}
 							sortOrderItems={sortOrderItems}
+							filterBodyValues={filterBodyValues}
 						/>
 					}>
 					<MessageBodyCard
@@ -60,6 +63,7 @@ const MessageCardViewTypeRenderer = ({
 						body={messageBody}
 						isSelected={isSelected}
 						sortOrderItems={sortOrderItems}
+						filterBodyValues={filterBodyValues}
 					/>
 				</ErrorBoundary>
 			);

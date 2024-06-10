@@ -28,6 +28,7 @@ module.exports = merge(commonConfig, {
 	entry: ['react-hot-loader/patch', appSrc],
 	devtool: 'inline-source-map',
 	devServer: {
+		hot: true,
 		watchFiles: {
 			options: {
 				usePolling: true,
@@ -42,18 +43,12 @@ module.exports = merge(commonConfig, {
 		host: '0.0.0.0',
 		historyApiFallback: true,
 		proxy: {
-			'/resources': {
-				target: 'http://localhost:8080/',
-				changeOrigin: true,
-				secure: false,
-			},
 			'/': {
-				target: 'http://de-th2-qa:30000/th2-demo-books/',
+				target: 'http://kos-perftest-kuber-master:30000/th2-demo-transport/',
 				changeOrigin: true,
 				secure: false,
 			},
 		},
-		hot: true,
 	},
 	module: {
 		rules: [

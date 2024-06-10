@@ -1,14 +1,18 @@
 import * as React from 'react';
-import { Tree } from '../../models/JSONSchema';
+import { nanoid } from 'nanoid';
+import { TreeNode } from '../../models/JSONSchema';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener } from '../../hooks';
 import api from '../../api';
+import { parseText } from '../../helpers/JSONViewer';
 
 const FileChoosing = ({
+	type,
 	onSubmit,
 	close,
 }: {
-	onSubmit: (t: Tree[]) => void;
+	type: 'notebooks' | 'results';
+	onSubmit: (t: TreeNode[], n: string[]) => void;
 	close: () => void;
 }) => {
 	const [isLoading, setIsLoading] = React.useState(true);
@@ -16,15 +20,16 @@ const FileChoosing = ({
 	const [search, setSearch] = React.useState('');
 	const [directory, setDirectory] = React.useState<string>('');
 	const [files, setFiles] = React.useState<string[]>([]);
-	const [selectedFiles, setSelectedFiles] = React.useState<{ dir: string; name: string }[]>([]);
+	const [selectedFiles, setSelectedFiles] = React.useState<string[]>([]);
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const filteredFiles = React.useMemo(
-		() => files.filter(file => file.includes(search)),
+		() => (files ? files.filter(file => file.includes(search)) : []),
 		[files, search],
 	);
+
 	const filteredDirectories = React.useMemo(
-		() => directories.filter(dir => dir.includes(search)),
+		() => (directories ? directories.filter(dir => dir.includes(search)) : []),
 		[directories, search],
 	);
 
@@ -32,10 +37,10 @@ const FileChoosing = ({
 		setIsLoading(true);
 		setDirectory(dir || '');
 		api.jsonViewer
-			.getLinks(dir)
-			.then((data: string[]) => {
-				setDirectories(data.filter(link => !link.includes('../') && link.slice(-1) === '/'));
-				setFiles(data.filter(link => link.includes('.json') && link.slice(-1) !== '/'));
+			.getLinks(type, dir)
+			.then(data => {
+				setFiles(data.files ? data.files : []);
+				setDirectories(data.directories ? data.directories : []);
 			})
 			.finally(() => setIsLoading(false));
 	};
@@ -45,13 +50,10 @@ const FileChoosing = ({
 	}, []);
 
 	const openDirectory = async (directoryName: string) => {
-		getLinks(`${directory}${directoryName}`);
+		getLinks(`${directoryName}`);
 	};
 
 	const closeModal = () => {
-		setDirectories([]);
-		setDirectory('');
-		setFiles([]);
 		close();
 	};
 
@@ -60,37 +62,62 @@ const FileChoosing = ({
 		setFiles([]);
 		if (directory === '') {
 			closeModal();
-		} else if (directory.indexOf('/') === directory.lastIndexOf('/')) {
+		} else if (directory.indexOf('\\') === directory.lastIndexOf('\\')) {
 			getLinks();
 		} else {
-			getLinks(`${directory.slice(0, directory.slice(0, -1).lastIndexOf('/') + 1)}`);
+			getLinks(`${directory.slice(0, directory.slice(0, -1).lastIndexOf('\\'))}`);
 		}
 	};
 
 	const getFiles = () => {
-		const fileData: Tree[] = [];
-		const promises: Promise<Tree | void>[] = [];
+		const fileData: TreeNode[] = [];
+		const notebookData: string[] = [];
+		const promises: Promise<void>[] = [];
 		if (selectedFiles.length > 0) {
 			setIsLoading(true);
-			selectedFiles.forEach(file =>
-				promises.push(
-					api.jsonViewer.getFile(file.dir, file.name).then((data: Tree) => {
-						fileData.push(JSON.parse(JSON.stringify(data)));
-					}),
-				),
-			);
-			Promise.all(promises).then(() => {
-				setIsLoading(false);
-				onSubmit(fileData);
-			});
+			if (type === 'notebooks') onSubmit([], selectedFiles);
+			else {
+				selectedFiles.forEach(filePath =>
+					promises.push(
+						api.jsonViewer.getResults(filePath).then(({ result }) => {
+							if (filePath.endsWith('.ipynb')) {
+								notebookData.push(filePath);
+								return;
+							}
+							const node: TreeNode = {
+								id: nanoid(),
+								key: filePath,
+								failed: false,
+								viewInstruction: '',
+								simpleFields: [],
+								complexFields: [],
+								isGeneratedKey: true,
+								isRoot: true,
+							};
+							try {
+								node.complexFields.push(...parseText(result, '0', true));
+							} catch {
+								const lines = result.split('\n');
+								for (let i = 0; i < lines.length; i++) {
+									if (lines[i] !== '')
+										node.complexFields.push(...parseText(lines[i], String(i), true));
+								}
+							}
+							node.failed = node.complexFields.some(v => v.failed);
+							fileData.push(node);
+						}),
+					),
+				);
+				Promise.all(promises).then(() => {
+					onSubmit(fileData, notebookData);
+				});
+			}
 		}
-		// closeModal();
+		closeModal();
 	};
 
 	const selectFile = (fileName: string) => {
-		const fileIndex = selectedFiles.findIndex(
-			selectedfile => selectedfile.dir === directory && selectedfile.name === fileName,
-		);
+		const fileIndex = selectedFiles.indexOf(fileName);
 
 		if (fileIndex > -1) {
 			setSelectedFiles([
@@ -98,13 +125,7 @@ const FileChoosing = ({
 				...selectedFiles.slice(fileIndex + 1),
 			]);
 		} else {
-			setSelectedFiles([
-				...selectedFiles,
-				{
-					dir: directory,
-					name: fileName,
-				},
-			]);
+			setSelectedFiles([...selectedFiles, fileName]);
 		}
 	};
 
@@ -163,7 +184,7 @@ const FileChoosing = ({
 								</>
 							)}
 						</div>
-						{directories.length > 0 && (
+						{
 							<>
 								{filteredDirectories.map((dir, index) => (
 									<div
@@ -171,32 +192,27 @@ const FileChoosing = ({
 										key={index}
 										onClick={() => openDirectory(dir)}>
 										<div className='fileChoosing__directory-icon' />
-										{decodeURI(dir)}
+										{decodeURI(dir).replace(directory, '')}
 									</div>
 								))}
 							</>
-						)}
-						{files.length > 0 && (
+						}
+						{
 							<>
 								{filteredFiles.map((file, index) => (
 									<div
 										className={`fileChoosing__line ${
-											selectedFiles.find(
-												selectedfile =>
-													selectedfile.dir === directory && selectedfile.name === file,
-											)
-												? 'selected'
-												: ''
+											selectedFiles.includes(file) ? 'selected' : ''
 										}`}
 										key={index}
 										title={decodeURI(file)}
 										onClick={() => selectFile(file)}>
 										<div className='fileChoosing__file-icon' />
-										{decodeURI(file)}
+										{decodeURI(file).replace(directory, '')}
 									</div>
 								))}
 							</>
-						)}
+						}
 					</>
 				)}
 			</div>

@@ -2,7 +2,6 @@ import { nanoid } from 'nanoid';
 import { action } from 'mobx';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { JSONViewerStore } from '../JSONViewerStore';
-import ApiSchema from '../../api/ApiSchema';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import WorkspacesStore from './WorkspacesStore';
 
@@ -15,9 +14,9 @@ export default class JSONViewerWorkspaceStore {
 
 	public id = nanoid();
 
-	constructor(private workspacesStore: WorkspacesStore, api: ApiSchema) {
-		this.viewStore = new WorkspaceViewStore(undefined);
-		this.JSONviewerStore = new JSONViewerStore(api);
+	constructor(private workspacesStore: WorkspacesStore) {
+		this.viewStore = new WorkspaceViewStore({ panelsLayout: [100, 0] });
+		this.JSONviewerStore = new JSONViewerStore(() => this.viewStore.setPanelsLayout([50, 50]));
 	}
 
 	@action

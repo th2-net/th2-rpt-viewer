@@ -1,104 +1,120 @@
 import React from 'react';
-import { createBemBlock } from '../../helpers/styleCreators';
-import { Tree, ViewInstruction } from '../../models/JSONSchema';
-import { isSimpleLeaf } from '../../helpers/JSONViewer';
+import { observer } from 'mobx-react-lite';
 import '../../styles/JSONviewer.scss';
+import { TreeNode, TreeViewType, ViewInstruction } from '../../models/JSONSchema';
+import { createBemBlock } from '../../helpers/styleCreators';
+import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import JSONView from './JSONView';
 
 const TreePanel = ({
-	node,
-	setNode,
-	parentsPath,
-	parentKey,
-	selectedNode,
+	nest,
+	treeNode,
+	prevKey,
 }: {
-	node: Tree;
-	setNode: (nodeKey: string, selectNode: Tree) => void;
-	parentsPath: string;
-	parentKey: string;
-	selectedNode: [string, Tree];
+	nest: number;
+	treeNode: TreeNode;
+	prevKey?: string;
 }) => {
-	const nest = parentsPath.match(/\/\/\//gm)?.length || 0;
-	const [open, setOpen] = React.useState(!parentKey);
-	const failed = parentKey
-		? parentKey.includes('[fail]') || parentKey.trim().indexOf('#') === 0
-		: undefined;
-	const display = node.view_instruction;
-	const leafs = Object.entries(node);
-	const complexLeafs: [string, Tree][] = [];
-	leafs.forEach(([key, value]) => {
-		if (!value) return;
-		if (key === 'view_instruction') return;
-		if (isSimpleLeaf(value)) return;
-		complexLeafs.push([key, value]);
-	});
+	const JSONViewerStore = useJSONViewerStore();
+	const [open, setOpen] = React.useState(false);
 
-	if (display === ViewInstruction.table)
+	if (!treeNode.isRoot && JSONViewerStore.viewType !== TreeViewType.EVENTS_LIST) {
 		return (
-			<div className='lowerLevel'>
-				{parentKey && (
-					<div className='leafWrapper'>
-						<div style={{ width: `${20 * nest}px` }} />
-						<div className={createBemBlock('expand-icon', 'none')} />
-						<div
-							className={createBemBlock(
-								'valueLeaf',
-								failed ? 'failed' : 'passed',
-								JSON.stringify([parentKey, node]) === JSON.stringify(selectedNode)
-									? 'selected'
-									: null,
-							)}
-							onClick={() => setNode(parentKey, node)}
-							title={parentKey}>
-							<div className={createBemBlock('event-status-icon', failed ? 'failed' : 'passed')} />
-							{parentKey}
-						</div>
-					</div>
-				)}
+			<div className='message-card-wrapper'>
+				<div className='mc__mc-body mc-body'>
+					<JSONView
+						isBeautified={JSONViewerStore.viewType === TreeViewType.PRETTY}
+						node={treeNode}
+					/>
+				</div>
 			</div>
 		);
-	return (
-		<>
-			{parentKey && (
+	}
+
+	const complexFieldsDisplay = () => (
+		<span title={treeNode.isArray ? 'Complex Elements amount' : `Complex Fields amount`}>
+			{treeNode.isArray ? '[' : '{'}
+			{treeNode.complexFields.length}
+			{treeNode.isArray ? ']' : '}'}
+		</span>
+	);
+
+	const simpleFieldsDisplay = () => (
+		<span title={treeNode.isArray ? 'Simple Elements amount' : `Simple Fields amount`}>
+			({treeNode.simpleFields.length})
+		</span>
+	);
+
+	if (treeNode.viewInstruction === ViewInstruction.table) {
+		return (
+			<>
 				<div className='leafWrapper'>
-					<div style={{ width: `${20 * nest}px` }} />
-					<div
-						className={createBemBlock(
-							'expand-icon',
-							open ? 'expanded' : 'hidden',
-							complexLeafs.length > 0 ? null : 'none',
-						)}
-						onClick={() => setOpen(!open)}
-					/>
+					<div style={{ width: `${20 * nest + 23}px` }} />
 					<div
 						className={createBemBlock(
 							'valueLeaf',
-							failed ? 'failed' : 'passed',
-							JSON.stringify([parentKey, node]) === JSON.stringify(selectedNode)
-								? 'selected'
-								: null,
+							treeNode.failed ? 'failed' : 'passed',
+							treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
 						)}
-						onClick={() => setNode(parentKey, node)}
-						title={parentKey}>
-						<div className={createBemBlock('event-status-icon', failed ? 'failed' : 'passed')} />
-						{parentKey}
+						title={treeNode.key}
+						onClick={() => {
+							JSONViewerStore.selectTreeNode(treeNode);
+						}}>
+						<div className={createBemBlock('event-status-icon')} />
+						<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
+							{treeNode.key}
+						</span>{' '}
+						<span style={{ color: '#333333' }}>
+							{complexFieldsDisplay()} {simpleFieldsDisplay()}
+						</span>
 					</div>
 				</div>
-			)}
+			</>
+		);
+	}
+
+	return (
+		<>
+			<div className='leafWrapper'>
+				<div style={{ width: `${20 * nest + (treeNode.complexFields.length === 0 ? 23 : 0)}px` }} />
+				{treeNode.complexFields.length > 0 && (
+					<div
+						className={createBemBlock('expand-icon', open ? 'expanded' : 'hidden')}
+						onClick={() => setOpen(!open)}
+					/>
+				)}
+				<div
+					className={createBemBlock(
+						'valueLeaf',
+						treeNode.failed ? 'failed' : 'passed',
+						treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
+					)}
+					title={treeNode.key}
+					onClick={() => {
+						JSONViewerStore.selectTreeNode(treeNode);
+					}}>
+					<div
+						className={createBemBlock('event-status-icon', treeNode.failed ? 'failed' : 'passed')}
+					/>
+					<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
+						{treeNode.key}
+					</span>{' '}
+					<span style={{ color: '#333333' }}>
+						{complexFieldsDisplay()} {simpleFieldsDisplay()}
+					</span>
+				</div>
+			</div>
 			{open &&
-				complexLeafs.length > 0 &&
-				complexLeafs.map(([parent, childNode]) => (
-					<React.Fragment key={`${parentsPath}///${parent}`}>
-						<TreePanel
-							node={childNode}
-							setNode={setNode}
-							parentsPath={`${parentsPath}///${parent}`}
-							parentKey={parent}
-							selectedNode={selectedNode}
-						/>
-					</React.Fragment>
+				treeNode.complexFields.map(field => (
+					<TreePanel
+						nest={nest + 1}
+						treeNode={field}
+						key={prevKey ? prevKey + field.key : treeNode.key + field.key}
+						prevKey={prevKey ? prevKey + field.key : treeNode.key + field.key}
+					/>
 				))}
 		</>
 	);
 };
 
-export default TreePanel;
+export default observer(TreePanel);

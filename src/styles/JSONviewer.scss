@@ -323,16 +323,15 @@
 }
 
 .load-JSON-button {
-	padding: 3px 0;
 	border-radius: 3px;
 	display: flex;
 	align-items: center;
-	font-size: 14px;
+	font-size: 12px;
 	font-weight: bold;
 	color: $alternativeTextColor;
 	background: $searchButtonColor;
 	border: 1px $alternativeTextColor solid;
-	padding: 3px;
+	padding: 0px 2px;
 	font-family: 'Open Sans', sans-serif;
 	cursor: pointer;
 	outline: none;

@@ -39,6 +39,7 @@ export interface MessageCardBaseProps {
 	isExported?: boolean;
 	isExport?: boolean;
 	sortOrderItems?: string[];
+	filterBodyValues?: string[] | undefined;
 	viewType: MessageViewType;
 	setViewType: (viewType: MessageViewType) => void;
 	addMessageToExport?: () => void;
@@ -61,6 +62,7 @@ const MessageCardBase = React.memo(
 		isExport,
 		sortOrderItems,
 		addMessageToExport,
+		filterBodyValues,
 	}: MessageCardBaseProps) => {
 		const { messageId, bodyBase64, body } = message;
 
@@ -90,6 +92,7 @@ const MessageCardBase = React.memo(
 			rawContent: bodyBase64,
 			isSelected: isAttached || false,
 			sortOrderItems: sortOrderItems || [],
+			filterBodyValues,
 		};
 
 		const messageCardToolsConfig: MessageCardToolsConfig = {

@@ -1,9 +1,15 @@
 import React from 'react';
-import { Tree } from '../../models/JSONSchema';
-import { isSimpleLeaf } from '../../helpers/JSONViewer';
+import { SimpleField, TreeNode } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
+import { isKeyFailed, isValueFailed } from '../../helpers/JSONViewer';
 
-const Table = ({ rows }: { rows: [string, string | number | string[] | Tree | undefined][] }) => (
+const Table = ({
+	simpleFields,
+	complexFields,
+}: {
+	simpleFields: SimpleField[];
+	complexFields: TreeNode[];
+}) => (
 	<div className='params-table'>
 		<div className='params-table-wrapper'>
 			<table style={{ gridTemplateColumns: '0.2fr 0.8fr' }}>
@@ -16,7 +22,7 @@ const Table = ({ rows }: { rows: [string, string | number | string[] | Tree | un
 					</tr>
 				</thead>
 				<tbody>
-					<TableRows rows={rows} />
+					<TableRows simpleFields={simpleFields} complexFields={complexFields} />
 				</tbody>
 			</table>
 		</div>
@@ -24,78 +30,66 @@ const Table = ({ rows }: { rows: [string, string | number | string[] | Tree | un
 );
 
 const TableRows = ({
-	rows,
+	simpleFields,
+	complexFields,
 }: {
-	rows: [string, string | number | string[] | Tree | undefined][];
+	simpleFields: SimpleField[];
+	complexFields: TreeNode[];
 }) => (
 	<>
-		{rows.map(([key, value]) =>
-			value && (!isSimpleLeaf(value) || Array.isArray(value)) && typeof value !== 'string' ? (
-				<React.Fragment key={`${key}:${value}`}>
-					<ExpandRow parentKey={key} rows={Object.entries(value)} />
-				</React.Fragment>
-			) : (
-				<tr
-					key={`${key}:${value}`}
-					className={createBemBlock(
-						'params-table-row-value',
-						typeof value === 'string'
-							? value === ''
-								? key.includes('[fail]') || key.trim().indexOf('#') === 0
-									? 'failed'
-									: 'passed'
-								: value.trim().indexOf('#') === 0 || value.indexOf('!#') === 0
+		{simpleFields.map(({ key, value }) => (
+			<tr
+				key={`${key}:${value}`}
+				className={createBemBlock(
+					'params-table-row-value',
+					typeof value === 'string'
+						? value === ''
+							? isKeyFailed(key)
 								? 'failed'
 								: 'passed'
-							: typeof value === 'number'
-							? key.includes('[fail]') || key.trim().indexOf('#') === 0
-								? 'failed'
-								: 'passed'
-							: null,
-					)}>
-					{value === '' ? (
-						<td style={{ gridColumn: `1/3` }}>
+							: isValueFailed(value)
+							? 'failed'
+							: 'passed'
+						: typeof value === 'number'
+						? isKeyFailed(key)
+							? 'failed'
+							: 'passed'
+						: null,
+				)}>
+				{value === '' ? (
+					<td style={{ gridColumn: `1/3` }}>
+						<p>{key}</p>
+					</td>
+				) : (
+					<>
+						<td>
 							<p>{key}</p>
 						</td>
-					) : (
-						<>
-							<td>
-								<p>{key}</p>
-							</td>
-							<td>
-								<p>{String(value)}</p>
-							</td>
-						</>
-					)}
-				</tr>
-			),
-		)}
+						<td>
+							<p>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</p>
+						</td>
+					</>
+				)}
+			</tr>
+		))}
+		{complexFields.map(field => (
+			<ExpandRow field={field} key={field.key} />
+		))}
 	</>
 );
 
-const ExpandRow = ({
-	parentKey,
-	rows,
-}: {
-	parentKey: string;
-	rows: [string, string | number | string[] | Tree | undefined][];
-}) => {
+const ExpandRow = ({ field }: { field: TreeNode }) => {
 	const [isOpen, setIsOpen] = React.useState(false);
 	return (
 		<>
 			<tr
-				className={createBemBlock(
-					'params-table-row-toogler',
-					parentKey.trim().indexOf('#') === 0 || parentKey.indexOf('!#') === 0
-						? 'failed'
-						: 'passed',
-				)}
+				className={createBemBlock('params-table-row-toogler', field.failed ? 'failed' : 'passed')}
 				onClick={() => setIsOpen(!isOpen)}>
 				<td style={{ gridColumn: `1/3` }}>
 					<div className='leafWrapper'>
 						<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
-						<div className={'valueLeaf-table'} title={parentKey}>
-							{parentKey}
+						<div className={'valueLeaf-table'} title={field.key}>
+							{field.key}
 						</div>
 					</div>
 				</td>
@@ -107,7 +101,10 @@ const ExpandRow = ({
 							<div className='params-table-wrapper'>
 								<table style={{ gridTemplateColumns: '0.2fr 0.8fr' }}>
 									<tbody>
-										<TableRows rows={rows.filter(Boolean)} />
+										<TableRows
+											simpleFields={field.simpleFields}
+											complexFields={field.complexFields}
+										/>
 									</tbody>
 								</table>
 							</div>

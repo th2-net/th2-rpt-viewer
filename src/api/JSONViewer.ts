@@ -1,38 +1,24 @@
 import notificationsStore from '../stores/NotificationsStore';
 import { JSONViewerApiSchema } from './ApiSchema';
 
-const directoriesURL = '/resources/';
-
 const JSONViewerHttpApi: JSONViewerApiSchema = {
-	getLinks: async (dir?: string) => {
-		const res = await fetch(`${directoriesURL}${dir || ''}`, {
+	getLinks: async (type: string, dir?: string) => {
+		const res = await fetch(`json-stream-provider/files/${type}${dir ? `?path=${dir}` : ''}`, {
 			cache: 'reload',
 			headers: {
-				Accept: 'application/json, text/plain, */*',
+				Accept: 'application/json',
 			},
 		});
 		if (res.ok) {
-			const text = await res.text();
-			const links: string[] = [];
-			let tempText = text.slice();
-			const linkStartInf = `a href="`;
-			let linkStart = tempText.indexOf(linkStartInf);
-			while (linkStart > -1) {
-				tempText = tempText.slice(linkStart + linkStartInf.length);
-				const linkEnd = tempText.indexOf(`"`);
-				const link = tempText.slice(0, linkEnd);
-				links.push(link);
-				linkStart = tempText.indexOf(linkStartInf);
-			}
-			return links;
+			return res.json();
 		}
 		notificationsStore.handleRequestError(res);
 		return [];
 	},
-	getFile: async (directory: string, file: string) => {
-		const res = await fetch(`${directoriesURL}/${directory}/${file}`, {
+	getParameters: async (path: string) => {
+		const res = await fetch(`json-stream-provider/files?path=${path}`, {
 			headers: {
-				Accept: 'application/json, text/plain, */*',
+				Accept: 'application/json',
 			},
 		});
 
@@ -41,6 +27,28 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		}
 		notificationsStore.handleRequestError(res);
 		return {};
+	},
+	getResults: async (path: string): Promise<{ result: string }> => {
+		const res = await fetch(`json-stream-provider/result?path=${path}`);
+		if (res.ok) {
+			return res.json();
+		}
+		notificationsStore.handleRequestError(res);
+		return { result: path };
+	},
+	launchNotebook: async (path: string, parameters = {}) => {
+		const res = await fetch(`json-stream-provider/execute?path=${path}`, {
+			method: 'POST',
+			headers: {
+				'Content-type': 'application/json',
+			},
+			body: JSON.stringify(parameters),
+		});
+		if (res.ok) {
+			return res.json();
+		}
+		notificationsStore.handleRequestError(res);
+		return { path: '' };
 	},
 };
 

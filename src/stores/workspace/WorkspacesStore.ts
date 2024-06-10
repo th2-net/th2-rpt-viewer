@@ -72,7 +72,7 @@ export default class WorkspacesStore {
 			this.api,
 		);
 
-		this.JSONViewerWorkspace = new JSONViewerWorkspaceStore(this, this.api);
+		this.JSONViewerWorkspace = new JSONViewerWorkspaceStore(this);
 
 		this.init(initialState || null);
 
