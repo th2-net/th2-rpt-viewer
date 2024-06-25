@@ -6,19 +6,21 @@ import api from '../../api';
 import '../../styles/jupyter.scss';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import { parseText } from '../../helpers/JSONViewer';
+import { useNotificationsStore } from '../../hooks';
 
 const timeBetweenResults = 1000;
-const maxFetchResults = 5;
-const numberReg = /-?\d*\.?\d{1,}$/;
+const numberReg = /^-?\d*\.?\d{1,}$/;
 
 const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const JSONViewerStore = useJSONViewerStore();
+	const notificationsStore = useNotificationsStore();
 	const [parameters, setParameters] = React.useState<NotebookParameter[]>([]);
 	const [paramsValue, setParamsValue] = React.useState<Record<string, string>>({});
 	const [isLoading, setIsLoading] = React.useState(true);
 	const [isRunLoading, setIsRunLoading] = React.useState(false);
 	const [isExpanded, setIsExpanded] = React.useState(false);
-	const [timer, setTimer] = React.useState<NodeJS.Timeout | null>(null);
+	const [timer, setTimer] = React.useState<NodeJS.Timeout | null>();
+	const [taskId, setTaskId] = React.useState<string | null>();
 	const keys: string[] = React.useMemo(() => parameters.map(param => param.name), [parameters]);
 
 	const getParameters = async () => {
@@ -39,49 +41,73 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		setIsExpanded(!isExpanded);
 	};
 
-	const getResults = async (path: string, launchN = 1) => {
-		const { result } = await api.jsonViewer.getResults(path);
-		if (result.includes('{')) {
-			const node: TreeNode = {
-				id: nanoid(),
-				key: `Result of ${notebook}'s run`,
-				failed: false,
-				viewInstruction: '',
-				simpleFields: [{ key: 'filepath', value: path }],
-				complexFields: [],
-				isGeneratedKey: true,
-				isRoot: true,
-			};
-			try {
-				node.complexFields.push(...parseText(result, '0', true));
-			} catch {
-				const lines = result.split('\n');
-				for (let i = 0; i < lines.length; i++) {
-					if (lines[i] !== '') {
-						node.complexFields.push(...parseText(lines[i], String(i), true));
+	const getResults = async (respTaskId: string, path: string) => {
+		const { status, result } = await api.jsonViewer.getResults(respTaskId);
+
+		switch (status) {
+			case 'success':
+				if (result.includes('{')) {
+					const node: TreeNode = {
+						id: nanoid(),
+						key: `Result of ${notebook}'s run`,
+						failed: false,
+						viewInstruction: '',
+						simpleFields: [{ key: 'filepath', value: path }],
+						complexFields: [],
+						isGeneratedKey: true,
+						isRoot: true,
+					};
+					try {
+						node.complexFields.push(...parseText(result, '0', true));
+					} catch {
+						const lines = result.split('\n');
+						for (let i = 0; i < lines.length; i++) {
+							if (lines[i] !== '') {
+								node.complexFields.push(...parseText(lines[i], String(i), true));
+							}
+						}
 					}
+					node.failed = node.complexFields.some(v => v.failed);
+					if (node.complexFields.length > 0) {
+						JSONViewerStore.addNodes([node]);
+						JSONViewerStore.selectTreeNode(node);
+					}
+					setParamsValue({});
+					setIsRunLoading(false);
+					console.log(isRunLoading);
+					setIsExpanded(false);
 				}
-			}
-			node.failed = node.complexFields.some(v => v.failed);
-			if (node.complexFields.length > 0) {
-				JSONViewerStore.addNodes([node]);
-				JSONViewerStore.selectTreeNode(node);
-			}
-			setParamsValue({});
-			setIsRunLoading(false);
-			setIsExpanded(false);
-			return;
-		}
-		if (launchN < maxFetchResults) {
-			setTimeout(() => getResults(path, launchN + 1), 2 * launchN * timeBetweenResults);
+				break;
+			case 'failed':
+				{
+					const response = new Response(result, {
+						status: 500,
+						statusText: `Failed to launch ${notebook}`,
+					});
+					console.log(status);
+					notificationsStore.handleRequestError(response);
+					setIsRunLoading(false);
+					console.log(isRunLoading);
+				}
+				break;
+			case 'in progress':
+				setTimer(setTimeout(() => getResults(respTaskId, path), timeBetweenResults));
+				break;
+			default:
+				break;
 		}
 	};
 
 	const runNotebook = async () => {
 		if (isRunLoading) {
 			setIsRunLoading(false);
+			console.log(isRunLoading);
+			if (taskId) {
+				api.jsonViewer.stopNotebook(taskId);
+				setTaskId(null);
+			}
 			if (timer) {
-				timer.unref();
+				clearTimeout(timer);
 				setTimer(null);
 			}
 			return;
@@ -111,16 +137,19 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 				}),
 		);
 		const res = await api.jsonViewer.launchNotebook(notebook, paramsWithType);
-		if (res.path !== '') {
-			setTimeout(() => getResults(res.path), timeBetweenResults);
+		if (res.task_id !== '') {
+			setTaskId(res.task_id);
+			setTimer(setTimeout(() => getResults(res.task_id, res.path), timeBetweenResults));
 		} else {
 			setIsRunLoading(false);
+			console.log(isRunLoading);
 		}
 	};
 
 	const refreshNotebook = () => {
 		getParameters();
 		setIsRunLoading(false);
+		console.log(isRunLoading);
 	};
 
 	React.useEffect(() => {

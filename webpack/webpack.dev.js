@@ -42,7 +42,13 @@ module.exports = merge(commonConfig, {
 		port: 9001,
 		host: '0.0.0.0',
 		historyApiFallback: true,
-		proxy: {
+		proxy: { 
+			'/json-stream-provider': {
+				target: 'http://localhost:8080/',
+				changeOrigin: true,
+				secure: false,
+				pathRewrite: { '^/json-stream-provider': '' },
+			},
 			'/': {
 				target: 'http://kos-perftest-kuber-master:30000/th2-demo-transport/',
 				changeOrigin: true,

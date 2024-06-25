@@ -28,13 +28,13 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		notificationsStore.handleRequestError(res);
 		return {};
 	},
-	getResults: async (path: string): Promise<{ result: string }> => {
-		const res = await fetch(`json-stream-provider/result?path=${path}`);
+	getResults: async (taskId: string): Promise<{ status: string; result: string }> => {
+		const res = await fetch(`json-stream-provider/result?id=${taskId}`);
 		if (res.ok) {
 			return res.json();
 		}
 		notificationsStore.handleRequestError(res);
-		return { result: path };
+		return { status: 'error', result: taskId };
 	},
 	launchNotebook: async (path: string, parameters = {}) => {
 		const res = await fetch(`json-stream-provider/execute?path=${path}`, {
@@ -48,7 +48,16 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 			return res.json();
 		}
 		notificationsStore.handleRequestError(res);
-		return { path: '' };
+		return { path: '', task_id: '' };
+	},
+	stopNotebook: async (taskId: string) => {
+		const res = await fetch(`json-stream-provider/stop?id=${taskId}`, {
+			method: 'POST',
+		});
+		if (res.ok) {
+			return res.json();
+		}
+		return {};
 	},
 };
 
