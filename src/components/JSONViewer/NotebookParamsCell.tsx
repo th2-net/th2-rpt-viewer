@@ -74,7 +74,6 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 					}
 					setParamsValue({});
 					setIsRunLoading(false);
-					console.log(isRunLoading);
 					setIsExpanded(false);
 				}
 				break;
@@ -84,10 +83,8 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 						status: 500,
 						statusText: `Failed to launch ${notebook}`,
 					});
-					console.log(status);
 					notificationsStore.handleRequestError(response);
 					setIsRunLoading(false);
-					console.log(isRunLoading);
 				}
 				break;
 			case 'in progress':
@@ -101,7 +98,6 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const runNotebook = async () => {
 		if (isRunLoading) {
 			setIsRunLoading(false);
-			console.log(isRunLoading);
 			if (taskId) {
 				api.jsonViewer.stopNotebook(taskId);
 				setTaskId(null);
@@ -142,14 +138,12 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 			setTimer(setTimeout(() => getResults(res.task_id, res.path), timeBetweenResults));
 		} else {
 			setIsRunLoading(false);
-			console.log(isRunLoading);
 		}
 	};
 
 	const refreshNotebook = () => {
 		getParameters();
 		setIsRunLoading(false);
-		console.log(isRunLoading);
 	};
 
 	React.useEffect(() => {
