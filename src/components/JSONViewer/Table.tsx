@@ -1,7 +1,10 @@
-import React from 'react';
-import { SimpleField, TreeNode } from '../../models/JSONSchema';
+import React, { useMemo } from 'react';
+import { SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
-import { isKeyFailed, isValueFailed } from '../../helpers/JSONViewer';
+import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
+import { decodeBase64RawContent } from '../../helpers/rawFormatter';
+import SimpleMessageRaw from '../message/message-card/raw/SimpleMessageRaw';
+import LeafTools from './LeafTools';
 
 const Table = ({
 	simpleFields,
@@ -10,12 +13,14 @@ const Table = ({
 	simpleFields: SimpleField[];
 	complexFields: TreeNode[];
 }) => (
-	<div className='params-table'>
-		<div className='params-table-wrapper'>
-			<table style={{ gridTemplateColumns: '0.2fr 0.8fr' }}>
+	<div className='json-table'>
+		<div className='json-table-wrapper'>
+			<table>
 				<thead>
 					<tr>
-						<th style={{ gridColumn: '1 / 2' }}></th>
+						<th style={{ gridColumn: '1 / 2' }} key='fieldKey'>
+							fieldKey
+						</th>
 						<th style={{ gridColumn: `2 / 3` }} key='fieldValue'>
 							fieldValue
 						</th>
@@ -29,67 +34,105 @@ const Table = ({
 	</div>
 );
 
+const Base64Cell = ({ value }: { value: string }) => {
+	const [viewType, setViewType] = React.useState(TreeViewType.ASCII);
+	const viewTypes = [TreeViewType.ORIGIN, TreeViewType.BINARY, TreeViewType.ASCII];
+
+	switch (viewType) {
+		case TreeViewType.ASCII:
+			return (
+				<div className='json-table-Base64Cell'>
+					<SimpleMessageRaw rawContent={value} />
+					<LeafTools activeViewType={viewType} toggleViewType={setViewType} viewTypes={viewTypes} />
+				</div>
+			);
+		case TreeViewType.BINARY:
+			return (
+				<div className='json-table-Base64Cell'>
+					<DetailedMessageRaw rawContent={value} />
+					<LeafTools activeViewType={viewType} toggleViewType={setViewType} viewTypes={viewTypes} />
+				</div>
+			);
+		case TreeViewType.ORIGIN:
+			return (
+				<div className='json-table-Base64Cell'>
+					<div>
+						<p>{String(value)}</p>
+					</div>
+					<LeafTools activeViewType={viewType} toggleViewType={setViewType} viewTypes={viewTypes} />
+				</div>
+			);
+		default:
+			return <></>;
+	}
+};
+
 const TableRows = ({
 	simpleFields,
 	complexFields,
 }: {
 	simpleFields: SimpleField[];
 	complexFields: TreeNode[];
-}) => (
-	<>
-		{simpleFields.map(({ key, value }) => (
-			<tr
-				key={`${key}:${value}`}
-				className={createBemBlock(
-					'params-table-row-value',
-					typeof value === 'string'
-						? value === ''
-							? isKeyFailed(key)
-								? 'failed'
-								: 'passed'
-							: isValueFailed(value)
-							? 'failed'
-							: 'passed'
-						: typeof value === 'number'
-						? isKeyFailed(key)
-							? 'failed'
-							: 'passed'
-						: null,
-				)}>
-				{value === '' ? (
-					<td style={{ gridColumn: `1/3` }}>
-						<p>{key}</p>
-					</td>
-				) : (
-					<>
-						<td>
+}) => {
+	const getValue = ({ key, value }: SimpleField) => {
+		if (key.endsWith('Base64')) {
+			try {
+				decodeBase64RawContent(value);
+				return <Base64Cell value={value} />;
+			} catch (error) {
+				return (
+					<div style={{ display: 'flex', flexDirection: 'column' }}>
+						<p style={{ color: 'red' }}>Failed to decode Base64:</p>
+						<p>{String(value)}</p>
+					</div>
+				);
+			}
+		}
+		if (typeof value === 'object') return <p>{JSON.stringify(value)}</p>;
+		return <p>{String(value)}</p>;
+	};
+
+	return (
+		<>
+			{simpleFields.map(({ key, value }, index) => (
+				<tr key={`${key}:${value}:${index}`} className={createBemBlock('json-table-row-value')}>
+					{value === '' ? (
+						<td style={{ gridColumn: `1/3` }}>
 							<p>{key}</p>
 						</td>
-						<td>
-							<p>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</p>
-						</td>
-					</>
-				)}
-			</tr>
-		))}
-		{complexFields.map(field => (
-			<ExpandRow field={field} key={field.key} />
-		))}
-	</>
-);
+					) : (
+						<>
+							<td>
+								<p>{key}</p>
+							</td>
+							<td>{getValue({ key, value })}</td>
+						</>
+					)}
+				</tr>
+			))}
+			{complexFields.map(field => (
+				<ExpandRow field={field} key={`${field.id}`} />
+			))}
+		</>
+	);
+};
 
 const ExpandRow = ({ field }: { field: TreeNode }) => {
 	const [isOpen, setIsOpen] = React.useState(false);
+	const nodeName = useMemo(() => {
+		if (field.displayName) return field.displayName;
+		if (field.key && !(field.isGeneratedKey && !field.isRoot)) return field.key;
+		return 'no display name';
+	}, [field.displayName, field.key, field.isGeneratedKey]);
+
 	return (
 		<>
-			<tr
-				className={createBemBlock('params-table-row-toogler', field.failed ? 'failed' : 'passed')}
-				onClick={() => setIsOpen(!isOpen)}>
+			<tr className={createBemBlock('json-table-row-toogler')} onClick={() => setIsOpen(!isOpen)}>
 				<td style={{ gridColumn: `1/3` }}>
 					<div className='leafWrapper'>
 						<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
-						<div className={'valueLeaf-table'} title={field.key}>
-							{field.key}
+						<div className={'valueLeaf-table'} title={nodeName}>
+							{nodeName}
 						</div>
 					</div>
 				</td>
@@ -97,9 +140,9 @@ const ExpandRow = ({ field }: { field: TreeNode }) => {
 			{isOpen && (
 				<tr>
 					<td style={{ gridColumn: `1/3` }}>
-						<div className='params-table'>
-							<div className='params-table-wrapper'>
-								<table style={{ gridTemplateColumns: '0.2fr 0.8fr' }}>
+						<div className='json-table'>
+							<div className='json-table-wrapper'>
+								<table>
 									<tbody>
 										<TableRows
 											simpleFields={field.simpleFields}

@@ -1,5 +1,14 @@
 import { action, observable } from 'mobx';
-import { TreeNode, TreeViewType } from '../models/JSONSchema';
+import { TreeNode } from '../models/JSONSchema';
+
+const nullTreeNode: TreeNode = {
+	id: '',
+	key: '',
+	failed: false,
+	viewInstruction: '',
+	complexFields: [],
+	simpleFields: [],
+};
 
 export class JSONViewerStore {
 	constructor(private openTableTab: () => void) {}
@@ -10,20 +19,11 @@ export class JSONViewerStore {
 	@observable
 	public modalType: 'notebooks' | 'results' = 'results';
 
-	@observable viewType: string = TreeViewType.EVENTS_LIST;
-
 	@observable notebooks: string[] = [];
 
 	@observable treeNodes: TreeNode[] = [];
 
-	@observable selectedTreeNode: TreeNode = {
-		id: '',
-		key: '',
-		failed: false,
-		viewInstruction: '',
-		complexFields: [],
-		simpleFields: [],
-	};
+	@observable selectedTreeNode: TreeNode = nullTreeNode;
 
 	@action
 	public setIsModalOpen = (v: boolean, type: 'notebooks' | 'results') => {
@@ -39,30 +39,18 @@ export class JSONViewerStore {
 		this.notebooks = n.slice();
 	}
 
-	@action selectTreeNode(tree: TreeNode) {
-		this.selectedTreeNode = tree;
-		if (tree.id !== '') {
-			this.openTableTab();
+	@action selectTreeNode(tree?: TreeNode) {
+		if (tree) {
+			this.selectedTreeNode = tree;
+			if (tree.id !== '') {
+				this.openTableTab();
+			}
+		} else {
+			this.selectedTreeNode = nullTreeNode;
 		}
 	}
 
 	@action addNodes(tree: TreeNode[]) {
 		this.treeNodes = this.treeNodes.concat(tree);
-	}
-
-	@action setView(v: string) {
-		this.viewType = v;
-		if (v !== TreeViewType.EVENTS_LIST) {
-			this.selectTreeNode({
-				id: '',
-				key: '',
-				failed: false,
-				viewInstruction: '',
-				complexFields: [],
-				simpleFields: [],
-			});
-		} else if (this.treeNodes.length > 0) {
-			this.selectTreeNode(this.treeNodes[0]);
-		}
 	}
 }

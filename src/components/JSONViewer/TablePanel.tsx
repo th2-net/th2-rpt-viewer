@@ -1,36 +1,34 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { createBemBlock } from '../../helpers/styleCreators';
 import Table from './Table';
 import '../../styles/JSONviewer.scss';
-import { TreeNode, ViewInstruction } from '../../models/JSONSchema';
+import { TreeNode } from '../../models/JSONSchema';
 
 const TablePanel = ({ node }: { node: TreeNode }) => {
-	const { key, viewInstruction, simpleFields, complexFields } = node;
+	const { key, simpleFields, complexFields } = node;
+	const nodeName = useMemo(() => {
+		if (node.displayName) return node.displayName;
+		if (node.key && !(node.isGeneratedKey && !node.isRoot)) return node.key;
+		return 'no display name';
+	}, [node.displayName, node.key, node.isGeneratedKey]);
 
 	return (
 		<>
-			{key !== '' && (
+			{nodeName !== '' && (
 				<div
-					className={createBemBlock('valueLeaf', node.failed ? 'failed' : 'passed', 'selected')}
+					className={createBemBlock('valueLeaf', 'header', 'selected')}
 					style={{ cursor: 'default' }}
-					title={key}>
+					title={nodeName}>
 					<div className={createBemBlock('event-status-icon', node.failed ? 'failed' : 'passed')} />
-					{key}
+					<div className={'title'} title={key}>
+						{nodeName}
+					</div>
 				</div>
 			)}
-			{viewInstruction === ViewInstruction.table ? (
-				<>
-					<Table simpleFields={simpleFields} complexFields={complexFields} />
-					<br />
-				</>
-			) : (
-				simpleFields.length > 0 && (
-					<>
-						<Table simpleFields={simpleFields} complexFields={[]} />
-						<br />
-					</>
-				)
-			)}
+			<>
+				<Table simpleFields={simpleFields} complexFields={complexFields} />
+				<br />
+			</>
 		</>
 	);
 };

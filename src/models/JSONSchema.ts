@@ -4,9 +4,12 @@ export enum ViewInstruction {
 }
 
 export enum TreeViewType {
-	EVENTS_LIST = 'Event List',
+	EVENTS_LIST = 'Tree',
 	JSON = 'Json',
 	PRETTY = 'Formatted Json',
+	ASCII = 'ASCII',
+	BINARY = 'binary',
+	ORIGIN = 'Origin',
 }
 
 export interface SimpleField {
@@ -17,6 +20,7 @@ export interface SimpleField {
 export interface TreeNode {
 	id: string;
 	key: string;
+	displayName?: string;
 	failed: boolean;
 	viewInstruction: string;
 	complexFields: TreeNode[];
@@ -24,6 +28,7 @@ export interface TreeNode {
 	isArray?: boolean;
 	isGeneratedKey?: boolean;
 	isRoot?: boolean;
+	viewType?: TreeViewType;
 }
 
 export interface NotebookParameter {

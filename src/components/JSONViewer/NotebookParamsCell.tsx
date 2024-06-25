@@ -9,7 +9,7 @@ import { parseText } from '../../helpers/JSONViewer';
 
 const timeBetweenResults = 1000;
 const maxFetchResults = 5;
-const numberReg = /^-?\d*\.?\d{1,}$/;
+const numberReg = /-?\d*\.?\d{1,}$/;
 
 const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -93,7 +93,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 				.map(([name, value]) => {
 					const ind = keys.indexOf(name);
 					switch (parameters[ind].inferred_type_name) {
-						case 'str':
+						case 'string':
 							return [name, value];
 						case 'float':
 							return [name, parseFloat(value)];
