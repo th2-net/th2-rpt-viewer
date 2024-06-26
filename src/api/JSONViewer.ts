@@ -57,7 +57,7 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		if (res.ok) {
 			return true;
 		}
-		notificationsStore.handleRequestError(res);
+		// notificationsStore.handleRequestError(res);
 		return false;
 	},
 };
