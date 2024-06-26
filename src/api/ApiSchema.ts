@@ -113,7 +113,7 @@ export interface JSONViewerApiSchema {
 	getParameters: (path: string) => Promise<NotebookParameters>;
 	getResults: (taskId: string) => Promise<{ status: string; result: string }>;
 	launchNotebook: (path: string, parameters?: Object) => Promise<{ path: string; task_id: string }>;
-	stopNotebook: (taskId: string) => Promise<Object>;
+	stopNotebook: (taskId: string) => Promise<boolean>;
 }
 
 export interface SSESchema {

@@ -97,14 +97,16 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 
 	const runNotebook = async () => {
 		if (isRunLoading) {
-			setIsRunLoading(false);
-			if (taskId) {
-				api.jsonViewer.stopNotebook(taskId);
-				setTaskId(null);
-			}
 			if (timer) {
 				clearTimeout(timer);
 				setTimer(null);
+			}
+			if (taskId) {
+				const stopAttempt = await api.jsonViewer.stopNotebook(taskId);
+				setTaskId(null);
+				setIsRunLoading(stopAttempt);
+			} else {
+				setIsRunLoading(false);
 			}
 			return;
 		}

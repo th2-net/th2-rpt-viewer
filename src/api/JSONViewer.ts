@@ -55,9 +55,10 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 			method: 'POST',
 		});
 		if (res.ok) {
-			return res.json();
+			return true;
 		}
-		return {};
+		notificationsStore.handleRequestError(res);
+		return false;
 	},
 };
 
