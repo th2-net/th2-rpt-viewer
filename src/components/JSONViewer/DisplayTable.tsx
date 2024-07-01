@@ -1,32 +1,42 @@
 import React from 'react';
 
-const DisplayTable = ({ value }: { value: string[][] }) => {
+const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
+	const [shownSize, setShownSize] = React.useState(5);
+	console.log(value, !value);
+	if (!value) return <div className='display-table-error'>#display-table is undefined</div>;
+
 	const header = value[0];
 	const rows = value.slice(1);
-	const [shownSize, setShownSize] = React.useState(5);
 
 	return (
 		<div className='display-table'>
-			<table style={{ gridTemplateColumns: `repeat(${header.length}, 1fr)` }}>
+			<table style={{ gridTemplateColumns: `repeat(${header.length}, 1fr) 16px` }}>
 				<thead>
 					<tr>
 						{header.map((key, index) => (
 							<th key={index}>{key}</th>
 						))}
+						<th style={{ width: '16px' }}></th>
 					</tr>
 				</thead>
 				<tbody>
 					{rows.slice(0, shownSize).map((row, index) => (
 						<tr key={index}>
-							{row.map((val, ind) => (
-								<td key={ind} className={header.length <= ind ? 'incorrect' : undefined}>
-									{val}
-								</td>
+							{row.slice(0, header.length).map((val, ind) => (
+								<td key={ind}>{typeof val === 'string' ? `"${val}"` : String(val)}</td>
 							))}
-							{row.length % header.length !== 0 &&
-								Array(header.length - (row.length % header.length))
-									.fill(false)
-									.map((_v, ind) => <td key={ind} className={'incorrect'}></td>)}
+							{row.length < header.length &&
+								Array(header.length - row.length)
+									.fill('')
+									.map((_val, ind) => <td key={ind}></td>)}
+							<td style={{ width: '16px' }}>
+								{header.length < row.length && (
+									<div
+										className='display-table-info'
+										title={`Not included extra cells: ${JSON.stringify(row.slice(header.length))}`}
+									/>
+								)}
+							</td>
 						</tr>
 					))}
 				</tbody>

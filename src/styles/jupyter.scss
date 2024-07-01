@@ -3,6 +3,12 @@
 .notebookCell {
     border: 3px $failedBorderColor solid;
 	border-radius: 5px;
+        
+    input {
+        font-size: 12px;
+        border: 1px solid;
+        border-radius: 5px;
+    }
 
     &-header {
         >label {
@@ -63,11 +69,8 @@
         justify-content: space-between;
         padding: 5px;
         gap: 10px;
-        input {
-            font-size: 12px;
-            border: 1px solid;
-            border-radius: 5px;
-        }
+        border: 0px black solid;
+        border-bottom-width: 1px;
 
         &-table {
             width: 100%;
@@ -129,11 +132,29 @@
         }
     }
     
+    &-settings {
+        padding: 5px;
+        display: flex;
+        flex-direction: column;
+        gap: 5;
+        font-size: 14px;
+    }
 }
 
 .display-table {
     @include default-table;
     width: 100%;
+    &-error {
+        font-size: 14px;
+        color: $failedTextColor;
+    }
+
+    &-info {
+        cursor: pointer;
+        @include icon(url(../../resources/icons/info.svg), 16px, 16px);
+    }
+
+
     table {
         border-style: solid;
         border-width: 0px 0px 1px 0px;

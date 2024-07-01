@@ -27,7 +27,7 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 	const complexFields: TreeNode[] = [];
 	let viewInstruction = '';
 	let displayName: string | undefined;
-	let displayTable: string[][] = [];
+	let displayTable: string[][] | undefined;
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
 			if (typeof obj[i] === 'object') {
