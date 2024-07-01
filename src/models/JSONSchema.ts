@@ -4,6 +4,7 @@ export enum ViewInstruction {
 }
 
 export enum TreeViewType {
+	DISPLAY_TABLE = 'Table',
 	EVENTS_LIST = 'Tree',
 	JSON = 'Json',
 	PRETTY = 'Formatted Json',

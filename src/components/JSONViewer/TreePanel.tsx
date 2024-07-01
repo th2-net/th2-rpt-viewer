@@ -29,14 +29,14 @@ const TreePanel = ({
 		return 'no display name';
 	}, [treeNode.displayName, treeNode.key, treeNode.isGeneratedKey]);
 	const [complexFields, setComplexFields] = React.useState(treeNode.complexFields);
-	const isDisplayTable = useMemo(
-		() => treeNode.displayTable && treeNode.displayTable.length > 0,
-		[treeNode],
-	);
 
 	useEffect(() => {
 		setComplexFields(complexFields.map(field => ({ ...field, viewType: groupViewType })));
 	}, [groupViewType]);
+
+	useEffect(() => {
+		setOpen(viewType === TreeViewType.DISPLAY_TABLE);
+	}, [viewType]);
 
 	const complexFieldsDisplay = () => (
 		<span title={treeNode.isArray ? 'Complex Elements amount' : `Complex Fields amount`}>
@@ -97,7 +97,7 @@ const TreePanel = ({
 			<div
 				className={createBemBlock(
 					'leaf',
-					(open && isDisplayTable) ||
+					(open && viewType === TreeViewType.DISPLAY_TABLE) ||
 						viewType === TreeViewType.JSON ||
 						viewType === TreeViewType.PRETTY
 						? 'expanded'
@@ -106,7 +106,8 @@ const TreePanel = ({
 				)}>
 				<div className='leafWrapper'>
 					<div style={{ width: `${20 * nest + (complexFields.length === 0 ? 23 : 0)}px` }} />
-					{(complexFields.length > 0 || isDisplayTable) && (
+					{((complexFields.length > 0 && TreeViewType.EVENTS_LIST) ||
+						viewType === TreeViewType.DISPLAY_TABLE) && (
 						<div
 							className={createBemBlock('expand-icon', open ? 'expanded' : 'hidden')}
 							onClick={() => setOpen(!open)}
@@ -137,13 +138,18 @@ const TreePanel = ({
 							toggleViewType={treeNode.isRoot ? setGroupViewType : setViewType}
 							viewTypes={
 								treeNode.isRoot
-									? [TreeViewType.EVENTS_LIST, TreeViewType.JSON]
-									: [TreeViewType.EVENTS_LIST, TreeViewType.JSON, TreeViewType.PRETTY]
+									? [TreeViewType.DISPLAY_TABLE, TreeViewType.EVENTS_LIST, TreeViewType.JSON]
+									: [
+											TreeViewType.DISPLAY_TABLE,
+											TreeViewType.EVENTS_LIST,
+											TreeViewType.JSON,
+											TreeViewType.PRETTY,
+									  ]
 							}
 						/>
 					</div>
 				</div>
-				{open && treeNode.displayTable && isDisplayTable && (
+				{open && viewType === TreeViewType.DISPLAY_TABLE && (
 					<DisplayTable value={treeNode.displayTable} />
 				)}
 				{(viewType === TreeViewType.JSON || viewType === TreeViewType.PRETTY) && (
