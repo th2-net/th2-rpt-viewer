@@ -60,8 +60,8 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		setIsExpanded(!isExpanded);
 	};
 
-	const getResults = async (respTaskId: string, path: string) => {
-		const { status, result } = await api.jsonViewer.getResults(respTaskId);
+	const getResults = async (respTaskId: string) => {
+		const { status, result, path } = await api.jsonViewer.getResults(respTaskId);
 
 		switch (status) {
 			case 'success':
@@ -117,7 +117,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 				}
 				break;
 			case 'in progress':
-				setTimer(setTimeout(() => getResults(respTaskId, path), timeBetweenResults));
+				setTimer(setTimeout(() => getResults(respTaskId), timeBetweenResults));
 				break;
 			default:
 				break;
@@ -157,7 +157,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		const res = await api.jsonViewer.launchNotebook(notebook, paramsWithType);
 		if (res.task_id !== '') {
 			setTaskId(res.task_id);
-			setTimer(setTimeout(() => getResults(res.task_id, res.path), timeBetweenResults));
+			setTimer(setTimeout(() => getResults(res.task_id), timeBetweenResults));
 		} else {
 			setIsRunLoading(false);
 		}
