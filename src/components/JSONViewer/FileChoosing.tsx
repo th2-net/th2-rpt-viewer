@@ -79,7 +79,7 @@ const FileChoosing = ({
 			else {
 				selectedFiles.forEach(filePath =>
 					promises.push(
-						api.jsonViewer.getResults(filePath).then(({ result }) => {
+						api.jsonViewer.getFile(filePath).then(({ result }) => {
 							if (filePath.endsWith('.ipynb')) {
 								notebookData.push(filePath);
 								return;

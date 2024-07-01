@@ -36,6 +36,14 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		notificationsStore.handleRequestError(res);
 		return { status: 'error', result: taskId };
 	},
+	getFile: async (path: string): Promise<{ result: string }> => {
+		const res = await fetch(`json-stream-provider/file?path=${path}`);
+		if (res.ok) {
+			return res.json();
+		}
+		notificationsStore.handleRequestError(res);
+		return { result: '' };
+	},
 	launchNotebook: async (path: string, parameters = {}) => {
 		const res = await fetch(`json-stream-provider/execute?path=${path}`, {
 			method: 'POST',
