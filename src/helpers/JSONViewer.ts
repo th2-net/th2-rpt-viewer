@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { Notebook, SimpleField, TreeNode } from '../models/JSONSchema';
+import { Notebook, SimpleField, TreeNode, TreeViewType } from '../models/JSONSchema';
 
 export const isNotebook = (obj: Object): obj is Notebook => {
 	const entries = Object.entries(obj);
@@ -20,6 +20,7 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 	const complexFields: TreeNode[] = [];
 	let viewInstruction = '';
 	let displayName: string | undefined;
+	let displayTable: string[][] = [];
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
 			if (typeof obj[i] === 'object') {
@@ -35,7 +36,9 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 		const entries = Object.entries(obj);
 		for (let i = 0; i < entries.length; i++) {
 			const [entryKey, value] = entries[i];
-			if (entryKey === '#display-name') {
+			if (entryKey === '#display-table') {
+				displayTable = value;
+			} else if (entryKey === '#display-name') {
 				displayName = String(value);
 			} else if (entryKey === '#view-instruction') {
 				viewInstruction = String(value);
@@ -52,11 +55,13 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 	return {
 		id,
 		key,
+		displayTable,
 		displayName,
 		failed,
 		isArray,
 		isGeneratedKey,
 		viewInstruction,
+		viewType: TreeViewType.EVENTS_LIST,
 		simpleFields,
 		complexFields,
 	};

@@ -21,6 +21,7 @@ export interface TreeNode {
 	id: string;
 	key: string;
 	displayName?: string;
+	displayTable?: string[][];
 	failed: boolean;
 	viewInstruction: string;
 	complexFields: TreeNode[];
@@ -36,6 +37,13 @@ export interface NotebookParameter {
 	inferred_type_name: string;
 	default: string;
 	help: string;
+}
+
+export interface InputNotebookParameter {
+	name: string;
+	type: string;
+	value: string;
+	isValid: boolean;
 }
 
 export interface NotebookParameters {

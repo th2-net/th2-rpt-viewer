@@ -62,12 +62,19 @@
         display: flex;
         justify-content: space-between;
         padding: 5px;
+        gap: 10px;
+        input {
+            font-size: 12px;
+            border: 1px solid;
+            border-radius: 5px;
+        }
 
         &-table {
+            width: 100%;
             table {
+                width: 100%;
                 border-collapse: collapse;
                 border-style: hidden;
-                table-layout: fixed;
                 border-radius: 4px;
                 min-width: 50%;
 
@@ -78,16 +85,25 @@
                 td {
                     font-size: 12px;
 
-                    input {
-                        font-size: 12px;
-                        border: 1px solid;
-                        border-radius: 5px;
+                    input.failed {
+                        border-color: $failedTextColor;
+                    }
+
+                    input.failed:focus {
+                        border-color: $failedTextColor;
+                        outline-color: $failedTextColor;
                     }
                 }
 
                 th,
                 td {
                     padding: 2px 8px;
+                }
+
+                th:last-child,
+                td:last-child {
+                    padding: 2px 8px;
+                    width: 100%;
                 }
             }
         }
@@ -113,4 +129,37 @@
         }
     }
     
+}
+
+.display-table {
+    @include default-table;
+    width: 100%;
+    table {
+        border-style: solid;
+        border-width: 0px 0px 1px 0px;
+        border-color: $alternativeTextColor;
+        grid-auto-rows: auto;
+
+        th,td {
+            display: table-cell;
+        }
+
+        td {
+            text-align: right;
+        }
+
+        td:first-child {
+            text-align: left;
+        }
+
+        tr:hover {
+            td.incorrect {
+                background-color: darken($failedBackgroundColor, 10px);
+            }
+        }
+
+        td.incorrect {
+            background-color: $failedBackgroundColor;
+        }
+    }
 }
