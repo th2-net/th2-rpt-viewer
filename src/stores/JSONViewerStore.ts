@@ -53,4 +53,8 @@ export class JSONViewerStore {
 	@action addNodes(tree: TreeNode[]) {
 		this.treeNodes = this.treeNodes.concat(tree);
 	}
+
+	@action removeNodesById(ids: string[]) {
+		this.treeNodes = this.treeNodes.filter(node => !ids.includes(node.id));
+	}
 }

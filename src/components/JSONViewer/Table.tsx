@@ -89,7 +89,7 @@ const TableRows = ({
 			}
 		}
 		if (typeof value === 'object') return <p>{JSON.stringify(value)}</p>;
-		return <p>{String(value)}</p>;
+		return <p>{typeof value === 'string' ? `"${value}"` : String(value)}</p>;
 	};
 
 	return (
