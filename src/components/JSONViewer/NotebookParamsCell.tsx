@@ -1,27 +1,46 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
-import { NotebookParameter, NotebookParameters, TreeNode } from '../../models/JSONSchema';
+import {
+	InputNotebookParameter,
+	NotebookParameter,
+	NotebookParameters,
+	TreeNode,
+} from '../../models/JSONSchema';
 import api from '../../api';
 import '../../styles/jupyter.scss';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
-import { parseText } from '../../helpers/JSONViewer';
+import {
+	convertParameterToInput,
+	convertParameterValue,
+	getParameterType,
+	parseText,
+	validateParameter,
+} from '../../helpers/JSONViewer';
 import { useNotificationsStore } from '../../hooks';
+import ParametersRow from './ParametersRow';
 
 const timeBetweenResults = 1000;
-const numberReg = /^-?\d*\.?\d{1,}$/;
 
 const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const notificationsStore = useNotificationsStore();
 	const [parameters, setParameters] = React.useState<NotebookParameter[]>([]);
-	const [paramsValue, setParamsValue] = React.useState<Record<string, string>>({});
+	const [paramsValue, setParamsValue] = React.useState<InputNotebookParameter[]>([]);
 	const [isLoading, setIsLoading] = React.useState(true);
 	const [isRunLoading, setIsRunLoading] = React.useState(false);
 	const [isExpanded, setIsExpanded] = React.useState(false);
 	const [timer, setTimer] = React.useState<NodeJS.Timeout | null>();
 	const [taskId, setTaskId] = React.useState<string | null>();
-	const keys: string[] = React.useMemo(() => parameters.map(param => param.name), [parameters]);
+	const [resultCount, setResultCount] = React.useState<string>('1');
+	const [results, setResults] = React.useState<string[]>([]);
+	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid), [paramsValue]);
+
+	const initParameters = () => {
+		setParamsValue(parameters.map(convertParameterToInput));
+	};
+
+	React.useEffect(initParameters, [parameters]);
 
 	const getParameters = async () => {
 		setIsLoading(true);
@@ -68,11 +87,21 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 						}
 					}
 					node.failed = node.complexFields.some(v => v.failed);
+					const newResults = [node.id, ...results];
+					const maxResultCount = Number(resultCount);
+					const convertResultCount = maxResultCount < 1 ? 1 : Math.round(maxResultCount);
+					if (maxResultCount < 1) {
+						setResultCount('1');
+					}
+
 					if (node.complexFields.length > 0) {
 						JSONViewerStore.addNodes([node]);
+						if (newResults.length > convertResultCount) {
+							JSONViewerStore.removeNodesById(newResults.slice(convertResultCount));
+						}
+						setResults(newResults.slice(0, convertResultCount));
 						JSONViewerStore.selectTreeNode(node);
 					}
-					setParamsValue({});
 					setIsRunLoading(false);
 					setIsExpanded(false);
 				}
@@ -95,6 +124,15 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		}
 	};
 
+	const filterParameters = (inputParameter: InputNotebookParameter, index: number) => {
+		const parameter = parameters[index];
+		const parameterType = getParameterType(parameter.default, parameter.inferred_type_name);
+		const newValue = convertParameterValue(inputParameter.value, inputParameter.type);
+		const oldValue = convertParameterValue(parameter.default, parameterType, true);
+		if (typeof newValue !== typeof oldValue) return true;
+		return newValue !== oldValue;
+	};
+
 	const runNotebook = async () => {
 		if (isRunLoading) {
 			if (timer) {
@@ -112,27 +150,9 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		}
 		setIsRunLoading(true);
 		const paramsWithType = Object.fromEntries(
-			Object.entries(paramsValue)
-				.filter(val => val[1] !== '')
-				.map(([name, value]) => {
-					const ind = keys.indexOf(name);
-					switch (parameters[ind].inferred_type_name) {
-						case 'string':
-							return [name, value];
-						case 'float':
-							return [name, parseFloat(value)];
-						case 'int':
-							return [name, parseInt(value)];
-						default:
-							if (numberReg.test(value)) {
-								if (Number.isInteger(value)) {
-									return [name, Number.parseInt(value)];
-								}
-								return [name, Number.parseFloat(value)];
-							}
-							return [name, value];
-					}
-				}),
+			paramsValue
+				.filter(filterParameters)
+				.map(({ name, type, value }) => [name, convertParameterValue(value, type)]),
 		);
 		const res = await api.jsonViewer.launchNotebook(notebook, paramsWithType);
 		if (res.task_id !== '') {
@@ -176,39 +196,56 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 								)}
 							</thead>
 							<tbody>
-								{parameters.map(parameter => (
-									<tr key={parameter.name}>
-										<td>
-											<label>{parameter.name}</label>
-										</td>
-										<td>
-											<label>{parameter.inferred_type_name}</label>
-										</td>
-										<td>
-											<input
-												type='text'
-												placeholder={`default: ${parameter.default}`}
-												value={paramsValue[parameter.name]}
-												onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-													const newState = paramsValue;
-													newState[parameter.name] = ev.target.value;
-													setParamsValue(newState);
-												}}
-											/>
-										</td>
-									</tr>
+								{parameters.map((parameter, index) => (
+									<ParametersRow
+										parameter={parameter}
+										parameterValue={paramsValue[index]}
+										setParametersValue={(newValue: string) => {
+											const newState = paramsValue[index];
+											newState.value = newValue;
+											newState.isValid = validateParameter(newState.value, newState.type);
+											setParamsValue([
+												...paramsValue.slice(0, index),
+												newState,
+												...paramsValue.slice(index + 1),
+											]);
+										}}
+										setParametersType={(newValue: string) => {
+											const newState = paramsValue[index];
+											newState.type = newValue;
+											newState.isValid = validateParameter(newState.value, newState.type);
+											setParamsValue([
+												...paramsValue.slice(0, index),
+												newState,
+												...paramsValue.slice(index + 1),
+											]);
+										}}
+										key={parameter.name}
+									/>
 								))}
 							</tbody>
 						</table>
 					</div>
 					<div className='buttons'>
-						<button onClick={runNotebook}>
+						<button onClick={runNotebook} disabled={!isValid}>
 							<label>Run</label>
 							<div className={`notebookCell-icon ${isRunLoading ? 'loading' : 'play'}`} />
 						</button>
 						<button onClick={refreshNotebook} disabled={isLoading}>
 							<label>Refresh</label>
 						</button>
+						<div style={{ display: 'flex', gap: '2px' }}>
+							<div>Save</div>
+							<input
+								style={{ width: '100%' }}
+								type='number'
+								value={resultCount}
+								pattern='\d+'
+								onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+									setResultCount(ev.target.value);
+								}}
+							/>
+						</div>
 					</div>
 				</div>
 			)}

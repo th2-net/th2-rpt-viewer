@@ -1,5 +1,12 @@
 import { nanoid } from 'nanoid';
-import { Notebook, SimpleField, TreeNode, TreeViewType } from '../models/JSONSchema';
+import {
+	InputNotebookParameter,
+	Notebook,
+	NotebookParameter,
+	SimpleField,
+	TreeNode,
+	TreeViewType,
+} from '../models/JSONSchema';
 
 export const isNotebook = (obj: Object): obj is Notebook => {
 	const entries = Object.entries(obj);
@@ -79,4 +86,85 @@ export const parseText = (text: string, name = '', isGeneratedKey = false): Tree
 		];
 	}
 	return node.complexFields;
+};
+
+const stringPunct = `'"\``;
+const numberReg = /^-?\d*\.?\d{0,}$/;
+
+export const convertParameterValue = (
+	value: string,
+	type: string,
+	cutString = false,
+): number | string | boolean => {
+	try {
+		switch (type) {
+			case 'boolean': {
+				if (value.toLocaleLowerCase() === 'true') return true;
+				return false;
+			}
+			case 'string': {
+				return cutString ? value.slice(1, value.length - 1) : value;
+			}
+			case 'int': {
+				return Number.parseInt(value);
+			}
+			case 'float': {
+				return Number.parseFloat(value);
+			}
+			default: {
+				return value;
+			}
+		}
+	} catch {
+		return value;
+	}
+};
+
+export const validateParameter = (value: string, type: string): boolean => {
+	switch (type) {
+		case 'int': {
+			return numberReg.test(value) && Number.isInteger(Number(value));
+		}
+		case 'float': {
+			return numberReg.test(value);
+		}
+		case 'string': {
+			return true;
+		}
+		case 'boolean': {
+			if (value.toLocaleLowerCase() === 'true' || value.toLocaleLowerCase() === 'false')
+				return true;
+			return false;
+		}
+		default: {
+			return true;
+		}
+	}
+};
+
+export const getParameterType = (value: string, type: string) => {
+	if (type !== 'None') return type;
+	if (stringPunct.includes(value[0]) && value[0] === value[value.length - 1]) {
+		return 'string';
+	}
+	if (value === 'True' || value === 'False') {
+		return 'boolean';
+	}
+	if (numberReg.test(value)) {
+		if (Number.isInteger(Number(value))) {
+			return 'int';
+		}
+		return 'float';
+	}
+	return 'string';
+};
+
+export const convertParameterToInput = (parameter: NotebookParameter): InputNotebookParameter => {
+	const type = getParameterType(parameter.default, parameter.inferred_type_name);
+	return {
+		name: parameter.name,
+		value: String(convertParameterValue(parameter.default, type, true)),
+		type,
+		isValid: validateParameter(parameter.default, type),
+	};
 };
