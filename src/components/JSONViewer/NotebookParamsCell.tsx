@@ -234,18 +234,22 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 						<button onClick={refreshNotebook} disabled={isLoading}>
 							<label>Refresh</label>
 						</button>
-						<div style={{ display: 'flex', gap: '2px' }}>
-							<div>Save</div>
-							<input
-								style={{ width: '100%' }}
-								type='number'
-								value={resultCount}
-								pattern='\d+'
-								onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-									setResultCount(ev.target.value);
-								}}
-							/>
-						</div>
+					</div>
+				</div>
+			)}
+			{isExpanded && (
+				<div className='notebookCell-settings'>
+					<div style={{ display: 'flex', gap: '5px' }}>
+						<div>Results Amount:</div>
+						<input
+							style={{ maxWidth: 400 }}
+							type='number'
+							value={resultCount}
+							pattern='\d+'
+							onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+								setResultCount(ev.target.value);
+							}}
+						/>
 					</div>
 				</div>
 			)}
