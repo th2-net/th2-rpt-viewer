@@ -145,6 +145,7 @@
     @include default-table;
     width: 100%;
     &-error {
+        padding: 2px;
         font-size: 14px;
         color: $failedTextColor;
     }

@@ -106,7 +106,7 @@ const TreePanel = ({
 				)}>
 				<div className='leafWrapper'>
 					<div style={{ width: `${20 * nest + (complexFields.length === 0 ? 23 : 0)}px` }} />
-					{((complexFields.length > 0 && TreeViewType.EVENTS_LIST) ||
+					{((complexFields.length > 0 && viewType === TreeViewType.EVENTS_LIST) ||
 						viewType === TreeViewType.DISPLAY_TABLE) && (
 						<div
 							className={createBemBlock('expand-icon', open ? 'expanded' : 'hidden')}
