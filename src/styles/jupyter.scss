@@ -164,24 +164,11 @@
 
         th,td {
             display: table-cell;
-        }
-
-        td {
-            text-align: right;
-        }
-
-        td:first-child {
             text-align: left;
         }
 
-        tr:hover {
-            td.incorrect {
-                background-color: darken($failedBackgroundColor, 10px);
-            }
-        }
-
-        td.incorrect {
-            background-color: $failedBackgroundColor;
+        th {
+            background-color: $secondaryLightTextColor;
         }
     }
 }

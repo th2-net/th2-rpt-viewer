@@ -103,7 +103,10 @@ const TreePanel = ({
 						? 'expanded'
 						: null,
 					treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
-				)}>
+				)}
+				style={{
+					marginBottom: open && viewType === TreeViewType.DISPLAY_TABLE ? '5px' : undefined,
+				}}>
 				<div className='leafWrapper'>
 					<div style={{ width: `${20 * nest + (complexFields.length === 0 ? 23 : 0)}px` }} />
 					{((complexFields.length > 0 && viewType === TreeViewType.EVENTS_LIST) ||
