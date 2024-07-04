@@ -1,8 +1,9 @@
 import React from 'react';
 
+const shownCapacity = 50;
+
 const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
-	const [shownSize, setShownSize] = React.useState(5);
-	console.log(value, !value);
+	const [shownSize, setShownSize] = React.useState(shownCapacity);
 	if (!value) return <div className='display-table-error'>#display-table is undefined</div>;
 
 	const header = value[0];
@@ -42,7 +43,9 @@ const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
 				</tbody>
 			</table>
 			{shownSize < rows.length && (
-				<button onClick={() => setShownSize(shownSize + 5)} className='actions-list__load-button'>
+				<button
+					onClick={() => setShownSize(shownSize + shownCapacity)}
+					className='actions-list__load-button'>
 					Show More
 				</button>
 			)}
