@@ -29,6 +29,13 @@ const TreePanel = ({
 		return 'no display name';
 	}, [treeNode.displayName, treeNode.key, treeNode.isGeneratedKey]);
 	const [complexFields, setComplexFields] = React.useState(treeNode.complexFields);
+	const needBounding = useMemo(
+		() =>
+			(open && viewType === TreeViewType.DISPLAY_TABLE) ||
+			viewType === TreeViewType.JSON ||
+			viewType === TreeViewType.PRETTY,
+		[open, viewType],
+	);
 
 	useEffect(() => {
 		setComplexFields(complexFields.map(field => ({ ...field, viewType: groupViewType })));
@@ -97,15 +104,11 @@ const TreePanel = ({
 			<div
 				className={createBemBlock(
 					'leaf',
-					(open && viewType === TreeViewType.DISPLAY_TABLE) ||
-						viewType === TreeViewType.JSON ||
-						viewType === TreeViewType.PRETTY
-						? 'expanded'
-						: null,
+					needBounding ? 'expanded' : null,
 					treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
 				)}
 				style={{
-					marginBottom: open && viewType === TreeViewType.DISPLAY_TABLE ? '5px' : undefined,
+					marginBottom: needBounding ? '5px' : undefined,
 				}}>
 				<div className='leafWrapper'>
 					<div style={{ width: `${20 * nest + (complexFields.length === 0 ? 23 : 0)}px` }} />
