@@ -26,9 +26,11 @@ const ParametersRow = ({
 		const momentFromDefault = moment.utc(parameterValue.value);
 
 		if (momentFromDefault.isValid()) {
+			setParametersValue(momentFromDefault.toISOString());
 			setTimestampNumber(momentFromDefault.valueOf());
 		} else {
 			setParametersValue(moment.utc().toISOString());
+			setTimestampNumber(moment.utc().valueOf());
 		}
 	}, [parameterValue.type]);
 
