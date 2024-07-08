@@ -159,6 +159,7 @@ const JSONViewerWorkspace = () => {
 						{JSONViewerStore.isModalOpen && (
 							<FileChoosing
 								type={JSONViewerStore.modalType}
+								multiple={true}
 								onSubmit={onSubmit}
 								close={() => JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType)}
 							/>

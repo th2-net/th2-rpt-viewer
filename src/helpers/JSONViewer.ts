@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid';
+import moment from 'moment';
 import {
 	InputNotebookParameter,
 	Notebook,
@@ -95,28 +96,57 @@ export const convertParameterValue = (
 	value: string,
 	type: string,
 	cutString = false,
-): number | string | boolean => {
+): { value: number | string | boolean; type: string } => {
 	try {
 		switch (type) {
 			case 'boolean': {
-				if (value.toLocaleLowerCase() === 'true') return true;
-				return false;
+				return {
+					value: value.toLocaleLowerCase() === 'true',
+					type,
+				};
 			}
 			case 'string': {
-				return cutString ? value.slice(1, value.length - 1) : value;
+				return {
+					value: cutString ? value.slice(1, value.length - 1) : value,
+					type,
+				};
 			}
 			case 'int': {
-				return Number.parseInt(value);
+				return {
+					value: Number.parseInt(value),
+					type,
+				};
 			}
 			case 'float': {
-				return Number.parseFloat(value);
+				return {
+					value: Number.parseFloat(value),
+					type,
+				};
 			}
 			default: {
-				return value;
+				return {
+					value,
+					type,
+				};
+			}
+			case 'file path': {
+				return {
+					value: cutString ? value.slice(1, value.length - 1) : value,
+					type,
+				};
+			}
+			case 'timestamp': {
+				return {
+					value: cutString ? value.slice(1, value.length - 1) : value,
+					type,
+				};
 			}
 		}
 	} catch {
-		return value;
+		return {
+			value,
+			type,
+		};
 	}
 };
 
@@ -132,9 +162,13 @@ export const validateParameter = (value: string, type: string): boolean => {
 			return true;
 		}
 		case 'boolean': {
-			if (value.toLocaleLowerCase() === 'true' || value.toLocaleLowerCase() === 'false')
-				return true;
-			return false;
+			return value.toLocaleLowerCase() === 'true' || value.toLocaleLowerCase() === 'false';
+		}
+		case 'file path': {
+			return true;
+		}
+		case 'timestamp': {
+			return moment.utc(value).isValid();
 		}
 		default: {
 			return true;
@@ -142,8 +176,16 @@ export const validateParameter = (value: string, type: string): boolean => {
 	}
 };
 
-export const getParameterType = (value: string, type: string) => {
+export const getParameterType = (parameter: NotebookParameter) => {
+	const { default: value, inferred_type_name: type, name } = parameter;
+
 	if (type !== 'None') return type;
+	if (name.endsWith('_timestamp')) {
+		return 'timestamp';
+	}
+	if (name.endsWith('_file')) {
+		return 'file path';
+	}
 	if (stringPunct.includes(value[0]) && value[0] === value[value.length - 1]) {
 		return 'string';
 	}
@@ -160,10 +202,10 @@ export const getParameterType = (value: string, type: string) => {
 };
 
 export const convertParameterToInput = (parameter: NotebookParameter): InputNotebookParameter => {
-	const type = getParameterType(parameter.default, parameter.inferred_type_name);
+	const type = getParameterType(parameter);
 	return {
 		name: parameter.name,
-		value: String(convertParameterValue(parameter.default, type, true)),
+		value: String(convertParameterValue(parameter.default, type, true).value),
 		type,
 		isValid: validateParameter(parameter.default, type),
 	};

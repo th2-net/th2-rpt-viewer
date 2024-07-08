@@ -8,10 +8,12 @@ import { parseText } from '../../helpers/JSONViewer';
 
 const FileChoosing = ({
 	type,
+	multiple,
 	onSubmit,
 	close,
 }: {
-	type: 'notebooks' | 'results';
+	type: 'notebooks' | 'results' | 'all';
+	multiple: boolean;
 	onSubmit: (t: TreeNode[], n: string[]) => void;
 	close: () => void;
 }) => {
@@ -75,7 +77,7 @@ const FileChoosing = ({
 		const promises: Promise<void>[] = [];
 		if (selectedFiles.length > 0) {
 			setIsLoading(true);
-			if (type === 'notebooks') onSubmit([], selectedFiles);
+			if (type === 'notebooks' || type === 'all') onSubmit([], selectedFiles);
 			else {
 				selectedFiles.forEach(filePath =>
 					promises.push(
@@ -118,6 +120,10 @@ const FileChoosing = ({
 
 	const selectFile = (fileName: string) => {
 		const fileIndex = selectedFiles.indexOf(fileName);
+		if (!multiple) {
+			onSubmit([], [fileName]);
+			return;
+		}
 
 		if (fileIndex > -1) {
 			setSelectedFiles([
@@ -154,18 +160,22 @@ const FileChoosing = ({
 						value={search}
 						onChange={e => setSearch(e.target.value)}
 					/>
-					<button
-						disabled={selectedFiles.length === 0 || isLoading}
-						className='load-JSON-button'
-						onClick={() => setSelectedFiles([])}>
-						Reset Selection
-					</button>
-					<button
-						disabled={selectedFiles.length === 0 || isLoading}
-						className='load-JSON-button'
-						onClick={getFiles}>
-						Load {selectedFiles.length} Files
-					</button>
+					{multiple && (
+						<>
+							<button
+								disabled={selectedFiles.length === 0 || isLoading}
+								className='load-JSON-button'
+								onClick={() => setSelectedFiles([])}>
+								Reset Selection
+							</button>
+							<button
+								disabled={selectedFiles.length === 0 || isLoading}
+								className='load-JSON-button'
+								onClick={getFiles}>
+								Load {selectedFiles.length} Files
+							</button>
+						</>
+					)}
 				</div>
 				{isLoading ? (
 					<div style={{ marginLeft: 5 }} className='fileChoosing__loading' />

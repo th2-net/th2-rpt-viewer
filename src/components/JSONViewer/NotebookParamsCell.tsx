@@ -126,7 +126,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 
 	const filterParameters = (inputParameter: InputNotebookParameter, index: number) => {
 		const parameter = parameters[index];
-		const parameterType = getParameterType(parameter.default, parameter.inferred_type_name);
+		const parameterType = getParameterType(parameter);
 		const newValue = convertParameterValue(inputParameter.value, inputParameter.type);
 		const oldValue = convertParameterValue(parameter.default, parameterType, true);
 		if (typeof newValue !== typeof oldValue) return true;
