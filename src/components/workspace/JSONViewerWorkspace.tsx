@@ -21,7 +21,7 @@ import { computed } from 'mobx';
 import { nanoid } from 'nanoid';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
-import { TreeNode, TreeViewType } from '../../models/JSONSchema';
+import { TreeNode } from '../../models/JSONSchema';
 import TablePanel from '../JSONViewer/TablePanel';
 import useJSONViewerWorkspace from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
@@ -53,8 +53,8 @@ const JSONViewerWorkspace = () => {
 		JSONViewerStore.setTreeNodes([]);
 		JSONViewerStore.setNotebooks([]);
 		JSONViewerStore.setTreeNodes(trees);
-		if (JSONViewerStore.viewType === TreeViewType.EVENTS_LIST && trees.length > 0)
-			JSONViewerStore.selectTreeNode(trees[0]);
+		JSONViewerStore.selectTreeNode();
+		if (trees.length > 0) JSONViewerStore.selectTreeNode(trees[0]);
 		JSONViewerStore.setNotebooks(notebooks);
 		JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType);
 	};
@@ -96,8 +96,8 @@ const JSONViewerWorkspace = () => {
 		});
 		JSONViewerStore.setTreeNodes(nodes);
 		JSONViewerStore.setNotebooks([]);
-		if (JSONViewerStore.viewType === TreeViewType.EVENTS_LIST && nodes.length > 0)
-			JSONViewerStore.selectTreeNode(nodes[0]);
+		JSONViewerStore.selectTreeNode();
+		if (nodes.length > 0) JSONViewerStore.selectTreeNode(nodes[0]);
 	};
 
 	const computeTreeKey = React.useCallback(
@@ -110,13 +110,6 @@ const JSONViewerWorkspace = () => {
 		if (typeof dataNode === 'string') return <NotebookParamsCell notebook={dataNode} />;
 		return <TreePanel nest={0} treeNode={dataNode} prevKey={`${index}/${dataNode.key}`} />;
 	}, []);
-
-	const setView = (v: string) => {
-		JSONViewerStore.setView(v);
-		if (v !== TreeViewType.EVENTS_LIST) {
-			setPanelsLayout([100, 0]);
-		} else setPanelsLayout([50, 50]);
-	};
 
 	const treePanel = React.useMemo(
 		() =>
@@ -148,17 +141,6 @@ const JSONViewerWorkspace = () => {
 								onClick={() => inputRef.current?.click()}>
 								Load Local Result(s)
 							</button>
-							<div style={{ display: 'flex', flexDirection: 'column', fontSize: '12px' }}>
-								<label htmlFor='TreeViewType'>Display Type</label>
-								<select
-									id='TreeViewType'
-									onChange={e => setView(e.target.value)}
-									style={{ fontSize: '12px' }}>
-									<option value={TreeViewType.EVENTS_LIST}>{TreeViewType.EVENTS_LIST}</option>
-									<option value={TreeViewType.JSON}>{TreeViewType.JSON}</option>
-									<option value={TreeViewType.PRETTY}>{TreeViewType.PRETTY}</option>
-								</select>
-							</div>
 						</div>
 						<input
 							hidden
@@ -177,6 +159,7 @@ const JSONViewerWorkspace = () => {
 						{JSONViewerStore.isModalOpen && (
 							<FileChoosing
 								type={JSONViewerStore.modalType}
+								multiple={true}
 								onSubmit={onSubmit}
 								close={() => JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType)}
 							/>

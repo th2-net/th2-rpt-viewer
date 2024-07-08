@@ -1,35 +1,39 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { createBemBlock } from '../../helpers/styleCreators';
 import Table from './Table';
 import '../../styles/JSONviewer.scss';
-import { TreeNode, ViewInstruction } from '../../models/JSONSchema';
+import { TreeNode } from '../../models/JSONSchema';
 
 const TablePanel = ({ node }: { node: TreeNode }) => {
-	const { key, viewInstruction, simpleFields, complexFields } = node;
+	const { id, key, simpleFields, complexFields } = node;
+	const nodeName = useMemo(() => {
+		if (node.displayName) return node.displayName;
+		if (node.key && !(node.isGeneratedKey && !node.isRoot)) return node.key;
+		return 'no display name';
+	}, [node.displayName, node.key, node.isGeneratedKey]);
 
 	return (
 		<>
-			{key !== '' && (
-				<div
-					className={createBemBlock('valueLeaf', node.failed ? 'failed' : 'passed', 'selected')}
-					style={{ cursor: 'default' }}
-					title={key}>
-					<div className={createBemBlock('event-status-icon', node.failed ? 'failed' : 'passed')} />
-					{key}
-				</div>
-			)}
-			{viewInstruction === ViewInstruction.table ? (
+			{id !== '' && (
 				<>
-					<Table simpleFields={simpleFields} complexFields={complexFields} />
-					<br />
-				</>
-			) : (
-				simpleFields.length > 0 && (
+					{id !== '' && nodeName !== '' && (
+						<div
+							className={createBemBlock('valueLeaf', 'header', 'selected')}
+							style={{ cursor: 'default' }}
+							title={nodeName}>
+							<div
+								className={createBemBlock('event-status-icon', node.failed ? 'failed' : 'passed')}
+							/>
+							<div className={'title'} title={key}>
+								{nodeName}
+							</div>
+						</div>
+					)}
 					<>
-						<Table simpleFields={simpleFields} complexFields={[]} />
+						<Table simpleFields={simpleFields} complexFields={complexFields} />
 						<br />
 					</>
-				)
+				</>
 			)}
 		</>
 	);

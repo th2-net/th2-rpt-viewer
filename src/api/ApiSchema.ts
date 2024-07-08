@@ -111,8 +111,10 @@ export interface BooksApiSchema {
 export interface JSONViewerApiSchema {
 	getLinks: (type: string, dir?: string) => Promise<{ directories: string[]; files: string[] }>;
 	getParameters: (path: string) => Promise<NotebookParameters>;
-	getResults: (path: string) => Promise<{ result: string }>;
-	launchNotebook: (path: string, parameters?: Object) => Promise<{ path: string }>;
+	getResults: (taskId: string) => Promise<{ status: string; result: string; path?: string }>;
+	getFile: (path: string) => Promise<{ result: string }>;
+	launchNotebook: (path: string, parameters?: Object) => Promise<{ task_id: string }>;
+	stopNotebook: (taskId: string) => Promise<boolean>;
 }
 
 export interface SSESchema {

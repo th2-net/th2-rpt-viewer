@@ -1,8 +1,18 @@
 import { action, observable } from 'mobx';
-import { TreeNode, TreeViewType } from '../models/JSONSchema';
+import { TreeNode } from '../models/JSONSchema';
+import { WorkspacePanelsLayout } from '../components/workspace/WorkspaceSplitter';
+
+const nullTreeNode: TreeNode = {
+	id: '',
+	key: '',
+	failed: false,
+	viewInstruction: '',
+	complexFields: [],
+	simpleFields: [],
+};
 
 export class JSONViewerStore {
-	constructor(private openTableTab: () => void) {}
+	constructor(private openTabs: (layout: WorkspacePanelsLayout) => void) {}
 
 	@observable
 	public isModalOpen = false;
@@ -10,20 +20,11 @@ export class JSONViewerStore {
 	@observable
 	public modalType: 'notebooks' | 'results' = 'results';
 
-	@observable viewType: string = TreeViewType.EVENTS_LIST;
-
 	@observable notebooks: string[] = [];
 
 	@observable treeNodes: TreeNode[] = [];
 
-	@observable selectedTreeNode: TreeNode = {
-		id: '',
-		key: '',
-		failed: false,
-		viewInstruction: '',
-		complexFields: [],
-		simpleFields: [],
-	};
+	@observable selectedTreeNode: TreeNode = nullTreeNode;
 
 	@action
 	public setIsModalOpen = (v: boolean, type: 'notebooks' | 'results') => {
@@ -39,10 +40,11 @@ export class JSONViewerStore {
 		this.notebooks = n.slice();
 	}
 
-	@action selectTreeNode(tree: TreeNode) {
-		this.selectedTreeNode = tree;
-		if (tree.id !== '') {
-			this.openTableTab();
+	@action selectTreeNode(tree?: TreeNode) {
+		if (tree) {
+			this.selectedTreeNode = tree;
+		} else {
+			this.selectedTreeNode = nullTreeNode;
 		}
 	}
 
@@ -50,19 +52,7 @@ export class JSONViewerStore {
 		this.treeNodes = this.treeNodes.concat(tree);
 	}
 
-	@action setView(v: string) {
-		this.viewType = v;
-		if (v !== TreeViewType.EVENTS_LIST) {
-			this.selectTreeNode({
-				id: '',
-				key: '',
-				failed: false,
-				viewInstruction: '',
-				complexFields: [],
-				simpleFields: [],
-			});
-		} else if (this.treeNodes.length > 0) {
-			this.selectTreeNode(this.treeNodes[0]);
-		}
+	@action removeNodesById(ids: string[]) {
+		this.treeNodes = this.treeNodes.filter(node => !ids.includes(node.id));
 	}
 }

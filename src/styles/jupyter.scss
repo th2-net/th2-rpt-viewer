@@ -3,6 +3,16 @@
 .notebookCell {
     border: 3px $failedBorderColor solid;
 	border-radius: 5px;
+        
+    input {
+        font-size: 12px;
+        border: 1px solid;
+        border-radius: 5px;
+        padding: 0;
+        margin: 0;
+        color: inherit;
+        min-height: auto;
+    }
 
     &-header {
         >label {
@@ -62,12 +72,16 @@
         display: flex;
         justify-content: space-between;
         padding: 5px;
+        gap: 10px;
+        border: 0px black solid;
+        border-bottom-width: 1px;
 
         &-table {
+            width: 100%;
             table {
+                width: 100%;
                 border-collapse: collapse;
                 border-style: hidden;
-                table-layout: fixed;
                 border-radius: 4px;
                 min-width: 50%;
 
@@ -78,16 +92,42 @@
                 td {
                     font-size: 12px;
 
-                    input {
-                        font-size: 12px;
-                        border: 1px solid;
-                        border-radius: 5px;
+                    input.failed {
+                        border-color: $failedTextColor;
+                    }
+
+                    input.failed:focus {
+                        border-color: $failedTextColor;
+                        outline-color: $failedTextColor;
+                    }
+
+                    .input-wrapper {
+                        width: 100%;
+                        display: flex;
+                        position: relative;
+                        gap: 5px;
+                        
+                        .rc-calendar {
+                            width: auto;
+                        }
+
+                        .open-browser {
+                            @include icon(url(../../resources/icons/split.svg), 16px, 16px);
+                            cursor: pointer;
+                            border-radius: 5px;
+                        }
                     }
                 }
 
                 th,
                 td {
                     padding: 2px 8px;
+                }
+
+                th:last-child,
+                td:last-child {
+                    padding: 2px 8px;
+                    width: 100%;
                 }
             }
         }
@@ -113,4 +153,43 @@
         }
     }
     
+    &-settings {
+        padding: 5px;
+        display: flex;
+        flex-direction: column;
+        gap: 5;
+        font-size: 14px;
+    }
+}
+
+.display-table {
+    @include default-table;
+    width: 100%;
+    &-error {
+        padding: 2px;
+        font-size: 14px;
+        color: $failedTextColor;
+    }
+
+    &-info {
+        cursor: pointer;
+        @include icon(url(../../resources/icons/info.svg), 16px, 16px);
+    }
+
+
+    table {
+        border-style: solid;
+        border-width: 0px 0px 1px 0px;
+        border-color: $alternativeTextColor;
+        grid-auto-rows: auto;
+
+        th,td {
+            display: table-cell;
+            text-align: left;
+        }
+
+        th {
+            background-color: $secondaryLightTextColor;
+        }
+    }
 }
