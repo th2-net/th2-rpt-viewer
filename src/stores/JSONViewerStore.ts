@@ -1,5 +1,6 @@
 import { action, observable } from 'mobx';
 import { TreeNode } from '../models/JSONSchema';
+import { WorkspacePanelsLayout } from '../components/workspace/WorkspaceSplitter';
 
 const nullTreeNode: TreeNode = {
 	id: '',
@@ -11,7 +12,7 @@ const nullTreeNode: TreeNode = {
 };
 
 export class JSONViewerStore {
-	constructor(private openTableTab: () => void) {}
+	constructor(private openTabs: (layout: WorkspacePanelsLayout) => void) {}
 
 	@observable
 	public isModalOpen = false;
@@ -42,9 +43,6 @@ export class JSONViewerStore {
 	@action selectTreeNode(tree?: TreeNode) {
 		if (tree) {
 			this.selectedTreeNode = tree;
-			if (tree.id !== '') {
-				this.openTableTab();
-			}
 		} else {
 			this.selectedTreeNode = nullTreeNode;
 		}
@@ -52,5 +50,9 @@ export class JSONViewerStore {
 
 	@action addNodes(tree: TreeNode[]) {
 		this.treeNodes = this.treeNodes.concat(tree);
+	}
+
+	@action removeNodesById(ids: string[]) {
+		this.treeNodes = this.treeNodes.filter(node => !ids.includes(node.id));
 	}
 }

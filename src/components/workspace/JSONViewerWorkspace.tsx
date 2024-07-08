@@ -53,6 +53,7 @@ const JSONViewerWorkspace = () => {
 		JSONViewerStore.setTreeNodes([]);
 		JSONViewerStore.setNotebooks([]);
 		JSONViewerStore.setTreeNodes(trees);
+		JSONViewerStore.selectTreeNode();
 		if (trees.length > 0) JSONViewerStore.selectTreeNode(trees[0]);
 		JSONViewerStore.setNotebooks(notebooks);
 		JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType);
@@ -95,6 +96,7 @@ const JSONViewerWorkspace = () => {
 		});
 		JSONViewerStore.setTreeNodes(nodes);
 		JSONViewerStore.setNotebooks([]);
+		JSONViewerStore.selectTreeNode();
 		if (nodes.length > 0) JSONViewerStore.selectTreeNode(nodes[0]);
 	};
 
@@ -157,6 +159,7 @@ const JSONViewerWorkspace = () => {
 						{JSONViewerStore.isModalOpen && (
 							<FileChoosing
 								type={JSONViewerStore.modalType}
+								multiple={true}
 								onSubmit={onSubmit}
 								close={() => JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType)}
 							/>

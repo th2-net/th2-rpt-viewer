@@ -16,7 +16,7 @@ export default class JSONViewerWorkspaceStore {
 
 	constructor(private workspacesStore: WorkspacesStore) {
 		this.viewStore = new WorkspaceViewStore({ panelsLayout: [100, 0] });
-		this.JSONviewerStore = new JSONViewerStore(() => this.viewStore.setPanelsLayout([50, 50]));
+		this.JSONviewerStore = new JSONViewerStore(this.viewStore.setPanelsLayout);
 	}
 
 	@action

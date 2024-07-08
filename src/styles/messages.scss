@@ -181,6 +181,16 @@
 			@include icon(url(../../resources/icons/ascii.svg));
 		}
 
+		&.tree {
+			@include icon(url(../../resources/icons/tree-view-icon.svg));
+			opacity: 0.5;
+		}
+
+		&.table {
+			@include icon(url(../../resources/icons/table-view-icon.svg));
+			opacity: 0.5;
+		}
+
 		&.download {
 			@include icon(url(../../resources/icons/download.svg), 15px, 15px);
 		}
