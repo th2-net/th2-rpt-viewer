@@ -99,13 +99,13 @@ export const convertParameterValue = (
 ): { value: number | string | boolean; type: string } => {
 	try {
 		switch (type) {
-			case 'boolean': {
+			case 'bool': {
 				return {
 					value: value.toLocaleLowerCase() === 'true',
 					type,
 				};
 			}
-			case 'string': {
+			case 'str': {
 				return {
 					value: cutString ? value.slice(1, value.length - 1) : value,
 					type,
@@ -158,10 +158,10 @@ export const validateParameter = (value: string, type: string): boolean => {
 		case 'float': {
 			return numberReg.test(value);
 		}
-		case 'string': {
+		case 'str': {
 			return true;
 		}
-		case 'boolean': {
+		case 'bool': {
 			return value.toLocaleLowerCase() === 'true' || value.toLocaleLowerCase() === 'false';
 		}
 		case 'file path': {
@@ -187,10 +187,10 @@ export const getParameterType = (parameter: NotebookParameter) => {
 		return 'file path';
 	}
 	if (stringPunct.includes(value[0]) && value[0] === value[value.length - 1]) {
-		return 'string';
+		return 'str';
 	}
 	if (value === 'True' || value === 'False') {
-		return 'boolean';
+		return 'bool';
 	}
 	if (numberReg.test(value)) {
 		if (Number.isInteger(Number(value))) {
@@ -198,7 +198,7 @@ export const getParameterType = (parameter: NotebookParameter) => {
 		}
 		return 'float';
 	}
-	return 'string';
+	return 'str';
 };
 
 export const convertParameterToInput = (parameter: NotebookParameter): InputNotebookParameter => {

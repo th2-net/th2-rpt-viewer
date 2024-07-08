@@ -6,7 +6,7 @@ import { DateTimeInputType, DateTimeMask, TimeInputType } from '../../models/fil
 import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
 import TimestampParameter from './TimestampParameter';
 
-const possibleTypes = ['int', 'float', 'string', 'boolean', 'file path', 'timestamp'];
+const possibleTypes = ['int', 'float', 'str', 'bool', 'file path', 'timestamp'];
 
 const ParametersRow = ({
 	parameter,
