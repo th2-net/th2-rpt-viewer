@@ -20,7 +20,7 @@ import {
 import { useNotificationsStore } from '../../hooks';
 import ParametersRow from './ParametersRow';
 
-const timeBetweenResults = 1000;
+const timeBetweenResults = 50;
 
 const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const JSONViewerStore = useJSONViewerStore();
