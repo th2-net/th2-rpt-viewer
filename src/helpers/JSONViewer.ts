@@ -20,7 +20,13 @@ export const isKeyFailed = (key: string) => key.includes('[fail]') || key.trim()
 export const isValueFailed = (value: string) =>
 	value.trim().startsWith('#') || value.trim().startsWith('!#');
 
-export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false): TreeNode => {
+export const convertJSONtoNode = (
+	obj: object,
+	key = '',
+	isGeneratedKey = false,
+	parentIds: string[] = [],
+	depth = 0,
+): TreeNode => {
 	const id = nanoid();
 	let failed = isKeyFailed(key);
 	const isArray = Array.isArray(obj);
@@ -32,7 +38,7 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
 			if (typeof obj[i] === 'object') {
-				const val = convertJSONtoNode(obj[i], i.toString(), true);
+				const val = convertJSONtoNode(obj[i], i.toString(), true, [id, ...parentIds], depth + 1);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
 			} else {
@@ -51,7 +57,7 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 			} else if (entryKey === '#view-instruction') {
 				viewInstruction = String(value);
 			} else if (typeof value === 'object' && value !== null) {
-				const val = convertJSONtoNode(value, entryKey);
+				const val = convertJSONtoNode(value, entryKey, false, [id, ...parentIds], depth + 1);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
 			} else {
@@ -63,6 +69,7 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 	return {
 		id,
 		key,
+		parentIds,
 		displayTable,
 		displayName,
 		failed,
@@ -72,12 +79,14 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 		viewType: TreeViewType.EVENTS_LIST,
 		simpleFields,
 		complexFields,
+		childIds: complexFields.map(node => node.id),
 	};
 };
 
 export const parseText = (text: string, name = '', isGeneratedKey = false): TreeNode[] => {
 	const js = JSON.parse(text);
 	const node = convertJSONtoNode(js, undefined, isGeneratedKey);
+
 	if (node.simpleFields.length > 0) {
 		return [
 			{
@@ -209,4 +218,12 @@ export const convertParameterToInput = (parameter: NotebookParameter): InputNote
 		type,
 		isValid: validateParameter(parameter.default, type),
 	};
+};
+
+export const getFlatListFromTree = (tree: TreeNode) => {
+	const flatten = (node: TreeNode, parentIds: string[] = []): TreeNode[] => [
+		{ ...node, parentIds, childIds: node.complexFields.map(f => f.id), complexFields: [] },
+		...node.complexFields.flatMap(child => flatten(child, [node.id, ...parentIds])),
+	];
+	return flatten(tree);
 };

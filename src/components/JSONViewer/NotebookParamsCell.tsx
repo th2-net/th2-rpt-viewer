@@ -13,6 +13,7 @@ import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import {
 	convertParameterToInput,
 	convertParameterValue,
+	getFlatListFromTree,
 	getParameterType,
 	parseText,
 	validateParameter,
@@ -36,17 +37,16 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const [results, setResults] = React.useState<string[]>([]);
 	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid), [paramsValue]);
 
-	const initParameters = () => {
-		setParamsValue(parameters.map(convertParameterToInput));
-	};
-
-	React.useEffect(initParameters, [parameters]);
-
 	const getParameters = async () => {
 		setIsLoading(true);
 		api.jsonViewer
 			.getParameters(notebook)
 			.then((data: NotebookParameters) => {
+				setParamsValue(
+					Object.values(data)
+						.filter(param => param.name !== 'output_path')
+						.map(convertParameterToInput),
+				);
 				setParameters(Object.values(data).filter(param => param.name !== 'output_path'));
 			})
 			.finally(() => {
@@ -68,11 +68,13 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 				if (result.includes('{')) {
 					const node: TreeNode = {
 						id: nanoid(),
+						parentIds: [],
 						key: `Result of ${notebook}'s run`,
 						failed: false,
 						viewInstruction: '',
 						simpleFields: [{ key: 'filepath', value: path }],
 						complexFields: [],
+						childIds: [],
 						isGeneratedKey: true,
 						isRoot: true,
 					};
@@ -95,7 +97,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 					}
 
 					if (node.complexFields.length > 0) {
-						JSONViewerStore.addNodes([node]);
+						JSONViewerStore.addNodes(getFlatListFromTree(node));
 						if (newResults.length > convertResultCount) {
 							JSONViewerStore.removeNodesById(newResults.slice(convertResultCount));
 						}

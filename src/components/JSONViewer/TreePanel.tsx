@@ -8,27 +8,15 @@ import JSONView from './JSONView';
 import LeafTools from './LeafTools';
 import DisplayTable from './DisplayTable';
 
-const TreePanel = ({
-	nest,
-	treeNode,
-	prevKey,
-}: {
-	nest: number;
-	treeNode: TreeNode;
-	prevKey?: string;
-}) => {
+const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const [viewType, setViewType] = React.useState(treeNode.viewType || TreeViewType.EVENTS_LIST);
-	const [groupViewType, setGroupViewType] = React.useState(
-		treeNode.viewType || TreeViewType.EVENTS_LIST,
-	);
-	const [open, setOpen] = React.useState(false);
+	const [open, setOpen] = React.useState(JSONViewerStore.openTreeNodes.has(treeNode.id));
 	const nodeName = useMemo(() => {
 		if (treeNode.displayName) return treeNode.displayName;
 		if (treeNode.key && !(treeNode.isGeneratedKey && !treeNode.isRoot)) return treeNode.key;
 		return 'no display name';
 	}, [treeNode.displayName, treeNode.key, treeNode.isGeneratedKey]);
-	const [complexFields, setComplexFields] = React.useState(treeNode.complexFields);
 	const needBounding = useMemo(
 		() =>
 			(open && viewType === TreeViewType.DISPLAY_TABLE) ||
@@ -38,17 +26,28 @@ const TreePanel = ({
 	);
 
 	useEffect(() => {
-		setComplexFields(complexFields.map(field => ({ ...field, viewType: groupViewType })));
-	}, [groupViewType]);
-
-	useEffect(() => {
-		setOpen(viewType === TreeViewType.DISPLAY_TABLE);
+		const isChildDisplay =
+			(treeNode.isRoot || viewType === TreeViewType.EVENTS_LIST) &&
+			JSONViewerStore.openTreeNodes.has(treeNode.id);
+		setOpen(viewType === TreeViewType.DISPLAY_TABLE || isChildDisplay);
+		if (isChildDisplay) JSONViewerStore.openNode(treeNode.id);
+		else JSONViewerStore.closeNode(treeNode.id);
 	}, [viewType]);
+
+	const toggleNode = () => {
+		if (open) {
+			setOpen(false);
+			JSONViewerStore.closeNode(treeNode.id);
+		} else {
+			setOpen(true);
+			if (viewType !== TreeViewType.DISPLAY_TABLE) JSONViewerStore.openNode(treeNode.id);
+		}
+	};
 
 	const complexFieldsDisplay = () => (
 		<span title={treeNode.isArray ? 'Complex Elements amount' : `Complex Fields amount`}>
 			{treeNode.isArray ? '[' : '{'}
-			{treeNode.complexFields.length}
+			{treeNode.childIds.length}
 			{treeNode.isArray ? ']' : '}'}
 		</span>
 	);
@@ -59,11 +58,19 @@ const TreePanel = ({
 		</span>
 	);
 
+	const changeViewType = (newType: TreeViewType) => {
+		if (treeNode.isRoot) {
+			JSONViewerStore.setGroupView(treeNode.id, newType);
+		} else {
+			JSONViewerStore.setNodeView(treeNode.id, newType);
+		}
+	};
+
 	if (treeNode.viewInstruction === ViewInstruction.table) {
 		return (
 			<>
 				<div className='leafWrapper'>
-					<div style={{ width: `${20 * nest + 23}px` }} />
+					<div style={{ width: `${20 * treeNode.parentIds.length + 23}px` }} />
 					<div
 						className={createBemBlock(
 							'valueLeaf',
@@ -111,12 +118,18 @@ const TreePanel = ({
 					marginBottom: needBounding ? '5px' : undefined,
 				}}>
 				<div className='leafWrapper'>
-					<div style={{ width: `${20 * nest + (complexFields.length === 0 ? 23 : 0)}px` }} />
-					{((complexFields.length > 0 && viewType === TreeViewType.EVENTS_LIST) ||
+					<div
+						style={{
+							width: `${
+								20 * treeNode.parentIds.length + (treeNode.childIds.length === 0 ? 23 : 0)
+							}px`,
+						}}
+					/>
+					{((treeNode.childIds.length > 0 && viewType === TreeViewType.EVENTS_LIST) ||
 						viewType === TreeViewType.DISPLAY_TABLE) && (
 						<div
 							className={createBemBlock('expand-icon', open ? 'expanded' : 'hidden')}
-							onClick={() => setOpen(!open)}
+							onClick={toggleNode}
 						/>
 					)}
 					<div
@@ -140,8 +153,8 @@ const TreePanel = ({
 							</span>
 						</div>
 						<LeafTools
-							activeViewType={treeNode.isRoot ? groupViewType : viewType}
-							toggleViewType={treeNode.isRoot ? setGroupViewType : setViewType}
+							activeViewType={viewType}
+							toggleViewType={changeViewType}
 							viewTypes={
 								treeNode.isRoot
 									? [TreeViewType.DISPLAY_TABLE, TreeViewType.EVENTS_LIST, TreeViewType.JSON]
@@ -155,27 +168,18 @@ const TreePanel = ({
 						/>
 					</div>
 				</div>
-				{open && viewType === TreeViewType.DISPLAY_TABLE && (
+				{!treeNode.isRoot && open && viewType === TreeViewType.DISPLAY_TABLE && (
 					<DisplayTable value={treeNode.displayTable} />
 				)}
-				{(viewType === TreeViewType.JSON || viewType === TreeViewType.PRETTY) && (
-					<div className='message-card-wrapper'>
-						<div className='mc__mc-body mc-body'>
-							<JSONView isBeautified={viewType === TreeViewType.PRETTY} node={treeNode} />
+				{!treeNode.isRoot &&
+					(viewType === TreeViewType.JSON || viewType === TreeViewType.PRETTY) && (
+						<div className='message-card-wrapper'>
+							<div className='mc__mc-body mc-body'>
+								<JSONView isBeautified={viewType === TreeViewType.PRETTY} node={treeNode} />
+							</div>
 						</div>
-					</div>
-				)}
+					)}
 			</div>
-			{open &&
-				viewType === TreeViewType.EVENTS_LIST &&
-				complexFields.map(field => (
-					<TreePanel
-						nest={nest + 1}
-						treeNode={field}
-						key={`${field.id}-${field.viewType}`}
-						prevKey={prevKey ? prevKey + field.key : treeNode.key + field.key}
-					/>
-				))}
 		</>
 	);
 };

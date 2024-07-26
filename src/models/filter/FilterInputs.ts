@@ -33,6 +33,7 @@ export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
 	DATE_MASK = 'YYYY-MM-DD',
 	DATE_TIME_MASK = 'DD.MM.YYYY HH:mm:ss.SSS',
+	DATE_TIME_ISO_MASK = 'YYYY-MM-DDTHH:mm:ss.SSSZ',
 	INTERVAL_MASK = 'mm',
 }
 

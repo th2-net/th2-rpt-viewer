@@ -28,7 +28,7 @@ import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import FileChoosing from '../JSONViewer/FileChoosing';
 import NotebookParamsCell from '../JSONViewer/NotebookParamsCell';
 import TreePanel from '../JSONViewer/TreePanel';
-import { parseText } from '../../helpers/JSONViewer';
+import { getFlatListFromTree, parseText } from '../../helpers/JSONViewer';
 import StateSaverProvider from '../util/StateSaverProvider';
 
 const panelColors = {
@@ -49,12 +49,12 @@ const JSONViewerWorkspace = () => {
 	const JSONViewerStore = useJSONViewerStore();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
-	const onSubmit = (trees: TreeNode[], notebooks: string[]) => {
+	const onSubmit = (nodes: TreeNode[], notebooks: string[]) => {
 		JSONViewerStore.setTreeNodes([]);
 		JSONViewerStore.setNotebooks([]);
-		JSONViewerStore.setTreeNodes(trees);
+		JSONViewerStore.setTreeNodes(nodes.flatMap(node => getFlatListFromTree(node)));
 		JSONViewerStore.selectTreeNode();
-		if (trees.length > 0) JSONViewerStore.selectTreeNode(trees[0]);
+		if (nodes.length > 0) JSONViewerStore.selectTreeNode(nodes[0]);
 		JSONViewerStore.setNotebooks(notebooks);
 		JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType);
 	};
@@ -75,11 +75,13 @@ const JSONViewerWorkspace = () => {
 		const nodes: TreeNode[] = (await Promise.all(promises)).map(([fileName, text]) => {
 			const node: TreeNode = {
 				id: nanoid(),
+				parentIds: [],
 				key: fileName,
 				failed: false,
 				viewInstruction: '',
 				simpleFields: [],
 				complexFields: [],
+				childIds: [],
 				isGeneratedKey: true,
 				isRoot: true,
 			};
@@ -94,7 +96,7 @@ const JSONViewerWorkspace = () => {
 			node.failed = node.complexFields.some(v => v.failed);
 			return node;
 		});
-		JSONViewerStore.setTreeNodes(nodes);
+		JSONViewerStore.setTreeNodes(nodes.flatMap(node => getFlatListFromTree(node)));
 		JSONViewerStore.setNotebooks([]);
 		JSONViewerStore.selectTreeNode();
 		if (nodes.length > 0) JSONViewerStore.selectTreeNode(nodes[0]);
@@ -102,13 +104,15 @@ const JSONViewerWorkspace = () => {
 
 	const computeTreeKey = React.useCallback(
 		(index: number, dataNode: TreeNode | string) =>
-			`${index}/${typeof dataNode === 'string' ? dataNode : dataNode.id}`,
+			`${index}/${typeof dataNode === 'string' ? dataNode : dataNode.id}/${
+				typeof dataNode === 'string' ? '' : dataNode.viewType
+			}`,
 		[],
 	);
 
 	const renderTree = React.useCallback((index: number, dataNode: TreeNode | string) => {
 		if (typeof dataNode === 'string') return <NotebookParamsCell notebook={dataNode} />;
-		return <TreePanel nest={0} treeNode={dataNode} prevKey={`${index}/${dataNode.key}`} />;
+		return <TreePanel treeNode={dataNode} />;
 	}, []);
 
 	const treePanel = React.useMemo(
@@ -167,7 +171,12 @@ const JSONViewerWorkspace = () => {
 						<StateSaverProvider>
 							<Virtuoso
 								className='JSON-virtuoso'
-								data={[...JSONViewerStore.notebooks, ...JSONViewerStore.treeNodes]}
+								data={[
+									...JSONViewerStore.notebooks,
+									...JSONViewerStore.treeNodes.filter(node =>
+										node.parentIds.every(parentId => JSONViewerStore.openTreeNodes.has(parentId)),
+									),
+								]}
 								totalCount={JSONViewerStore.notebooks.length + JSONViewerStore.treeNodes.length}
 								computeItemKey={computeTreeKey}
 								overscan={3}
@@ -184,6 +193,7 @@ const JSONViewerWorkspace = () => {
 			JSONViewerStore.notebooks,
 			JSONViewerStore.isModalOpen,
 			JSONViewerStore.selectedTreeNode,
+			JSONViewerStore.openTreeNodes,
 		],
 	).get();
 

@@ -21,11 +21,13 @@ export interface SimpleField {
 export interface TreeNode {
 	id: string;
 	key: string;
+	parentIds: string[];
 	displayName?: string;
 	displayTable?: string[][];
 	failed: boolean;
 	viewInstruction: string;
 	complexFields: TreeNode[];
+	childIds: string[];
 	simpleFields: SimpleField[];
 	isArray?: boolean;
 	isGeneratedKey?: boolean;

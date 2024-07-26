@@ -40,6 +40,33 @@ export const DATE_TIME_INPUT_MASK = [
 	/\d/,
 ];
 
+export const DATE_TIME_ISO_INPUT_MASK = [
+	/\d/,
+	/\d/,
+	/\d/,
+	/\d/,
+	'-',
+	/\d/,
+	/\d/,
+	'-',
+	/\d/,
+	/\d/,
+	'T',
+	/\d/,
+	/\d/,
+	':',
+	/\d/,
+	/\d/,
+	':',
+	/\d/,
+	/\d/,
+	'.',
+	/\d/,
+	/\d/,
+	/\d/,
+	'Z',
+];
+
 export const DATE_INPUT_MASK = [/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/];
 
 export const TIME_INPUT_MASK = [
