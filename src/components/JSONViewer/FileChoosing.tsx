@@ -88,11 +88,13 @@ const FileChoosing = ({
 							}
 							const node: TreeNode = {
 								id: nanoid(),
+								parentIds: [],
 								key: filePath,
 								failed: false,
 								viewInstruction: '',
 								simpleFields: [],
 								complexFields: [],
+								childIds: [],
 								isGeneratedKey: true,
 								isRoot: true,
 							};
