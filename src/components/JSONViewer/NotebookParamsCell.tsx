@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
 import {
 	InputNotebookParameter,
+	NotebookNode,
 	NotebookParameter,
 	NotebookParameters,
 	TreeNode,
@@ -13,7 +14,6 @@ import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import {
 	convertParameterToInput,
 	convertParameterValue,
-	getFlatListFromTree,
 	getParameterType,
 	parseText,
 	validateParameter,
@@ -23,31 +23,34 @@ import ParametersRow from './ParametersRow';
 
 const timeBetweenResults = 50;
 
-const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
+const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const notificationsStore = useNotificationsStore();
-	const [parameters, setParameters] = React.useState<NotebookParameter[]>([]);
-	const [paramsValue, setParamsValue] = React.useState<InputNotebookParameter[]>([]);
-	const [isLoading, setIsLoading] = React.useState(true);
+	const notebook: NotebookNode = {
+		...JSONViewerStore.getNotebook(notebookProp.name, notebookProp),
+	};
+	const [parameters, setParameters] = React.useState<NotebookParameter[]>(notebook.parameters);
+	const [paramsValue, setParamsValue] = React.useState<InputNotebookParameter[]>(
+		notebook.paramsValue,
+	);
+	const [isLoading, setIsLoading] = React.useState(false);
 	const [isRunLoading, setIsRunLoading] = React.useState(false);
-	const [isExpanded, setIsExpanded] = React.useState(false);
+	const [isExpanded, setIsExpanded] = React.useState(notebook.open);
 	const [timer, setTimer] = React.useState<NodeJS.Timeout | null>();
 	const [taskId, setTaskId] = React.useState<string | null>();
-	const [resultCount, setResultCount] = React.useState<string>('1');
-	const [results, setResults] = React.useState<string[]>([]);
+	const [resultCount, setResultCount] = React.useState<string>(String(notebook.resultsCount));
+	const [results, setResults] = React.useState<string[]>(notebook.results);
 	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid), [paramsValue]);
 
 	const getParameters = async () => {
 		setIsLoading(true);
 		api.jsonViewer
-			.getParameters(notebook)
+			.getParameters(notebook.name)
 			.then((data: NotebookParameters) => {
-				setParamsValue(
-					Object.values(data)
-						.filter(param => param.name !== 'output_path')
-						.map(convertParameterToInput),
-				);
-				setParameters(Object.values(data).filter(param => param.name !== 'output_path'));
+				const newParameters = Object.values(data).filter(param => param.name !== 'output_path');
+				const newParamsValue = newParameters.map(convertParameterToInput);
+				setParameters(newParameters);
+				setParamsValue(newParamsValue);
 			})
 			.finally(() => {
 				setIsLoading(false);
@@ -69,7 +72,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 					const node: TreeNode = {
 						id: nanoid(),
 						parentIds: [],
-						key: `Result of ${notebook}'s run`,
+						key: `Result of ${notebook.name}'s run`,
 						failed: false,
 						viewInstruction: '',
 						simpleFields: [{ key: 'filepath', value: path }],
@@ -91,19 +94,10 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 					node.failed = node.complexFields.some(v => v.failed);
 					const newResults = [node.id, ...results];
 					const maxResultCount = Number(resultCount);
-					const convertResultCount = maxResultCount < 1 ? 1 : Math.round(maxResultCount);
-					if (maxResultCount < 1) {
-						setResultCount('1');
-					}
-
-					if (node.complexFields.length > 0) {
-						JSONViewerStore.addNodes(getFlatListFromTree(node));
-						if (newResults.length > convertResultCount) {
-							JSONViewerStore.removeNodesById(newResults.slice(convertResultCount));
-						}
-						setResults(newResults.slice(0, convertResultCount));
-						JSONViewerStore.selectTreeNode(node);
-					}
+					const convertResultCount = Math.max(1, Math.round(maxResultCount));
+					JSONViewerStore.addNotebookResult(notebook.name, node, convertResultCount);
+					setResultCount(String(convertResultCount));
+					setResults(newResults.slice(0, convertResultCount));
 					setIsRunLoading(false);
 					setIsExpanded(false);
 				}
@@ -156,7 +150,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 				.filter(filterParameters)
 				.map(({ name, type, value }) => [name, convertParameterValue(value, type)]),
 		);
-		const res = await api.jsonViewer.launchNotebook(notebook, paramsWithType);
+		const res = await api.jsonViewer.launchNotebook(notebook.name, paramsWithType);
 		if (res.task_id !== '') {
 			setTaskId(res.task_id);
 			setTimer(setTimeout(() => getResults(res.task_id), timeBetweenResults));
@@ -170,14 +164,10 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		setIsRunLoading(false);
 	};
 
-	React.useEffect(() => {
-		getParameters();
-	}, []);
-
 	return (
 		<div className='notebookCell'>
 			<div className={`notebookCell-header ${isExpanded ? 'expanded' : ''}`} onClick={open}>
-				<label>Parameters for {notebook}</label>
+				<label>Parameters for {notebook.name}</label>
 				<div
 					className={`notebookCell-icon ${
 						isLoading ? 'loading' : isExpanded ? 'expanded' : 'hidden'
@@ -250,6 +240,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 							pattern='\d+'
 							onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
 								setResultCount(ev.target.value);
+								JSONViewerStore.updateotebookResultCount(notebookProp.name, ev.target.value);
 							}}
 						/>
 					</div>

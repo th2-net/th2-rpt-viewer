@@ -35,6 +35,15 @@ export interface TreeNode {
 	viewType?: TreeViewType;
 }
 
+export interface NotebookNode {
+	name: string;
+	parameters: NotebookParameter[];
+	paramsValue: InputNotebookParameter[];
+	results: string[];
+	resultsCount: string;
+	open: boolean;
+}
+
 export interface NotebookParameter {
 	name: string;
 	inferred_type_name: string;

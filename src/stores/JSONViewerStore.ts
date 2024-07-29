@@ -1,6 +1,7 @@
 import { action, observable } from 'mobx';
-import { TreeNode, TreeViewType } from '../models/JSONSchema';
+import { NotebookNode, TreeNode, TreeViewType } from '../models/JSONSchema';
 import { WorkspacePanelsLayout } from '../components/workspace/WorkspaceSplitter';
+import { getFlatListFromTree } from '../helpers/JSONViewer';
 
 const nullTreeNode: TreeNode = {
 	id: '',
@@ -22,7 +23,7 @@ export class JSONViewerStore {
 	@observable
 	public modalType: 'notebooks' | 'results' = 'results';
 
-	@observable notebooks: string[] = [];
+	@observable notebooks: NotebookNode[] = [];
 
 	@observable treeNodes: TreeNode[] = [];
 
@@ -40,7 +41,7 @@ export class JSONViewerStore {
 		this.treeNodes = n.slice();
 	}
 
-	@action setNotebooks(n: string[]) {
+	@action setNotebooks(n: NotebookNode[]) {
 		this.notebooks = n.slice();
 	}
 
@@ -95,4 +96,60 @@ export class JSONViewerStore {
 			this.setGroupView(node.childIds[i], viewType);
 		}
 	}
+
+	@action getNotebook(name: string, defaultNotebook: NotebookNode) {
+		const notebook = this.notebooks.find(n => n.name === name);
+		return notebook || defaultNotebook;
+	}
+
+	@action addNotebookResult(name: string, newResult: TreeNode, resultCount: number) {
+		const index = this.notebooks.findIndex(n => n.name === name);
+		if (index < 0) return;
+		const notebook = this.notebooks[index];
+		notebook.resultsCount = String(resultCount);
+		const newResults = [newResult.id, ...notebook.results];
+
+		if (newResult.complexFields.length > 0) {
+			this.addNodes(getFlatListFromTree(newResult));
+			if (newResults.length > resultCount) {
+				this.removeNodesById(newResults.slice(resultCount));
+			}
+			notebook.results = newResults.slice(0, resultCount);
+			this.selectTreeNode(newResult);
+		}
+		notebook.open = false;
+		this.notebooks = [
+			...this.notebooks.slice(0, index),
+			notebook,
+			...this.notebooks.slice(index + 1),
+		];
+	}
+
+	@action updateotebookResultCount(name: string, newCount: string) {
+		const index = this.notebooks.findIndex(n => n.name === name);
+		if (index < 0) return;
+		this.notebooks = [
+			...this.notebooks.slice(0, index),
+			{
+				...this.notebooks[index],
+				resultsCount: newCount,
+			},
+			...this.notebooks.slice(index + 1),
+		];
+	}
+	/*
+	@action updateNotebookParameters(name: string, newParameters: TreeNode) {
+		const notebook = this.notebooks.find(n => n.name === name);
+		if (!notebook) return;
+		const newResults = [newResult.id, ...notebook.results];
+
+		if (newResult.complexFields.length > 0) {
+			this.addNodes(getFlatListFromTree(newResult));
+			if (newResults.length > notebook.resultsCount) {
+				this.removeNodesById(newResults.slice(notebook.resultsCount));
+			}
+			notebook.results = newResults.slice(0, notebook.resultsCount);
+			this.selectTreeNode(newResult);
+		}
+	} */
 }

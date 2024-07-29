@@ -1,6 +1,6 @@
 import * as React from 'react';
 import moment from 'moment';
-import { InputNotebookParameter, NotebookParameter, TreeNode } from '../../models/JSONSchema';
+import { InputNotebookParameter, NotebookParameter } from '../../models/JSONSchema';
 import FileChoosing from './FileChoosing';
 import { DateTimeInputType, DateTimeMask, TimeInputType } from '../../models/filter/FilterInputs';
 import { DATE_TIME_ISO_INPUT_MASK } from '../../util/filterInputs';
@@ -34,8 +34,8 @@ const ParametersRow = ({
 		}
 	}, [parameterValue.type]);
 
-	const updateValue = (_t: TreeNode[], files: string[]) => {
-		setParametersValue(files[0]);
+	const updateValue = (file: string) => {
+		setParametersValue(file);
 		setBrowserOpen(false);
 	};
 
@@ -49,10 +49,8 @@ const ParametersRow = ({
 		value: timestamp,
 		setValue: setTimestamp,
 		type: TimeInputType.DATE_TIME,
-		// dateMask: DateTimeMask.DATE_TIME_MASK,
 		dateMask: DateTimeMask.DATE_TIME_ISO_MASK,
 		placeholder: '',
-		// inputMask: DATE_TIME_INPUT_MASK,
 		inputMask: DATE_TIME_ISO_INPUT_MASK,
 	};
 
@@ -107,7 +105,7 @@ const ParametersRow = ({
 					<FileChoosing
 						type='all'
 						multiple={false}
-						onSubmit={updateValue}
+						singleSubmit={updateValue}
 						close={() => setBrowserOpen(false)}
 					/>
 				)}

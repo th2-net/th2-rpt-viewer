@@ -21,7 +21,7 @@ import { computed } from 'mobx';
 import { nanoid } from 'nanoid';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
-import { TreeNode } from '../../models/JSONSchema';
+import { NotebookNode, TreeNode } from '../../models/JSONSchema';
 import TablePanel from '../JSONViewer/TablePanel';
 import useJSONViewerWorkspace from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
@@ -49,7 +49,7 @@ const JSONViewerWorkspace = () => {
 	const JSONViewerStore = useJSONViewerStore();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
-	const onSubmit = (nodes: TreeNode[], notebooks: string[]) => {
+	const onSubmit = (nodes: TreeNode[], notebooks: NotebookNode[]) => {
 		JSONViewerStore.setTreeNodes([]);
 		JSONViewerStore.setNotebooks([]);
 		JSONViewerStore.setTreeNodes(nodes.flatMap(node => getFlatListFromTree(node)));
@@ -103,16 +103,14 @@ const JSONViewerWorkspace = () => {
 	};
 
 	const computeTreeKey = React.useCallback(
-		(index: number, dataNode: TreeNode | string) =>
-			`${index}/${typeof dataNode === 'string' ? dataNode : dataNode.id}/${
-				typeof dataNode === 'string' ? '' : dataNode.viewType
-			}`,
+		(index: number, dataNode: TreeNode | NotebookNode) =>
+			`${'id' in dataNode ? `${dataNode.id}-${dataNode.viewType}` : dataNode.name}`,
 		[],
 	);
 
-	const renderTree = React.useCallback((index: number, dataNode: TreeNode | string) => {
-		if (typeof dataNode === 'string') return <NotebookParamsCell notebook={dataNode} />;
-		return <TreePanel treeNode={dataNode} />;
+	const renderTree = React.useCallback((index: number, dataNode: TreeNode | NotebookNode) => {
+		if ('id' in dataNode) return <TreePanel treeNode={dataNode} />;
+		return <NotebookParamsCell notebookProp={dataNode} />;
 	}, []);
 
 	const treePanel = React.useMemo(
