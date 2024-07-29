@@ -90,7 +90,7 @@ const FileChoosing = ({
 								parameters,
 								paramsValue,
 								results: [],
-								resultsCount: 1,
+								resultsCount: '1',
 								open: true,
 							};
 							notebookData.push(node);
