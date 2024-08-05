@@ -230,7 +230,7 @@ export const getFlatListFromTree = (tree: TreeNode) => {
 
 export const getFlatListFromTreeWSimple = (tree: TreeNode) => {
 	const flatten = (node: TreeNode, parentIds: string[] = []): (TreeNode | SimpleField)[] => [
-		{ ...node, parentIds, childIds: node.complexFields.map(f => f.id) },
+		{ ...node, parentIds, complexFields: [], childIds: node.complexFields.map(f => f.id) },
 		...node.simpleFields.flatMap(child => ({ ...child, parentIds: [...parentIds, node.id] })),
 		...node.complexFields.flatMap(child => flatten(child, [node.id, ...parentIds])),
 	];
