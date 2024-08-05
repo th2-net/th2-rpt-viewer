@@ -75,7 +75,7 @@ const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) =>
 						key: `Result of ${notebook.name}'s run`,
 						failed: false,
 						viewInstruction: '',
-						simpleFields: [{ key: 'filepath', value: path }],
+						simpleFields: [{ id: nanoid(), key: 'filepath', value: path }],
 						complexFields: [],
 						childIds: [],
 						isGeneratedKey: true,
