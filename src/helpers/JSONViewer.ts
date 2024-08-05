@@ -43,7 +43,7 @@ export const convertJSONtoNode = (
 				complexFields.push(val);
 			} else {
 				if (!failed && typeof obj[i] === 'string') failed = isValueFailed(obj[i]);
-				simpleFields.push({ key: i.toString(), value: obj[i] });
+				simpleFields.push({ id: nanoid(), key: i.toString(), value: obj[i] });
 			}
 		}
 	} else {
@@ -62,7 +62,7 @@ export const convertJSONtoNode = (
 				complexFields.push(val);
 			} else {
 				if (!failed && typeof value === 'string') failed = isValueFailed(value);
-				simpleFields.push({ key: entryKey, value });
+				simpleFields.push({ id: nanoid(), key: entryKey, value });
 			}
 		}
 	}
@@ -222,7 +222,16 @@ export const convertParameterToInput = (parameter: NotebookParameter): InputNote
 
 export const getFlatListFromTree = (tree: TreeNode) => {
 	const flatten = (node: TreeNode, parentIds: string[] = []): TreeNode[] => [
-		{ ...node, parentIds, childIds: node.complexFields.map(f => f.id), complexFields: [] },
+		{ ...node, parentIds, childIds: node.complexFields.map(f => f.id) },
+		...node.complexFields.flatMap(child => flatten(child, [node.id, ...parentIds])),
+	];
+	return flatten(tree);
+};
+
+export const getFlatListFromTreeWSimple = (tree: TreeNode) => {
+	const flatten = (node: TreeNode, parentIds: string[] = []): (TreeNode | SimpleField)[] => [
+		{ ...node, parentIds, childIds: node.complexFields.map(f => f.id) },
+		...node.simpleFields.flatMap(child => ({ ...child, parentIds: [...parentIds, node.id] })),
 		...node.complexFields.flatMap(child => flatten(child, [node.id, ...parentIds])),
 	];
 	return flatten(tree);

@@ -97,8 +97,9 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 						</div>
 						<LeafTools
 							activeViewType={viewType}
-							toggleViewType={setViewType}
 							viewTypes={[TreeViewType.EVENTS_LIST, TreeViewType.JSON, TreeViewType.PRETTY]}
+							toggleViewType={setViewType}
+							addNodeToCompare={() => JSONViewerStore.addNodeToCompare(treeNode)}
 						/>
 					</div>
 				</div>
@@ -164,6 +165,9 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 											TreeViewType.JSON,
 											TreeViewType.PRETTY,
 									  ]
+							}
+							addNodeToCompare={
+								treeNode.isRoot ? undefined : () => JSONViewerStore.addNodeToCompare(treeNode)
 							}
 						/>
 					</div>

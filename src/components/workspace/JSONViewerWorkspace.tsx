@@ -195,6 +195,8 @@ const JSONViewerWorkspace = () => {
 		],
 	).get();
 
+	const [compareArea, setCompareArea] = React.useState(100);
+
 	const tablePanel = React.useMemo(
 		() =>
 			computed(() => ({
@@ -202,12 +204,17 @@ const JSONViewerWorkspace = () => {
 				color: panelColors.table,
 				component: (
 					<div className='JSON-wrapper tableView'>
-						<TablePanel node={JSONViewerStore.selectedTreeNode} />
+						<TablePanel
+							panelArea={compareArea}
+							setPanelArea={setCompareArea}
+							selectedNode={JSONViewerStore.selectedTreeNode}
+							compareNode={JSONViewerStore.comparableTreeNode}
+						/>
 					</div>
 				),
 				isActive: false,
 			})),
-		[JSONViewerStore.selectTreeNode],
+		[JSONViewerStore.selectTreeNode, JSONViewerStore.comparableTreeNode, compareArea],
 	).get();
 
 	const viewerWorkspacePanels = React.useMemo(

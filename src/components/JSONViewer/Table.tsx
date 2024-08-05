@@ -1,38 +1,113 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import { TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
 import { decodeBase64RawContent } from '../../helpers/rawFormatter';
 import SimpleMessageRaw from '../message/message-card/raw/SimpleMessageRaw';
 import LeafTools from './LeafTools';
+import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import StateSaverProvider from '../util/StateSaverProvider';
 
 const Table = ({
-	simpleFields,
-	complexFields,
+	scrollTop,
+	type,
+	onScroll,
 }: {
-	simpleFields: SimpleField[];
-	complexFields: TreeNode[];
-}) => (
-	<div className='json-table'>
-		<div className='json-table-wrapper'>
-			<table>
-				<thead>
+	scrollTop: number;
+	type: 'select' | 'compare';
+	onScroll: (e: React.UIEvent<'div'>) => void;
+}) => {
+	const JSONViewerStore = useJSONViewerStore();
+	const [rowsToRender, setRowsToRender] = React.useState(
+		type === 'select' ? JSONViewerStore.getShownSelectRows : JSONViewerStore.getShownCompareRows,
+	);
+	const virtuoso = React.useRef<VirtuosoHandle>(null);
+
+	const toggleNode = (nodeId: string) => {
+		if (type === 'select') {
+			if (JSONViewerStore.openSelectedRows.has(nodeId)) {
+				JSONViewerStore.closeSelectRow(nodeId);
+			} else {
+				JSONViewerStore.openSelectRow(nodeId);
+			}
+			setRowsToRender(JSONViewerStore.getShownSelectRows);
+		} else {
+			if (JSONViewerStore.openComparableRows.has(nodeId)) {
+				JSONViewerStore.closeCompareRow(nodeId);
+			} else {
+				JSONViewerStore.openCompareRow(nodeId);
+			}
+			setRowsToRender(JSONViewerStore.getShownCompareRows);
+		}
+	};
+
+	useEffect(() => {
+		if (virtuoso.current) {
+			virtuoso.current.scrollTo({
+				top: scrollTop,
+			});
+		}
+	}, [virtuoso, scrollTop]);
+
+	useEffect(() => {
+		if (type === 'select') {
+			setRowsToRender(JSONViewerStore.getShownSelectRows);
+		}
+	}, [JSONViewerStore.selectedTreeNode.id]);
+
+	useEffect(() => {
+		if (type === 'compare') {
+			setRowsToRender(JSONViewerStore.getShownCompareRows);
+		}
+	}, [JSONViewerStore.comparableTreeNode.id]);
+
+	const computeRowKey = React.useCallback(
+		(index: number, row: TreeNode | SimpleField) => row.id,
+		[],
+	);
+
+	const renderRow = React.useCallback((index: number, row: TreeNode | SimpleField) => {
+		if ('complexFields' in row)
+			return (
+				<ExpandRow
+					field={row}
+					isOpen={
+						type === 'select'
+							? JSONViewerStore.openSelectedRows.has(row.id)
+							: JSONViewerStore.openComparableRows.has(row.id)
+					}
+					setOpen={toggleNode}
+				/>
+			);
+		return <SimpleRow field={row} />;
+	}, []);
+
+	return (
+		<StateSaverProvider>
+			<TableVirtuoso
+				ref={virtuoso}
+				onScroll={onScroll}
+				className='json-table'
+				style={{ height: '100%' }}
+				fixedHeaderContent={() => (
 					<tr>
-						<th style={{ gridColumn: '1 / 2' }} key='fieldKey'>
+						<th style={{ width: `30%` }} key='fieldKey'>
 							fieldKey
 						</th>
-						<th style={{ gridColumn: `2 / 3` }} key='fieldValue'>
+						<th style={{ width: `70%` }} key='fieldValue'>
 							fieldValue
 						</th>
 					</tr>
-				</thead>
-				<tbody>
-					<TableRows simpleFields={simpleFields} complexFields={complexFields} />
-				</tbody>
-			</table>
-		</div>
-	</div>
-);
+				)}
+				data={rowsToRender}
+				computeItemKey={computeRowKey}
+				overscan={3}
+				itemContent={renderRow}
+			/>
+		</StateSaverProvider>
+	);
+};
 
 const Base64Cell = ({ value }: { value: string }) => {
 	const [viewType, setViewType] = React.useState(TreeViewType.ASCII);
@@ -56,7 +131,7 @@ const Base64Cell = ({ value }: { value: string }) => {
 		case TreeViewType.ORIGIN:
 			return (
 				<div className='json-table-Base64Cell'>
-					<div>
+					<div style={{ overflowWrap: 'anywhere' }}>
 						<p>{String(value)}</p>
 					</div>
 					<LeafTools activeViewType={viewType} toggleViewType={setViewType} viewTypes={viewTypes} />
@@ -67,14 +142,10 @@ const Base64Cell = ({ value }: { value: string }) => {
 	}
 };
 
-const TableRows = ({
-	simpleFields,
-	complexFields,
-}: {
-	simpleFields: SimpleField[];
-	complexFields: TreeNode[];
-}) => {
-	const getValue = ({ key, value }: SimpleField) => {
+const SimpleRow = ({ field }: { field: SimpleField }) => {
+	const { key, value, parentIds } = field;
+
+	const getValue = () => {
 		if (key.endsWith('Base64')) {
 			try {
 				decodeBase64RawContent(value);
@@ -94,31 +165,45 @@ const TableRows = ({
 
 	return (
 		<>
-			{simpleFields.map(({ key, value }, index) => (
-				<tr key={`${key}:${value}:${index}`} className={createBemBlock('json-table-row-value')}>
-					{value === '' ? (
-						<td style={{ gridColumn: `1/3` }}>
-							<p>{key}</p>
-						</td>
-					) : (
-						<>
-							<td>
-								<p>{key}</p>
-							</td>
-							<td>{getValue({ key, value })}</td>
-						</>
-					)}
-				</tr>
-			))}
-			{complexFields.map(field => (
-				<ExpandRow field={field} key={`${field.id}`} />
-			))}
+			{value === '' ? (
+				<td
+					className={'json-table-row-value'}
+					colSpan={2}
+					style={{
+						paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
+						overflowWrap: 'anywhere',
+					}}>
+					<p>{key}</p>
+				</td>
+			) : (
+				<>
+					<td
+						className={'json-table-row-value'}
+						style={{
+							width: `30%`,
+							paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
+							overflowWrap: 'anywhere',
+						}}>
+						<p>{key}</p>
+					</td>
+					<td className={'json-table-row-value'} style={{ width: `70%`, overflowWrap: 'anywhere' }}>
+						{getValue()}
+					</td>
+				</>
+			)}
 		</>
 	);
 };
 
-const ExpandRow = ({ field }: { field: TreeNode }) => {
-	const [isOpen, setIsOpen] = React.useState(false);
+const ExpandRow = ({
+	field,
+	isOpen,
+	setOpen,
+}: {
+	field: TreeNode;
+	isOpen: boolean;
+	setOpen: (id: string) => void;
+}) => {
 	const nodeName = useMemo(() => {
 		if (field.displayName) return field.displayName;
 		if (field.key && !(field.isGeneratedKey && !field.isRoot)) return field.key;
@@ -127,34 +212,21 @@ const ExpandRow = ({ field }: { field: TreeNode }) => {
 
 	return (
 		<>
-			<tr className={createBemBlock('json-table-row-toogler')} onClick={() => setIsOpen(!isOpen)}>
-				<td style={{ gridColumn: `1/3` }}>
-					<div className='leafWrapper'>
-						<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
-						<div className={'valueLeaf-table'} title={nodeName}>
-							{nodeName}
-						</div>
+			<td
+				className={'json-table-row-togler'}
+				style={{
+					gridColumn: `1/3`,
+					paddingLeft: `${field.parentIds.length * 10}px`,
+				}}
+				colSpan={2}
+				onClick={() => setOpen(field.id)}>
+				<div className='leafWrapper'>
+					<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
+					<div className={'valueLeaf-table'} title={nodeName}>
+						{nodeName}
 					</div>
-				</td>
-			</tr>
-			{isOpen && (
-				<tr>
-					<td style={{ gridColumn: `1/3` }}>
-						<div className='json-table'>
-							<div className='json-table-wrapper'>
-								<table>
-									<tbody>
-										<TableRows
-											simpleFields={field.simpleFields}
-											complexFields={field.complexFields}
-										/>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</td>
-				</tr>
-			)}
+				</div>
+			</td>
 		</>
 	);
 };

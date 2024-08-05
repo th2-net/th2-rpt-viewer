@@ -160,44 +160,52 @@
 
 .json-table {
 	@include scrollbar;
-	@include default-table;
-
-	&-wrapper {
-		overflow-x: auto;
-		table {
-			grid-template-columns: 30% 70%;
-		}
+	table {
+		border-collapse: collapse;
+		border-style: hidden;
+		table-layout: fixed;
+		border-radius: 4px;
+		width: 100%;
 	}
 
-	td,
+	th,
+	td {
+		font-size: 11px;
+		line-height: 16px;
+		padding-top: 0;
+		padding-bottom: 0;
+		box-sizing: border-box;
+		border-bottom: 1px solid $tableCellBorderColor;
+	}
+
 	th {
-		text-align: left;
+		font-weight: bold;
+		line-height: 16px;
+		color: white;
+		background-color: $tableHeaderBackground;
+		padding: 4px;
+
+		&.transparent {
+			background-color: transparent;
+			border-color: transparent;
+		}
+
+		&:first-child {
+			border-radius: 4px 0 0 0;
+		}
+
+		&:last-child {
+			border-radius: 0 4px 0 0;
+		}
 	}
 
 	tr {
 		&:hover td {
-			background-color: white;
-		}
-	}
+			background-color: darken($color: $tableBodyBackground, $amount: 10);
 
-	display: block;
-	width: 100%;
-	height: auto;
-	overflow: auto;
-
-	&-row-value {
-		p {
-			margin: 0;
-			text-decoration: none;
-			font-size: 12px;
-		}
-		
-		&:hover td {
-			background-color: darken(white, 10px) !important;
-		}
-
-		td .mc-raw__content {
-			letter-spacing: 0;
+			&.transparent {
+				background-color: transparent;
+			}
 		}
 	}
 
@@ -207,17 +215,15 @@
 		justify-content: space-between;
 	}
 
-	&-row-toogler {
+	&-row-togler {
 		cursor: pointer;
 		color: #fff;
 		
-		&:hover td {
+		&:hover {
 			background-color: darken($tableHeaderBackgroundSecondary, 10px) !important;
 		}
 
-		& td {
-			background-color: $tableHeaderBackgroundSecondary !important;
-		}
+		background-color: $tableHeaderBackgroundSecondary !important;
 		
 		.expand-icon {
 			background-color: white;

@@ -14,8 +14,10 @@ export enum TreeViewType {
 }
 
 export interface SimpleField {
+	id: string;
 	key: string;
 	value: any;
+	parentIds?: string[];
 }
 
 export interface TreeNode {
