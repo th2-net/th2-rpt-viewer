@@ -76,6 +76,7 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 							'valueLeaf',
 							treeNode.failed ? 'failed' : 'passed',
 							treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
+							treeNode.id === JSONViewerStore.comparableTreeNode.id ? 'compared' : null,
 						)}
 						title={nodeName}
 						onClick={() => {
@@ -114,6 +115,7 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 					'leaf',
 					needBounding ? 'expanded' : null,
 					treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
+					treeNode.id === JSONViewerStore.comparableTreeNode.id ? 'compared' : null,
 				)}
 				style={{
 					marginBottom: needBounding ? '5px' : undefined,

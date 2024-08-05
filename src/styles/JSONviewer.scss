@@ -143,6 +143,7 @@
 	display: flex;
 	flex-direction: column;
 	border-radius: 5px;
+	
 	&.expanded {
 		border: 2px solid;
 		border-color: $attachedMessageCardBorderColor;
@@ -152,9 +153,15 @@
 			border-color: $alternativeTextColor;
 		}
 	}
+
 	&.selected {
 		border: 2px solid;
 		border-color: var(--status-primary-border-color);
+	}
+	
+	&.compared {
+		border: 2px solid;
+		border-color: $rejectedMessageLabelBackground;
 	}
 }
 

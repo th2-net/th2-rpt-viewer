@@ -191,6 +191,7 @@ const JSONViewerWorkspace = () => {
 			JSONViewerStore.notebooks,
 			JSONViewerStore.isModalOpen,
 			JSONViewerStore.selectedTreeNode,
+			JSONViewerStore.comparableTreeNode,
 			JSONViewerStore.openTreeNodes,
 		],
 	).get();
