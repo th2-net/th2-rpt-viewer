@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { observer } from 'mobx-react-lite';
 import { SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
@@ -8,6 +9,8 @@ import SimpleMessageRaw from '../message/message-card/raw/SimpleMessageRaw';
 import LeafTools from './LeafTools';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import StateSaverProvider from '../util/StateSaverProvider';
+import multiTokenSplit from '../../helpers/search/multiTokenSplit';
+import SearchToken from '../../models/search/SearchToken';
 
 const Table = ({
 	scrollTop,
@@ -67,21 +70,27 @@ const Table = ({
 		[],
 	);
 
-	const renderRow = React.useCallback((index: number, row: TreeNode | SimpleField) => {
-		if ('complexFields' in row)
-			return (
-				<ExpandRow
-					field={row}
-					isOpen={
-						type === 'select'
-							? JSONViewerStore.openSelectedRows.has(row.id)
-							: JSONViewerStore.openComparableRows.has(row.id)
-					}
-					setOpen={toggleNode}
-				/>
-			);
-		return <SimpleRow field={row} />;
-	}, []);
+	const renderRow = React.useCallback(
+		(index: number, row: TreeNode | SimpleField) => {
+			if ('complexFields' in row) {
+				return (
+					<ExpandRow
+						field={row}
+						isOpen={
+							type === 'select'
+								? JSONViewerStore.openSelectedRows.has(row.id)
+								: JSONViewerStore.openComparableRows.has(row.id)
+						}
+						setOpen={toggleNode}
+						tokens={JSONViewerStore.tokens}
+					/>
+				);
+			}
+
+			return <SimpleRow field={row} tokens={JSONViewerStore.tokens} />;
+		},
+		[JSONViewerStore.tokens],
+	);
 
 	return (
 		<StateSaverProvider>
@@ -109,7 +118,7 @@ const Table = ({
 	);
 };
 
-const Base64Cell = ({ value }: { value: string }) => {
+const Base64Cell = ({ value, valueTokens }: { value: string; valueTokens: SearchToken[] }) => {
 	const [viewType, setViewType] = React.useState(TreeViewType.ASCII);
 	const viewTypes = [TreeViewType.ORIGIN, TreeViewType.BINARY, TreeViewType.ASCII];
 
@@ -132,7 +141,16 @@ const Base64Cell = ({ value }: { value: string }) => {
 			return (
 				<div className='json-table-Base64Cell'>
 					<div style={{ overflowWrap: 'anywhere' }}>
-						<p>{String(value)}</p>
+						<p>
+							{multiTokenSplit(String(value), valueTokens).map((contentPart, index) => (
+								<span
+									key={index}
+									className={contentPart.token != null ? 'found-content' : undefined}
+									style={{ backgroundColor: contentPart.token?.color }}>
+									{contentPart.content}
+								</span>
+							))}
+						</p>
 					</div>
 					<LeafTools activeViewType={viewType} toggleViewType={setViewType} viewTypes={viewTypes} />
 				</div>
@@ -142,14 +160,49 @@ const Base64Cell = ({ value }: { value: string }) => {
 	}
 };
 
-const SimpleRow = ({ field }: { field: SimpleField }) => {
+const SimpleRow = ({ field, tokens }: { field: SimpleField; tokens: SearchToken[] }) => {
+	const valueString =
+		typeof field.value === 'object'
+			? JSON.stringify(field.value)
+			: typeof field.value === 'string' && !field.key.endsWith('Base64')
+			? `"${field.value}"`
+			: String(field.value);
+
+	const keyTokens: SearchToken[] = tokens
+		.map(token => {
+			const isKeyValue = token.pattern.indexOf(':');
+			if (isKeyValue > -1) {
+				const key = token.pattern.slice(0, isKeyValue);
+				const value = token.pattern.slice(isKeyValue + 1).trim();
+				if (field.key.endsWith(key) && valueString.startsWith(value))
+					return { ...token, pattern: key };
+				return { ...token, pattern: '' };
+			}
+			return { ...token, pattern: token.pattern };
+		})
+		.filter(token => token.pattern.length > 0);
+
+	const valueTokens: SearchToken[] = tokens
+		.map(token => {
+			const isKeyValue = token.pattern.indexOf(':');
+			if (isKeyValue > -1) {
+				const key = token.pattern.slice(0, isKeyValue);
+				const value = token.pattern.slice(isKeyValue + 1).trim();
+				if (field.key.endsWith(key) && valueString.startsWith(value))
+					return { ...token, pattern: value };
+				return { ...token, pattern: '' };
+			}
+			return { ...token, pattern: token.pattern };
+		})
+		.filter(token => token.pattern.length > 0);
+
 	const { key, value, parentIds } = field;
 
 	const getValue = () => {
 		if (key.endsWith('Base64')) {
 			try {
 				decodeBase64RawContent(value);
-				return <Base64Cell value={value} />;
+				return <Base64Cell value={value} valueTokens={valueTokens} />;
 			} catch (error) {
 				return (
 					<div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -159,8 +212,18 @@ const SimpleRow = ({ field }: { field: SimpleField }) => {
 				);
 			}
 		}
-		if (typeof value === 'object') return <p>{JSON.stringify(value)}</p>;
-		return <p>{typeof value === 'string' ? `"${value}"` : String(value)}</p>;
+		return (
+			<p>
+				{multiTokenSplit(valueString, valueTokens).map((contentPart, index) => (
+					<span
+						key={index}
+						className={contentPart.token != null ? 'found-content' : undefined}
+						style={{ backgroundColor: contentPart.token?.color }}>
+						{contentPart.content}
+					</span>
+				))}
+			</p>
+		);
 	};
 
 	return (
@@ -173,7 +236,16 @@ const SimpleRow = ({ field }: { field: SimpleField }) => {
 						paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
 						overflowWrap: 'anywhere',
 					}}>
-					<p>{key}</p>
+					<p>
+						{multiTokenSplit(key, keyTokens).map((contentPart, index) => (
+							<span
+								key={index}
+								className={contentPart.token != null ? 'found-content' : undefined}
+								style={{ backgroundColor: contentPart.token?.color }}>
+								{contentPart.content}
+							</span>
+						))}
+					</p>
 				</td>
 			) : (
 				<>
@@ -184,7 +256,16 @@ const SimpleRow = ({ field }: { field: SimpleField }) => {
 							paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
 							overflowWrap: 'anywhere',
 						}}>
-						<p>{key}</p>
+						<p>
+							{multiTokenSplit(key, keyTokens).map((contentPart, index) => (
+								<span
+									key={index}
+									className={contentPart.token != null ? 'found-content' : undefined}
+									style={{ backgroundColor: contentPart.token?.color }}>
+									{contentPart.content}
+								</span>
+							))}
+						</p>
 					</td>
 					<td className={'json-table-row-value'} style={{ width: `70%`, overflowWrap: 'anywhere' }}>
 						{getValue()}
@@ -199,16 +280,20 @@ const ExpandRow = ({
 	field,
 	isOpen,
 	setOpen,
+	tokens,
 }: {
 	field: TreeNode;
 	isOpen: boolean;
 	setOpen: (id: string) => void;
+	tokens: SearchToken[];
 }) => {
 	const nodeName = useMemo(() => {
 		if (field.displayName) return field.displayName;
 		if (field.key && !(field.isGeneratedKey && !field.isRoot)) return field.key;
 		return 'no display name';
 	}, [field.displayName, field.key, field.isGeneratedKey]);
+
+	const splitContent = multiTokenSplit(nodeName, tokens);
 
 	return (
 		<>
@@ -223,7 +308,14 @@ const ExpandRow = ({
 				<div className='leafWrapper'>
 					<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
 					<div className={'valueLeaf-table'} title={nodeName}>
-						{nodeName}
+						{splitContent.map((contentPart, index) => (
+							<span
+								key={index}
+								className={contentPart.token != null ? 'found-content' : undefined}
+								style={{ backgroundColor: contentPart.token?.color }}>
+								{contentPart.content}
+							</span>
+						))}
 					</div>
 				</div>
 			</td>
@@ -231,4 +323,4 @@ const ExpandRow = ({
 	);
 };
 
-export default Table;
+export default observer(Table);

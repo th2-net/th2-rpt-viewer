@@ -1,7 +1,10 @@
 import { action, computed, observable } from 'mobx';
+import { nanoid } from 'nanoid';
 import { NotebookNode, SimpleField, TreeNode, TreeViewType } from '../models/JSONSchema';
 import { WorkspacePanelsLayout } from '../components/workspace/WorkspaceSplitter';
 import { getFlatListFromTree, getFlatListFromTreeWSimple } from '../helpers/JSONViewer';
+import SearchToken from '../models/search/SearchToken';
+import notificationsStore from './NotificationsStore';
 
 const nullTreeNode: TreeNode = {
 	id: '',
@@ -40,6 +43,72 @@ export class JSONViewerStore {
 	@observable comparableFlatTreeNode: (TreeNode | SimpleField)[] = [];
 
 	@observable openComparableRows: Set<string> = new Set();
+
+	@observable
+	public tokens: SearchToken[] = [];
+
+	@observable
+	public scrolledIndex: number | null = null;
+
+	@observable
+	public inputValue = '';
+
+	@action
+	updateTokens = (nextTokens: SearchToken[]) => {
+		const tokens = nextTokens.filter(
+			(token, index, newTokens) => newTokens.findIndex(t => t.pattern === token.pattern) === index,
+		);
+
+		this.tokens = tokens;
+	};
+
+	@action
+	updateTokensFromText = (text: string) => {
+		const newTokens: SearchToken[] = [];
+		try {
+			const json = JSON.parse(text);
+			for (let i = 0; i < json.length; i++) {
+				if (
+					json[i].pattern &&
+					json[i].color &&
+					newTokens.findIndex(token => token.pattern === json[i].pattern) === -1
+				)
+					newTokens.push({
+						pattern: json[i].pattern,
+						color: json[i].color,
+						isActive: json.length === i + 1,
+						isScrollable: true,
+					});
+			}
+		} catch (error) {
+			notificationsStore.addMessage({
+				type: 'error',
+				notificationType: 'genericError',
+				header: 'Failed to parse search data',
+				id: nanoid(),
+				description: String(error),
+			});
+			return;
+		}
+		this.updateTokens(newTokens);
+		this.inputValue = '';
+		this.scrolledIndex = 0;
+	};
+
+	@action
+	blankMethod = () => {
+		console.log('unexpected method call');
+	};
+
+	@action
+	clear = () => {
+		this.tokens = [];
+	};
+
+	@action
+	setInputValue = (value: string) => {
+		this.inputValue = value;
+	};
 
 	@action
 	public setIsModalOpen = (v: boolean, type: 'notebooks' | 'results') => {

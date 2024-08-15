@@ -7,6 +7,7 @@ import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import JSONView from './JSONView';
 import LeafTools from './LeafTools';
 import DisplayTable from './DisplayTable';
+import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 
 const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -24,6 +25,8 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 			viewType === TreeViewType.PRETTY,
 		[open, viewType],
 	);
+
+	const splitContent = multiTokenSplit(nodeName, JSONViewerStore.tokens);
 
 	useEffect(() => {
 		const isChildDisplay =
@@ -90,7 +93,14 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 							}}>
 							<div className={createBemBlock('event-status-icon')} />
 							<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
-								{nodeName}
+								{splitContent.map((contentPart, index) => (
+									<span
+										key={index}
+										className={contentPart.token != null ? 'found-content' : undefined}
+										style={{ backgroundColor: contentPart.token?.color }}>
+										{contentPart.content}
+									</span>
+								))}
 							</span>{' '}
 							<span style={{ color: '#333333' }}>
 								{complexFieldsDisplay()} {simpleFieldsDisplay()}
@@ -149,7 +159,14 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 							}}>
 							<div className={createBemBlock('event-status-icon')} />
 							<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
-								{nodeName}
+								{splitContent.map((contentPart, index) => (
+									<span
+										key={index}
+										className={contentPart.token != null ? 'found-content' : undefined}
+										style={{ backgroundColor: contentPart.token?.color }}>
+										{contentPart.content}
+									</span>
+								))}
 							</span>{' '}
 							<span style={{ color: '#333333' }}>
 								{complexFieldsDisplay()} {simpleFieldsDisplay()}

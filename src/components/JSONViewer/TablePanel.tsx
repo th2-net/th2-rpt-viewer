@@ -1,10 +1,13 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { createBemBlock } from '../../helpers/styleCreators';
 import Table from './Table';
 import '../../styles/JSONviewer.scss';
 import { TreeNode } from '../../models/JSONSchema';
 import SplitView from '../split-view/SplitView';
 import SplitViewPane from '../split-view/SplitViewPane';
+import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 
 interface props {
 	panelArea: number;
@@ -14,6 +17,7 @@ interface props {
 }
 
 const TablePanel = ({ selectedNode, compareNode, panelArea, setPanelArea }: props) => {
+	const JSONViewerStore = useJSONViewerStore();
 	const [scrollTop, setScrollTop] = React.useState(0);
 
 	const getName = (treeNode: TreeNode) => {
@@ -45,7 +49,16 @@ const TablePanel = ({ selectedNode, compareNode, panelArea, setPanelArea }: prop
 								)}
 							/>
 							<div className={'title'} title={treeNode.key}>
-								{getName(treeNode)}
+								{multiTokenSplit(getName(treeNode), JSONViewerStore.tokens).map(
+									(contentPart, index) => (
+										<span
+											key={index}
+											className={contentPart.token != null ? 'found-content' : undefined}
+											style={{ backgroundColor: contentPart.token?.color }}>
+											{contentPart.content}
+										</span>
+									),
+								)}
 							</div>
 						</div>
 					)}
@@ -58,12 +71,12 @@ const TablePanel = ({ selectedNode, compareNode, panelArea, setPanelArea }: prop
 
 	const selectedPanel = React.useMemo(
 		() => getPanel(selectedNode, 'select'),
-		[selectedNode, scrollTop],
+		[selectedNode, scrollTop, JSONViewerStore.tokens],
 	);
 
 	const comparePanel = React.useMemo(
 		() => getPanel(compareNode, 'compare'),
-		[compareNode, scrollTop],
+		[compareNode, scrollTop, JSONViewerStore.tokens],
 	);
 
 	return (
@@ -74,4 +87,4 @@ const TablePanel = ({ selectedNode, compareNode, panelArea, setPanelArea }: prop
 	);
 };
 
-export default TablePanel;
+export default observer(TablePanel);

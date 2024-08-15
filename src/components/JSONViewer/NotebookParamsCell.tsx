@@ -64,7 +64,7 @@ const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) =>
 	};
 
 	const getResults = async (respTaskId: string) => {
-		const { status, result, path } = await api.jsonViewer.getResults(respTaskId);
+		const { status, result, path, customization } = await api.jsonViewer.getResults(respTaskId);
 
 		switch (status) {
 			case 'success':
@@ -98,6 +98,7 @@ const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) =>
 					JSONViewerStore.addNotebookResult(notebook.name, node, convertResultCount);
 					setResultCount(String(convertResultCount));
 					setResults(newResults.slice(0, convertResultCount));
+					if (customization) JSONViewerStore.updateTokensFromText(customization);
 					setIsRunLoading(false);
 					setIsExpanded(false);
 				}

@@ -280,6 +280,32 @@
 	}
 }
 
+.JSON-header-wrapper{
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.JSON-search-wrapper{
+	display: flex;
+	width: 100%;
+	gap: 5px;
+	align-items: center;
+	padding: 5px;
+	.search-field-wrapper{
+		width: 100%;
+		.search-field {
+			border: 1px solid black;
+		}
+		.search-field__search-controls.search-controls{
+			min-width: 0;
+		}
+	}
+	.import-JSON-button{
+		@include round-button(url(../../resources/icons/download.svg));
+	}
+}
+
 .fileChoosing {
 	@include scrollbar;
 	@include card-shadow;

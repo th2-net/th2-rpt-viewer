@@ -30,6 +30,7 @@ import NotebookParamsCell from '../JSONViewer/NotebookParamsCell';
 import TreePanel from '../JSONViewer/TreePanel';
 import { getFlatListFromTree, parseText } from '../../helpers/JSONViewer';
 import StateSaverProvider from '../util/StateSaverProvider';
+import { SearchInputBase } from '../search/SearchInput';
 
 const panelColors = {
 	tree: {
@@ -47,7 +48,8 @@ const JSONViewerWorkspace = () => {
 	const { panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } =
 		JSONViewerWorkspaceStore.viewStore;
 	const JSONViewerStore = useJSONViewerStore();
-	const inputRef = React.useRef<HTMLInputElement>(null);
+	const inputJSONRef = React.useRef<HTMLInputElement>(null);
+	const inputSearchRef = React.useRef<HTMLInputElement>(null);
 
 	const onSubmit = (nodes: TreeNode[], notebooks: NotebookNode[]) => {
 		JSONViewerStore.setTreeNodes([]);
@@ -102,6 +104,13 @@ const JSONViewerWorkspace = () => {
 		if (nodes.length > 0) JSONViewerStore.selectTreeNode(nodes[0]);
 	};
 
+	const readSearchFile = async (files: FileList) => {
+		const file = files.item(0);
+		if (!file) return;
+		const fileContent = await file.text();
+		JSONViewerStore.updateTokensFromText(fileContent);
+	};
+
 	const computeTreeKey = React.useCallback(
 		(index: number, dataNode: TreeNode | NotebookNode) =>
 			`${'id' in dataNode ? `${dataNode.id}-${dataNode.viewType}` : dataNode.name}`,
@@ -120,33 +129,55 @@ const JSONViewerWorkspace = () => {
 				color: panelColors.tree,
 				component: (
 					<div className='JSON-wrapper' style={{ gap: '1px' }}>
-						<div className='JSON-buttons-wrapper'>
-							<button
-								className='load-JSON-button'
-								title='Load Executable(s) From Server'
-								onClick={() =>
-									JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'notebooks')
-								}>
-								Load Executable(s) From Server
-							</button>
-							<button
-								className='load-JSON-button'
-								title='Load Result(s) From Server'
-								onClick={() =>
-									JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'results')
-								}>
-								Load Result(s) From Server
-							</button>
-							<button
-								className='load-JSON-button'
-								title='Load Local Result(s)'
-								onClick={() => inputRef.current?.click()}>
-								Load Local Result(s)
-							</button>
+						<div className='JSON-header-wrapper'>
+							<div className='JSON-buttons-wrapper'>
+								<button
+									className='load-JSON-button'
+									title='Load Executable(s) From Server'
+									onClick={() =>
+										JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'notebooks')
+									}>
+									Load Executable(s) From Server
+								</button>
+								<button
+									className='load-JSON-button'
+									title='Load Result(s) From Server'
+									onClick={() =>
+										JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'results')
+									}>
+									Load Result(s) From Server
+								</button>
+								<button
+									className='load-JSON-button'
+									title='Load Local Result(s)'
+									onClick={() => inputJSONRef.current?.click()}>
+									Load Local Result(s)
+								</button>
+							</div>
+							<div className='JSON-search-wrapper'>
+								<SearchInputBase
+									searchTokens={JSONViewerStore.tokens}
+									resultsCount={0}
+									currentIndex={JSONViewerStore.scrolledIndex}
+									isLoading={false}
+									updateSearchTokens={JSONViewerStore.updateTokens}
+									nextSearchResult={JSONViewerStore.blankMethod}
+									prevSearchResult={JSONViewerStore.blankMethod}
+									clear={JSONViewerStore.clear}
+									value={JSONViewerStore.inputValue}
+									setValue={JSONViewerStore.setInputValue}
+									disabled={true}
+								/>
+								<div
+									className='import-JSON-button'
+									onClick={() => inputSearchRef.current?.click()}
+									title='Import Search'
+								/>
+							</div>
 						</div>
 						<input
 							hidden
-							ref={inputRef}
+							ref={inputJSONRef}
 							style={{ marginBottom: 10 }}
 							type='file'
 							accept='.jsonl'
@@ -154,7 +185,20 @@ const JSONViewerWorkspace = () => {
 							onChange={ev => {
 								if (ev.target.files) {
 									readFile(ev.target.files);
-									if (inputRef.current) inputRef.current.value = '';
+									if (inputJSONRef.current) inputJSONRef.current.value = '';
+								}
+							}}
+						/>
+						<input
+							hidden
+							ref={inputSearchRef}
+							style={{ marginBottom: 10 }}
+							type='file'
+							accept='.json'
+							onChange={ev => {
+								if (ev.target.files) {
+									readSearchFile(ev.target.files);
+									if (inputSearchRef.current) inputSearchRef.current.value = '';
 								}
 							}}
 						/>
@@ -193,6 +237,7 @@ const JSONViewerWorkspace = () => {
 			JSONViewerStore.selectedTreeNode,
 			JSONViewerStore.comparableTreeNode,
 			JSONViewerStore.openTreeNodes,
+			JSONViewerStore.tokens,
 		],
 	).get();
 
