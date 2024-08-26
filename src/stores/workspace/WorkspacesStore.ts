@@ -56,8 +56,6 @@ export default class WorkspacesStore {
 
 	public searchWorkspace: SearchWorkspaceStore;
 
-	public JSONViewerWorkspace: JSONViewerWorkspaceStore;
-
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
@@ -72,8 +70,6 @@ export default class WorkspacesStore {
 			this.api,
 		);
 
-		this.JSONViewerWorkspace = new JSONViewerWorkspaceStore(this);
-
 		this.init(initialState || null);
 
 		reaction(
@@ -83,10 +79,14 @@ export default class WorkspacesStore {
 		);
 	}
 
-	@observable workspaces: Array<WorkspaceStore> = [];
+	@observable workspaces: Array<WorkspaceStore | JSONViewerWorkspaceStore> = [
+		new JSONViewerWorkspaceStore(this),
+	];
 
 	@computed get eventStores() {
-		return this.workspaces.map(workspace => workspace.eventsStore);
+		return this.workspaces
+			.filter(workspace => isWorkspaceStore(workspace))
+			.map(workspace => workspace.eventsStore);
 	}
 
 	@computed get isFull() {
@@ -94,9 +94,7 @@ export default class WorkspacesStore {
 	}
 
 	@computed get activeWorkspace() {
-		return [this.searchWorkspace, this.JSONViewerWorkspace, ...this.workspaces][
-			this.tabsStore.activeTabIndex
-		];
+		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
 	}
 
 	@action
@@ -136,8 +134,10 @@ export default class WorkspacesStore {
 					event,
 				);
 
+				this.createJSONWorkspace();
 				this.addWorkspace(await this.createWorkspace(workspaceInitialState));
 			} else {
+				this.createJSONWorkspace();
 				initialState.workspaces.forEach(async workspaceState =>
 					this.addWorkspace(await this.createWorkspace(workspaceState)),
 				);
@@ -153,9 +153,9 @@ export default class WorkspacesStore {
 	};
 
 	@action
-	public addWorkspace = (workspace: WorkspaceStore) => {
+	public addWorkspace = (workspace: WorkspaceStore | JSONViewerWorkspaceStore) => {
 		this.workspaces.push(workspace);
-		this.tabsStore.setActiveWorkspace(this.workspaces.length + 1);
+		this.tabsStore.setActiveWorkspace(this.workspaces.length);
 	};
 
 	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
@@ -180,6 +180,8 @@ export default class WorkspacesStore {
 		);
 	};
 
+	public createJSONWorkspace = async () => new JSONViewerWorkspaceStore(this);
+
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,
 		bookId: string,
@@ -202,10 +204,10 @@ export default class WorkspacesStore {
 		};
 	};
 
-	public closeWorkspace = (tab: number | WorkspaceStore) => {
+	public closeWorkspace = (tab: number | WorkspaceStore | JSONViewerWorkspaceStore) => {
 		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
 
-		closedWorkspace.dispose();
+		if (isWorkspaceStore(closedWorkspace)) closedWorkspace.dispose();
 	};
 
 	public getInitialWorkspaceByEvent = (
@@ -269,8 +271,10 @@ export default class WorkspacesStore {
 
 	public onSelectedBookChange = (book: Book) => {
 		this.workspaces.forEach(workspace => {
-			workspace.eventsStore.onSelectedBookChange(book);
-			workspace.messagesStore.onSelectedBookChange();
+			if (isWorkspaceStore(workspace)) {
+				workspace.eventsStore.onSelectedBookChange(book);
+				workspace.messagesStore.onSelectedBookChange();
+			}
 		});
 	};
 

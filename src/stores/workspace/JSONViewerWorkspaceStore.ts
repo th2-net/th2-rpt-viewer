@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { action } from 'mobx';
 import WorkspaceViewStore from './WorkspaceViewStore';
-import { JSONViewerStore } from '../JSONViewerStore';
+import { JSONViewerStore } from '../JSONViewer/JSONViewerStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import WorkspacesStore from './WorkspacesStore';
 

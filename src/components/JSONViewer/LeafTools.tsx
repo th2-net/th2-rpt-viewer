@@ -26,6 +26,7 @@ export type LeafToolsConfig = {
 	toggleViewType: (viewType: any) => void;
 	addNodeToCompare?: () => void;
 	viewTypes: TreeViewType[] | MessageViewType[];
+	isRoot?: boolean;
 };
 
 const LeafTools = ({
@@ -33,6 +34,7 @@ const LeafTools = ({
 	viewTypes,
 	toggleViewType,
 	addNodeToCompare,
+	isRoot,
 }: LeafToolsConfig) => {
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
@@ -59,46 +61,71 @@ const LeafTools = ({
 					e.stopPropagation();
 					setIsViewMenuOpen(isOpen => !isOpen);
 				}}>
-				<div className='message-card-tools__ellipsis' style={{ display: 'block' }} />
-			</div>
-			<ToolsPopup isOpen={isViewMenuOpen}>
-				<div className='message-card-tools__controls-group'>
-					{addNodeToCompare && (
-						<div
-							title={'add node to compare'}
-							className='message-card-tools__item'
-							onClick={e => {
-								e.stopPropagation();
-								addNodeToCompare();
-							}}>
-							<span className='message-card-tools__item-title'>Select to compare</span>
-						</div>
-					)}
-					{viewTypes.map(viewType => {
+				{!isRoot && <div className='message-card-tools__ellipsis' style={{ display: 'block' }} />}
+				{isRoot &&
+					viewTypes.map(viewType => {
 						const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
-						const indicatorClassName = createBemElement(
+						const itemClassName = createBemElement(
 							'message-card-tools',
-							'indicator',
+							'item',
 							viewType === activeViewType ? 'active' : null,
 						);
 
 						return (
 							<div
-								title={viewType}
-								className='message-card-tools__item'
+								title={`${viewType} view`}
+								className={itemClassName}
 								key={viewType}
+								style={{ padding: '2px' }}
 								onClick={e => {
 									e.stopPropagation();
 									toggleViewType(viewType);
 								}}>
-								<span className='message-card-tools__item-title'>{viewType}</span>
 								<div className={iconClassName} />
-								<div className={indicatorClassName} />
 							</div>
 						);
 					})}
-				</div>
-			</ToolsPopup>
+			</div>
+			{!isRoot && (
+				<ToolsPopup isOpen={isViewMenuOpen}>
+					<div className='message-card-tools__controls-group'>
+						{addNodeToCompare && (
+							<div
+								title={'add node to compare'}
+								className='message-card-tools__item'
+								onClick={e => {
+									e.stopPropagation();
+									addNodeToCompare();
+								}}>
+								<span className='message-card-tools__item-title'>Select to compare</span>
+							</div>
+						)}
+						{viewTypes.map(viewType => {
+							const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
+							const indicatorClassName = createBemElement(
+								'message-card-tools',
+								'indicator',
+								viewType === activeViewType ? 'active' : null,
+							);
+
+							return (
+								<div
+									title={viewType}
+									className='message-card-tools__item'
+									key={viewType}
+									onClick={e => {
+										e.stopPropagation();
+										toggleViewType(viewType);
+									}}>
+									<span className='message-card-tools__item-title'>{viewType}</span>
+									<div className={iconClassName} />
+									<div className={indicatorClassName} />
+								</div>
+							);
+						})}
+					</div>
+				</ToolsPopup>
+			)}
 		</div>
 	);
 };
@@ -108,15 +135,17 @@ export default LeafTools;
 interface ToolsPopupProps {
 	isOpen: boolean;
 	children: React.ReactNode;
+	isLeft?: boolean;
 }
 
-function ToolsPopup({ isOpen, children }: ToolsPopupProps) {
+export function ToolsPopup({ isOpen, children, isLeft }: ToolsPopupProps) {
+	const positionStyle = isLeft ? { left: '11px', right: 'initial' } : {};
 	return (
 		<AnimatePresence>
 			{isOpen && (
 				<motion.div
 					className='message-card-tools__controls'
-					style={{ transformOrigin: 'top' }}
+					style={{ transformOrigin: 'top', ...positionStyle }}
 					initial={{ opacity: 0, scale: 0.5 }}
 					animate={{ opacity: 1, scale: 1 }}
 					exit={{ opacity: 0, scale: 0.5 }}

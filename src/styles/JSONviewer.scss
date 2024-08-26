@@ -271,7 +271,6 @@
 	@include scrollbar;
 	background-color: white;
 	height: 100%;
-	overflow: auto;
 	padding: 5px;
 	&.tableView {
 		display: flex;
@@ -303,6 +302,10 @@
 	}
 	.import-JSON-button{
 		@include round-button(url(../../resources/icons/download.svg));
+	}
+	.export-JSON-button{
+		@include round-button(url(../../resources/icons/download.svg));
+		rotate: 180deg;
 	}
 }
 

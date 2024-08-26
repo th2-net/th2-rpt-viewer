@@ -11,6 +11,7 @@ import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import StateSaverProvider from '../util/StateSaverProvider';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import SearchToken from '../../models/search/SearchToken';
+import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 
 const Table = ({
 	scrollTop,
@@ -168,33 +169,14 @@ const SimpleRow = ({ field, tokens }: { field: SimpleField; tokens: SearchToken[
 			? `"${field.value}"`
 			: String(field.value);
 
-	const keyTokens: SearchToken[] = tokens
-		.map(token => {
-			const isKeyValue = token.pattern.indexOf(':');
-			if (isKeyValue > -1) {
-				const key = token.pattern.slice(0, isKeyValue);
-				const value = token.pattern.slice(isKeyValue + 1).trim();
-				if (field.key.endsWith(key) && valueString.startsWith(value))
-					return { ...token, pattern: key };
-				return { ...token, pattern: '' };
-			}
-			return { ...token, pattern: token.pattern };
-		})
-		.filter(token => token.pattern.length > 0);
+	const keyValueTokens = getKeyValueTokens(tokens).filter(
+		({ isOne, keyToken, valueToken }) =>
+			!isOne ||
+			(field.key.endsWith(keyToken.pattern) && valueString.startsWith(valueToken.pattern)),
+	);
 
-	const valueTokens: SearchToken[] = tokens
-		.map(token => {
-			const isKeyValue = token.pattern.indexOf(':');
-			if (isKeyValue > -1) {
-				const key = token.pattern.slice(0, isKeyValue);
-				const value = token.pattern.slice(isKeyValue + 1).trim();
-				if (field.key.endsWith(key) && valueString.startsWith(value))
-					return { ...token, pattern: value };
-				return { ...token, pattern: '' };
-			}
-			return { ...token, pattern: token.pattern };
-		})
-		.filter(token => token.pattern.length > 0);
+	const keyTokens = keyValueTokens.map(({ keyToken }) => keyToken);
+	const valueTokens = keyValueTokens.map(({ valueToken }) => valueToken);
 
 	const { key, value, parentIds } = field;
 

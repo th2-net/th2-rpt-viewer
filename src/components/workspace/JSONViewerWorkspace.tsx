@@ -23,7 +23,7 @@ import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
 import { NotebookNode, TreeNode } from '../../models/JSONSchema';
 import TablePanel from '../JSONViewer/TablePanel';
-import useJSONViewerWorkspace from '../../hooks/useJSONViewerWorkspace';
+import { useJSONViewerWorkspace } from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import FileChoosing from '../JSONViewer/FileChoosing';
 import NotebookParamsCell from '../JSONViewer/NotebookParamsCell';
@@ -113,7 +113,11 @@ const JSONViewerWorkspace = () => {
 
 	const computeTreeKey = React.useCallback(
 		(index: number, dataNode: TreeNode | NotebookNode) =>
-			`${'id' in dataNode ? `${dataNode.id}-${dataNode.viewType}` : dataNode.name}`,
+			`${
+				'id' in dataNode
+					? `${dataNode.id}-${dataNode.viewType}-${JSONViewerStore.openTreeNodes.has(dataNode.id)}`
+					: dataNode.name
+			}`,
 		[],
 	);
 
@@ -173,6 +177,11 @@ const JSONViewerWorkspace = () => {
 									onClick={() => inputSearchRef.current?.click()}
 									title='Import Search'
 								/>
+								<div
+									className='export-JSON-button'
+									onClick={JSONViewerStore.exportSearch}
+									title='Export Search'
+								/>
 							</div>
 						</div>
 						<input
@@ -228,7 +237,7 @@ const JSONViewerWorkspace = () => {
 						</StateSaverProvider>
 					</div>
 				),
-				isActive: false,
+				isActive: true,
 			})),
 		[
 			JSONViewerStore.treeNodes,
@@ -241,31 +250,22 @@ const JSONViewerWorkspace = () => {
 		],
 	).get();
 
-	const [compareArea, setCompareArea] = React.useState(100);
-
-	const tablePanel = React.useMemo(
-		() =>
-			computed(() => ({
+	const viewerWorkspacePanels = React.useMemo(
+		() => [
+			treePanel,
+			{
 				title: `Table`,
 				color: panelColors.table,
 				component: (
-					<div className='JSON-wrapper tableView'>
-						<TablePanel
-							panelArea={compareArea}
-							setPanelArea={setCompareArea}
-							selectedNode={JSONViewerStore.selectedTreeNode}
-							compareNode={JSONViewerStore.comparableTreeNode}
-						/>
-					</div>
+					<TablePanel
+						selectedNode={JSONViewerStore.selectedTreeNode}
+						compareNode={JSONViewerStore.comparableTreeNode}
+					/>
 				),
-				isActive: false,
-			})),
-		[JSONViewerStore.selectTreeNode, JSONViewerStore.comparableTreeNode, compareArea],
-	).get();
-
-	const viewerWorkspacePanels = React.useMemo(
-		() => [treePanel, tablePanel],
-		[treePanel, tablePanel],
+				isActive: true,
+			},
+		],
+		[treePanel],
 	);
 
 	return (

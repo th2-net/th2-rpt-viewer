@@ -10,14 +10,13 @@ import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 
 interface props {
-	panelArea: number;
 	selectedNode: TreeNode;
 	compareNode: TreeNode;
-	setPanelArea: (p: number) => void;
 }
 
-const TablePanel = ({ selectedNode, compareNode, panelArea, setPanelArea }: props) => {
+const TablePanel = ({ selectedNode, compareNode }: props) => {
 	const JSONViewerStore = useJSONViewerStore();
+	const [panelArea, setPanelArea] = React.useState(100);
 	const [scrollTop, setScrollTop] = React.useState(0);
 
 	const getName = (treeNode: TreeNode) => {
@@ -80,10 +79,12 @@ const TablePanel = ({ selectedNode, compareNode, panelArea, setPanelArea }: prop
 	);
 
 	return (
-		<SplitView panelArea={panelArea} onPanelAreaChange={setPanelArea}>
-			<SplitViewPane>{selectedPanel}</SplitViewPane>
-			<SplitViewPane>{comparePanel}</SplitViewPane>
-		</SplitView>
+		<div className='JSON-wrapper tableView'>
+			<SplitView panelArea={panelArea} onPanelAreaChange={setPanelArea}>
+				<SplitViewPane>{selectedPanel}</SplitViewPane>
+				<SplitViewPane>{comparePanel}</SplitViewPane>
+			</SplitView>
+		</div>
 	);
 };
 

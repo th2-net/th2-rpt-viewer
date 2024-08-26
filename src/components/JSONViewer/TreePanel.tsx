@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import '../../styles/JSONviewer.scss';
-import { TreeNode, TreeViewType, ViewInstruction } from '../../models/JSONSchema';
+import { TreeNode, TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import JSONView from './JSONView';
@@ -11,7 +11,7 @@ import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 
 const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 	const JSONViewerStore = useJSONViewerStore();
-	const [viewType, setViewType] = React.useState(treeNode.viewType || TreeViewType.EVENTS_LIST);
+	const viewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
 	const [open, setOpen] = React.useState(JSONViewerStore.openTreeNodes.has(treeNode.id));
 	const nodeName = useMemo(() => {
 		if (treeNode.displayName) return treeNode.displayName;
@@ -36,6 +36,10 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 		if (isChildDisplay) JSONViewerStore.openNode(treeNode.id);
 		else JSONViewerStore.closeNode(treeNode.id);
 	}, [viewType]);
+
+	useEffect(() => {
+		setOpen(JSONViewerStore.openTreeNodes.has(treeNode.id));
+	}, [JSONViewerStore.openTreeNodes.values]);
 
 	const toggleNode = () => {
 		if (open) {
@@ -69,55 +73,6 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 		}
 	};
 
-	if (treeNode.viewInstruction === ViewInstruction.table) {
-		return (
-			<>
-				<div className='leafWrapper'>
-					<div style={{ width: `${20 * treeNode.parentIds.length + 23}px` }} />
-					<div
-						className={createBemBlock(
-							'valueLeaf',
-							treeNode.failed ? 'failed' : 'passed',
-							treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
-							treeNode.id === JSONViewerStore.comparableTreeNode.id ? 'compared' : null,
-						)}
-						title={nodeName}
-						onClick={() => {
-							JSONViewerStore.selectTreeNode(treeNode);
-						}}>
-						<div
-							style={{
-								display: 'flex',
-								gap: 5,
-								alignItems: 'center',
-							}}>
-							<div className={createBemBlock('event-status-icon')} />
-							<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
-								{splitContent.map((contentPart, index) => (
-									<span
-										key={index}
-										className={contentPart.token != null ? 'found-content' : undefined}
-										style={{ backgroundColor: contentPart.token?.color }}>
-										{contentPart.content}
-									</span>
-								))}
-							</span>{' '}
-							<span style={{ color: '#333333' }}>
-								{complexFieldsDisplay()} {simpleFieldsDisplay()}
-							</span>
-						</div>
-						<LeafTools
-							activeViewType={viewType}
-							viewTypes={[TreeViewType.EVENTS_LIST, TreeViewType.JSON, TreeViewType.PRETTY]}
-							toggleViewType={setViewType}
-							addNodeToCompare={() => JSONViewerStore.addNodeToCompare(treeNode)}
-						/>
-					</div>
-				</div>
-			</>
-		);
-	}
-
 	return (
 		<>
 			<div
@@ -138,7 +93,8 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 							}px`,
 						}}
 					/>
-					{((treeNode.childIds.length > 0 && viewType === TreeViewType.EVENTS_LIST) ||
+					{((treeNode.childIds.length > 0 &&
+						(treeNode.isRoot || viewType === TreeViewType.EVENTS_LIST)) ||
 						viewType === TreeViewType.DISPLAY_TABLE) && (
 						<div
 							className={createBemBlock('expand-icon', open ? 'expanded' : 'hidden')}
@@ -175,6 +131,7 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 						<LeafTools
 							activeViewType={viewType}
 							toggleViewType={changeViewType}
+							isRoot={treeNode.isRoot}
 							viewTypes={
 								treeNode.isRoot
 									? [TreeViewType.DISPLAY_TABLE, TreeViewType.EVENTS_LIST, TreeViewType.JSON]
@@ -198,7 +155,11 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 					(viewType === TreeViewType.JSON || viewType === TreeViewType.PRETTY) && (
 						<div className='message-card-wrapper'>
 							<div className='mc__mc-body mc-body'>
-								<JSONView isBeautified={viewType === TreeViewType.PRETTY} node={treeNode} />
+								<JSONView
+									isBeautified={viewType === TreeViewType.PRETTY}
+									node={treeNode}
+									tokens={JSONViewerStore.tokens}
+								/>
 							</div>
 						</div>
 					)}

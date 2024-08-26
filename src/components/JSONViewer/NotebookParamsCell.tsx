@@ -22,6 +22,7 @@ import { useNotificationsStore } from '../../hooks';
 import ParametersRow from './ParametersRow';
 
 const timeBetweenResults = 50;
+const ignoredParamNames = ['output_path', 'customization_path'];
 
 const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -47,7 +48,9 @@ const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) =>
 		api.jsonViewer
 			.getParameters(notebook.name)
 			.then((data: NotebookParameters) => {
-				const newParameters = Object.values(data).filter(param => param.name !== 'output_path');
+				const newParameters = Object.values(data).filter(param =>
+					ignoredParamNames.includes(param.name),
+				);
 				const newParamsValue = newParameters.map(convertParameterToInput);
 				setParameters(newParameters);
 				setParamsValue(newParamsValue);

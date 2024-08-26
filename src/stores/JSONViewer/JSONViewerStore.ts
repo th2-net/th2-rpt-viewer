@@ -1,10 +1,11 @@
 import { action, computed, observable } from 'mobx';
 import { nanoid } from 'nanoid';
-import { NotebookNode, SimpleField, TreeNode, TreeViewType } from '../models/JSONSchema';
-import { WorkspacePanelsLayout } from '../components/workspace/WorkspaceSplitter';
-import { getFlatListFromTree, getFlatListFromTreeWSimple } from '../helpers/JSONViewer';
-import SearchToken from '../models/search/SearchToken';
-import notificationsStore from './NotificationsStore';
+import { NotebookNode, SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
+import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
+import { getFlatListFromTree, getFlatListFromTreeWSimple } from '../../helpers/JSONViewer';
+import SearchToken from '../../models/search/SearchToken';
+import notificationsStore from '../NotificationsStore';
+import { downloadTxtFile } from '../../helpers/files/downloadTxt';
 
 const nullTreeNode: TreeNode = {
 	id: '',
@@ -18,6 +19,8 @@ const nullTreeNode: TreeNode = {
 };
 
 export class JSONViewerStore {
+	public id = nanoid();
+
 	constructor(private openTabs: (layout: WorkspacePanelsLayout) => void) {}
 
 	@observable
@@ -76,7 +79,7 @@ export class JSONViewerStore {
 					newTokens.push({
 						pattern: json[i].pattern,
 						color: json[i].color,
-						isActive: json.length === i + 1,
+						isActive: false,
 						isScrollable: true,
 					});
 			}
@@ -93,6 +96,29 @@ export class JSONViewerStore {
 		this.updateTokens(newTokens);
 		this.inputValue = '';
 		this.scrolledIndex = 0;
+	};
+
+	@action
+	exportSearch = () => {
+		const tokensConverted = this.tokens.map(token => ({
+			pattern: token.pattern,
+			color: token.color,
+		}));
+		const fileName = `search_${tokensConverted.map(token => token.pattern).join('_')}`.slice(
+			0,
+			251,
+		);
+
+		downloadTxtFile(
+			[
+				JSON.stringify(
+					this.tokens.map(token => ({ pattern: token.pattern, color: token.color })),
+					null,
+					'	',
+				),
+			],
+			`${fileName}.json`,
+		);
 	};
 
 	@action
@@ -161,6 +187,11 @@ export class JSONViewerStore {
 		this.openTreeNodes.delete(id);
 	}
 
+	@action openNodeAndCloseOthers(id: string) {
+		this.openTreeNodes.clear();
+		this.openTreeNodes.add(id);
+	}
+
 	@action setNodeView(id: string, viewType: TreeViewType) {
 		const index = this.treeNodes.findIndex(tree => tree.id === id);
 		this.treeNodes = [
@@ -183,6 +214,7 @@ export class JSONViewerStore {
 		for (let i = 0; i < node.childIds.length; i++) {
 			this.setGroupView(node.childIds[i], viewType);
 		}
+		if (node.isRoot) this.openNode(node.id);
 	}
 
 	@action getNotebook(name: string, defaultNotebook: NotebookNode) {
@@ -204,6 +236,7 @@ export class JSONViewerStore {
 			}
 			notebook.results = newResults.slice(0, resultCount);
 			this.selectTreeNode(newResult);
+			this.openNodeAndCloseOthers(newResult.id);
 		}
 		notebook.open = false;
 		this.notebooks = [
