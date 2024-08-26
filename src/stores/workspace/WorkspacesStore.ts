@@ -86,7 +86,10 @@ export default class WorkspacesStore {
 	@computed get eventStores() {
 		return this.workspaces
 			.filter(workspace => isWorkspaceStore(workspace))
-			.map(workspace => workspace.eventsStore);
+			.map(workspace => {
+				if (isWorkspaceStore(workspace)) return workspace.eventsStore;
+				return workspace;
+			});
 	}
 
 	@computed get isFull() {
