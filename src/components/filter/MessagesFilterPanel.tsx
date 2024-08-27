@@ -44,6 +44,7 @@ import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
 import MessageExport from '../message/MessageExport';
+import InfinityLimit from '../search-panel/search-form/InfinityLimit';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -72,6 +73,12 @@ const MessagesFilterPanel = () => {
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
 
+	function updateLimit(value: string) {
+		if (value === '' || /^\d+$/.test(value)) {
+			filterStore.setLookupLimit(value);
+		}
+	}
+
 	React.useEffect(() => {
 		setFilter(filterStore.sseMessagesFilter);
 	}, [filterStore.sseMessagesFilter]);
@@ -96,6 +103,10 @@ const MessagesFilterPanel = () => {
 
 	const submitChanges = React.useCallback(() => {
 		searchStore.stopSearch();
+		const newLimit = Number(filterStore.lookupLimitDays);
+		if (newLimit <= 0) {
+			filterStore.setLookupLimit('7');
+		}
 		messagesStore.applyFilter(
 			{
 				...filterStore.filter,
@@ -304,6 +315,13 @@ const MessagesFilterPanel = () => {
 				submitChanges={submitChanges}
 				stopLoading={stopLoading}
 				isLoading={isMessageListLoading}
+			/>
+			<InfinityLimit
+				value={filterStore.lookupLimitDays}
+				setValue={updateLimit}
+				disabled={false}
+				isShort={true}
+				title='Limit to initial messages search'
 			/>
 			<MessageExport
 				isExport={messagesStore.exportStore.isExport}

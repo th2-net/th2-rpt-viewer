@@ -104,7 +104,10 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	private messageAC: AbortController | null = null;
 
-	public getFilterParams = () => this.messagesStore.filterStore.filterParams;
+	public getFilterParams = () => ({
+		...this.messagesStore.filterStore.filterParams,
+		lookupLimitDays: Number(this.messagesStore.filterStore.lookupLimitDays),
+	});
 
 	@action
 	public loadMessages = async (
@@ -164,6 +167,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				{
 					streams: queryParams.stream,
 					bookId: queryParams.bookId,
+					lookupLimitDays: queryParams.lookupLimitDays,
 					...(this.messagesStore.selectedMessageId
 						? { messageId: this.messagesStore.selectedMessageId.valueOf() }
 						: { startTimestamp }),
@@ -228,6 +232,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			{
 				streams: [stream],
 				bookId,
+				lookupLimitDays: Number(this.messagesStore.filterStore.lookupLimitDays),
 				...(lastMessage
 					? { messageId: lastMessage?.messageId }
 					: { startTimestamp: this.messagesStore.filterStore.filterParams.startTimestamp }),

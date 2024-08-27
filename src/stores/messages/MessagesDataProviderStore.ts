@@ -188,7 +188,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				{
 					streams: queryParams.stream,
 					bookId,
-
+					lookupLimitDays: Number(this.messagesStore.filterStore.lookupLimitDays),
 					...(this.messagesStore.selectedMessageId
 						? { messageId: this.messagesStore.selectedMessageId.valueOf() }
 						: { startTimestamp }),
@@ -247,6 +247,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			{
 				streams: [stream],
 				bookId,
+				lookupLimitDays: Number(this.messagesStore.filterStore.lookupLimitDays),
 				...(lastMessage
 					? { messageId: lastMessage?.messageId }
 					: { startTimestamp: this.messagesStore.filterStore.filterParams.startTimestamp }),
