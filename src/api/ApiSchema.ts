@@ -98,6 +98,7 @@ export interface MessageApiSchema {
 			bookId: string;
 			startTimestamp?: number;
 			messageId?: string;
+			lookupLimitDays: number;
 		},
 		abortSignal?: AbortSignal,
 	) => Promise<DirectionalStreamInfo>;

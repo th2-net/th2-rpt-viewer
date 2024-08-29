@@ -53,6 +53,8 @@ export default class MessagesFilterStore {
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
+	@observable lookupLimitDays = '7';
+
 	@observable sseMessagesFilter: MessageFilterState | null = null;
 
 	/*
@@ -221,5 +223,10 @@ export default class MessagesFilterStore {
 
 	public dispose = () => {
 		this.sseFilterSubscription();
+	};
+
+	@action
+	public setLookupLimit = (newLimit: string): void => {
+		this.lookupLimitDays = newLimit;
 	};
 }
