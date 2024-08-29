@@ -35,7 +35,7 @@ const InfinityLimit = ({ value, setValue, disabled, isShort, title }: InfinityLi
 			onChange={e => setValue(e.target.value)}
 			disabled={disabled}
 		/>
-		<span className='search-infinity-limit__label'> days</span>
+		<span className='search-infinity-limit__label'> {isShort ? 'limit' : 'days'}</span>
 	</div>
 );
 

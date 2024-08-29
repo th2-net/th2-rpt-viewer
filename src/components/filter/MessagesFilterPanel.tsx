@@ -321,7 +321,7 @@ const MessagesFilterPanel = () => {
 				setValue={updateLimit}
 				disabled={false}
 				isShort={true}
-				title='Limit to initial messages search'
+				title='Days limit to messages search'
 			/>
 			<MessageExport
 				isExport={messagesStore.exportStore.isExport}

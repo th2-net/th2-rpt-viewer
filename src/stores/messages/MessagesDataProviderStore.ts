@@ -16,6 +16,7 @@
 
 import { action, reaction, observable, computed, runInAction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
+import moment from 'moment';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isAbortError } from '../../helpers/fetch';
@@ -289,8 +290,15 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		requestTimeoutMs?: number,
 		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
+		const endTimestamp = query.startTimestamp
+			? moment(query.startTimestamp)
+					.utc()
+					.subtract(this.messagesStore.filterStore.lookupLimitDays, 'days')
+					.valueOf()
+			: undefined;
+
 		this.searchChannelPrev = new MessagesSSEChannel(
-			query,
+			{ ...query, endTimestamp },
 			{
 				onResponse: this.onPrevChannelResponse,
 				onError: this.onLoadingError,
@@ -359,8 +367,15 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		requestTimeoutMs?: number,
 		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
+		const endTimestamp = query.startTimestamp
+			? moment(query.startTimestamp)
+					.utc()
+					.add(this.messagesStore.filterStore.lookupLimitDays, 'days')
+					.valueOf()
+			: undefined;
+
 		this.searchChannelNext = new MessagesSSEChannel(
-			query,
+			{ ...query, endTimestamp },
 			{
 				onResponse: this.onNextChannelResponse,
 				onError: this.onLoadingError,
