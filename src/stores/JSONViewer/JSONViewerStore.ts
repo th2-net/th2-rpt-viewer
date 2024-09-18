@@ -37,15 +37,25 @@ export class JSONViewerStore {
 
 	@observable selectedTreeNode: TreeNode = nullTreeNode;
 
+	@observable selectedCompareNode: TreeNode = nullTreeNode;
+
 	@observable selectedFlatTreeNode: (TreeNode | SimpleField)[] = [];
+
+	@observable selectedCompareFlatTreeNode: (TreeNode | SimpleField)[] = [];
 
 	@observable openSelectedRows: Set<string> = new Set();
 
+	@observable openCompareSelectedRows: Set<string> = new Set();
+
 	@observable comparableTreeNode: TreeNode = nullTreeNode;
 
-	@observable comparableFlatTreeNode: (TreeNode | SimpleField)[] = [];
+	@observable comparableFlatTreeNode: TreeNode[] = [];
 
-	@observable openComparableRows: Set<string> = new Set();
+	@observable openComparableNodes: Set<string> = new Set();
+
+	@observable chunkInterval = 1000;
+
+	@observable isCompare = false;
 
 	@observable
 	public tokens: SearchToken[] = [];
@@ -63,6 +73,11 @@ export class JSONViewerStore {
 		);
 
 		this.tokens = tokens;
+	};
+
+	@action
+	updateInterval = (newInterval: number) => {
+		this.chunkInterval = newInterval;
 	};
 
 	@action
@@ -121,6 +136,15 @@ export class JSONViewerStore {
 		);
 	};
 
+	@action toggleMode = () => {
+		this.isCompare = !this.isCompare;
+		if (this.isCompare) {
+			this.comparableFlatTreeNode = this.treeNodes;
+		} else {
+			this.comparableFlatTreeNode = [];
+		}
+	};
+
 	@action
 	blankMethod = () => {
 		console.log('unexpected method call');
@@ -144,9 +168,15 @@ export class JSONViewerStore {
 
 	@action setTreeNodes(n: TreeNode[]) {
 		this.treeNodes = n.slice();
+		if (this.isCompare) {
+			this.comparableFlatTreeNode = n.slice();
+			this.openComparableNodes = new Set(this.openTreeNodes);
+		} else {
+			this.comparableFlatTreeNode = [];
+			this.openComparableNodes.clear();
+		}
 		this.comparableTreeNode = nullTreeNode;
-		this.comparableFlatTreeNode = [];
-		this.openComparableRows.clear();
+		this.selectedCompareNode = nullTreeNode;
 	}
 
 	@action setNotebooks(n: NotebookNode[]) {
@@ -167,8 +197,25 @@ export class JSONViewerStore {
 		}
 	}
 
+	@action selectCompareNode(tree?: TreeNode) {
+		if (tree) {
+			this.selectedCompareNode = tree;
+			this.selectedCompareFlatTreeNode = getFlatListFromTreeWSimple(tree);
+		} else {
+			this.selectedCompareNode = nullTreeNode;
+			this.selectedCompareFlatTreeNode = [];
+		}
+		this.openCompareSelectedRows.clear();
+		if (this.selectedCompareFlatTreeNode.length > 0) {
+			this.openCompareSelectedRows.add(this.selectedCompareFlatTreeNode[0].id);
+		}
+	}
+
 	@action addNodes(tree: TreeNode[]) {
 		this.treeNodes = this.treeNodes.concat(tree);
+		if (this.isCompare) {
+			this.comparableFlatTreeNode = this.treeNodes.slice();
+		}
 	}
 
 	@action removeNodesById(ids: string[]) {
@@ -204,6 +251,18 @@ export class JSONViewerStore {
 		];
 	}
 
+	@action setCompareNodeView(id: string, viewType: TreeViewType) {
+		const index = this.comparableFlatTreeNode.findIndex(tree => tree.id === id);
+		this.comparableFlatTreeNode = [
+			...this.comparableFlatTreeNode.slice(0, index),
+			{
+				...this.comparableFlatTreeNode[index],
+				viewType,
+			},
+			...this.comparableFlatTreeNode.slice(index + 1),
+		];
+	}
+
 	@action setGroupView(id: string, viewType: TreeViewType) {
 		const index = this.treeNodes.findIndex(tree => tree.id === id);
 		const node = {
@@ -215,6 +274,25 @@ export class JSONViewerStore {
 			this.setGroupView(node.childIds[i], viewType);
 		}
 		if (node.isRoot) this.openNode(node.id);
+	}
+
+	@action setCompareGroupView(id: string, viewType: TreeViewType) {
+		const index = this.comparableFlatTreeNode.findIndex(tree => tree.id === id);
+		const node = {
+			...this.comparableFlatTreeNode[index],
+			viewType,
+		};
+		this.comparableFlatTreeNode = [
+			...this.comparableFlatTreeNode.slice(0, index),
+			node,
+			...this.comparableFlatTreeNode.slice(index + 1),
+		];
+		if ('childIds' in node) {
+			for (let i = 0; i < node.childIds.length; i++) {
+				this.setCompareGroupView(node.childIds[i], viewType);
+			}
+			if (node.isRoot) this.openCompareNode(node.id);
+		}
 	}
 
 	@action getNotebook(name: string, defaultNotebook: NotebookNode) {
@@ -259,13 +337,6 @@ export class JSONViewerStore {
 		];
 	}
 
-	@action addNodeToCompare(node: TreeNode) {
-		this.comparableTreeNode = node;
-		this.comparableFlatTreeNode = getFlatListFromTreeWSimple(node);
-		this.openComparableRows.clear();
-		this.openComparableRows.add(this.comparableFlatTreeNode[0].id);
-	}
-
 	@computed
 	public get getShownSelectRows() {
 		return this.selectedFlatTreeNode
@@ -281,33 +352,40 @@ export class JSONViewerStore {
 		this.openSelectedRows.delete(id);
 	}
 
+	@action openCompareSelectRow(id: string) {
+		this.openCompareSelectedRows.add(id);
+	}
+
+	@action closeCompareSelectRow(id: string) {
+		this.openCompareSelectedRows.delete(id);
+	}
+
 	@computed
 	public get getShownCompareRows() {
-		return this.comparableFlatTreeNode
+		return this.selectedCompareFlatTreeNode
 			.slice(1)
-			.filter(field => field.parentIds?.every(id => this.openComparableRows.has(id)));
+			.filter(field => field.parentIds?.every(id => this.openCompareSelectedRows.has(id)));
 	}
 
-	@action openCompareRow(id: string) {
-		this.openComparableRows.add(id);
-	}
-
-	@action closeCompareRow(id: string) {
-		this.openComparableRows.delete(id);
-	}
-	/*
-	@action updateNotebookParameters(name: string, newParameters: TreeNode) {
-		const notebook = this.notebooks.find(n => n.name === name);
-		if (!notebook) return;
-		const newResults = [newResult.id, ...notebook.results];
-
-		if (newResult.complexFields.length > 0) {
-			this.addNodes(getFlatListFromTree(newResult));
-			if (newResults.length > notebook.resultsCount) {
-				this.removeNodesById(newResults.slice(notebook.resultsCount));
-			}
-			notebook.results = newResults.slice(0, notebook.resultsCount);
-			this.selectTreeNode(newResult);
+	public getListData(type: 'left' | 'right'): (TreeNode | NotebookNode)[] {
+		if (type === 'left') {
+			return [
+				...this.notebooks,
+				...this.treeNodes.filter(node =>
+					node.parentIds.every(parentId => this.openTreeNodes.has(parentId)),
+				),
+			];
 		}
-	} */
+		return this.comparableFlatTreeNode
+			.filter(field => 'complexFields' in field)
+			.filter(node => node.parentIds.every(parentId => this.openComparableNodes.has(parentId)));
+	}
+
+	@action openCompareNode(id: string) {
+		this.openComparableNodes.add(id);
+	}
+
+	@action closeCompareNode(id: string) {
+		this.openComparableNodes.delete(id);
+	}
 }

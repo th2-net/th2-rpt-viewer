@@ -4,20 +4,20 @@ import { createBemBlock } from '../../helpers/styleCreators';
 import Table from './Table';
 import '../../styles/JSONviewer.scss';
 import { TreeNode } from '../../models/JSONSchema';
-import SplitView from '../split-view/SplitView';
-import SplitViewPane from '../split-view/SplitViewPane';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 
 interface props {
-	selectedNode: TreeNode;
-	compareNode: TreeNode;
+	type: 'left' | 'right';
 }
 
-const TablePanel = ({ selectedNode, compareNode }: props) => {
+const TablePanel = ({ type }: props) => {
 	const JSONViewerStore = useJSONViewerStore();
-	const [panelArea, setPanelArea] = React.useState(100);
-	const [scrollTop, setScrollTop] = React.useState(0);
+	const selectedNode = React.useMemo(
+		() =>
+			type === 'left' ? JSONViewerStore.selectedTreeNode : JSONViewerStore.selectedCompareNode,
+		[JSONViewerStore.selectedTreeNode, JSONViewerStore.selectedCompareNode],
+	);
 
 	const getName = (treeNode: TreeNode) => {
 		if (treeNode.displayName) return treeNode.displayName;
@@ -25,14 +25,7 @@ const TablePanel = ({ selectedNode, compareNode }: props) => {
 		return 'no display name';
 	};
 
-	const onScroll = (e: React.UIEvent<'div'>) => {
-		const scroller = e.target;
-		if (scroller instanceof Element) {
-			setScrollTop(scroller.scrollTop);
-		}
-	};
-
-	const getPanel = (treeNode: TreeNode, type: 'select' | 'compare') => (
+	const getPanel = (treeNode: TreeNode) => (
 		<>
 			{treeNode.id !== '' && (
 				<>
@@ -61,7 +54,7 @@ const TablePanel = ({ selectedNode, compareNode }: props) => {
 							</div>
 						</div>
 					)}
-					<Table scrollTop={scrollTop} type={type} onScroll={onScroll} />
+					<Table type={type === 'left' ? 'select' : 'compare'} />
 					<br />
 				</>
 			)}
@@ -69,23 +62,11 @@ const TablePanel = ({ selectedNode, compareNode }: props) => {
 	);
 
 	const selectedPanel = React.useMemo(
-		() => getPanel(selectedNode, 'select'),
-		[selectedNode, scrollTop, JSONViewerStore.tokens],
+		() => getPanel(selectedNode),
+		[selectedNode, type, JSONViewerStore.tokens],
 	);
 
-	const comparePanel = React.useMemo(
-		() => getPanel(compareNode, 'compare'),
-		[compareNode, scrollTop, JSONViewerStore.tokens],
-	);
-
-	return (
-		<div className='JSON-wrapper tableView'>
-			<SplitView panelArea={panelArea} onPanelAreaChange={setPanelArea}>
-				<SplitViewPane>{selectedPanel}</SplitViewPane>
-				<SplitViewPane>{comparePanel}</SplitViewPane>
-			</SplitView>
-		</div>
-	);
+	return <div className='JSON-wrapper tableView'>{selectedPanel}</div>;
 };
 
 export default observer(TablePanel);

@@ -29,13 +29,7 @@ export type LeafToolsConfig = {
 	isRoot?: boolean;
 };
 
-const LeafTools = ({
-	activeViewType,
-	viewTypes,
-	toggleViewType,
-	addNodeToCompare,
-	isRoot,
-}: LeafToolsConfig) => {
+const LeafTools = ({ activeViewType, viewTypes, toggleViewType, isRoot }: LeafToolsConfig) => {
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 
@@ -89,17 +83,6 @@ const LeafTools = ({
 			{!isRoot && (
 				<ToolsPopup isOpen={isViewMenuOpen}>
 					<div className='message-card-tools__controls-group'>
-						{addNodeToCompare && (
-							<div
-								title={'add node to compare'}
-								className='message-card-tools__item'
-								onClick={e => {
-									e.stopPropagation();
-									addNodeToCompare();
-								}}>
-								<span className='message-card-tools__item-title'>Select to compare</span>
-							</div>
-						)}
 						{viewTypes.map(viewType => {
 							const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
 							const indicatorClassName = createBemElement(

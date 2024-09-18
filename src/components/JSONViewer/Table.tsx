@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer } from 'mobx-react-lite';
 import { SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
@@ -13,19 +13,24 @@ import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import SearchToken from '../../models/search/SearchToken';
 import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 
-const Table = ({
-	scrollTop,
-	type,
-	onScroll,
-}: {
-	scrollTop: number;
-	type: 'select' | 'compare';
-	onScroll: (e: React.UIEvent<'div'>) => void;
-}) => {
+const Table = ({ type }: { type: 'select' | 'compare' }) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const [rowsToRender, setRowsToRender] = React.useState(
 		type === 'select' ? JSONViewerStore.getShownSelectRows : JSONViewerStore.getShownCompareRows,
 	);
+
+	React.useEffect(() => {
+		if (type === 'select') {
+			setRowsToRender(JSONViewerStore.getShownSelectRows);
+		}
+	}, [JSONViewerStore.selectedTreeNode]);
+
+	React.useEffect(() => {
+		if (type === 'compare') {
+			setRowsToRender(JSONViewerStore.getShownCompareRows);
+		}
+	}, [JSONViewerStore.selectedCompareNode]);
+
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
 	const toggleNode = (nodeId: string) => {
@@ -37,34 +42,14 @@ const Table = ({
 			}
 			setRowsToRender(JSONViewerStore.getShownSelectRows);
 		} else {
-			if (JSONViewerStore.openComparableRows.has(nodeId)) {
-				JSONViewerStore.closeCompareRow(nodeId);
+			if (JSONViewerStore.openCompareSelectedRows.has(nodeId)) {
+				JSONViewerStore.closeCompareSelectRow(nodeId);
 			} else {
-				JSONViewerStore.openCompareRow(nodeId);
+				JSONViewerStore.openCompareSelectRow(nodeId);
 			}
 			setRowsToRender(JSONViewerStore.getShownCompareRows);
 		}
 	};
-
-	useEffect(() => {
-		if (virtuoso.current) {
-			virtuoso.current.scrollTo({
-				top: scrollTop,
-			});
-		}
-	}, [virtuoso, scrollTop]);
-
-	useEffect(() => {
-		if (type === 'select') {
-			setRowsToRender(JSONViewerStore.getShownSelectRows);
-		}
-	}, [JSONViewerStore.selectedTreeNode.id]);
-
-	useEffect(() => {
-		if (type === 'compare') {
-			setRowsToRender(JSONViewerStore.getShownCompareRows);
-		}
-	}, [JSONViewerStore.comparableTreeNode.id]);
 
 	const computeRowKey = React.useCallback(
 		(index: number, row: TreeNode | SimpleField) => row.id,
@@ -80,7 +65,7 @@ const Table = ({
 						isOpen={
 							type === 'select'
 								? JSONViewerStore.openSelectedRows.has(row.id)
-								: JSONViewerStore.openComparableRows.has(row.id)
+								: JSONViewerStore.openCompareSelectedRows.has(row.id)
 						}
 						setOpen={toggleNode}
 						tokens={JSONViewerStore.tokens}
@@ -97,7 +82,6 @@ const Table = ({
 		<StateSaverProvider>
 			<TableVirtuoso
 				ref={virtuoso}
-				onScroll={onScroll}
 				className='json-table'
 				style={{ height: '100%' }}
 				fixedHeaderContent={() => (

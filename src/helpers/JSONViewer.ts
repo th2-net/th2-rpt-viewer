@@ -34,6 +34,7 @@ export const convertJSONtoNode = (
 	const complexFields: TreeNode[] = [];
 	let viewInstruction = '';
 	let displayName: string | undefined;
+	let displayTimestamp: number | undefined;
 	let displayTable: string[][] | undefined;
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
@@ -54,6 +55,8 @@ export const convertJSONtoNode = (
 				displayTable = value;
 			} else if (entryKey === '#display-name') {
 				displayName = String(value);
+			} else if (entryKey === '#display-timestamp') {
+				displayTimestamp = Number(value) / 1_000_000;
 			} else if (entryKey === '#view-instruction') {
 				viewInstruction = String(value);
 			} else if (typeof value === 'object' && value !== null) {
@@ -72,6 +75,7 @@ export const convertJSONtoNode = (
 		parentIds,
 		displayTable,
 		displayName,
+		displayTimestamp,
 		failed,
 		isArray,
 		isGeneratedKey,

@@ -140,6 +140,7 @@
 }
 
 .leaf {
+	border: 0px solid;
 	display: flex;
 	flex-direction: column;
 	border-radius: 5px;
@@ -380,6 +381,8 @@
 	display: flex;
 	width: 100%;
 	padding: 5px;
+	font-size: 12px;
+	font-weight: bold;
 }
 
 .JSON-input{ 

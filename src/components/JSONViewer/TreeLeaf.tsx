@@ -8,16 +8,29 @@ import JSONView from './JSONView';
 import LeafTools from './LeafTools';
 import DisplayTable from './DisplayTable';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
+import { COLORS } from '../search/SearchInput';
+import { formatTime } from '../../helpers/date';
+import { Chip } from '../Chip';
 
-const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
+const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: 'left' | 'right' }) => {
 	const JSONViewerStore = useJSONViewerStore();
+	const isDefault = type === 'left';
+	const isSelected = isDefault
+		? treeNode.id === JSONViewerStore.selectedTreeNode.id
+		: treeNode.id === JSONViewerStore.selectedCompareNode.id;
 	const viewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
-	const [open, setOpen] = React.useState(JSONViewerStore.openTreeNodes.has(treeNode.id));
+	const [open, setOpen] = React.useState(
+		viewType === TreeViewType.DISPLAY_TABLE || isDefault
+			? JSONViewerStore.openTreeNodes.has(treeNode.id)
+			: JSONViewerStore.openComparableNodes.has(treeNode.id),
+	);
+
 	const nodeName = useMemo(() => {
 		if (treeNode.displayName) return treeNode.displayName;
 		if (treeNode.key && !(treeNode.isGeneratedKey && !treeNode.isRoot)) return treeNode.key;
 		return 'no display name';
 	}, [treeNode.displayName, treeNode.key, treeNode.isGeneratedKey]);
+
 	const needBounding = useMemo(
 		() =>
 			(open && viewType === TreeViewType.DISPLAY_TABLE) ||
@@ -26,28 +39,59 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 		[open, viewType],
 	);
 
+	const chunk = useMemo(
+		() =>
+			treeNode.displayTimestamp
+				? Math.floor(treeNode.displayTimestamp / JSONViewerStore.chunkInterval) % COLORS.length
+				: null,
+		[treeNode.displayTimestamp, JSONViewerStore.chunkInterval],
+	);
+
+	const borderSide = isDefault ? 'Right' : 'Left';
+
+	const borderStyle = {
+		[`border${borderSide}Color`]: chunk !== null ? COLORS[chunk] : undefined,
+		[`border${borderSide}Width`]: chunk !== null ? '5px' : undefined,
+		[`borderTop${borderSide}Radius`]: chunk !== null ? '0px' : undefined,
+		[`borderBottom${borderSide}Radius`]: chunk !== null ? '0px' : undefined,
+	};
+
 	const splitContent = multiTokenSplit(nodeName, JSONViewerStore.tokens);
 
 	useEffect(() => {
 		const isChildDisplay =
 			(treeNode.isRoot || viewType === TreeViewType.EVENTS_LIST) &&
-			JSONViewerStore.openTreeNodes.has(treeNode.id);
+			(isDefault
+				? JSONViewerStore.openTreeNodes.has(treeNode.id)
+				: JSONViewerStore.openComparableNodes.has(treeNode.id));
+		if (isChildDisplay) {
+			if (isDefault) JSONViewerStore.openNode(treeNode.id);
+			else JSONViewerStore.openCompareNode(treeNode.id);
+		} else if (isDefault) JSONViewerStore.closeNode(treeNode.id);
+		else JSONViewerStore.closeCompareNode(treeNode.id);
 		setOpen(viewType === TreeViewType.DISPLAY_TABLE || isChildDisplay);
-		if (isChildDisplay) JSONViewerStore.openNode(treeNode.id);
-		else JSONViewerStore.closeNode(treeNode.id);
 	}, [viewType]);
 
 	useEffect(() => {
-		setOpen(JSONViewerStore.openTreeNodes.has(treeNode.id));
-	}, [JSONViewerStore.openTreeNodes.values]);
+		setOpen(
+			viewType === TreeViewType.DISPLAY_TABLE ||
+				(isDefault
+					? JSONViewerStore.openTreeNodes.has(treeNode.id)
+					: JSONViewerStore.openComparableNodes.has(treeNode.id)),
+		);
+	}, [JSONViewerStore.openTreeNodes.values, JSONViewerStore.openComparableNodes.values]);
 
 	const toggleNode = () => {
 		if (open) {
 			setOpen(false);
-			JSONViewerStore.closeNode(treeNode.id);
+			if (isDefault) JSONViewerStore.closeNode(treeNode.id);
+			else JSONViewerStore.closeCompareNode(treeNode.id);
 		} else {
 			setOpen(true);
-			if (viewType !== TreeViewType.DISPLAY_TABLE) JSONViewerStore.openNode(treeNode.id);
+			if (viewType !== TreeViewType.DISPLAY_TABLE) {
+				if (isDefault) JSONViewerStore.openNode(treeNode.id);
+				else JSONViewerStore.openCompareNode(treeNode.id);
+			}
 		}
 	};
 
@@ -67,9 +111,17 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 
 	const changeViewType = (newType: TreeViewType) => {
 		if (treeNode.isRoot) {
-			JSONViewerStore.setGroupView(treeNode.id, newType);
+			if (isDefault) JSONViewerStore.setGroupView(treeNode.id, newType);
+			else JSONViewerStore.setCompareGroupView(treeNode.id, newType);
+		} else if (isDefault) JSONViewerStore.setNodeView(treeNode.id, newType);
+		else JSONViewerStore.setCompareNodeView(treeNode.id, newType);
+	};
+
+	const selectNode = () => {
+		if (isDefault) {
+			JSONViewerStore.selectTreeNode(treeNode);
 		} else {
-			JSONViewerStore.setNodeView(treeNode.id, newType);
+			JSONViewerStore.selectCompareNode(treeNode);
 		}
 	};
 
@@ -79,17 +131,18 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 				className={createBemBlock(
 					'leaf',
 					needBounding ? 'expanded' : null,
-					treeNode.id === JSONViewerStore.selectedTreeNode.id ? 'selected' : null,
-					treeNode.id === JSONViewerStore.comparableTreeNode.id ? 'compared' : null,
+					isSelected ? 'selected' : null,
 				)}
 				style={{
 					marginBottom: needBounding ? '5px' : undefined,
+					...borderStyle,
 				}}>
 				<div className='leafWrapper'>
 					<div
 						style={{
 							width: `${
-								20 * treeNode.parentIds.length + (treeNode.childIds.length === 0 ? 23 : 0)
+								20 * treeNode.parentIds.length +
+								(treeNode.childIds.length === 0 && viewType !== TreeViewType.DISPLAY_TABLE ? 23 : 0)
 							}px`,
 						}}
 					/>
@@ -101,12 +154,7 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 							onClick={toggleNode}
 						/>
 					)}
-					<div
-						className={createBemBlock('valueLeaf')}
-						title={nodeName}
-						onClick={() => {
-							JSONViewerStore.selectTreeNode(treeNode);
-						}}>
+					<div className={createBemBlock('valueLeaf')} title={nodeName} onClick={selectNode}>
 						<div
 							style={{
 								display: 'flex',
@@ -128,24 +176,24 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 								{complexFieldsDisplay()} {simpleFieldsDisplay()}
 							</span>
 						</div>
-						<LeafTools
-							activeViewType={viewType}
-							toggleViewType={changeViewType}
-							isRoot={treeNode.isRoot}
-							viewTypes={
-								treeNode.isRoot
-									? [TreeViewType.DISPLAY_TABLE, TreeViewType.EVENTS_LIST, TreeViewType.JSON]
-									: [
-											TreeViewType.DISPLAY_TABLE,
-											TreeViewType.EVENTS_LIST,
-											TreeViewType.JSON,
-											TreeViewType.PRETTY,
-									  ]
-							}
-							addNodeToCompare={
-								treeNode.isRoot ? undefined : () => JSONViewerStore.addNodeToCompare(treeNode)
-							}
-						/>
+						<div style={{ display: 'flex' }}>
+							{treeNode.displayTimestamp && <Chip text={formatTime(treeNode.displayTimestamp)} />}
+							<LeafTools
+								activeViewType={viewType}
+								toggleViewType={changeViewType}
+								isRoot={treeNode.isRoot}
+								viewTypes={
+									treeNode.isRoot
+										? [TreeViewType.DISPLAY_TABLE, TreeViewType.EVENTS_LIST, TreeViewType.JSON]
+										: [
+												TreeViewType.DISPLAY_TABLE,
+												TreeViewType.EVENTS_LIST,
+												TreeViewType.JSON,
+												TreeViewType.PRETTY,
+										  ]
+								}
+							/>
+						</div>
 					</div>
 				</div>
 				{!treeNode.isRoot && open && viewType === TreeViewType.DISPLAY_TABLE && (
@@ -168,4 +216,4 @@ const TreePanel = ({ treeNode }: { treeNode: TreeNode }) => {
 	);
 };
 
-export default observer(TreePanel);
+export default observer(TreeLeaf);

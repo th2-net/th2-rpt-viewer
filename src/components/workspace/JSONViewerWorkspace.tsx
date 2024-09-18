@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Virtuoso } from 'react-virtuoso';
 import { computed } from 'mobx';
 import { nanoid } from 'nanoid';
 import WorkspaceSplitter from './WorkspaceSplitter';
@@ -26,11 +25,10 @@ import TablePanel from '../JSONViewer/TablePanel';
 import { useJSONViewerWorkspace } from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import FileChoosing from '../JSONViewer/FileChoosing';
-import NotebookParamsCell from '../JSONViewer/NotebookParamsCell';
-import TreePanel from '../JSONViewer/TreePanel';
 import { getFlatListFromTree, parseText } from '../../helpers/JSONViewer';
-import StateSaverProvider from '../util/StateSaverProvider';
 import { SearchInputBase } from '../search/SearchInput';
+import TreeList from '../JSONViewer/TreeList';
+import JSONPanel from '../JSONViewer/JSONPanel';
 
 const panelColors = {
 	tree: {
@@ -95,7 +93,6 @@ const JSONViewerWorkspace = () => {
 					if (lines[i] !== '') node.complexFields.push(...parseText(lines[i], String(i), true));
 				}
 			}
-			node.failed = node.complexFields.some(v => v.failed);
 			return node;
 		});
 		JSONViewerStore.setTreeNodes(nodes.flatMap(node => getFlatListFromTree(node)));
@@ -111,28 +108,15 @@ const JSONViewerWorkspace = () => {
 		JSONViewerStore.updateTokensFromText(fileContent);
 	};
 
-	const computeTreeKey = React.useCallback(
-		(index: number, dataNode: TreeNode | NotebookNode) =>
-			`${
-				'id' in dataNode
-					? `${dataNode.id}-${dataNode.viewType}-${JSONViewerStore.openTreeNodes.has(dataNode.id)}`
-					: dataNode.name
-			}`,
-		[],
-	);
-
-	const renderTree = React.useCallback((index: number, dataNode: TreeNode | NotebookNode) => {
-		if ('id' in dataNode) return <TreePanel treeNode={dataNode} />;
-		return <NotebookParamsCell notebookProp={dataNode} />;
-	}, []);
-
 	const treePanel = React.useMemo(
 		() =>
 			computed(() => ({
 				title: 'Tree',
 				color: panelColors.tree,
 				component: (
-					<div className='JSON-wrapper' style={{ gap: '1px' }}>
+					<div
+						className='JSON-wrapper'
+						style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
 						<div className='JSON-header-wrapper'>
 							<div className='JSON-buttons-wrapper'>
 								<button
@@ -157,6 +141,29 @@ const JSONViewerWorkspace = () => {
 									onClick={() => inputJSONRef.current?.click()}>
 									Load Local Result(s)
 								</button>
+								<button className='load-JSON-button' onClick={() => JSONViewerStore.toggleMode()}>
+									Switch mode to {JSONViewerStore.isCompare ? 'table' : 'compare'}
+								</button>
+								<div
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+									}}>
+									<label htmlFor='chunk-size'>Chunk interval:</label>
+									<select
+										name='intervals'
+										id='chunk-size'
+										onChange={e => {
+											e.preventDefault();
+											JSONViewerStore.updateInterval(Number(e.target.value));
+										}}
+										value={JSONViewerStore.chunkInterval}>
+										<option value={10}>1 millisec</option>
+										<option value={1000}>1 sec</option>
+										<option value={60000}>1 min</option>
+										<option value={600000}>10 min</option>
+									</select>
+								</div>
 							</div>
 							<div className='JSON-search-wrapper'>
 								<SearchInputBase
@@ -219,22 +226,13 @@ const JSONViewerWorkspace = () => {
 								close={() => JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType)}
 							/>
 						)}
-						<StateSaverProvider>
-							<Virtuoso
-								className='JSON-virtuoso'
-								data={[
-									...JSONViewerStore.notebooks,
-									...JSONViewerStore.treeNodes.filter(node =>
-										node.parentIds.every(parentId => JSONViewerStore.openTreeNodes.has(parentId)),
-									),
-								]}
-								totalCount={JSONViewerStore.notebooks.length + JSONViewerStore.treeNodes.length}
-								computeItemKey={computeTreeKey}
-								overscan={3}
-								itemContent={renderTree}
-								style={{ height: 'calc(100% - 47px)' }}
-							/>
-						</StateSaverProvider>
+						{JSONViewerStore.isCompare ? (
+							<div className='JSON-wrapper' style={{ gap: '1px' }}>
+								<JSONPanel type='left' />
+							</div>
+						) : (
+							<TreeList type='left' />
+						)}
 					</div>
 				),
 				isActive: true,
@@ -254,18 +252,24 @@ const JSONViewerWorkspace = () => {
 		() => [
 			treePanel,
 			{
-				title: `Table`,
+				title: JSONViewerStore.isCompare ? `Compare` : `Table`,
 				color: panelColors.table,
-				component: (
-					<TablePanel
-						selectedNode={JSONViewerStore.selectedTreeNode}
-						compareNode={JSONViewerStore.comparableTreeNode}
-					/>
+				component: JSONViewerStore.isCompare ? (
+					<div className='JSON-wrapper' style={{ gap: '1px' }}>
+						<JSONPanel type='right' />
+					</div>
+				) : (
+					<TablePanel type='left' />
 				),
 				isActive: true,
 			},
 		],
-		[treePanel],
+		[
+			treePanel,
+			JSONViewerStore.isCompare,
+			JSONViewerStore.comparableTreeNode,
+			JSONViewerStore.openComparableNodes,
+		],
 	);
 
 	return (

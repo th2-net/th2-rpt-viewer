@@ -25,6 +25,7 @@ export interface TreeNode {
 	key: string;
 	parentIds: string[];
 	displayName?: string;
+	displayTimestamp?: number;
 	displayTable?: string[][];
 	failed: boolean;
 	viewInstruction: string;
