@@ -125,12 +125,21 @@ const messageHttpApi: MessageApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getResumptionMessageIds: async ({ streams, startTimestamp, messageId, bookId }, signal) => {
+	getResumptionMessageIds: async (
+		{ streams, startTimestamp, messageId, bookId, lookupLimitDays },
+		signal,
+	) => {
 		if (!startTimestamp && !messageId) {
 			throw new Error('One of startTimestamp or messageId must be specified');
 		}
 
-		const params = createURLSearchParams({ stream: streams, startTimestamp, messageId, bookId });
+		const params = createURLSearchParams({
+			stream: streams,
+			startTimestamp,
+			messageId,
+			bookId,
+			lookupLimitDays,
+		});
 		const res = await fetch(`backend/messageIds/?${params}`, { signal });
 		if (res.ok) return res.json();
 

@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 import { runInAction, action, observable, computed, autorun } from 'mobx';
+import moment from 'moment';
 import { MessagesSSEParams, SSEHeartbeat } from '../../../api/sse';
 import { EventMessage } from '../../../models/EventMessage';
 import EmbeddedMessagesStore from './EmbeddedMessagesStore';
@@ -104,7 +105,10 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	private messageAC: AbortController | null = null;
 
-	public getFilterParams = () => this.messagesStore.filterStore.filterParams;
+	public getFilterParams = () => ({
+		...this.messagesStore.filterStore.filterParams,
+		lookupLimitDays: Number(this.messagesStore.filterStore.lookupLimitDays),
+	});
 
 	@action
 	public loadMessages = async (
@@ -164,6 +168,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				{
 					streams: queryParams.stream,
 					bookId: queryParams.bookId,
+					lookupLimitDays: queryParams.lookupLimitDays,
 					...(this.messagesStore.selectedMessageId
 						? { messageId: this.messagesStore.selectedMessageId.valueOf() }
 						: { startTimestamp }),
@@ -228,6 +233,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			{
 				streams: [stream],
 				bookId,
+				lookupLimitDays: Number(this.messagesStore.filterStore.lookupLimitDays),
 				...(lastMessage
 					? { messageId: lastMessage?.messageId }
 					: { startTimestamp: this.messagesStore.filterStore.filterParams.startTimestamp }),
@@ -250,8 +256,15 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	) => {
 		this.prevLoadEndTimestamp = null;
 
+		const endTimestamp = query.startTimestamp
+			? moment(query.startTimestamp)
+					.utc()
+					.subtract(this.messagesStore.filterStore.lookupLimitDays, 'days')
+					.valueOf()
+			: undefined;
+
 		this.searchChannelPrev = new MessagesSSEChannel(
-			query,
+			{ ...query, endTimestamp },
 			{
 				onResponse: this.onPrevChannelResponse,
 				onError: this.onLoadingError,
@@ -311,8 +324,15 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		query: MessagesSSEParams,
 		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
+		const endTimestamp = query.startTimestamp
+			? moment(query.startTimestamp)
+					.utc()
+					.add(this.messagesStore.filterStore.lookupLimitDays, 'days')
+					.valueOf()
+			: undefined;
+
 		this.searchChannelNext = new MessagesSSEChannel(
-			query,
+			{ ...query, endTimestamp },
 			{
 				onResponse: this.onNextChannelResponse,
 				onError: this.onLoadingError,

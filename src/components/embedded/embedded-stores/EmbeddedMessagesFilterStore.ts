@@ -52,6 +52,8 @@ export default class EmbeddedMessagesFilterStore {
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
+	@observable lookupLimitDays = 7;
+
 	@observable sseMessagesFilter: MessageFilterState | null = null;
 
 	@observable isMessageFiltersLoading = false;

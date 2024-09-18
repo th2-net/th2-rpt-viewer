@@ -20,11 +20,13 @@ export type InfinityLimitConfig = {
 	value: string;
 	setValue: (value: string) => void;
 	disabled: boolean;
+	isShort?: boolean;
+	title?: string;
 };
 
-const InfinityLimit = ({ value, setValue, disabled }: InfinityLimitConfig) => (
-	<div className='search-infinity-limit'>
-		<span className='search-infinity-limit__label'>Note: Limit is </span>
+const InfinityLimit = ({ value, setValue, disabled, isShort, title }: InfinityLimitConfig) => (
+	<div className={`search-infinity-limit ${isShort ? 'shortenned' : ''}`} title={title}>
+		{!isShort && <span className='search-infinity-limit__label'>Note: Limit is </span>}
 		<input
 			type='text'
 			className='search-infinity-limit__input'
@@ -33,7 +35,7 @@ const InfinityLimit = ({ value, setValue, disabled }: InfinityLimitConfig) => (
 			onChange={e => setValue(e.target.value)}
 			disabled={disabled}
 		/>
-		<span className='search-infinity-limit__label'> days</span>
+		<span className='search-infinity-limit__label'> {isShort ? 'limit' : 'days'}</span>
 	</div>
 );
 
