@@ -113,7 +113,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	function loadMoreSiblings() {
 		if (eventTreeNode.parentId) {
-			eventsDataStore.loadNextChildren(eventTreeNode.parentId);
+			eventsDataStore.loadNextChildren(eventTreeNode.parentId, nestingLevel);
 		}
 	}
 

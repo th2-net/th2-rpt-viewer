@@ -61,6 +61,8 @@ function getDefaultChildrenData(): ChildrenData {
 export default class EventsDataStore {
 	private readonly CHILDREN_CHUNK_SIZE = 50;
 
+	private readonly LIMIT_CHUNK_SIZE = [5, 8, 13, 21, 34, 50];
+
 	constructor(
 		private eventStore: EventsStore,
 		private filterStore: EventsFilterStore,
@@ -481,26 +483,35 @@ export default class EventsDataStore {
 	public childrenAreUnknown: Map<string, boolean> = new Map();
 
 	@action
-	public loadNextChildren = async (parentId: string) => {
+	public loadNextChildren = async (parentId: string, nestingLevel: number) => {
 		if (!this.booksStore.selectedBook) return;
+		console.log(
+			`start load more siblings`,
+			`time: ${moment().utc().format()}`,
+			`parent: ${parentId}`,
+			`nestingLevel: ${nestingLevel}`,
+		);
 		const childrenData = this.childrenData.get(parentId);
 		const resumeFromId = childrenData?.lastChild;
 
 		this.isLoadingChildren.set(parentId, true);
 
 		if (resumeFromId) {
-			this.loadChildren(parentId, resumeFromId);
+			this.loadChildren(parentId, resumeFromId, nestingLevel);
 		}
 	};
 
 	@action
-	public loadChildren = (parentId: string, resumeFromId?: string) => {
+	public loadChildren = (parentId: string, resumeFromId?: string, nestingLevel?: number) => {
 		if (this.childrenLoaders[parentId]) {
 			this.childrenLoaders[parentId].loader.stop();
 			delete this.childrenLoaders[parentId];
 		}
 
 		const parentNode = this.eventsCache.get(parentId);
+		const chunkSize = nestingLevel
+			? this.LIMIT_CHUNK_SIZE[Math.min(nestingLevel, this.LIMIT_CHUNK_SIZE.length - 1)]
+			: this.LIMIT_CHUNK_SIZE[0];
 
 		if (parentNode) {
 			const loader = new EventsSSEChannel(
@@ -510,7 +521,7 @@ export default class EventsDataStore {
 					sseParams: {
 						parentEvent: parentId,
 						resumeFromId,
-						resultCountLimit: this.CHILDREN_CHUNK_SIZE,
+						resultCountLimit: chunkSize,
 						searchDirection: 'next',
 						bookId: this.booksStore.selectedBook.name,
 						scope: this.eventStore.scope!,
@@ -522,7 +533,7 @@ export default class EventsDataStore {
 					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
 				},
 				{
-					chunkSize: this.CHILDREN_CHUNK_SIZE,
+					chunkSize,
 				},
 			);
 
@@ -536,6 +547,12 @@ export default class EventsDataStore {
 
 	@action
 	private onEventChildrenChunkLoaded = (events: EventTreeNode[], parentId: string) => {
+		console.log(
+			`loaded more siblings`,
+			`time: ${moment().utc().format()}`,
+			`parent: ${parentId}`,
+			`events amount: ${events.length}`,
+		);
 		if (events.length === 0) return;
 
 		const childrenData = this.childrenData.get(parentId) || getDefaultChildrenData();
