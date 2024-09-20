@@ -149,6 +149,12 @@ export default class EventsDataStore {
 
 		this.eventStore.searchStore.onFilterChange();
 
+		console.log(
+			`start fetching event tree`,
+			`time: ${moment().utc().format()}`,
+			`timeRange: ${timeRange.slice()}`,
+		);
+
 		try {
 			this.eventTreeEventSource?.stop();
 			this.eventTreeEventSource = new EventsSSEChannel(
@@ -157,7 +163,7 @@ export default class EventsDataStore {
 					filter,
 					sseParams: {
 						searchDirection: SearchDirection.Next,
-						limitForParent: this.CHILDREN_CHUNK_SIZE,
+						limitForParent: this.LIMIT_CHUNK_SIZE[0],
 						bookId,
 						scope,
 					},
@@ -210,6 +216,11 @@ export default class EventsDataStore {
 
 	@action
 	private handleIncomingEventTreeNodes = (events: EventTreeNode[]) => {
+		console.log(
+			`start fetched event tree nodes`,
+			`time: ${moment().utc().format()}`,
+			`events amount: ${events.length}`,
+		);
 		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
 		const idsUpdate: [string, true][] = events.map(event => [event.eventId, true]);
 
