@@ -157,13 +157,15 @@ function MessageBodyCard({
 				sortOrderItems={sortOrderItems}
 				filterBodyValues={filterBodyValues}
 			/>
-			<JsonFields
-				isBeautified={isBeautified}
-				fields={properties}
-				isSelected={isSelected}
-				sortOrderItems={sortOrderItems}
-				filterBodyValues={filterBodyValues}
-			/>
+			{properties.length > 0 && (
+				<JsonFields
+					isBeautified={isBeautified}
+					fields={properties}
+					isSelected={isSelected}
+					sortOrderItems={sortOrderItems}
+					filterBodyValues={filterBodyValues}
+				/>
+			)}
 		</pre>
 	);
 }
