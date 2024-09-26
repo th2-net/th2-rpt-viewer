@@ -172,7 +172,7 @@ export default class EventsDataStore {
 					onResponse: this.handleIncomingEventTreeNodes,
 					onError: this.onEventTreeFetchError,
 					onClose: events => {
-						this.handleIncomingEventTreeNodes(events);
+						this.handleIncomingEventTreeNodes(events, this.LIMIT_CHUNK_SIZE[0]);
 						if (this.parentNodesLoaderScheduler !== null) {
 							window.clearInterval(this.parentNodesLoaderScheduler);
 						}
@@ -215,7 +215,7 @@ export default class EventsDataStore {
 	public mainSourceEvents: Map<string, true> = new Map();
 
 	@action
-	private handleIncomingEventTreeNodes = (events: EventTreeNode[]) => {
+	private handleIncomingEventTreeNodes = (events: EventTreeNode[], chunkSize?: number) => {
 		console.log(
 			`start fetched event tree nodes`,
 			`time: ${moment().utc().format()}`,
@@ -257,7 +257,10 @@ export default class EventsDataStore {
 
 			const childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
 
-			this.hasMoreChildren.set(parentId, childrenData.firstChunkCount === this.CHILDREN_CHUNK_SIZE);
+			this.hasMoreChildren.set(
+				parentId,
+				childrenData.firstChunkCount === (chunkSize || this.LIMIT_CHUNK_SIZE[0]),
+			);
 			this.childrenData.set(parentId, childrenData);
 
 			updatedParentChildrenMapEntries.set(parentId, childrenUpdate);
@@ -541,7 +544,7 @@ export default class EventsDataStore {
 				{
 					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
 					onError: this.onEventTreeFetchError,
-					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
+					onClose: events => this.onEventChildrenLoadEnd(events, parentId, chunkSize),
 				},
 				{
 					chunkSize,
@@ -586,7 +589,11 @@ export default class EventsDataStore {
 	};
 
 	@action
-	private onEventChildrenLoadEnd = (events: EventTreeNode[], parentId: string) => {
+	private onEventChildrenLoadEnd = (
+		events: EventTreeNode[],
+		parentId: string,
+		chunkSize: number,
+	) => {
 		const childList = this.parentChildrensMap.get(parentId) || [];
 		const childrenData = this.childrenData.get(parentId) || getDefaultChildrenData();
 		childrenData.lastChild = events[events.length - 1]?.eventId;
@@ -595,7 +602,7 @@ export default class EventsDataStore {
 		events = events.filter(event => !childList.includes(event.eventId));
 		this.hasMoreChildren.set(
 			parentId,
-			this.childrenLoaders[parentId]?.loader.eventsFetched === this.CHILDREN_CHUNK_SIZE,
+			this.childrenLoaders[parentId]?.loader.eventsFetched === chunkSize,
 		);
 		this.onEventChildrenChunkLoaded(events, parentId);
 		this.isLoadingChildren.set(parentId, false);
