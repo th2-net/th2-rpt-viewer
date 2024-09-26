@@ -29,6 +29,7 @@ export interface Props {
 	panelArea: number;
 	onPanelAreaChange: (panelArea: number) => void;
 	splitterClassName?: string;
+	maxWidth?: number;
 }
 
 interface State {
@@ -37,6 +38,7 @@ interface State {
 	rootWidth: number;
 	rootHeight: number;
 	isVertical: boolean;
+	maxWidth: number;
 }
 
 export default class SplitView extends React.Component<Props, State> {
@@ -63,6 +65,7 @@ export default class SplitView extends React.Component<Props, State> {
 			rootWidth: 0,
 			rootHeight: 0,
 			isVertical: false,
+			maxWidth: props.maxWidth || 500,
 		};
 	}
 
@@ -125,7 +128,7 @@ export default class SplitView extends React.Component<Props, State> {
 			const nextRootWidth = elements[0].contentRect.width;
 			const nextRootHeight = elements[0].contentRect.height;
 
-			const isVerticalNext = nextRootWidth < 500;
+			const isVerticalNext = nextRootWidth < this.state.maxWidth;
 
 			this.setState({
 				rootWidth: nextRootWidth,

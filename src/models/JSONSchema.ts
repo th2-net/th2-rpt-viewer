@@ -14,23 +14,37 @@ export enum TreeViewType {
 }
 
 export interface SimpleField {
+	id: string;
 	key: string;
 	value: any;
+	parentIds?: string[];
 }
 
 export interface TreeNode {
 	id: string;
 	key: string;
+	parentIds: string[];
 	displayName?: string;
+	displayTimestamp?: number;
 	displayTable?: string[][];
 	failed: boolean;
 	viewInstruction: string;
 	complexFields: TreeNode[];
+	childIds: string[];
 	simpleFields: SimpleField[];
 	isArray?: boolean;
 	isGeneratedKey?: boolean;
 	isRoot?: boolean;
 	viewType?: TreeViewType;
+}
+
+export interface NotebookNode {
+	name: string;
+	parameters: NotebookParameter[];
+	paramsValue: InputNotebookParameter[];
+	results: string[];
+	resultsCount: string;
+	open: boolean;
 }
 
 export interface NotebookParameter {

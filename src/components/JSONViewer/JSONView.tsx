@@ -3,6 +3,9 @@ import { observer } from 'mobx-react-lite';
 import debounce from 'lodash.debounce';
 import { TreeNode } from '../../models/JSONSchema';
 import { createBemElement } from '../../helpers/styleCreators';
+import SearchToken from '../../models/search/SearchToken';
+import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
+import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 
@@ -11,6 +14,7 @@ interface JSONViewProps {
 	isBeautified: boolean;
 	isArrayElement?: boolean;
 	setIsHighlighted?: (isHighlighted: boolean) => void;
+	tokens: SearchToken[];
 }
 
 interface JSONViewFieldsReqProps {
@@ -19,6 +23,7 @@ interface JSONViewFieldsReqProps {
 	isArrayElement?: boolean;
 	setIsHighlighted: (isHighlighted: boolean) => void;
 	field: any;
+	tokens: SearchToken[];
 }
 
 const JSONViewSimpleField = ({
@@ -27,8 +32,23 @@ const JSONViewSimpleField = ({
 	isBeautified,
 	isArrayElement,
 	setIsHighlighted,
+	tokens,
 }: JSONViewFieldsReqProps) => {
 	const highlight = React.useMemo(() => debounce(() => setIsHighlighted(true), 60), []);
+	const valueString =
+		typeof field === 'object'
+			? JSON.stringify(field)
+			: typeof field === 'string'
+			? `"${field}"`
+			: String(field);
+	const keyValueTokens = getKeyValueTokens(tokens, true).filter(
+		({ isOne, keyToken, valueToken }) =>
+			!isOne ||
+			(`${label}:`.endsWith(keyToken.pattern) && valueString.startsWith(valueToken.pattern)),
+	);
+
+	const keyTokens = keyValueTokens.map(({ keyToken }) => keyToken);
+	const valueTokens = keyValueTokens.map(({ valueToken }) => valueToken);
 
 	const removeHighlight = React.useCallback(() => {
 		highlight.cancel();
@@ -45,20 +65,48 @@ const JSONViewSimpleField = ({
 				onMouseEnter={highlight}
 				onMouseLeave={removeHighlight}
 				className='mc-body__field-label'>
-				{label && !isArrayElement ? `${label}: ` : ''}
+				{label && !isArrayElement
+					? multiTokenSplit(`${label}: `, keyTokens).map((contentPart, index) => (
+							<span
+								key={index}
+								className={contentPart.token != null ? 'found-content' : undefined}
+								style={{ backgroundColor: contentPart.token?.color }}>
+								{contentPart.content}
+							</span>
+					  ))
+					: ''}
 			</span>
 			<span
 				onMouseEnter={highlight}
 				onMouseLeave={removeHighlight}
 				className='mc-body__field-simple-value'>
-				{typeof field === 'object' ? JSON.stringify(field) : String(field)}
+				{multiTokenSplit(valueString, valueTokens).map((contentPart, index) => (
+					<span
+						key={index}
+						className={contentPart.token != null ? 'found-content' : undefined}
+						style={{ backgroundColor: contentPart.token?.color }}>
+						{contentPart.content}
+					</span>
+				))}
 			</span>
 		</span>
 	);
 };
 
-const JSONView = ({ node, isBeautified, setIsHighlighted, isArrayElement }: JSONViewProps) => {
+const JSONView = ({
+	node,
+	isBeautified,
+	setIsHighlighted,
+	isArrayElement,
+	tokens,
+}: JSONViewProps) => {
 	const [areSameContext, highlightSameContext] = React.useState(false);
+	const keyValueTokens = getKeyValueTokens(tokens, true).filter(
+		({ isOne, keyToken, valueToken }) =>
+			!isOne || (`${node.key}:`.endsWith(keyToken.pattern) && valueToken.pattern === ''),
+	);
+
+	const keyTokens = keyValueTokens.map(({ keyToken }) => keyToken);
 
 	const highlight = React.useMemo(
 		() =>
@@ -83,7 +131,16 @@ const JSONView = ({ node, isBeautified, setIsHighlighted, isArrayElement }: JSON
 				onMouseEnter={highlight}
 				onMouseLeave={removeHighlight}>
 				<span className='mc-body__field-label'>
-					{!node.isGeneratedKey && node.key !== '' && !isArrayElement ? `${node.key}:` : ''}
+					{!node.isGeneratedKey && node.key !== '' && !isArrayElement
+						? multiTokenSplit(`${node.key}:`, keyTokens).map((contentPart, index) => (
+								<span
+									key={index}
+									className={contentPart.token != null ? 'found-content' : undefined}
+									style={{ backgroundColor: contentPart.token?.color }}>
+									{contentPart.content}
+								</span>
+						  ))
+						: ''}
 				</span>
 				<span
 					className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
@@ -102,6 +159,7 @@ const JSONView = ({ node, isBeautified, setIsHighlighted, isArrayElement }: JSON
 								isArrayElement={node.isArray}
 								isBeautified={isBeautified}
 								setIsHighlighted={highlightSameContext}
+								tokens={tokens}
 							/>
 							{isBeautified || idx === arr.length - 1 ? null : ', '}
 						</React.Fragment>
@@ -116,6 +174,7 @@ const JSONView = ({ node, isBeautified, setIsHighlighted, isArrayElement }: JSON
 								isArrayElement={node.isArray}
 								isBeautified={isBeautified}
 								setIsHighlighted={highlightSameContext}
+								tokens={tokens}
 							/>
 							{isBeautified || idx === arr.length - 1 ? null : ', '}
 						</React.Fragment>

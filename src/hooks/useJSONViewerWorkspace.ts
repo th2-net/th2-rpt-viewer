@@ -1,7 +1,13 @@
-import { useWorkspaces } from './useWorkspacesStore';
+import React from 'react';
+import JSONViewerWorkspaceStore from '../stores/workspace/JSONViewerWorkspaceStore';
+import { JSONViewWorspaceContext } from '../contexts/JSONViewWorspaceContextProvider';
 
-export default function useJSONViewerWorkspace() {
-	const workspacesStore = useWorkspaces();
+export const useJSONViewerWorkspace = (): JSONViewerWorkspaceStore => {
+	const workspaceStore = React.useContext(JSONViewWorspaceContext);
 
-	return workspacesStore.JSONViewerWorkspace;
-}
+	if (!workspaceStore) {
+		throw new Error('WorkspaceContext should be used inside of JSONViewWorspaceContextProvider');
+	}
+
+	return workspaceStore;
+};

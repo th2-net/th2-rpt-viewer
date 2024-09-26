@@ -1,40 +1,109 @@
 import React, { useMemo } from 'react';
+import { TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { observer } from 'mobx-react-lite';
 import { SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
 import { decodeBase64RawContent } from '../../helpers/rawFormatter';
 import SimpleMessageRaw from '../message/message-card/raw/SimpleMessageRaw';
 import LeafTools from './LeafTools';
+import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import StateSaverProvider from '../util/StateSaverProvider';
+import multiTokenSplit from '../../helpers/search/multiTokenSplit';
+import SearchToken from '../../models/search/SearchToken';
+import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 
-const Table = ({
-	simpleFields,
-	complexFields,
-}: {
-	simpleFields: SimpleField[];
-	complexFields: TreeNode[];
-}) => (
-	<div className='json-table'>
-		<div className='json-table-wrapper'>
-			<table>
-				<thead>
+const Table = ({ type }: { type: 'select' | 'compare' }) => {
+	const JSONViewerStore = useJSONViewerStore();
+	const [rowsToRender, setRowsToRender] = React.useState(
+		type === 'select' ? JSONViewerStore.getShownSelectRows : JSONViewerStore.getShownCompareRows,
+	);
+
+	React.useEffect(() => {
+		if (type === 'select') {
+			setRowsToRender(JSONViewerStore.getShownSelectRows);
+		}
+	}, [JSONViewerStore.selectedTreeNode]);
+
+	React.useEffect(() => {
+		if (type === 'compare') {
+			setRowsToRender(JSONViewerStore.getShownCompareRows);
+		}
+	}, [JSONViewerStore.selectedCompareNode]);
+
+	const virtuoso = React.useRef<VirtuosoHandle>(null);
+
+	const toggleNode = (nodeId: string) => {
+		if (type === 'select') {
+			if (JSONViewerStore.openSelectedRows.has(nodeId)) {
+				JSONViewerStore.closeSelectRow(nodeId);
+			} else {
+				JSONViewerStore.openSelectRow(nodeId);
+			}
+			setRowsToRender(JSONViewerStore.getShownSelectRows);
+		} else {
+			if (JSONViewerStore.openCompareSelectedRows.has(nodeId)) {
+				JSONViewerStore.closeCompareSelectRow(nodeId);
+			} else {
+				JSONViewerStore.openCompareSelectRow(nodeId);
+			}
+			setRowsToRender(JSONViewerStore.getShownCompareRows);
+		}
+	};
+
+	const computeRowKey = React.useCallback(
+		(index: number, row: TreeNode | SimpleField) => row.id,
+		[],
+	);
+
+	const renderRow = React.useCallback(
+		(index: number, row: TreeNode | SimpleField) => {
+			if ('complexFields' in row) {
+				return (
+					<ExpandRow
+						field={row}
+						isOpen={
+							type === 'select'
+								? JSONViewerStore.openSelectedRows.has(row.id)
+								: JSONViewerStore.openCompareSelectedRows.has(row.id)
+						}
+						setOpen={toggleNode}
+						tokens={JSONViewerStore.tokens}
+					/>
+				);
+			}
+
+			return <SimpleRow field={row} tokens={JSONViewerStore.tokens} />;
+		},
+		[JSONViewerStore.tokens],
+	);
+
+	return (
+		<StateSaverProvider>
+			<TableVirtuoso
+				ref={virtuoso}
+				className='json-table'
+				style={{ height: '100%' }}
+				fixedHeaderContent={() => (
 					<tr>
-						<th style={{ gridColumn: '1 / 2' }} key='fieldKey'>
+						<th style={{ width: `30%` }} key='fieldKey'>
 							fieldKey
 						</th>
-						<th style={{ gridColumn: `2 / 3` }} key='fieldValue'>
+						<th style={{ width: `70%` }} key='fieldValue'>
 							fieldValue
 						</th>
 					</tr>
-				</thead>
-				<tbody>
-					<TableRows simpleFields={simpleFields} complexFields={complexFields} />
-				</tbody>
-			</table>
-		</div>
-	</div>
-);
+				)}
+				data={rowsToRender}
+				computeItemKey={computeRowKey}
+				overscan={3}
+				itemContent={renderRow}
+			/>
+		</StateSaverProvider>
+	);
+};
 
-const Base64Cell = ({ value }: { value: string }) => {
+const Base64Cell = ({ value, valueTokens }: { value: string; valueTokens: SearchToken[] }) => {
 	const [viewType, setViewType] = React.useState(TreeViewType.ASCII);
 	const viewTypes = [TreeViewType.ORIGIN, TreeViewType.BINARY, TreeViewType.ASCII];
 
@@ -56,8 +125,17 @@ const Base64Cell = ({ value }: { value: string }) => {
 		case TreeViewType.ORIGIN:
 			return (
 				<div className='json-table-Base64Cell'>
-					<div>
-						<p>{String(value)}</p>
+					<div style={{ overflowWrap: 'anywhere' }}>
+						<p>
+							{multiTokenSplit(String(value), valueTokens).map((contentPart, index) => (
+								<span
+									key={index}
+									className={contentPart.token != null ? 'found-content' : undefined}
+									style={{ backgroundColor: contentPart.token?.color }}>
+									{contentPart.content}
+								</span>
+							))}
+						</p>
 					</div>
 					<LeafTools activeViewType={viewType} toggleViewType={setViewType} viewTypes={viewTypes} />
 				</div>
@@ -67,18 +145,30 @@ const Base64Cell = ({ value }: { value: string }) => {
 	}
 };
 
-const TableRows = ({
-	simpleFields,
-	complexFields,
-}: {
-	simpleFields: SimpleField[];
-	complexFields: TreeNode[];
-}) => {
-	const getValue = ({ key, value }: SimpleField) => {
+const SimpleRow = ({ field, tokens }: { field: SimpleField; tokens: SearchToken[] }) => {
+	const valueString =
+		typeof field.value === 'object'
+			? JSON.stringify(field.value)
+			: typeof field.value === 'string' && !field.key.endsWith('Base64')
+			? `"${field.value}"`
+			: String(field.value);
+
+	const keyValueTokens = getKeyValueTokens(tokens).filter(
+		({ isOne, keyToken, valueToken }) =>
+			!isOne ||
+			(field.key.endsWith(keyToken.pattern) && valueString.startsWith(valueToken.pattern)),
+	);
+
+	const keyTokens = keyValueTokens.map(({ keyToken }) => keyToken);
+	const valueTokens = keyValueTokens.map(({ valueToken }) => valueToken);
+
+	const { key, value, parentIds } = field;
+
+	const getValue = () => {
 		if (key.endsWith('Base64')) {
 			try {
 				decodeBase64RawContent(value);
-				return <Base64Cell value={value} />;
+				return <Base64Cell value={value} valueTokens={valueTokens} />;
 			} catch (error) {
 				return (
 					<div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -88,75 +178,115 @@ const TableRows = ({
 				);
 			}
 		}
-		if (typeof value === 'object') return <p>{JSON.stringify(value)}</p>;
-		return <p>{typeof value === 'string' ? `"${value}"` : String(value)}</p>;
+		return (
+			<p>
+				{multiTokenSplit(valueString, valueTokens).map((contentPart, index) => (
+					<span
+						key={index}
+						className={contentPart.token != null ? 'found-content' : undefined}
+						style={{ backgroundColor: contentPart.token?.color }}>
+						{contentPart.content}
+					</span>
+				))}
+			</p>
+		);
 	};
 
 	return (
 		<>
-			{simpleFields.map(({ key, value }, index) => (
-				<tr key={`${key}:${value}:${index}`} className={createBemBlock('json-table-row-value')}>
-					{value === '' ? (
-						<td style={{ gridColumn: `1/3` }}>
-							<p>{key}</p>
-						</td>
-					) : (
-						<>
-							<td>
-								<p>{key}</p>
-							</td>
-							<td>{getValue({ key, value })}</td>
-						</>
-					)}
-				</tr>
-			))}
-			{complexFields.map(field => (
-				<ExpandRow field={field} key={`${field.id}`} />
-			))}
+			{value === '' ? (
+				<td
+					className={'json-table-row-value'}
+					colSpan={2}
+					style={{
+						paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
+						overflowWrap: 'anywhere',
+					}}>
+					<p>
+						{multiTokenSplit(key, keyTokens).map((contentPart, index) => (
+							<span
+								key={index}
+								className={contentPart.token != null ? 'found-content' : undefined}
+								style={{ backgroundColor: contentPart.token?.color }}>
+								{contentPart.content}
+							</span>
+						))}
+					</p>
+				</td>
+			) : (
+				<>
+					<td
+						className={'json-table-row-value'}
+						style={{
+							width: `30%`,
+							paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
+							overflowWrap: 'anywhere',
+						}}>
+						<p>
+							{multiTokenSplit(key, keyTokens).map((contentPart, index) => (
+								<span
+									key={index}
+									className={contentPart.token != null ? 'found-content' : undefined}
+									style={{ backgroundColor: contentPart.token?.color }}>
+									{contentPart.content}
+								</span>
+							))}
+						</p>
+					</td>
+					<td className={'json-table-row-value'} style={{ width: `70%`, overflowWrap: 'anywhere' }}>
+						{getValue()}
+					</td>
+				</>
+			)}
 		</>
 	);
 };
 
-const ExpandRow = ({ field }: { field: TreeNode }) => {
-	const [isOpen, setIsOpen] = React.useState(false);
+const ExpandRow = ({
+	field,
+	isOpen,
+	setOpen,
+	tokens,
+}: {
+	field: TreeNode;
+	isOpen: boolean;
+	setOpen: (id: string) => void;
+	tokens: SearchToken[];
+}) => {
 	const nodeName = useMemo(() => {
 		if (field.displayName) return field.displayName;
 		if (field.key && !(field.isGeneratedKey && !field.isRoot)) return field.key;
 		return 'no display name';
 	}, [field.displayName, field.key, field.isGeneratedKey]);
 
+	const splitContent = multiTokenSplit(nodeName, tokens);
+
 	return (
 		<>
-			<tr className={createBemBlock('json-table-row-toogler')} onClick={() => setIsOpen(!isOpen)}>
-				<td style={{ gridColumn: `1/3` }}>
-					<div className='leafWrapper'>
-						<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
-						<div className={'valueLeaf-table'} title={nodeName}>
-							{nodeName}
-						</div>
+			<td
+				className={'json-table-row-togler'}
+				style={{
+					gridColumn: `1/3`,
+					paddingLeft: `${field.parentIds.length * 10}px`,
+				}}
+				colSpan={2}
+				onClick={() => setOpen(field.id)}>
+				<div className='leafWrapper'>
+					<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
+					<div className={'valueLeaf-table'} title={nodeName}>
+						{splitContent.map((contentPart, index) => (
+							<span
+								key={index}
+								className={contentPart.token != null ? 'found-content' : undefined}
+								style={{ backgroundColor: contentPart.token?.color }}>
+								{contentPart.content}
+							</span>
+						))}
 					</div>
-				</td>
-			</tr>
-			{isOpen && (
-				<tr>
-					<td style={{ gridColumn: `1/3` }}>
-						<div className='json-table'>
-							<div className='json-table-wrapper'>
-								<table>
-									<tbody>
-										<TableRows
-											simpleFields={field.simpleFields}
-											complexFields={field.complexFields}
-										/>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</td>
-				</tr>
-			)}
+				</div>
+			</td>
 		</>
 	);
 };
 
-export default Table;
+export default observer(Table);

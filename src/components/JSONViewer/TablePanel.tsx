@@ -1,42 +1,72 @@
-import React, { useMemo } from 'react';
+import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { createBemBlock } from '../../helpers/styleCreators';
 import Table from './Table';
 import '../../styles/JSONviewer.scss';
 import { TreeNode } from '../../models/JSONSchema';
+import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 
-const TablePanel = ({ node }: { node: TreeNode }) => {
-	const { id, key, simpleFields, complexFields } = node;
-	const nodeName = useMemo(() => {
-		if (node.displayName) return node.displayName;
-		if (node.key && !(node.isGeneratedKey && !node.isRoot)) return node.key;
+interface props {
+	type: 'left' | 'right';
+}
+
+const TablePanel = ({ type }: props) => {
+	const JSONViewerStore = useJSONViewerStore();
+	const selectedNode = React.useMemo(
+		() =>
+			type === 'left' ? JSONViewerStore.selectedTreeNode : JSONViewerStore.selectedCompareNode,
+		[JSONViewerStore.selectedTreeNode, JSONViewerStore.selectedCompareNode],
+	);
+
+	const getName = (treeNode: TreeNode) => {
+		if (treeNode.displayName) return treeNode.displayName;
+		if (treeNode.key && !(treeNode.isGeneratedKey && !treeNode.isRoot)) return treeNode.key;
 		return 'no display name';
-	}, [node.displayName, node.key, node.isGeneratedKey]);
+	};
 
-	return (
+	const getPanel = (treeNode: TreeNode) => (
 		<>
-			{id !== '' && (
+			{treeNode.id !== '' && (
 				<>
-					{id !== '' && nodeName !== '' && (
+					{treeNode.id !== '' && getName(treeNode) !== '' && (
 						<div
 							className={createBemBlock('valueLeaf', 'header', 'selected')}
 							style={{ cursor: 'default' }}
-							title={nodeName}>
+							title={getName(treeNode)}>
 							<div
-								className={createBemBlock('event-status-icon', node.failed ? 'failed' : 'passed')}
+								className={createBemBlock(
+									'event-status-icon',
+									treeNode.failed ? 'failed' : 'passed',
+								)}
 							/>
-							<div className={'title'} title={key}>
-								{nodeName}
+							<div className={'title'} title={treeNode.key}>
+								{multiTokenSplit(getName(treeNode), JSONViewerStore.tokens).map(
+									(contentPart, index) => (
+										<span
+											key={index}
+											className={contentPart.token != null ? 'found-content' : undefined}
+											style={{ backgroundColor: contentPart.token?.color }}>
+											{contentPart.content}
+										</span>
+									),
+								)}
 							</div>
 						</div>
 					)}
-					<>
-						<Table simpleFields={simpleFields} complexFields={complexFields} />
-						<br />
-					</>
+					<Table type={type === 'left' ? 'select' : 'compare'} />
+					<br />
 				</>
 			)}
 		</>
 	);
+
+	const selectedPanel = React.useMemo(
+		() => getPanel(selectedNode),
+		[selectedNode, type, JSONViewerStore.tokens],
+	);
+
+	return <div className='JSON-wrapper tableView'>{selectedPanel}</div>;
 };
 
-export default TablePanel;
+export default observer(TablePanel);

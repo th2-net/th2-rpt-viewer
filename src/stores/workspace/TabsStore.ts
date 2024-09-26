@@ -17,6 +17,7 @@
 import { action, observable } from 'mobx';
 import WorkspacesStore from './WorkspacesStore';
 import WorkspaceStore from './WorkspaceStore';
+import JSONViewerWorkspaceStore from './JSONViewerWorkspaceStore';
 
 export default class TabsStore {
 	constructor(private workspacesStore: WorkspacesStore) {}
@@ -24,7 +25,7 @@ export default class TabsStore {
 	@observable activeTabIndex = 0;
 
 	@action
-	closeWorkspace = (tab: number | WorkspaceStore) => {
+	closeWorkspace = (tab: number | WorkspaceStore | JSONViewerWorkspaceStore) => {
 		const index = typeof tab === 'number' ? tab : this.workspacesStore.workspaces.indexOf(tab);
 		if (index <= this.activeTabIndex) {
 			this.setActiveWorkspace(this.activeTabIndex === 0 ? 0 : this.activeTabIndex - 1);

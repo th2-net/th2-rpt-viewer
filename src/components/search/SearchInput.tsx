@@ -389,7 +389,8 @@ export class SearchInputBase extends React.PureComponent<Props> {
 	}
 
 	private getNextColor(): string {
-		return this.props.searchTokens.length > 0
+		return this.props.searchTokens.length > 0 &&
+			COLORS.includes(this.props.searchTokens[this.props.searchTokens.length - 1].color)
 			? (nextCyclicItem(
 					COLORS,
 					this.props.searchTokens[this.props.searchTokens.length - 1].color,

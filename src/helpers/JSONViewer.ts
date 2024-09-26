@@ -20,7 +20,13 @@ export const isKeyFailed = (key: string) => key.includes('[fail]') || key.trim()
 export const isValueFailed = (value: string) =>
 	value.trim().startsWith('#') || value.trim().startsWith('!#');
 
-export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false): TreeNode => {
+export const convertJSONtoNode = (
+	obj: object,
+	key = '',
+	isGeneratedKey = false,
+	parentIds: string[] = [],
+	depth = 0,
+): TreeNode => {
 	const id = nanoid();
 	let failed = isKeyFailed(key);
 	const isArray = Array.isArray(obj);
@@ -28,16 +34,17 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 	const complexFields: TreeNode[] = [];
 	let viewInstruction = '';
 	let displayName: string | undefined;
+	let displayTimestamp: number | undefined;
 	let displayTable: string[][] | undefined;
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
 			if (typeof obj[i] === 'object') {
-				const val = convertJSONtoNode(obj[i], i.toString(), true);
+				const val = convertJSONtoNode(obj[i], i.toString(), true, [id, ...parentIds], depth + 1);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
 			} else {
 				if (!failed && typeof obj[i] === 'string') failed = isValueFailed(obj[i]);
-				simpleFields.push({ key: i.toString(), value: obj[i] });
+				simpleFields.push({ id: nanoid(), key: i.toString(), value: obj[i] });
 			}
 		}
 	} else {
@@ -48,23 +55,27 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 				displayTable = value;
 			} else if (entryKey === '#display-name') {
 				displayName = String(value);
+			} else if (entryKey === '#display-timestamp') {
+				displayTimestamp = Number(value) / 1_000_000;
 			} else if (entryKey === '#view-instruction') {
 				viewInstruction = String(value);
 			} else if (typeof value === 'object' && value !== null) {
-				const val = convertJSONtoNode(value, entryKey);
+				const val = convertJSONtoNode(value, entryKey, false, [id, ...parentIds], depth + 1);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
 			} else {
 				if (!failed && typeof value === 'string') failed = isValueFailed(value);
-				simpleFields.push({ key: entryKey, value });
+				simpleFields.push({ id: nanoid(), key: entryKey, value });
 			}
 		}
 	}
 	return {
 		id,
 		key,
+		parentIds,
 		displayTable,
 		displayName,
+		displayTimestamp,
 		failed,
 		isArray,
 		isGeneratedKey,
@@ -72,12 +83,14 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 		viewType: TreeViewType.EVENTS_LIST,
 		simpleFields,
 		complexFields,
+		childIds: complexFields.map(node => node.id),
 	};
 };
 
 export const parseText = (text: string, name = '', isGeneratedKey = false): TreeNode[] => {
 	const js = JSON.parse(text);
 	const node = convertJSONtoNode(js, undefined, isGeneratedKey);
+
 	if (node.simpleFields.length > 0) {
 		return [
 			{
@@ -209,4 +222,21 @@ export const convertParameterToInput = (parameter: NotebookParameter): InputNote
 		type,
 		isValid: validateParameter(parameter.default, type),
 	};
+};
+
+export const getFlatListFromTree = (tree: TreeNode) => {
+	const flatten = (node: TreeNode, parentIds: string[] = []): TreeNode[] => [
+		{ ...node, parentIds, childIds: node.complexFields.map(f => f.id) },
+		...node.complexFields.flatMap(child => flatten(child, [node.id, ...parentIds])),
+	];
+	return flatten(tree);
+};
+
+export const getFlatListFromTreeWSimple = (tree: TreeNode) => {
+	const flatten = (node: TreeNode, parentIds: string[] = []): (TreeNode | SimpleField)[] => [
+		{ ...node, parentIds, complexFields: [], childIds: node.complexFields.map(f => f.id) },
+		...node.simpleFields.flatMap(child => ({ ...child, parentIds: [...parentIds, node.id] })),
+		...node.complexFields.flatMap(child => flatten(child, [node.id, ...parentIds])),
+	];
+	return flatten(tree);
 };

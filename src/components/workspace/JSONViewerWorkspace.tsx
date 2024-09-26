@@ -16,20 +16,19 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Virtuoso } from 'react-virtuoso';
 import { computed } from 'mobx';
 import { nanoid } from 'nanoid';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import '../../styles/workspace.scss';
-import { TreeNode } from '../../models/JSONSchema';
+import { NotebookNode, TreeNode } from '../../models/JSONSchema';
 import TablePanel from '../JSONViewer/TablePanel';
-import useJSONViewerWorkspace from '../../hooks/useJSONViewerWorkspace';
+import { useJSONViewerWorkspace } from '../../hooks/useJSONViewerWorkspace';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import FileChoosing from '../JSONViewer/FileChoosing';
-import NotebookParamsCell from '../JSONViewer/NotebookParamsCell';
-import TreePanel from '../JSONViewer/TreePanel';
-import { parseText } from '../../helpers/JSONViewer';
-import StateSaverProvider from '../util/StateSaverProvider';
+import { getFlatListFromTree, parseText } from '../../helpers/JSONViewer';
+import { SearchInputBase } from '../search/SearchInput';
+import TreeList from '../JSONViewer/TreeList';
+import JSONPanel from '../JSONViewer/JSONPanel';
 
 const panelColors = {
 	tree: {
@@ -47,14 +46,15 @@ const JSONViewerWorkspace = () => {
 	const { panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } =
 		JSONViewerWorkspaceStore.viewStore;
 	const JSONViewerStore = useJSONViewerStore();
-	const inputRef = React.useRef<HTMLInputElement>(null);
+	const inputJSONRef = React.useRef<HTMLInputElement>(null);
+	const inputSearchRef = React.useRef<HTMLInputElement>(null);
 
-	const onSubmit = (trees: TreeNode[], notebooks: string[]) => {
+	const onSubmit = (nodes: TreeNode[], notebooks: NotebookNode[]) => {
 		JSONViewerStore.setTreeNodes([]);
 		JSONViewerStore.setNotebooks([]);
-		JSONViewerStore.setTreeNodes(trees);
+		JSONViewerStore.setTreeNodes(nodes.flatMap(node => getFlatListFromTree(node)));
 		JSONViewerStore.selectTreeNode();
-		if (trees.length > 0) JSONViewerStore.selectTreeNode(trees[0]);
+		if (nodes.length > 0) JSONViewerStore.selectTreeNode(nodes[0]);
 		JSONViewerStore.setNotebooks(notebooks);
 		JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType);
 	};
@@ -75,11 +75,13 @@ const JSONViewerWorkspace = () => {
 		const nodes: TreeNode[] = (await Promise.all(promises)).map(([fileName, text]) => {
 			const node: TreeNode = {
 				id: nanoid(),
+				parentIds: [],
 				key: fileName,
 				failed: false,
 				viewInstruction: '',
 				simpleFields: [],
 				complexFields: [],
+				childIds: [],
 				isGeneratedKey: true,
 				isRoot: true,
 			};
@@ -91,25 +93,20 @@ const JSONViewerWorkspace = () => {
 					if (lines[i] !== '') node.complexFields.push(...parseText(lines[i], String(i), true));
 				}
 			}
-			node.failed = node.complexFields.some(v => v.failed);
 			return node;
 		});
-		JSONViewerStore.setTreeNodes(nodes);
+		JSONViewerStore.setTreeNodes(nodes.flatMap(node => getFlatListFromTree(node)));
 		JSONViewerStore.setNotebooks([]);
 		JSONViewerStore.selectTreeNode();
 		if (nodes.length > 0) JSONViewerStore.selectTreeNode(nodes[0]);
 	};
 
-	const computeTreeKey = React.useCallback(
-		(index: number, dataNode: TreeNode | string) =>
-			`${index}/${typeof dataNode === 'string' ? dataNode : dataNode.id}`,
-		[],
-	);
-
-	const renderTree = React.useCallback((index: number, dataNode: TreeNode | string) => {
-		if (typeof dataNode === 'string') return <NotebookParamsCell notebook={dataNode} />;
-		return <TreePanel nest={0} treeNode={dataNode} prevKey={`${index}/${dataNode.key}`} />;
-	}, []);
+	const readSearchFile = async (files: FileList) => {
+		const file = files.item(0);
+		if (!file) return;
+		const fileContent = await file.text();
+		JSONViewerStore.updateTokensFromText(fileContent);
+	};
 
 	const treePanel = React.useMemo(
 		() =>
@@ -117,34 +114,86 @@ const JSONViewerWorkspace = () => {
 				title: 'Tree',
 				color: panelColors.tree,
 				component: (
-					<div className='JSON-wrapper' style={{ gap: '1px' }}>
-						<div className='JSON-buttons-wrapper'>
-							<button
-								className='load-JSON-button'
-								title='Load Executable(s) From Server'
-								onClick={() =>
-									JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'notebooks')
-								}>
-								Load Executable(s) From Server
-							</button>
-							<button
-								className='load-JSON-button'
-								title='Load Result(s) From Server'
-								onClick={() =>
-									JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'results')
-								}>
-								Load Result(s) From Server
-							</button>
-							<button
-								className='load-JSON-button'
-								title='Load Local Result(s)'
-								onClick={() => inputRef.current?.click()}>
-								Load Local Result(s)
-							</button>
+					<div
+						className='JSON-wrapper'
+						style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+						<div className='JSON-header-wrapper'>
+							<div className='JSON-buttons-wrapper'>
+								<button
+									className='load-JSON-button'
+									title='Load Executable(s) From Server'
+									onClick={() =>
+										JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'notebooks')
+									}>
+									Load Executable(s) From Server
+								</button>
+								<button
+									className='load-JSON-button'
+									title='Load Result(s) From Server'
+									onClick={() =>
+										JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen, 'results')
+									}>
+									Load Result(s) From Server
+								</button>
+								<button
+									className='load-JSON-button'
+									title='Load Local Result(s)'
+									onClick={() => inputJSONRef.current?.click()}>
+									Load Local Result(s)
+								</button>
+								<button className='load-JSON-button' onClick={() => JSONViewerStore.toggleMode()}>
+									Switch mode to {JSONViewerStore.isCompare ? 'table' : 'compare'}
+								</button>
+								<div
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+									}}>
+									<label htmlFor='chunk-size'>Chunk interval:</label>
+									<select
+										name='intervals'
+										id='chunk-size'
+										onChange={e => {
+											e.preventDefault();
+											JSONViewerStore.updateInterval(Number(e.target.value));
+										}}
+										value={JSONViewerStore.chunkInterval}>
+										<option value={10}>1 millisec</option>
+										<option value={1000}>1 sec</option>
+										<option value={60000}>1 min</option>
+										<option value={600000}>10 min</option>
+									</select>
+								</div>
+							</div>
+							<div className='JSON-search-wrapper'>
+								<SearchInputBase
+									searchTokens={JSONViewerStore.tokens}
+									resultsCount={0}
+									currentIndex={JSONViewerStore.scrolledIndex}
+									isLoading={false}
+									updateSearchTokens={JSONViewerStore.updateTokens}
+									nextSearchResult={JSONViewerStore.blankMethod}
+									prevSearchResult={JSONViewerStore.blankMethod}
+									clear={JSONViewerStore.clear}
+									value={JSONViewerStore.inputValue}
+									setValue={JSONViewerStore.setInputValue}
+									disabled={true}
+								/>
+								<div
+									className='import-JSON-button'
+									onClick={() => inputSearchRef.current?.click()}
+									title='Import Search'
+								/>
+								<div
+									className='export-JSON-button'
+									onClick={JSONViewerStore.exportSearch}
+									title='Export Search'
+								/>
+							</div>
 						</div>
 						<input
 							hidden
-							ref={inputRef}
+							ref={inputJSONRef}
 							style={{ marginBottom: 10 }}
 							type='file'
 							accept='.jsonl'
@@ -152,7 +201,20 @@ const JSONViewerWorkspace = () => {
 							onChange={ev => {
 								if (ev.target.files) {
 									readFile(ev.target.files);
-									if (inputRef.current) inputRef.current.value = '';
+									if (inputJSONRef.current) inputJSONRef.current.value = '';
+								}
+							}}
+						/>
+						<input
+							hidden
+							ref={inputSearchRef}
+							style={{ marginBottom: 10 }}
+							type='file'
+							accept='.json'
+							onChange={ev => {
+								if (ev.target.files) {
+									readSearchFile(ev.target.files);
+									if (inputSearchRef.current) inputSearchRef.current.value = '';
 								}
 							}}
 						/>
@@ -164,47 +226,50 @@ const JSONViewerWorkspace = () => {
 								close={() => JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType)}
 							/>
 						)}
-						<StateSaverProvider>
-							<Virtuoso
-								className='JSON-virtuoso'
-								data={[...JSONViewerStore.notebooks, ...JSONViewerStore.treeNodes]}
-								totalCount={JSONViewerStore.notebooks.length + JSONViewerStore.treeNodes.length}
-								computeItemKey={computeTreeKey}
-								overscan={3}
-								itemContent={renderTree}
-								style={{ height: 'calc(100% - 47px)' }}
-							/>
-						</StateSaverProvider>
+						{JSONViewerStore.isCompare ? (
+							<div className='JSON-wrapper' style={{ gap: '1px' }}>
+								<JSONPanel type='left' />
+							</div>
+						) : (
+							<TreeList type='left' />
+						)}
 					</div>
 				),
-				isActive: false,
+				isActive: true,
 			})),
 		[
 			JSONViewerStore.treeNodes,
 			JSONViewerStore.notebooks,
 			JSONViewerStore.isModalOpen,
 			JSONViewerStore.selectedTreeNode,
+			JSONViewerStore.comparableTreeNode,
+			JSONViewerStore.openTreeNodes,
+			JSONViewerStore.tokens,
 		],
 	).get();
 
-	const tablePanel = React.useMemo(
-		() =>
-			computed(() => ({
-				title: `Table`,
-				color: panelColors.table,
-				component: (
-					<div className='JSON-wrapper tableView'>
-						<TablePanel node={JSONViewerStore.selectedTreeNode} />
-					</div>
-				),
-				isActive: false,
-			})),
-		[JSONViewerStore.selectTreeNode],
-	).get();
-
 	const viewerWorkspacePanels = React.useMemo(
-		() => [treePanel, tablePanel],
-		[treePanel, tablePanel],
+		() => [
+			treePanel,
+			{
+				title: JSONViewerStore.isCompare ? `Compare` : `Table`,
+				color: panelColors.table,
+				component: JSONViewerStore.isCompare ? (
+					<div className='JSON-wrapper' style={{ gap: '1px' }}>
+						<JSONPanel type='right' />
+					</div>
+				) : (
+					<TablePanel type='left' />
+				),
+				isActive: true,
+			},
+		],
+		[
+			treePanel,
+			JSONViewerStore.isCompare,
+			JSONViewerStore.comparableTreeNode,
+			JSONViewerStore.openComparableNodes,
+		],
 	);
 
 	return (

@@ -148,6 +148,11 @@
 		&:hover {
 			background-color: rgba(0, 0, 0, 0.07);
 		}
+
+		&.active {
+			border: 1px solid $passedDelimiterHoverColor;
+			border-radius: 5px;
+		}
 	}
 
 	&__icon {
@@ -194,6 +199,8 @@
 		&.download {
 			@include icon(url(../../resources/icons/download.svg), 15px, 15px);
 		}
+
+
 	}
 
 	&__indicator {
