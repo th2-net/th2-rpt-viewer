@@ -61,7 +61,7 @@ function getDefaultChildrenData(): ChildrenData {
 export default class EventsDataStore {
 	private readonly CHILDREN_CHUNK_SIZE = 50;
 
-	private readonly LIMIT_CHUNK_SIZE = [5, 8, 13, 21, 34, 50];
+	private readonly LIMIT_CHUNK_SIZE = [5, 5, 8, 13, 21, 34, 50];
 
 	constructor(
 		private eventStore: EventsStore,
