@@ -1,12 +1,17 @@
 import * as React from 'react';
+import AceEditor from 'react-ace';
 import moment from 'moment';
+// eslint-disable-next-line import/no-unassigned-import
+import 'ace-builds/src-noconflict/mode-python';
+// eslint-disable-next-line import/no-unassigned-import
+import 'ace-builds/src-noconflict/ext-language_tools';
 import { InputNotebookParameter, NotebookParameter } from '../../models/JSONSchema';
 import FileChoosing from './FileChoosing';
 import { DateTimeInputType, DateTimeMask, TimeInputType } from '../../models/filter/FilterInputs';
 import { DATE_TIME_ISO_INPUT_MASK } from '../../util/filterInputs';
 import TimestampParameter from './TimestampParameter';
 
-const possibleTypes = ['int', 'float', 'str', 'bool', 'file path', 'timestamp'];
+const possibleTypes = ['int', 'float', 'str', 'bool', 'file path', 'timestamp', 'pycode'];
 
 const ParametersRow = ({
 	parameter,
@@ -86,17 +91,43 @@ const ParametersRow = ({
 									title='Open  file browser'
 								/>
 							)}
-							<input
-								style={{ width: '100%' }}
-								type='text'
-								className={parameterValue.isValid ? undefined : 'failed'}
-								placeholder={`default: ${parameter.default}`}
-								value={parameterValue.value}
-								onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-									const newValue = ev.target.value;
-									setParametersValue(newValue);
-								}}
-							/>
+							{parameterValue.type === 'pycode' && (
+								<div
+									style={{
+										height: `${
+											parameterValue.value !== ''
+												? parameterValue.value.split('\n').length * 14 + 2
+												: 16
+										}px`,
+										width: '100%',
+										border: '1px solid black',
+										borderRadius: '5px',
+									}}>
+									<AceEditor
+										mode='python'
+										showGutter={false}
+										height='100%'
+										width='100%'
+										value={parameterValue.value}
+										onChange={(newValue: string) => {
+											setParametersValue(newValue);
+										}}
+									/>
+								</div>
+							)}
+							{parameterValue.type !== 'pycode' && (
+								<input
+									style={{ width: '100%' }}
+									type='text'
+									className={parameterValue.isValid ? undefined : 'failed'}
+									placeholder={`default: ${parameter.default}`}
+									value={parameterValue.value}
+									onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+										const newValue = ev.target.value;
+										setParametersValue(newValue);
+									}}
+								/>
+							)}
 						</>
 					)}
 				</div>

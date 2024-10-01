@@ -50,7 +50,7 @@ export interface AppState {
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
-	public selectedStore = new SelectedStore(this, this.api.indexedDb, this.booksStore);
+	public selectedStore: SelectedStore;
 
 	public tabsStore = new TabsStore(this);
 
@@ -63,6 +63,7 @@ export default class WorkspacesStore {
 		private booksStore: BooksStore,
 		initialState: AppState | null,
 	) {
+		this.selectedStore = new SelectedStore(this, this.api.indexedDb, this.booksStore);
 		this.searchWorkspace = new SearchWorkspaceStore(
 			this.rootStore,
 			this,

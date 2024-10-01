@@ -183,6 +183,9 @@ export const validateParameter = (value: string, type: string): boolean => {
 		case 'timestamp': {
 			return moment.utc(value).isValid();
 		}
+		case 'pycode': {
+			return true;
+		}
 		default: {
 			return true;
 		}
@@ -195,6 +198,9 @@ export const getParameterType = (parameter: NotebookParameter) => {
 	if (type !== 'None') return type;
 	if (name.endsWith('_timestamp')) {
 		return 'timestamp';
+	}
+	if (name.endsWith('_pycode')) {
+		return 'pycode';
 	}
 	if (name.endsWith('_file')) {
 		return 'file path';
