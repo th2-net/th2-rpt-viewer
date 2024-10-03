@@ -296,6 +296,14 @@
 		width: 100%;
 		.search-field {
 			border: 1px solid black;
+			&__child-wrapper {
+				@include scrollbar;
+				max-height: 50px;
+				overflow-x: auto;
+				white-space: nowrap;
+				overflow-y: hidden;
+				flex-wrap: nowrap;
+			}
 		}
 		.search-field__search-controls.search-controls{
 			min-width: 0;

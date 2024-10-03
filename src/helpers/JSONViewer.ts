@@ -124,6 +124,16 @@ export const convertParameterValue = (
 					type,
 				};
 			}
+			case 'pycode': {
+				return {
+					value: cutString
+						? value.startsWith('"""')
+							? value.slice(3, value.length - 3)
+							: value.slice(1, value.length - 1)
+						: value,
+					type,
+				};
+			}
 			case 'int': {
 				return {
 					value: Number.parseInt(value),
