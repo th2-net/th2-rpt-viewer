@@ -58,10 +58,10 @@ export default class MessagesStore {
 	public hoveredMessage: EventMessage | null = null;
 
 	@observable
-	public selectedMessageId: String | null = null;
+	public selectedMessageId: string | null = null;
 
 	@observable
-	public highlightedMessageId: String | null = null;
+	public highlightedMessageId: string | null = null;
 
 	@observable
 	public currentMessagesIndexesRange: ListRange = {
@@ -176,7 +176,7 @@ export default class MessagesStore {
 			try {
 				const message = await this.api.messages.getMessage(defaultState);
 				this.onMessageSelect(message);
-			} catch (error) {
+			} catch (_error) {
 				console.error(`Couldnt fetch target message ${defaultState}`);
 			}
 		} else {

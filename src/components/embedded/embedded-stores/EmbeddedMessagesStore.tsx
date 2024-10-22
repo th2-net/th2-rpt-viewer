@@ -37,13 +37,13 @@ export default class EmbeddedMessagesStore {
 	public filterStore: EmbeddedMessagesFilterStore;
 
 	@observable
-	public selectedMessageId: String | null = null;
+	public selectedMessageId: string | null = null;
 
 	@observable
-	public scrolledIndex: Number | null = null;
+	public scrolledIndex: number | null = null;
 
 	@observable
-	public highlightedMessageId: String | null = null;
+	public highlightedMessageId: string | null = null;
 
 	@observable
 	public detailedRawMessagesIds: Array<string> = [];
@@ -91,7 +91,7 @@ export default class EmbeddedMessagesStore {
 	};
 
 	@action
-	private onSelectedMessageIdChange = (selectedMessageId: String | null) => {
+	private onSelectedMessageIdChange = (selectedMessageId: string | null) => {
 		if (selectedMessageId !== null) {
 			this.scrollToMessage(selectedMessageId.valueOf());
 		}

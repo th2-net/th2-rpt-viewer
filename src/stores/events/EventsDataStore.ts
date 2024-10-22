@@ -175,7 +175,7 @@ export default class EventsDataStore {
 			);
 			this.parentNodesLoaderScheduler = window.setInterval(this.addToQueue, 1000);
 			this.eventTreeEventSource.subscribe();
-		} catch (error) {
+		} catch (_error) {
 			this.resetEventsTreeState({ isError: true });
 		}
 	};
@@ -618,7 +618,7 @@ export default class EventsDataStore {
 				this.eventsCache.set(targetNode.eventId, targetNode);
 				this.eventStore.onTargetEventLoad(event, targetNode);
 				this.targetNode = targetNode;
-			} catch (error) {
+			} catch (_error) {
 				console.error(`Couldnt fetch target event node ${targetEventId}`);
 				this.eventStore.targetNodeId = null;
 				this.targetEventLoadSubscription();
@@ -646,7 +646,7 @@ export default class EventsDataStore {
 			runInAction(() => {
 				this.eventStore.selectedEvent = event;
 			});
-		} catch (error) {
+		} catch (_error) {
 			console.error(`Error occurred while loading event ${selectedNode.eventId}`);
 		} finally {
 			this.isLoadingSelectedEvent = false;

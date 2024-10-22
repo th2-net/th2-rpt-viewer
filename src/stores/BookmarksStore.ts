@@ -207,7 +207,7 @@ export class BookmarksStore {
 			runInAction(() => {
 				this.events = savedEvents.filter(bookmark => bookmark.bookId === book.name);
 			});
-		} catch (error) {
+		} catch (_error) {
 			console.error('Failed to fetch saved events');
 		}
 	};
@@ -218,7 +218,7 @@ export class BookmarksStore {
 			runInAction(() => {
 				this.messages = savedMessages.filter(bookmark => bookmark.bookId === book.name);
 			});
-		} catch (error) {
+		} catch (_error) {
 			console.error('Failed to fetch saved messages');
 		}
 	};

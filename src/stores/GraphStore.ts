@@ -31,7 +31,7 @@ export class GraphStore {
 		private selectedStore: SelectedStore,
 		private booksStore: BooksStore,
 		timeRange: TimeRange | null = null,
-		defaultInterval: number | null | undefined,
+		defaultInterval: number | null | undefined = null,
 	) {
 		this.range = timeRange || this.range;
 		this.setTimestampFromRange(this.range);
@@ -74,7 +74,7 @@ export class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: Number = new Number(
+	public timestamp: number = new Number(
 		moment
 			.utc()
 			.subtract(this.eventInterval / 2, 'minutes')

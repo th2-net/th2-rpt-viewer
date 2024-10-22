@@ -56,7 +56,7 @@ function GraphSearch(props: Props) {
 	});
 
 	const [timestamp, setTimestamp] = React.useState<number | null>(null);
-	const [submittedId, setSubmittedId] = React.useState<String | null>(null);
+	const [submittedId, setSubmittedId] = React.useState<string | null>(null);
 
 	const [mode, setMode] = React.useState<GraphSearchMode>('timestamp');
 	// If user selects mode input will no longer switch automatically based on input value

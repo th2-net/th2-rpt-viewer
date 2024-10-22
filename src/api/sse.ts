@@ -161,7 +161,7 @@ export function getMessagesSSEParamsFromFilter(
 	startTimestamp: number | null,
 	endTimestamp: number | null,
 	searchDirection = 'previous',
-	resultCountLimit?: number,
+	resultCountLimit: number | undefined = undefined,
 ): URLSearchParams {
 	const filtersToAdd: Array<keyof MessageFilterState> = !filter
 		? []

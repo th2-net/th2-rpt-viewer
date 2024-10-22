@@ -114,7 +114,7 @@ export interface JSONViewerApiSchema {
 	getParameters: (path: string) => Promise<NotebookParameters>;
 	getResults: (taskId: string) => Promise<{ status: string; result: string; path?: string }>;
 	getFile: (path: string) => Promise<{ result: string }>;
-	launchNotebook: (path: string, parameters?: Object) => Promise<{ task_id: string }>;
+	launchNotebook: (path: string, parameters?: object) => Promise<{ task_id: string }>;
 	stopNotebook: (taskId: string) => Promise<boolean>;
 }
 

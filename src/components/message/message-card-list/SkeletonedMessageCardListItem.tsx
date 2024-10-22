@@ -36,7 +36,7 @@ function SkeletonedMessageCardListItem({ id }: Props) {
 			if (!message) {
 				try {
 					await messagesDataStore.fetchMessage(id, abortController.signal);
-				} catch (error) {
+				} catch (_error) {
 					setIsError(true);
 				}
 			}

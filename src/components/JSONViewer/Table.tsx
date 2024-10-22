@@ -79,7 +79,7 @@ const TableRows = ({
 			try {
 				decodeBase64RawContent(value);
 				return <Base64Cell value={value} />;
-			} catch (error) {
+			} catch (_error) {
 				return (
 					<div style={{ display: 'flex', flexDirection: 'column' }}>
 						<p style={{ color: 'red' }}>Failed to decode Base64:</p>

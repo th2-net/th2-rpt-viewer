@@ -65,7 +65,7 @@ interface Props {
 	settings: Settings;
 	renderChunk: (chunk: Chunk, index: number) => JSX.Element;
 	chunkWidth: number;
-	timestamp: Number;
+	timestamp: number;
 	interval: number;
 	range: TimeRange;
 	setRange: (range: TimeRange) => void;

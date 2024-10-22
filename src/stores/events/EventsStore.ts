@@ -105,7 +105,7 @@ export default class EventsStore {
 
 	@observable.ref selectedEvent: EventAction | null = null;
 
-	@observable scrolledIndex: Number | null = null;
+	@observable scrolledIndex: number | null = null;
 
 	@observable isExpandedMap: Map<string, boolean> = new Map();
 
@@ -168,7 +168,6 @@ export default class EventsStore {
 		return rootNodes.flatMap(eventNode =>
 			this.getFlatExpandedList(
 				eventNode,
-				[],
 				[...this.eventDataStore.targetNodeParents.slice(1), this.eventDataStore.targetNode].filter(
 					notEmpty,
 				),
@@ -444,7 +443,7 @@ export default class EventsStore {
 				initialState.selectedEventId = event.eventId;
 				initialState.targetEvent = event;
 				this.goToEvent(event);
-			} catch (error) {
+			} catch (_error) {
 				console.error(`Couldnt fetch target event node ${defaultState}`);
 				this.eventDataStore.fetchEventTree({
 					filter: this.filterStore.filter,
@@ -512,8 +511,8 @@ export default class EventsStore {
 
 	private getFlatExpandedList = (
 		eventTreeNode: EventTreeNode,
-		parents: string[] = [],
 		targetNodes: EventTreeNode[],
+		parents: string[] = [],
 	): EventTreeNode[] => {
 		let childList = this.getChildrenNodes(eventTreeNode.eventId);
 
@@ -526,7 +525,7 @@ export default class EventsStore {
 		return [
 			eventTreeNode,
 			...childList.flatMap(node =>
-				this.getFlatExpandedList(node, [...parents, eventTreeNode.eventId], targetNodes),
+				this.getFlatExpandedList(node, targetNodes, [...parents, eventTreeNode.eventId]),
 			),
 		];
 	};

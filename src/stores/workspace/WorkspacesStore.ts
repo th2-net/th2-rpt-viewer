@@ -182,7 +182,7 @@ export default class WorkspacesStore {
 
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,
-		bookId: string,
+		_bookId: string,
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
@@ -280,7 +280,7 @@ export default class WorkspacesStore {
 				this.searchWorkspace.searchStore.syncData(unsavedData),
 				this.selectedStore.bookmarksStore.syncData(unsavedData),
 			]);
-		} catch (error) {
+		} catch (_error) {
 			this.searchWorkspace.searchStore.syncData();
 			this.selectedStore.bookmarksStore.syncData();
 		}

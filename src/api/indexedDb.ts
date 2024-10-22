@@ -226,7 +226,7 @@ export class IndexedDB {
 
 			await store.put(data);
 			await tx.done;
-		} catch (error) {
+		} catch (_error) {
 			const id = nanoid();
 			notificationsStore.addMessage({
 				id,

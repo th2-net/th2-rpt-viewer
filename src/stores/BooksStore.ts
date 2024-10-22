@@ -77,7 +77,7 @@ export default class BooksStore {
 			runInAction(() => {
 				this.scopeList = scopeList;
 			});
-		} catch (error) {
+		} catch (_error) {
 			console.error('Failed to load scope list');
 		} finally {
 			runInAction(() => {

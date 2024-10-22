@@ -50,7 +50,7 @@ const EmbeddedMessages = () => {
 	const [viewTypes, setViewTypes] = useState<Map<string, MessageViewType>>(new Map());
 
 	const renderMsg = useCallback(
-		(index: number, message: EventMessage) => {
+		(_index: number, message: EventMessage) => {
 			const setViewType = (viewType: MessageViewType) => {
 				setViewTypes(vt => new Map(vt.set(message.messageId, viewType)));
 			};
@@ -161,7 +161,7 @@ interface Props {
 		 we are comparing primitive numbers.
 		 Objects and reference comparison is the only way to handle numbers changing in this case.
 	 */
-	scrolledIndex: Number | null;
+	scrolledIndex: number | null;
 	className?: string;
 	overscan?: number;
 	loadNextMessages: () => Promise<EventMessage[]>;

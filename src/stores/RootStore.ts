@@ -234,7 +234,7 @@ export default class RootStore {
 				description: `Data has been removed`,
 				id: nanoid(),
 			});
-		} catch (error) {
+		} catch (_error) {
 			this.workspacesStore.syncData(unsavedData);
 			this.messageDisplayRulesStore.syncData(unsavedData);
 			this.messageBodySortStore.syncData(unsavedData);
