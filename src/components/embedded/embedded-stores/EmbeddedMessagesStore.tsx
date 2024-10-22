@@ -86,7 +86,7 @@ export default class EmbeddedMessagesStore {
 			(m: { messageId: string }) => m.messageId === messageId,
 		);
 		if (messageIndex !== -1) {
-			this.scrolledIndex = new Number(messageIndex);
+			this.scrolledIndex = Number(messageIndex);
 		}
 	};
 

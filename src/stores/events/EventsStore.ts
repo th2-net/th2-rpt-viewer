@@ -301,11 +301,11 @@ export default class EventsStore {
 			[...parents.map(parentNode => parentNode.eventId), eventId].forEach(id => {
 				const eventIndex = this.nodesList.findIndex(ev => ev.eventId === id);
 				if (eventIndex !== -1 && id !== eventId) this.isExpandedMap.set(id, true);
-				if (id === eventId) this.scrolledIndex = new Number(eventIndex);
+				if (id === eventId) this.scrolledIndex = Number(eventIndex);
 			});
 		} else {
 			index = this.flattenedEventList.findIndex(event => event.eventId === eventId);
-			this.scrolledIndex = index !== -1 ? new Number(index) : null;
+			this.scrolledIndex = index !== -1 ? Number(index) : null;
 		}
 	};
 

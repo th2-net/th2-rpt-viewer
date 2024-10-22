@@ -182,8 +182,8 @@ export default class MessagesStore {
 		} else {
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
-				this.selectedMessageId = new String(message.messageId);
-				this.highlightedMessageId = new String(message.messageId);
+				this.selectedMessageId = String(message.messageId);
+				this.highlightedMessageId = String(message.messageId);
 				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 				this.workspaceStore.viewStore.activePanel = this;
 			}
@@ -198,8 +198,8 @@ export default class MessagesStore {
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
 			const streams = this.filterStore.filter.streams;
 
-			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = new String(message.messageId);
+			this.selectedMessageId = String(message.messageId);
+			this.highlightedMessageId = String(message.messageId);
 			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
@@ -222,8 +222,8 @@ export default class MessagesStore {
 			m => m.messageId === message.messageId,
 		);
 		if (messageIndex !== -1) {
-			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = new String(message.messageId);
+			this.selectedMessageId = String(message.messageId);
+			this.highlightedMessageId = String(message.messageId);
 		} else {
 			this.onMessageSelect(message);
 		}
@@ -239,7 +239,7 @@ export default class MessagesStore {
 			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
 			if (mostRecentMessage) {
 				const streams = this.filterStore.filter.streams;
-				this.selectedMessageId = new String(mostRecentMessage.messageId);
+				this.selectedMessageId = String(mostRecentMessage.messageId);
 				this.filterStore.setMessagesFilter(
 					{
 						...this.filterStore.filter,
@@ -331,8 +331,8 @@ export default class MessagesStore {
 
 		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
 
-		this.selectedMessageId = new String(targetMessage.messageId);
-		this.highlightedMessageId = new String(targetMessage.messageId);
+		this.selectedMessageId = String(targetMessage.messageId);
+		this.highlightedMessageId = String(targetMessage.messageId);
 		this.showFilterChangeHint = false;
 		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
 

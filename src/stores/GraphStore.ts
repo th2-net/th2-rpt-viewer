@@ -74,7 +74,7 @@ export class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: number = new Number(
+	public timestamp: number = Number(
 		moment
 			.utc()
 			.subtract(this.eventInterval / 2, 'minutes')
@@ -98,7 +98,7 @@ export class GraphStore {
 
 	@action
 	public setTimestamp = (timestamp: number) => {
-		this.timestamp = new Number(timestamp);
+		this.timestamp = Number(timestamp);
 	};
 
 	@action
@@ -204,7 +204,7 @@ export class GraphStore {
 
 	@action
 	public setTimestampFromRange = (range: TimeRange) => {
-		this.timestamp = new Number(getRangeCenter(range));
+		this.timestamp = Number(getRangeCenter(range));
 	};
 
 	@action

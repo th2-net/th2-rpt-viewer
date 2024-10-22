@@ -168,7 +168,7 @@ function GraphSearch(props: Props) {
 		}
 
 		if (mode === 'history') {
-			setSubmittedId(new String(inputConfig.value));
+			setSubmittedId(String(inputConfig.value));
 		}
 	};
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, reaction, observable, computed, runInAction, toJS } from 'mobx';
+import { action, reaction, observable, computed, runInAction, toJS, ObservableMap } from 'mobx';
 import { nanoid } from 'nanoid';
 import moment from 'moment';
 import ApiSchema from '../../api/ApiSchema';
@@ -224,7 +224,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		if (!this.messagesStore.selectedMessageId) {
 			message = prevMessages[0] || nextMessages[nextMessages.length - 1];
-			if (message) this.messagesStore.selectedMessageId = new String(message.messageId);
+			if (message) this.messagesStore.selectedMessageId = String(message.messageId);
 		}
 	};
 
@@ -470,7 +470,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@observable
-	public messagesCache: Map<string, EventMessage> = observable.map(new Map(), { deep: false });
+	public messagesCache: ObservableMap<string, EventMessage> = observable.map<string, EventMessage>(
+		new Map(),
+		{ deep: false },
+	);
 
 	@action
 	public fetchMessage = async (id: string, abortSingal: AbortSignal) => {
