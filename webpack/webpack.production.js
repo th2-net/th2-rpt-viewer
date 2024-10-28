@@ -25,7 +25,7 @@ const { appBuild, appPath, appSrc } = require('./paths');
 module.exports = merge(commonConfig, {
 	output: {
 		path: path.resolve(appBuild, 'out'),
-		publicPath: '',
+		publicPath: '/',
 		filename: '[name].[contenthash].js',
 		chunkFilename: '[name].[contenthash].js',
 	},
