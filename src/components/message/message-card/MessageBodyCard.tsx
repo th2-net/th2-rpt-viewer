@@ -42,6 +42,14 @@ interface Props {
 	filterBodyValues: string[] | undefined;
 }
 
+interface FieldsProps {
+	isBeautified: boolean;
+	fields: [string, string][] | [string, MessageBodyField][];
+	isSelected: boolean;
+	sortOrderItems: string[];
+	filterBodyValues: string[] | undefined;
+}
+
 const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	const primarySortedFields: [string, MessageBodyField][] = Object.entries(
 		sortOrder.reduce((prev, curr) => (fields[curr] ? { ...prev, [curr]: fields[curr] } : prev), {}),
@@ -68,6 +76,57 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	return [...primarySortedFields, ...secondarySortedFields, ...tertiarySortedFields];
 };
 
+const JsonFields = ({
+	isBeautified,
+	fields,
+	isSelected,
+	sortOrderItems,
+	filterBodyValues,
+}: FieldsProps) => {
+	const [areSameContext, highlightSameContext] = React.useState(false);
+	return (
+		<span
+			style={{
+				display: isBeautified ? 'block' : undefined,
+			}}>
+			<span
+				className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
+				{'{'}
+			</span>
+			<span
+				style={{
+					display: isBeautified ? 'block' : undefined,
+					paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
+				}}>
+				{fields.map(([key, value], idx, arr) => (
+					<React.Fragment key={key}>
+						<MessageBodyCardField
+							primarySort={sortOrderItems}
+							highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
+							label={key}
+							field={
+								typeof value === 'string'
+									? {
+											simpleValue: value,
+									  }
+									: value
+							}
+							isBeautified={isBeautified}
+							setIsHighlighted={highlightSameContext}
+							filterBodyValues={filterBodyValues}
+						/>
+						{isBeautified || idx === arr.length - 1 ? null : ', '}
+					</React.Fragment>
+				))}
+			</span>
+			<span
+				className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
+				{'}'}
+			</span>
+		</span>
+	);
+};
+
 function MessageBodyCard({
 	isBeautified,
 	body,
@@ -75,10 +134,13 @@ function MessageBodyCard({
 	sortOrderItems,
 	filterBodyValues,
 }: Props) {
-	const [areSameContext, highlightSameContext] = React.useState(false);
-
 	const fields = React.useMemo(
 		() => getSortedFields(body?.fields ? body.fields : {}, sortOrderItems),
+		[body, sortOrderItems],
+	);
+
+	const properties = React.useMemo(
+		() => (body?.metadata?.properties ? Object.entries(body?.metadata.properties) : []),
 		[body, sortOrderItems],
 	);
 
@@ -88,31 +150,21 @@ function MessageBodyCard({
 
 	return (
 		<pre className='mc-body__human' style={{ display: isBeautified ? 'block' : 'inline' }}>
-			{!isBeautified && (
-				<span
-					className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
-					{'{'}
-				</span>
-			)}
-			{fields.map(([key, value], idx, arr) => (
-				<React.Fragment key={key}>
-					<MessageBodyCardField
-						primarySort={sortOrderItems}
-						highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
-						label={key}
-						field={value}
-						isBeautified={isBeautified}
-						setIsHighlighted={highlightSameContext}
-						filterBodyValues={filterBodyValues}
-					/>
-					{isBeautified || idx === arr.length - 1 ? null : ', '}
-				</React.Fragment>
-			))}
-			{!isBeautified && (
-				<span
-					className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
-					{'}'}
-				</span>
+			<JsonFields
+				isBeautified={isBeautified}
+				fields={fields}
+				isSelected={isSelected}
+				sortOrderItems={sortOrderItems}
+				filterBodyValues={filterBodyValues}
+			/>
+			{properties.length > 0 && (
+				<JsonFields
+					isBeautified={isBeautified}
+					fields={properties}
+					isSelected={isSelected}
+					sortOrderItems={sortOrderItems}
+					filterBodyValues={filterBodyValues}
+				/>
 			)}
 		</pre>
 	);

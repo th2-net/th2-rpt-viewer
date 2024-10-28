@@ -24,6 +24,9 @@ export default interface MessageBody {
 		};
 		timestamp: string;
 		messageType: string;
+		properties?: {
+			[k: string]: string;
+		};
 	};
 	fields: MessageBodyFields;
 }
