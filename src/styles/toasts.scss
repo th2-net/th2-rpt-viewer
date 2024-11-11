@@ -147,6 +147,8 @@
 		font-size: 14px;
 		font-weight: bold;
 		gap: 4px;
+		white-space: pre-line;
+
 		.response-body {
 			@include ellipsis();
 		}
@@ -163,7 +165,7 @@
 	}
 
 	&__description {
-		font-size: 14px;
+		font-size: 12px;
 	}
 }
 

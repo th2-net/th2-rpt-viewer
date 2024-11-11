@@ -149,6 +149,9 @@
                 background-color: transparent;
                 align-items: center;
                 text-align: center;
+                label {
+                    cursor: inherit;
+                }
             }
         }
     }

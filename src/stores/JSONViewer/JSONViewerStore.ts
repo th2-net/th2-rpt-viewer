@@ -53,7 +53,14 @@ export class JSONViewerStore {
 
 	@observable openComparableNodes: Set<string> = new Set();
 
+	@observable intervalSize = 1;
+
 	@observable chunkInterval = 1000;
+
+	@computed
+	public get getChunkSize() {
+		return this.intervalSize * this.chunkInterval;
+	}
 
 	@observable isCompare = false;
 
@@ -76,8 +83,13 @@ export class JSONViewerStore {
 	};
 
 	@action
-	updateInterval = (newInterval: number) => {
+	updateChunkInterval = (newInterval: number) => {
 		this.chunkInterval = newInterval;
+	};
+
+	@action
+	updateInterval = (newInterval: number) => {
+		this.intervalSize = newInterval;
 	};
 
 	@action
@@ -125,13 +137,7 @@ export class JSONViewerStore {
 		);
 
 		downloadTxtFile(
-			[
-				JSON.stringify(
-					this.tokens.map(token => ({ pattern: token.pattern, color: token.color })),
-					null,
-					'	',
-				),
-			],
+			[JSON.stringify(this.tokens.map(token => ({ pattern: token.pattern, color: token.color })))],
 			`${fileName}.json`,
 		);
 	};
@@ -298,6 +304,15 @@ export class JSONViewerStore {
 	@action getNotebook(name: string, defaultNotebook: NotebookNode) {
 		const notebook = this.notebooks.find(n => n.name === name);
 		return notebook || defaultNotebook;
+	}
+
+	@action setNotebook(notebook: NotebookNode) {
+		const index = this.notebooks.findIndex(n => n.name === notebook.name);
+		this.notebooks = [
+			...this.notebooks.slice(0, index),
+			notebook,
+			...this.notebooks.slice(index + 1),
+		];
 	}
 
 	@action addNotebookResult(name: string, newResult: TreeNode, resultCount: number) {

@@ -8,7 +8,7 @@ import JSONView from './JSONView';
 import LeafTools from './LeafTools';
 import DisplayTable from './DisplayTable';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
-import { COLORS } from '../search/SearchInput';
+import { BACKGROUND_COLORS, COLORS } from '../search/SearchInput';
 import { formatTime } from '../../helpers/date';
 import { Chip } from '../Chip';
 
@@ -42,9 +42,9 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: 'left' | 'righ
 	const chunk = useMemo(
 		() =>
 			treeNode.displayTimestamp
-				? Math.floor(treeNode.displayTimestamp / JSONViewerStore.chunkInterval) % COLORS.length
+				? Math.floor(treeNode.displayTimestamp / JSONViewerStore.getChunkSize) % COLORS.length
 				: null,
-		[treeNode.displayTimestamp, JSONViewerStore.chunkInterval],
+		[treeNode.displayTimestamp, JSONViewerStore.getChunkSize],
 	);
 
 	const borderSide = isDefault ? 'Right' : 'Left';
@@ -135,6 +135,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: 'left' | 'righ
 				)}
 				style={{
 					marginBottom: needBounding ? '5px' : undefined,
+					backgroundColor: chunk !== null ? BACKGROUND_COLORS[chunk] : undefined,
 					...borderStyle,
 				}}>
 				<div className='leafWrapper'>
@@ -176,7 +177,8 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: 'left' | 'righ
 								{complexFieldsDisplay()} {simpleFieldsDisplay()}
 							</span>
 						</div>
-						<div style={{ display: 'flex' }}>
+						<div
+							style={{ display: 'flex', minWidth: treeNode.displayTimestamp ? '135px' : '20px' }}>
 							{treeNode.displayTimestamp && <Chip text={formatTime(treeNode.displayTimestamp)} />}
 							<LeafTools
 								activeViewType={viewType}

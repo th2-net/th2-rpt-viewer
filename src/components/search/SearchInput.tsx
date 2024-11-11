@@ -31,6 +31,7 @@ export const REACTIVE_SEARCH_DELAY = 500;
 const INPUT_PLACEHOLDER = 'Use Space to separate different words & Tab to finish';
 
 export const COLORS = ['#E69900', '#FF5500', '#1F66AD', '#45A155', '#987DB3'];
+export const BACKGROUND_COLORS = ['#fff7e9', '#fff1eb', '#eaf3fb', '#eff8f1', '#f7f5f9'];
 
 interface StateProps {
 	searchTokens: SearchToken[];

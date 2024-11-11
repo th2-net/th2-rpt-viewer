@@ -148,20 +148,32 @@ const JSONViewerWorkspace = () => {
 									style={{
 										display: 'flex',
 										alignItems: 'center',
+										gap: 5,
 									}}>
 									<label htmlFor='chunk-size'>Chunk interval:</label>
+									<input
+										style={{
+											border: '1px solid black',
+											borderRadius: '5px',
+											maxWidth: 50,
+										}}
+										value={JSONViewerStore.intervalSize}
+										onChange={e => {
+											e.preventDefault();
+											JSONViewerStore.updateInterval(Number(e.target.value));
+										}}
+									/>
 									<select
 										name='intervals'
 										id='chunk-size'
 										onChange={e => {
 											e.preventDefault();
-											JSONViewerStore.updateInterval(Number(e.target.value));
+											JSONViewerStore.updateChunkInterval(Number(e.target.value));
 										}}
 										value={JSONViewerStore.chunkInterval}>
-										<option value={10}>1 millisec</option>
-										<option value={1000}>1 sec</option>
-										<option value={60000}>1 min</option>
-										<option value={600000}>10 min</option>
+										<option value={10}>millisec</option>
+										<option value={1000}>sec</option>
+										<option value={60000}>min</option>
 									</select>
 								</div>
 							</div>
