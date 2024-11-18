@@ -12,42 +12,23 @@ import StateSaverProvider from '../util/StateSaverProvider';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import SearchToken from '../../models/search/SearchToken';
 import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 
-const Table = ({ type }: { type: 'select' | 'compare' }) => {
+const Table = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
-	const [rowsToRender, setRowsToRender] = React.useState(
-		type === 'select' ? JSONViewerStore.getShownSelectRows : JSONViewerStore.getShownCompareRows,
-	);
+	const [rowsToRender, setRowsToRender] = React.useState(JSONViewerStore.shownSelectRows[type]);
 
 	React.useEffect(() => {
-		if (type === 'select') {
-			setRowsToRender(JSONViewerStore.getShownSelectRows);
-		}
-	}, [JSONViewerStore.selectedTreeNode]);
-
-	React.useEffect(() => {
-		if (type === 'compare') {
-			setRowsToRender(JSONViewerStore.getShownCompareRows);
-		}
-	}, [JSONViewerStore.selectedCompareNode]);
+		setRowsToRender(JSONViewerStore.shownSelectRows[type]);
+	}, [JSONViewerStore.shownSelectRows]);
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
 	const toggleNode = (nodeId: string) => {
-		if (type === 'select') {
-			if (JSONViewerStore.openSelectedRows.has(nodeId)) {
-				JSONViewerStore.closeSelectRow(nodeId);
-			} else {
-				JSONViewerStore.openSelectRow(nodeId);
-			}
-			setRowsToRender(JSONViewerStore.getShownSelectRows);
+		if (JSONViewerStore.openSelectedRows[type].has(nodeId)) {
+			JSONViewerStore.closeSelectRow(nodeId, type);
 		} else {
-			if (JSONViewerStore.openCompareSelectedRows.has(nodeId)) {
-				JSONViewerStore.closeCompareSelectRow(nodeId);
-			} else {
-				JSONViewerStore.openCompareSelectRow(nodeId);
-			}
-			setRowsToRender(JSONViewerStore.getShownCompareRows);
+			JSONViewerStore.openSelectRow(nodeId, type);
 		}
 	};
 
@@ -62,18 +43,14 @@ const Table = ({ type }: { type: 'select' | 'compare' }) => {
 				return (
 					<ExpandRow
 						field={row}
-						isOpen={
-							type === 'select'
-								? JSONViewerStore.openSelectedRows.has(row.id)
-								: JSONViewerStore.openCompareSelectedRows.has(row.id)
-						}
+						isOpen={JSONViewerStore.openSelectedRows[type].has(row.id)}
 						setOpen={toggleNode}
-						tokens={JSONViewerStore.tokens}
+						tokens={JSONViewerStore.tokens[type]}
 					/>
 				);
 			}
 
-			return <SimpleRow field={row} tokens={JSONViewerStore.tokens} />;
+			return <SimpleRow field={row} tokens={JSONViewerStore.tokens[type]} />;
 		},
 		[JSONViewerStore.tokens],
 	);

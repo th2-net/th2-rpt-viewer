@@ -2,10 +2,11 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 
 const shownCapacity = 50;
 
-const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
+const DisplayTable = ({ value, type }: { value: string[][] | undefined; type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const [shownSize, setShownSize] = React.useState(shownCapacity);
 	if (!value) return <div className='display-table-error'>#display-table is undefined</div>;
@@ -20,7 +21,7 @@ const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
 					<tr>
 						{header.map((key, index) => (
 							<th key={index}>
-								{multiTokenSplit(key, JSONViewerStore.tokens).map((contentPart, i) => (
+								{multiTokenSplit(key, JSONViewerStore.tokens[type]).map((contentPart, i) => (
 									<span
 										key={i}
 										className={contentPart.token != null ? 'found-content' : undefined}
@@ -40,7 +41,7 @@ const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
 								<td key={ind}>
 									{multiTokenSplit(
 										typeof val === 'string' ? `"${val}"` : String(val),
-										JSONViewerStore.tokens,
+										JSONViewerStore.tokens[type],
 									).map((contentPart, i) => (
 										<span
 											key={i}

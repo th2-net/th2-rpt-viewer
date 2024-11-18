@@ -22,15 +22,22 @@ import { useNotificationsStore, useOutsideClickListener } from '../../hooks';
 import ParametersRow from './ParametersRow';
 import { downloadTxtFile } from '../../helpers/files/downloadTxt';
 import { ToolsPopup } from './LeafTools';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 
 const timeBetweenResults = 50;
 const ignoredParamNames = ['output_path', 'customization_path'];
 
-const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) => {
+const NotebookParamsCell = ({
+	notebookProp,
+	type,
+}: {
+	notebookProp: NotebookNode;
+	type: PanelType;
+}) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const notificationsStore = useNotificationsStore();
 	const notebook: NotebookNode = {
-		...JSONViewerStore.getNotebook(notebookProp.name, notebookProp),
+		...JSONViewerStore.getNotebook(notebookProp.name, notebookProp, type),
 	};
 	const [parameters, setParameters] = React.useState<NotebookParameter[]>(notebook.parameters);
 	const [paramsValue, setParamsValue] = React.useState<InputNotebookParameter[]>(
@@ -69,10 +76,13 @@ const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) =>
 	const open = () => {
 		if (isLoading) return;
 		setIsExpanded(!isExpanded);
-		JSONViewerStore.setNotebook({
-			...notebook,
-			open: !isExpanded,
-		});
+		JSONViewerStore.setNotebook(
+			{
+				...notebook,
+				open: !isExpanded,
+			},
+			type,
+		);
 	};
 
 	const savePreset = () => {
@@ -122,10 +132,10 @@ const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) =>
 					const newResults = [node.id, ...results];
 					const maxResultCount = Number(resultCount);
 					const convertResultCount = Math.max(1, Math.round(maxResultCount));
-					JSONViewerStore.addNotebookResult(notebook.name, node, convertResultCount);
+					JSONViewerStore.addNotebookResult(notebook.name, node, convertResultCount, type);
 					setResultCount(String(convertResultCount));
 					setResults(newResults.slice(0, convertResultCount));
-					if (customization) JSONViewerStore.updateTokensFromText(customization);
+					if (customization) JSONViewerStore.updateTokensFromText(customization, type);
 					setIsExpanded(false);
 				} else {
 					notificationsStore.addMessage({
@@ -388,7 +398,7 @@ const NotebookParamsCell = ({ notebookProp }: { notebookProp: NotebookNode }) =>
 							pattern='\d+'
 							onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
 								setResultCount(ev.target.value);
-								JSONViewerStore.updateotebookResultCount(notebookProp.name, ev.target.value);
+								JSONViewerStore.updateotebookResultCount(notebookProp.name, ev.target.value, type);
 							}}
 						/>
 					</div>

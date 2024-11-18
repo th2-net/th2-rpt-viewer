@@ -1,6 +1,12 @@
 import { action, computed, observable } from 'mobx';
 import { nanoid } from 'nanoid';
-import { NotebookNode, SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
+import {
+	BlankTreeNode,
+	NotebookNode,
+	SimpleField,
+	TreeNode,
+	TreeViewType,
+} from '../../models/JSONSchema';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { getFlatListFromTree, getFlatListFromTreeWSimple } from '../../helpers/JSONViewer';
 import SearchToken from '../../models/search/SearchToken';
@@ -18,82 +24,149 @@ const nullTreeNode: TreeNode = {
 	simpleFields: [],
 };
 
+export type PanelType = 'default' | 'compare';
+
 export class JSONViewerStore {
 	public id = nanoid();
 
 	constructor(private openTabs: (layout: WorkspacePanelsLayout) => void) {}
 
 	@observable
-	public isModalOpen = false;
+	public isModalOpen: { default: boolean; compare: boolean } = {
+		default: false,
+		compare: false,
+	};
 
 	@observable
 	public modalType: 'notebooks' | 'results' = 'results';
 
-	@observable notebooks: NotebookNode[] = [];
+	@observable notebooks: {
+		default: NotebookNode[];
+		compare: NotebookNode[];
+	} = {
+		default: [],
+		compare: [],
+	};
 
-	@observable treeNodes: TreeNode[] = [];
+	@observable treeNodes: {
+		default: TreeNode[];
+		compare: TreeNode[];
+	} = {
+		default: [],
+		compare: [],
+	};
 
-	@observable openTreeNodes: Set<string> = new Set();
+	@observable openTreeNodes: {
+		default: Set<string>;
+		compare: Set<string>;
+	} = {
+		default: new Set(),
+		compare: new Set(),
+	};
 
-	@observable selectedTreeNode: TreeNode = nullTreeNode;
+	@observable openSelectedRows: {
+		default: Set<string>;
+		compare: Set<string>;
+	} = {
+		default: new Set(),
+		compare: new Set(),
+	};
 
-	@observable selectedCompareNode: TreeNode = nullTreeNode;
+	@observable selectedTreeNode: {
+		default: TreeNode;
+		compare: TreeNode;
+	} = {
+		default: nullTreeNode,
+		compare: nullTreeNode,
+	};
 
-	@observable selectedFlatTreeNode: (TreeNode | SimpleField)[] = [];
+	@observable selectedFlatTreeNode: {
+		default: (TreeNode | SimpleField)[];
+		compare: (TreeNode | SimpleField)[];
+	} = {
+		default: [],
+		compare: [],
+	};
 
-	@observable selectedCompareFlatTreeNode: (TreeNode | SimpleField)[] = [];
-
-	@observable openSelectedRows: Set<string> = new Set();
-
-	@observable openCompareSelectedRows: Set<string> = new Set();
-
-	@observable comparableTreeNode: TreeNode = nullTreeNode;
-
-	@observable comparableFlatTreeNode: TreeNode[] = [];
-
-	@observable openComparableNodes: Set<string> = new Set();
+	@observable openRows: {
+		default: Set<string>;
+		compare: Set<string>;
+	} = {
+		default: new Set(),
+		compare: new Set(),
+	};
 
 	@observable intervalSize = 1;
 
-	@observable chunkInterval = 1000;
+	@observable intervalUnit = 1000;
 
 	@computed
-	public get getChunkSize() {
-		return this.intervalSize * this.chunkInterval;
+	public get сhunkInterval() {
+		return this.intervalSize * this.intervalUnit;
 	}
 
 	@observable isCompare = false;
 
 	@observable
-	public tokens: SearchToken[] = [];
+	public tokens: {
+		default: SearchToken[];
+		compare: SearchToken[];
+	} = {
+		default: [],
+		compare: [],
+	};
 
 	@observable
 	public scrolledIndex: number | null = null;
 
 	@observable
-	public inputValue = '';
+	public displayedLeafs: {
+		default: BlankTreeNode[];
+		compare: BlankTreeNode[];
+	} = {
+		default: [],
+		compare: [],
+	};
+
+	@observable
+	public searchInputValue: {
+		default: string;
+		compare: string;
+	} = {
+		default: '',
+		compare: '',
+	};
+
+	@observable
+	public activeIndex: {
+		default: number;
+		compare: number;
+	} = {
+		default: 0,
+		compare: 0,
+	};
 
 	@action
-	updateTokens = (nextTokens: SearchToken[]) => {
+	updateTokens = (nextTokens: SearchToken[], type: PanelType) => {
 		const tokens = nextTokens.filter(
 			(token, index, newTokens) => newTokens.findIndex(t => t.pattern === token.pattern) === index,
 		);
 
-		this.tokens = tokens;
+		this.tokens[type] = tokens;
 	};
 
 	@action
-	updateChunkInterval = (newInterval: number) => {
-		this.chunkInterval = newInterval;
+	updateIntervalUnit = (newInterval: number) => {
+		this.intervalUnit = newInterval;
 	};
 
 	@action
-	updateInterval = (newInterval: number) => {
+	updateIntervalSize = (newInterval: number) => {
 		this.intervalSize = newInterval;
 	};
 
 	@action
-	updateTokensFromText = (text: string) => {
+	updateTokensFromText = (text: string, type: PanelType) => {
 		const newTokens: SearchToken[] = [];
 		try {
 			const json = JSON.parse(text);
@@ -120,14 +193,14 @@ export class JSONViewerStore {
 			});
 			return;
 		}
-		this.updateTokens(newTokens);
-		this.inputValue = '';
+		this.updateTokens(newTokens, type);
+		this.searchInputValue[type] = '';
 		this.scrolledIndex = 0;
 	};
 
 	@action
-	exportSearch = () => {
-		const tokensConverted = this.tokens.map(token => ({
+	exportSearch = (type: PanelType) => {
+		const tokensConverted = this.tokens[type].map(token => ({
 			pattern: token.pattern,
 			color: token.color,
 		}));
@@ -136,19 +209,11 @@ export class JSONViewerStore {
 			251,
 		);
 
-		downloadTxtFile(
-			[JSON.stringify(this.tokens.map(token => ({ pattern: token.pattern, color: token.color })))],
-			`${fileName}.json`,
-		);
+		downloadTxtFile([JSON.stringify(tokensConverted)], `${fileName}.json`);
 	};
 
 	@action toggleMode = () => {
 		this.isCompare = !this.isCompare;
-		if (this.isCompare) {
-			this.comparableFlatTreeNode = this.treeNodes;
-		} else {
-			this.comparableFlatTreeNode = [];
-		}
 	};
 
 	@action
@@ -157,250 +222,259 @@ export class JSONViewerStore {
 	};
 
 	@action
-	clear = () => {
-		this.tokens = [];
+	clearSearchField = (type: PanelType) => {
+		this.tokens[type] = [];
 	};
 
 	@action
-	setInputValue = (value: string) => {
-		this.inputValue = value;
+	setInputValue = (value: string, type: PanelType) => {
+		this.searchInputValue[type] = value;
 	};
 
 	@action
-	public setIsModalOpen = (v: boolean, type: 'notebooks' | 'results') => {
-		this.isModalOpen = v;
-		this.modalType = type;
+	public setIsModalOpen = (v: boolean, modalType: 'notebooks' | 'results', type: PanelType) => {
+		this.isModalOpen[type] = v;
+		this.modalType = modalType;
 	};
 
-	@action setTreeNodes(n: TreeNode[]) {
-		this.treeNodes = n.slice();
-		if (this.isCompare) {
-			this.comparableFlatTreeNode = n.slice();
-			this.openComparableNodes = new Set(this.openTreeNodes);
-		} else {
-			this.comparableFlatTreeNode = [];
-			this.openComparableNodes.clear();
-		}
-		this.comparableTreeNode = nullTreeNode;
-		this.selectedCompareNode = nullTreeNode;
+	@action setTreeNodes(n: TreeNode[], type: PanelType) {
+		this.treeNodes[type] = n.slice();
+		this.selectedTreeNode[type] = nullTreeNode;
 	}
 
-	@action setNotebooks(n: NotebookNode[]) {
-		this.notebooks = n.slice();
+	@action setNotebooks(n: NotebookNode[], type: PanelType) {
+		this.notebooks[type] = n.slice();
 	}
 
-	@action selectTreeNode(tree?: TreeNode) {
+	@action selectTreeNode(type: PanelType, tree?: TreeNode) {
 		if (tree) {
-			this.selectedTreeNode = tree;
-			this.selectedFlatTreeNode = getFlatListFromTreeWSimple(tree);
+			this.selectedTreeNode[type] = tree;
+			this.selectedFlatTreeNode[type] = getFlatListFromTreeWSimple(tree);
 		} else {
-			this.selectedTreeNode = nullTreeNode;
-			this.selectedFlatTreeNode = [];
+			this.selectedTreeNode[type] = nullTreeNode;
+			this.selectedFlatTreeNode[type] = [];
 		}
-		this.openSelectedRows.clear();
-		if (this.selectedFlatTreeNode.length > 0) {
-			this.openSelectedRows.add(this.selectedFlatTreeNode[0].id);
-		}
-	}
-
-	@action selectCompareNode(tree?: TreeNode) {
-		if (tree) {
-			this.selectedCompareNode = tree;
-			this.selectedCompareFlatTreeNode = getFlatListFromTreeWSimple(tree);
-		} else {
-			this.selectedCompareNode = nullTreeNode;
-			this.selectedCompareFlatTreeNode = [];
-		}
-		this.openCompareSelectedRows.clear();
-		if (this.selectedCompareFlatTreeNode.length > 0) {
-			this.openCompareSelectedRows.add(this.selectedCompareFlatTreeNode[0].id);
+		this.openSelectedRows[type].clear();
+		if (this.selectedFlatTreeNode[type].length > 0) {
+			this.openSelectedRows[type].add(this.selectedFlatTreeNode[type][0].id);
 		}
 	}
 
-	@action addNodes(tree: TreeNode[]) {
-		this.treeNodes = this.treeNodes.concat(tree);
-		if (this.isCompare) {
-			this.comparableFlatTreeNode = this.treeNodes.slice();
-		}
+	@action addNodes(tree: TreeNode[], type: PanelType) {
+		this.treeNodes[type] = this.treeNodes[type].concat(tree);
 	}
 
-	@action removeNodesById(ids: string[]) {
+	@action removeNodesById(ids: string[], type: PanelType) {
 		for (let i = 0; i < ids.length; i++) {
-			const index = this.treeNodes.findIndex(tree => tree.id === ids[i]);
-			this.removeNodesById(this.treeNodes[index].childIds);
+			const index = this.treeNodes[type].findIndex(tree => tree.id === ids[i]);
+			this.removeNodesById(this.treeNodes[type][index].childIds, type);
 		}
-		this.treeNodes = this.treeNodes.filter(node => !ids.includes(node.id));
+		this.treeNodes[type] = this.treeNodes[type].filter(node => !ids.includes(node.id));
 	}
 
-	@action openNode(id: string) {
-		this.openTreeNodes.add(id);
+	@action openNode(id: string, type: PanelType) {
+		this.openTreeNodes[type].add(id);
 	}
 
-	@action closeNode(id: string) {
-		this.openTreeNodes.delete(id);
+	@action closeNode(id: string, type: PanelType) {
+		this.openTreeNodes[type].delete(id);
 	}
 
-	@action openNodeAndCloseOthers(id: string) {
-		this.openTreeNodes.clear();
-		this.openTreeNodes.add(id);
+	@action openNodeAndCloseOthers(id: string, type: PanelType) {
+		this.openTreeNodes[type].clear();
+		this.openTreeNodes[type].add(id);
 	}
 
-	@action setNodeView(id: string, viewType: TreeViewType) {
-		const index = this.treeNodes.findIndex(tree => tree.id === id);
-		this.treeNodes = [
-			...this.treeNodes.slice(0, index),
+	@action setNodeView(id: string, viewType: TreeViewType, type: PanelType) {
+		const index = this.treeNodes[type].findIndex(tree => tree.id === id);
+		this.treeNodes[type] = [
+			...this.treeNodes[type].slice(0, index),
 			{
-				...this.treeNodes[index],
+				...this.treeNodes[type][index],
 				viewType,
 			},
-			...this.treeNodes.slice(index + 1),
+			...this.treeNodes[type].slice(index + 1),
 		];
 	}
 
-	@action setCompareNodeView(id: string, viewType: TreeViewType) {
-		const index = this.comparableFlatTreeNode.findIndex(tree => tree.id === id);
-		this.comparableFlatTreeNode = [
-			...this.comparableFlatTreeNode.slice(0, index),
-			{
-				...this.comparableFlatTreeNode[index],
-				viewType,
-			},
-			...this.comparableFlatTreeNode.slice(index + 1),
-		];
-	}
-
-	@action setGroupView(id: string, viewType: TreeViewType) {
-		const index = this.treeNodes.findIndex(tree => tree.id === id);
+	@action setGroupView(id: string, viewType: TreeViewType, type: PanelType) {
+		const index = this.treeNodes[type].findIndex(tree => tree.id === id);
 		const node = {
-			...this.treeNodes[index],
+			...this.treeNodes[type][index],
 			viewType,
 		};
-		this.treeNodes = [...this.treeNodes.slice(0, index), node, ...this.treeNodes.slice(index + 1)];
-		for (let i = 0; i < node.childIds.length; i++) {
-			this.setGroupView(node.childIds[i], viewType);
-		}
-		if (node.isRoot) this.openNode(node.id);
-	}
-
-	@action setCompareGroupView(id: string, viewType: TreeViewType) {
-		const index = this.comparableFlatTreeNode.findIndex(tree => tree.id === id);
-		const node = {
-			...this.comparableFlatTreeNode[index],
-			viewType,
-		};
-		this.comparableFlatTreeNode = [
-			...this.comparableFlatTreeNode.slice(0, index),
+		this.treeNodes[type] = [
+			...this.treeNodes[type].slice(0, index),
 			node,
-			...this.comparableFlatTreeNode.slice(index + 1),
+			...this.treeNodes[type].slice(index + 1),
 		];
-		if ('childIds' in node) {
-			for (let i = 0; i < node.childIds.length; i++) {
-				this.setCompareGroupView(node.childIds[i], viewType);
-			}
-			if (node.isRoot) this.openCompareNode(node.id);
+		for (let i = 0; i < node.childIds.length; i++) {
+			this.setGroupView(node.childIds[i], viewType, type);
 		}
+		if (node.isRoot) this.openNode(node.id, type);
 	}
 
-	@action getNotebook(name: string, defaultNotebook: NotebookNode) {
-		const notebook = this.notebooks.find(n => n.name === name);
+	@action getNotebook(name: string, defaultNotebook: NotebookNode, type: PanelType) {
+		const notebook = this.notebooks[type].find(n => n.name === name);
 		return notebook || defaultNotebook;
 	}
 
-	@action setNotebook(notebook: NotebookNode) {
-		const index = this.notebooks.findIndex(n => n.name === notebook.name);
-		this.notebooks = [
-			...this.notebooks.slice(0, index),
+	@action setNotebook(notebook: NotebookNode, type: PanelType) {
+		const index = this.notebooks[type].findIndex(n => n.name === notebook.name);
+		this.notebooks[type] = [
+			...this.notebooks[type].slice(0, index),
 			notebook,
-			...this.notebooks.slice(index + 1),
+			...this.notebooks[type].slice(index + 1),
 		];
 	}
 
-	@action addNotebookResult(name: string, newResult: TreeNode, resultCount: number) {
-		const index = this.notebooks.findIndex(n => n.name === name);
+	@action addNotebookResult(
+		name: string,
+		newResult: TreeNode,
+		resultCount: number,
+		type: PanelType,
+	) {
+		const index = this.notebooks[type].findIndex(n => n.name === name);
 		if (index < 0) return;
-		const notebook = this.notebooks[index];
+		const notebook = this.notebooks[type][index];
 		notebook.resultsCount = String(resultCount);
 		const newResults = [newResult.id, ...notebook.results];
 
 		if (newResult.complexFields.length > 0) {
-			this.addNodes(getFlatListFromTree(newResult));
+			this.addNodes(getFlatListFromTree(newResult), type);
 			if (newResults.length > resultCount) {
-				this.removeNodesById(newResults.slice(resultCount));
+				this.removeNodesById(newResults.slice(resultCount), type);
 			}
 			notebook.results = newResults.slice(0, resultCount);
-			this.selectTreeNode(newResult);
-			this.openNodeAndCloseOthers(newResult.id);
+			this.selectTreeNode(type, newResult);
+			this.openNodeAndCloseOthers(newResult.id, type);
 		}
 		notebook.open = false;
-		this.notebooks = [
-			...this.notebooks.slice(0, index),
+		this.notebooks[type] = [
+			...this.notebooks[type].slice(0, index),
 			notebook,
-			...this.notebooks.slice(index + 1),
+			...this.notebooks[type].slice(index + 1),
 		];
 	}
 
-	@action updateotebookResultCount(name: string, newCount: string) {
-		const index = this.notebooks.findIndex(n => n.name === name);
+	@action updateotebookResultCount(name: string, newCount: string, type: PanelType) {
+		const index = this.notebooks[type].findIndex(n => n.name === name);
 		if (index < 0) return;
-		this.notebooks = [
-			...this.notebooks.slice(0, index),
+		this.notebooks[type] = [
+			...this.notebooks[type].slice(0, index),
 			{
-				...this.notebooks[index],
+				...this.notebooks[type][index],
 				resultsCount: newCount,
 			},
-			...this.notebooks.slice(index + 1),
+			...this.notebooks[type].slice(index + 1),
 		];
 	}
 
 	@computed
-	public get getShownSelectRows() {
-		return this.selectedFlatTreeNode
-			.slice(1)
-			.filter(field => field.parentIds?.every(id => this.openSelectedRows.has(id)));
+	public get shownSelectRows() {
+		return {
+			default: this.selectedFlatTreeNode.default
+				.slice(1)
+				.filter(field => field.parentIds?.every(id => this.openSelectedRows.default.has(id))),
+			compare: this.selectedFlatTreeNode.compare
+				.slice(1)
+				.filter(field => field.parentIds?.every(id => this.openSelectedRows.compare.has(id))),
+		};
 	}
 
-	@action openSelectRow(id: string) {
-		this.openSelectedRows.add(id);
+	@action openSelectRow(id: string, type: PanelType) {
+		this.openSelectedRows[type].add(id);
 	}
 
-	@action closeSelectRow(id: string) {
-		this.openSelectedRows.delete(id);
+	@action closeSelectRow(id: string, type: PanelType) {
+		this.openSelectedRows[type].delete(id);
 	}
 
-	@action openCompareSelectRow(id: string) {
-		this.openCompareSelectedRows.add(id);
-	}
+	getCloseId = (timestamp: number, type: PanelType) => {
+		const nextId = this.treeNodes[type].find(
+			node => node.displayTimestamp && node.displayTimestamp >= timestamp,
+		);
+		const prevId = this.treeNodes[type].findLast(
+			node => node.displayTimestamp && node.displayTimestamp <= timestamp,
+		);
+		return {
+			prevId: prevId ? prevId.id : '',
+			nextId: nextId ? nextId.id : '',
+		};
+	};
 
-	@action closeCompareSelectRow(id: string) {
-		this.openCompareSelectedRows.delete(id);
-	}
+	public getCloseIndex = (timestamp: number, type: PanelType) =>
+		this.listData[type].findIndex(
+			node => 'parentIds' in node && node.displayTimestamp && node.displayTimestamp >= timestamp,
+		);
 
 	@computed
-	public get getShownCompareRows() {
-		return this.selectedCompareFlatTreeNode
-			.slice(1)
-			.filter(field => field.parentIds?.every(id => this.openCompareSelectedRows.has(id)));
-	}
-
-	public getListData(type: 'left' | 'right'): (TreeNode | NotebookNode)[] {
-		if (type === 'left') {
-			return [
-				...this.notebooks,
-				...this.treeNodes.filter(node =>
-					node.parentIds.every(parentId => this.openTreeNodes.has(parentId)),
+	public get listData(): {
+		default: (TreeNode | NotebookNode)[];
+		compare: (TreeNode | NotebookNode)[];
+	} {
+		return {
+			default: [
+				...this.notebooks.default,
+				...this.treeNodes.default.filter(node =>
+					node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)),
 				),
+			],
+			compare: [
+				...this.notebooks.compare,
+				...this.treeNodes.compare.filter(node =>
+					node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)),
+				),
+			],
+		};
+	}
+
+	@action addDisplayed(id: string, displayTimestamp: number, height: number, type: PanelType) {
+		this.displayedLeafs[type] = [
+			...this.displayedLeafs[type],
+			{
+				id,
+				displayTimestamp,
+				height,
+				...this.getCloseId(displayTimestamp, type === 'default' ? 'compare' : 'default'),
+			},
+		];
+	}
+
+	@action updateDisplayed(id: string, height: number, type: PanelType) {
+		const index = this.displayedLeafs[type].findIndex(leaf => leaf.id !== id);
+		if (index > -1)
+			this.displayedLeafs[type] = [
+				...this.displayedLeafs[type].slice(0, index),
+				{
+					...this.displayedLeafs[type][index],
+					height,
+				},
+				...this.displayedLeafs[type].slice(index + 1),
 			];
+	}
+
+	@action removeDisplayed(id: string, type: PanelType) {
+		this.displayedLeafs[type] = this.displayedLeafs[type].filter(leaf => leaf.id !== id);
+	}
+
+	@action scrollToNearest(timestamp: number, type: PanelType) {
+		const convertType = type === 'default' ? 'compare' : 'default';
+		const chunk = Math.floor(timestamp / this.сhunkInterval);
+		console.log(timestamp, chunk, this.сhunkInterval);
+		const nearestNode = this.treeNodes[convertType].find(
+			node =>
+				'displayTimestamp' in node &&
+				node.displayTimestamp &&
+				Math.floor(node.displayTimestamp / this.сhunkInterval) >= chunk,
+		);
+		console.log(JSON.parse(JSON.stringify(nearestNode)));
+		if (nearestNode) {
+			nearestNode.parentIds.forEach(id => this.openTreeNodes[convertType].add(id));
+			this.selectedTreeNode[convertType] = nearestNode;
+			this.activeIndex[convertType] = this.listData[convertType].findIndex(
+				node => 'id' in node && node.id === nearestNode.id,
+			);
 		}
-		return this.comparableFlatTreeNode
-			.filter(field => 'complexFields' in field)
-			.filter(node => node.parentIds.every(parentId => this.openComparableNodes.has(parentId)));
-	}
-
-	@action openCompareNode(id: string) {
-		this.openComparableNodes.add(id);
-	}
-
-	@action closeCompareNode(id: string) {
-		this.openComparableNodes.delete(id);
 	}
 }

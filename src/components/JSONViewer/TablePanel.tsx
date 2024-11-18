@@ -6,17 +6,17 @@ import '../../styles/JSONviewer.scss';
 import { TreeNode } from '../../models/JSONSchema';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 
 interface props {
-	type: 'left' | 'right';
+	type: PanelType;
 }
 
 const TablePanel = ({ type }: props) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const selectedNode = React.useMemo(
-		() =>
-			type === 'left' ? JSONViewerStore.selectedTreeNode : JSONViewerStore.selectedCompareNode,
-		[JSONViewerStore.selectedTreeNode, JSONViewerStore.selectedCompareNode],
+		() => JSONViewerStore.selectedTreeNode[type],
+		[JSONViewerStore.selectedTreeNode[type]],
 	);
 
 	const getName = (treeNode: TreeNode) => {
@@ -41,7 +41,7 @@ const TablePanel = ({ type }: props) => {
 								)}
 							/>
 							<div className={'title'} title={treeNode.key}>
-								{multiTokenSplit(getName(treeNode), JSONViewerStore.tokens).map(
+								{multiTokenSplit(getName(treeNode), JSONViewerStore.tokens[type]).map(
 									(contentPart, index) => (
 										<span
 											key={index}
@@ -54,7 +54,7 @@ const TablePanel = ({ type }: props) => {
 							</div>
 						</div>
 					)}
-					<Table type={type === 'left' ? 'select' : 'compare'} />
+					<Table type={type} />
 					<br />
 				</>
 			)}

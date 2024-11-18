@@ -20,6 +20,14 @@ export interface SimpleField {
 	parentIds?: string[];
 }
 
+export interface BlankTreeNode {
+	id: string;
+	displayTimestamp: number;
+	height: number;
+	nextId: string;
+	prevId: string;
+}
+
 export interface TreeNode {
 	id: string;
 	key: string;

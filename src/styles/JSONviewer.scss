@@ -247,12 +247,22 @@
 		
 			&.hidden {
 				background-color: white;
-				@include icon(url('../../resources/icons/expand.svg'), 12px, 12px);
 				:hover {
 					background-color: white;
 				}
 			}
 		}
+	}
+}
+
+.timestamp-pointer {
+	&-left {
+		cursor: pointer;
+		@include icon(url('../../resources/icons/arr1-left.svg'), 12px, 12px);
+	}
+	&-right {
+		cursor: pointer;
+		@include icon(url('../../resources/icons/arr1-right.svg'), 12px, 12px);
 	}
 }
 
@@ -391,6 +401,7 @@
 	padding: 5px;
 	font-size: 12px;
 	font-weight: bold;
+	height: 60px;
 }
 
 .JSON-input{ 
