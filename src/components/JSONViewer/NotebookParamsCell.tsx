@@ -197,7 +197,7 @@ const NotebookParamsCell = ({
 		const paramsWithType = Object.fromEntries(
 			paramsValue
 				.filter(filterParameters)
-				.map(({ name, type, value }) => [name, convertParameterValue(value, type)]),
+				.map(({ name, type: paramType, value }) => [name, convertParameterValue(value, paramType)]),
 		);
 		const res = await api.jsonViewer.launchNotebook(notebook.name, paramsWithType);
 		if (res.task_id !== '') {

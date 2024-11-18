@@ -394,9 +394,9 @@ export class JSONViewerStore {
 		const nextId = this.treeNodes[type].find(
 			node => node.displayTimestamp && node.displayTimestamp >= timestamp,
 		);
-		const prevId = this.treeNodes[type].findLast(
-			node => node.displayTimestamp && node.displayTimestamp <= timestamp,
-		);
+		const prevId = this.treeNodes[type]
+			.reverse()
+			.find(node => node.displayTimestamp && node.displayTimestamp <= timestamp);
 		return {
 			prevId: prevId ? prevId.id : '',
 			nextId: nextId ? nextId.id : '',
