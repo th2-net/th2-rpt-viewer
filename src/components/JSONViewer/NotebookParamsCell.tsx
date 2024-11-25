@@ -15,7 +15,7 @@ import {
 	convertParameterToInput,
 	convertParameterValue,
 	getParameterType,
-	OFF_VALUE,
+	OFF_VALUE_SERVER,
 	parseText,
 	validateParameter,
 } from '../../helpers/JSONViewer';
@@ -202,7 +202,9 @@ const NotebookParamsCell = ({
 				.filter(filterParameters)
 				.map(({ name, type: paramType, value, isOff }) => [
 					name,
-					isOff ? { value: OFF_VALUE, type: 'str' } : convertParameterValue(value, paramType),
+					isOff
+						? { value: OFF_VALUE_SERVER, type: 'str' }
+						: convertParameterValue(value, paramType),
 				]),
 		);
 		const res = await api.jsonViewer.launchNotebook(notebook.name, paramsWithType);

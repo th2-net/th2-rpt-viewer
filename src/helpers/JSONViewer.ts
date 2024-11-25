@@ -108,6 +108,7 @@ export const parseText = (text: string, name = '', isGeneratedKey = false): Tree
 const stringPunct = `'"\``;
 const numberReg = /^-?\d*\.?\d{0,}$/;
 export const OFF_VALUE = `'[NA]'`;
+export const OFF_VALUE_SERVER = '[NA]';
 
 export const convertParameterValue = (
 	value: string,
