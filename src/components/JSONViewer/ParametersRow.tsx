@@ -10,6 +10,7 @@ import FileChoosing from './FileChoosing';
 import { DateTimeInputType, DateTimeMask, TimeInputType } from '../../models/filter/FilterInputs';
 import { DATE_TIME_ISO_INPUT_MASK } from '../../util/filterInputs';
 import TimestampParameter from './TimestampParameter';
+import Checkbox from '../util/Checkbox';
 
 const possibleTypes = ['int', 'float', 'str', 'bool', 'file path', 'timestamp', 'pycode'];
 
@@ -18,11 +19,13 @@ const ParametersRow = ({
 	parameterValue,
 	setParametersValue,
 	setParametersType,
+	toggleParameter,
 }: {
 	parameter: NotebookParameter;
 	parameterValue: InputNotebookParameter;
 	setParametersValue: (newValue: string) => void;
 	setParametersType: (newValue: string) => void;
+	toggleParameter: (toggle: boolean) => void;
 }) => {
 	const [browserOpen, setBrowserOpen] = React.useState(false);
 	const [timestamp, setTimestampNumber] = React.useState<number | null>(moment.utc().valueOf());
@@ -57,16 +60,27 @@ const ParametersRow = ({
 		dateMask: DateTimeMask.DATE_TIME_ISO_MASK,
 		placeholder: '',
 		inputMask: DATE_TIME_ISO_INPUT_MASK,
+		disabled: parameterValue.isOff,
 	};
 
 	return (
 		<tr>
 			<td>
+				<Checkbox
+					checked={parameterValue.isOff}
+					onChange={e => {
+						toggleParameter(e.target.checked);
+					}}
+					label=''
+					id={`{parameter.name}-toggle`}
+				/>
+			</td>
+			<td>
 				<label>{parameter.name}</label>
 			</td>
 			<td>
 				<select
-					disabled={parameter.inferred_type_name !== 'None'}
+					disabled={parameter.inferred_type_name !== 'None' || parameterValue.isOff}
 					value={parameterValue.type}
 					onChange={(ev: React.ChangeEvent<HTMLSelectElement>) =>
 						setParametersType(ev.target.value)
@@ -89,6 +103,7 @@ const ParametersRow = ({
 									className='open-browser'
 									onClick={() => setBrowserOpen(true)}
 									title='Open  file browser'
+									disabled={parameterValue.isOff}
 								/>
 							)}
 							{parameterValue.type === 'pycode' && (
@@ -104,6 +119,7 @@ const ParametersRow = ({
 										borderRadius: '5px',
 									}}>
 									<AceEditor
+										readOnly={parameterValue.isOff}
 										mode='python'
 										showGutter={false}
 										height='100%'
@@ -126,6 +142,7 @@ const ParametersRow = ({
 										const newValue = ev.target.value;
 										setParametersValue(newValue);
 									}}
+									disabled={parameterValue.isOff}
 								/>
 							)}
 						</>

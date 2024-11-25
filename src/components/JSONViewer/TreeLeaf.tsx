@@ -20,15 +20,6 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	const [open, setOpen] = React.useState(
 		viewType === TreeViewType.DISPLAY_TABLE || JSONViewerStore.openTreeNodes[type].has(treeNode.id),
 	);
-	const convertType = type === 'default' ? 'compare' : 'default';
-
-	const closeDisplayed = React.useMemo(
-		() =>
-			JSONViewerStore.displayedLeafs[convertType].find(leaf =>
-				type === 'default' ? leaf.prevId === treeNode.id : leaf.nextId === treeNode.id,
-			),
-		[JSONViewerStore.displayedLeafs[convertType]],
-	);
 
 	const nodeName = useMemo(() => {
 		if (treeNode.displayName) return treeNode.displayName;
@@ -52,13 +43,9 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 		[treeNode.displayTimestamp, JSONViewerStore.сhunkInterval],
 	);
 
-	const closeChunk = React.useMemo(
-		() =>
-			closeDisplayed
-				? Math.floor(closeDisplayed.displayTimestamp / JSONViewerStore.сhunkInterval) %
-				  COLORS.length
-				: null,
-		[closeDisplayed, JSONViewerStore.сhunkInterval],
+	const closeChunk = useMemo(
+		() => JSONViewerStore.chunkHeights[type].find(chunkHeight => chunkHeight.id === treeNode.id),
+		[JSONViewerStore.chunkHeights[type]],
 	);
 
 	const leafRef = useRef<HTMLDivElement>(null);
@@ -91,28 +78,22 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	}, [JSONViewerStore.openTreeNodes[type].values]);
 
 	useEffect(() => {
-		if (treeNode.displayTimestamp)
-			JSONViewerStore.addDisplayed(
+		const observer = new ResizeObserver(entries => {
+			JSONViewerStore.setNodeHeight(
 				treeNode.id,
-				treeNode.displayTimestamp,
-				leafRef.current ? leafRef.current.clientHeight : 0,
+				entries[0].borderBoxSize?.length > 0
+					? entries[0].borderBoxSize[0].blockSize
+					: entries[0].contentRect.height,
 				type,
 			);
-
+		});
+		if (leafRef.current) {
+			observer.observe(leafRef.current);
+		}
 		return () => {
-			if (treeNode.displayTimestamp) JSONViewerStore.removeDisplayed(treeNode.id, type);
+			if (leafRef.current) observer.unobserve(leafRef.current);
 		};
 	}, []);
-
-	useEffect(() => {
-		if (treeNode.displayTimestamp) {
-			JSONViewerStore.updateDisplayed(
-				treeNode.id,
-				leafRef.current ? leafRef.current.clientHeight : 0,
-				type,
-			);
-		}
-	}, [leafRef]);
 
 	const toggleNode = () => {
 		if (open) {
@@ -121,7 +102,10 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 		} else {
 			setOpen(true);
 			if (viewType !== TreeViewType.DISPLAY_TABLE) {
-				JSONViewerStore.openNode(treeNode.id, type);
+				if (treeNode.isRoot) {
+					JSONViewerStore.openNodeAndCloseOthers([treeNode.id, ...treeNode.parentIds], type);
+					JSONViewerStore.scrollToId(treeNode.id, type);
+				} else JSONViewerStore.openNode(treeNode.id, type);
 			}
 		}
 	};
@@ -152,19 +136,6 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 
 	return (
 		<>
-			{closeDisplayed && type === 'compare' && closeDisplayed.nextId === treeNode.id && (
-				<div
-					className='leaf'
-					style={{
-						height: closeDisplayed.height,
-						backgroundColor: closeChunk !== null ? BACKGROUND_COLORS[closeChunk] : undefined,
-						[`border${borderSide}Color`]: closeChunk !== null ? COLORS[closeChunk] : undefined,
-						[`border${borderSide}Width`]: closeChunk !== null ? '5px' : undefined,
-						[`borderTop${borderSide}Radius`]: closeChunk !== null ? '0px' : undefined,
-						[`borderBottom${borderSide}Radius`]: closeChunk !== null ? '0px' : undefined,
-					}}
-				/>
-			)}
 			<div
 				ref={leafRef}
 				className={createBemBlock(
@@ -173,7 +144,6 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 					isSelected ? 'selected' : null,
 				)}
 				style={{
-					marginBottom: needBounding ? '5px' : undefined,
 					backgroundColor: chunk !== null ? BACKGROUND_COLORS[chunk] : undefined,
 					...borderStyle,
 				}}>
@@ -278,16 +248,16 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 						</div>
 					)}
 			</div>
-			{closeDisplayed && type === 'default' && closeDisplayed.prevId === treeNode.id && (
+			{closeChunk && closeChunk.height > 0 && (
 				<div
 					className='leaf'
 					style={{
-						height: closeDisplayed.height,
-						backgroundColor: closeChunk !== null ? BACKGROUND_COLORS[closeChunk] : undefined,
-						[`border${borderSide}Color`]: closeChunk !== null ? COLORS[closeChunk] : undefined,
-						[`border${borderSide}Width`]: closeChunk !== null ? '5px' : undefined,
-						[`borderTop${borderSide}Radius`]: closeChunk !== null ? '0px' : undefined,
-						[`borderBottom${borderSide}Radius`]: closeChunk !== null ? '0px' : undefined,
+						height: closeChunk.height,
+						backgroundColor: BACKGROUND_COLORS[closeChunk.chunk % BACKGROUND_COLORS.length],
+						[`border${borderSide}Color`]: COLORS[closeChunk.chunk % COLORS.length],
+						[`border${borderSide}Width`]: '5px',
+						[`borderTop${borderSide}Radius`]: '0px',
+						[`borderBottom${borderSide}Radius`]: '0px',
 					}}
 				/>
 			)}

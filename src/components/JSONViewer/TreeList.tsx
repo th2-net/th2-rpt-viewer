@@ -31,7 +31,13 @@ const TreeList = ({ type }: { type: PanelType }) => {
 	}, []);
 
 	useEffect(() => {
-		virtuoso.current?.scrollToIndex(JSONViewerStore.activeIndex[type]);
+		if (JSONViewerStore.activeIndex[type] !== -1) {
+			virtuoso.current?.scrollToIndex(JSONViewerStore.activeIndex[type]);
+			JSONViewerStore.activeIndex = {
+				...JSONViewerStore.activeIndex,
+				[type]: -1,
+			};
+		}
 	}, [JSONViewerStore.activeIndex[type]]);
 
 	return (

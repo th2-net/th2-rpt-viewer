@@ -44,6 +44,7 @@ export interface TreeNode {
 	isGeneratedKey?: boolean;
 	isRoot?: boolean;
 	viewType?: TreeViewType;
+	height: number;
 }
 
 export interface NotebookNode {
@@ -67,6 +68,7 @@ export interface InputNotebookParameter {
 	type: string;
 	value: string;
 	isValid: boolean;
+	isOff: boolean;
 }
 
 export interface NotebookParameters {

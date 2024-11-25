@@ -15,6 +15,7 @@ import {
 	convertParameterToInput,
 	convertParameterValue,
 	getParameterType,
+	OFF_VALUE,
 	parseText,
 	validateParameter,
 } from '../../helpers/JSONViewer';
@@ -51,7 +52,7 @@ const NotebookParamsCell = ({
 	const [taskId, setTaskId] = React.useState<string | null>();
 	const [resultCount, setResultCount] = React.useState<string>(String(notebook.resultsCount));
 	const [results, setResults] = React.useState<string[]>(notebook.results);
-	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid), [paramsValue]);
+	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid || v.isOff), [paramsValue]);
 	const reloadRef = React.useRef<HTMLButtonElement>(null);
 	const inputJSONRef = React.useRef<HTMLInputElement>(null);
 
@@ -93,6 +94,7 @@ const NotebookParamsCell = ({
 						name: val.name,
 						value: val.value,
 						type: val.type,
+						isOff: val.isOff,
 					})),
 				),
 			],
@@ -117,6 +119,7 @@ const NotebookParamsCell = ({
 						childIds: [],
 						isGeneratedKey: true,
 						isRoot: true,
+						height: 22,
 					};
 					try {
 						node.complexFields.push(...parseText(result, '0', true));
@@ -197,7 +200,10 @@ const NotebookParamsCell = ({
 		const paramsWithType = Object.fromEntries(
 			paramsValue
 				.filter(filterParameters)
-				.map(({ name, type: paramType, value }) => [name, convertParameterValue(value, paramType)]),
+				.map(({ name, type: paramType, value, isOff }) => [
+					name,
+					isOff ? { value: OFF_VALUE, type: 'str' } : convertParameterValue(value, paramType),
+				]),
 		);
 		const res = await api.jsonViewer.launchNotebook(notebook.name, paramsWithType);
 		if (res.task_id !== '') {
@@ -218,7 +224,8 @@ const NotebookParamsCell = ({
 		const prevValue = JSON.parse(JSON.stringify(paramsValue));
 		let params = JSON.parse(JSON.stringify(paramsValue));
 		try {
-			const preset: Array<{ name: string; value: string; type: string }> = JSON.parse(presetText);
+			const preset: Array<{ name: string; value: string; type: string; isOff: string }> =
+				JSON.parse(presetText);
 			const presetKeys = preset.map(p => p.name);
 			const parametersKeys = parameters.map(p => p.name);
 			const indexes = presetKeys.map(p => parametersKeys.indexOf(p));
@@ -299,6 +306,7 @@ const NotebookParamsCell = ({
 							<thead>
 								{parameters.length > 0 && (
 									<tr style={{ textAlign: 'left' }}>
+										<th>Off</th>
 										<th>Name</th>
 										<th>Type</th>
 										<th>Value</th>
@@ -324,6 +332,15 @@ const NotebookParamsCell = ({
 											const newState = paramsValue[index];
 											newState.type = newValue;
 											newState.isValid = validateParameter(newState.value, newState.type);
+											setParamsValue([
+												...paramsValue.slice(0, index),
+												newState,
+												...paramsValue.slice(index + 1),
+											]);
+										}}
+										toggleParameter={(newToggle: boolean) => {
+											const newState = paramsValue[index];
+											newState.isOff = newToggle;
 											setParamsValue([
 												...paramsValue.slice(0, index),
 												newState,

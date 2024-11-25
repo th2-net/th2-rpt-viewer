@@ -16,6 +16,8 @@ export const isNotebook = (obj: Object): obj is Notebook => {
 	);
 };
 
+export const isTreeNode = (obj: Object): obj is TreeNode => 'displayTimestamp' in obj;
+
 export const isKeyFailed = (key: string) => key.includes('[fail]') || key.trim().startsWith('#');
 export const isValueFailed = (value: string) =>
 	value.trim().startsWith('#') || value.trim().startsWith('!#');
@@ -84,6 +86,7 @@ export const convertJSONtoNode = (
 		simpleFields,
 		complexFields,
 		childIds: complexFields.map(node => node.id),
+		height: 22,
 	};
 };
 
@@ -104,6 +107,7 @@ export const parseText = (text: string, name = '', isGeneratedKey = false): Tree
 
 const stringPunct = `'"\``;
 const numberReg = /^-?\d*\.?\d{0,}$/;
+export const OFF_VALUE = `'[NA]'`;
 
 export const convertParameterValue = (
 	value: string,
@@ -120,7 +124,7 @@ export const convertParameterValue = (
 			}
 			case 'str': {
 				return {
-					value: cutString ? value.slice(1, value.length - 1) : value,
+					value: value === OFF_VALUE ? '' : cutString ? value.slice(1, value.length - 1) : value,
 					type,
 				};
 			}
@@ -237,6 +241,7 @@ export const convertParameterToInput = (parameter: NotebookParameter): InputNote
 		value: String(convertParameterValue(parameter.default, type, true).value),
 		type,
 		isValid: validateParameter(parameter.default, type),
+		isOff: parameter.default === OFF_VALUE,
 	};
 };
 

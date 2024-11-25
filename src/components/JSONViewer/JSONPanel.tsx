@@ -41,6 +41,7 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 				childIds: [],
 				isGeneratedKey: true,
 				isRoot: true,
+				height: 22,
 			};
 			try {
 				node.complexFields.push(...parseText(text, '0', true));

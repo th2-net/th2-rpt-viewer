@@ -8,7 +8,11 @@ import {
 	TreeViewType,
 } from '../../models/JSONSchema';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import { getFlatListFromTree, getFlatListFromTreeWSimple } from '../../helpers/JSONViewer';
+import {
+	getFlatListFromTree,
+	getFlatListFromTreeWSimple,
+	isTreeNode,
+} from '../../helpers/JSONViewer';
 import SearchToken from '../../models/search/SearchToken';
 import notificationsStore from '../NotificationsStore';
 import { downloadTxtFile } from '../../helpers/files/downloadTxt';
@@ -22,6 +26,7 @@ const nullTreeNode: TreeNode = {
 	complexFields: [],
 	childIds: [],
 	simpleFields: [],
+	height: 0,
 };
 
 export type PanelType = 'default' | 'compare';
@@ -280,9 +285,13 @@ export class JSONViewerStore {
 		this.openTreeNodes[type].delete(id);
 	}
 
-	@action openNodeAndCloseOthers(id: string, type: PanelType) {
+	@action openNodeAndCloseOthers(ids: string[], type: PanelType) {
 		this.openTreeNodes[type].clear();
-		this.openTreeNodes[type].add(id);
+		for (let i = 0; i < ids.length; i++) this.openTreeNodes[type].add(ids[i]);
+	}
+
+	@action scrollToId(id: string, type: PanelType) {
+		this.activeIndex[type] = this.listData[type].findIndex(node => 'id' in node && node.id === id);
 	}
 
 	@action setNodeView(id: string, viewType: TreeViewType, type: PanelType) {
@@ -292,6 +301,18 @@ export class JSONViewerStore {
 			{
 				...this.treeNodes[type][index],
 				viewType,
+			},
+			...this.treeNodes[type].slice(index + 1),
+		];
+	}
+
+	@action setNodeHeight(id: string, height: number, type: PanelType) {
+		const index = this.treeNodes[type].findIndex(tree => tree.id === id);
+		this.treeNodes[type] = [
+			...this.treeNodes[type].slice(0, index),
+			{
+				...this.treeNodes[type][index],
+				height,
 			},
 			...this.treeNodes[type].slice(index + 1),
 		];
@@ -347,7 +368,7 @@ export class JSONViewerStore {
 			}
 			notebook.results = newResults.slice(0, resultCount);
 			this.selectTreeNode(type, newResult);
-			this.openNodeAndCloseOthers(newResult.id, type);
+			this.openNodeAndCloseOthers([newResult.id, ...newResult.parentIds], type);
 		}
 		notebook.open = false;
 		this.notebooks[type] = [
@@ -390,19 +411,6 @@ export class JSONViewerStore {
 		this.openSelectedRows[type].delete(id);
 	}
 
-	getCloseId = (timestamp: number, type: PanelType) => {
-		const nextId = this.treeNodes[type].find(
-			node => node.displayTimestamp && node.displayTimestamp >= timestamp,
-		);
-		const prevId = this.treeNodes[type]
-			.reverse()
-			.find(node => node.displayTimestamp && node.displayTimestamp <= timestamp);
-		return {
-			prevId: prevId ? prevId.id : '',
-			nextId: nextId ? nextId.id : '',
-		};
-	};
-
 	public getCloseIndex = (timestamp: number, type: PanelType) =>
 		this.listData[type].findIndex(
 			node => 'parentIds' in node && node.displayTimestamp && node.displayTimestamp >= timestamp,
@@ -429,52 +437,109 @@ export class JSONViewerStore {
 		};
 	}
 
-	@action addDisplayed(id: string, displayTimestamp: number, height: number, type: PanelType) {
-		this.displayedLeafs[type] = [
-			...this.displayedLeafs[type],
-			{
-				id,
-				displayTimestamp,
-				height,
-				...this.getCloseId(displayTimestamp, type === 'default' ? 'compare' : 'default'),
-			},
-		];
-	}
+	getChunkHeight = (type: PanelType) => {
+		const displayed: TreeNode[] = this.listData[type].filter(leaf => isTreeNode(leaf));
+		const chunks: {
+			[timestamp: string]: {
+				id: string;
+				height: number;
+				displayTimestamp: number;
+				chunk: number;
+			};
+		} = {};
+		let tempChunk: {
+			id: string;
+			height: number;
+			displayTimestamp: number;
+			chunk: number;
+		} = {
+			id: '',
+			height: 0,
+			displayTimestamp: 0,
+			chunk: 0,
+		};
 
-	@action updateDisplayed(id: string, height: number, type: PanelType) {
-		const index = this.displayedLeafs[type].findIndex(leaf => leaf.id !== id);
-		if (index > -1)
-			this.displayedLeafs[type] = [
-				...this.displayedLeafs[type].slice(0, index),
-				{
-					...this.displayedLeafs[type][index],
-					height,
-				},
-				...this.displayedLeafs[type].slice(index + 1),
-			];
-	}
+		for (let i = 0; i < displayed.length; i++) {
+			if (!displayed[i].isRoot) {
+				if (displayed[i].displayTimestamp) {
+					if (tempChunk.displayTimestamp === 0) {
+						tempChunk = {
+							id: displayed[i].id,
+							height: tempChunk.height + displayed[i].height,
+							displayTimestamp:
+								Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval) *
+								this.сhunkInterval,
+							chunk: Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval),
+						};
+					} else if (
+						tempChunk.chunk ===
+						Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval)
+					) {
+						tempChunk = {
+							...tempChunk,
+							id: displayed[i].id,
+							height: tempChunk.height + displayed[i].height,
+						};
+					} else {
+						chunks[tempChunk.displayTimestamp] = { ...tempChunk };
+						tempChunk = {
+							id: displayed[i].id,
+							height: displayed[i].height,
+							displayTimestamp:
+								Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval) *
+								this.сhunkInterval,
+							chunk: Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval),
+						};
+					}
+				}
+			}
+		}
 
-	@action removeDisplayed(id: string, type: PanelType) {
-		this.displayedLeafs[type] = this.displayedLeafs[type].filter(leaf => leaf.id !== id);
+		return chunks;
+	};
+
+	@computed
+	public get chunkHeights() {
+		const chunksDefault = this.getChunkHeight('default');
+		const chunksCompare = this.getChunkHeight('compare');
+		return {
+			default: Object.values(chunksDefault).map(chunk => ({
+				...chunk,
+				height: chunksCompare[chunk.displayTimestamp]
+					? Math.max(chunksCompare[chunk.displayTimestamp].height - chunk.height, 0)
+					: 0,
+			})),
+			compare: Object.values(chunksCompare).map(chunk => ({
+				...chunk,
+				height: chunksDefault[chunk.displayTimestamp]
+					? Math.max(chunksDefault[chunk.displayTimestamp].height - chunk.height, 0)
+					: 0,
+			})),
+		};
 	}
 
 	@action scrollToNearest(timestamp: number, type: PanelType) {
 		const convertType = type === 'default' ? 'compare' : 'default';
 		const chunk = Math.floor(timestamp / this.сhunkInterval);
-		console.log(timestamp, chunk, this.сhunkInterval);
 		const nearestNode = this.treeNodes[convertType].find(
 			node =>
 				'displayTimestamp' in node &&
 				node.displayTimestamp &&
+				node.parentIds.every(parentId => this.openTreeNodes[convertType].has(parentId)) &&
 				Math.floor(node.displayTimestamp / this.сhunkInterval) >= chunk,
 		);
-		console.log(JSON.parse(JSON.stringify(nearestNode)));
-		if (nearestNode) {
-			nearestNode.parentIds.forEach(id => this.openTreeNodes[convertType].add(id));
+		const nearestNodeLocal = this.treeNodes[type].find(
+			node =>
+				'displayTimestamp' in node &&
+				node.displayTimestamp &&
+				node.parentIds.every(parentId => this.openTreeNodes[type].has(parentId)) &&
+				Math.floor(node.displayTimestamp / this.сhunkInterval) >= chunk,
+		);
+		if (nearestNode && nearestNodeLocal) {
 			this.selectedTreeNode[convertType] = nearestNode;
-			this.activeIndex[convertType] = this.listData[convertType].findIndex(
-				node => 'id' in node && node.id === nearestNode.id,
-			);
+			this.scrollToId(nearestNode.id, convertType);
+			this.selectedTreeNode[type] = nearestNodeLocal;
+			this.scrollToId(nearestNodeLocal.id, type);
 		}
 	}
 }
