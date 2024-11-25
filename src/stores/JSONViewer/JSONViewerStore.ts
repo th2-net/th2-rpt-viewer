@@ -438,9 +438,6 @@ export class JSONViewerStore {
 	}
 
 	getChunkHeight = (type: PanelType) => {
-		const displayed: TreeNode[] = this.listData[type].filter(
-			leaf => isTreeNode(leaf) && 'id' in leaf,
-		);
 		const chunks: {
 			[timestamp: string]: {
 				id: string;
@@ -461,36 +458,34 @@ export class JSONViewerStore {
 			chunk: 0,
 		};
 
-		for (let i = 0; i < displayed.length; i++) {
-			if (!displayed[i].isRoot) {
-				if (displayed[i].displayTimestamp) {
+		for (let i = 0; i < this.listData[type].length; i++) {
+			const node = this.listData[type][i];
+			if (isTreeNode(node) && !node.isRoot) {
+				if (node.displayTimestamp) {
 					if (tempChunk.displayTimestamp === 0) {
 						tempChunk = {
-							id: displayed[i].id,
-							height: tempChunk.height + displayed[i].height,
+							id: node.id,
+							height: tempChunk.height + node.height,
 							displayTimestamp:
-								Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval) *
-								this.сhunkInterval,
-							chunk: Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval),
+								Math.floor((node.displayTimestamp || 0) / this.сhunkInterval) * this.сhunkInterval,
+							chunk: Math.floor((node.displayTimestamp || 0) / this.сhunkInterval),
 						};
 					} else if (
-						tempChunk.chunk ===
-						Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval)
+						tempChunk.chunk === Math.floor((node.displayTimestamp || 0) / this.сhunkInterval)
 					) {
 						tempChunk = {
 							...tempChunk,
-							id: displayed[i].id,
-							height: tempChunk.height + displayed[i].height,
+							id: node.id,
+							height: tempChunk.height + node.height,
 						};
 					} else {
 						chunks[tempChunk.displayTimestamp] = { ...tempChunk };
 						tempChunk = {
-							id: displayed[i].id,
-							height: displayed[i].height,
+							id: node.id,
+							height: node.height,
 							displayTimestamp:
-								Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval) *
-								this.сhunkInterval,
-							chunk: Math.floor((displayed[i].displayTimestamp || 0) / this.сhunkInterval),
+								Math.floor((node.displayTimestamp || 0) / this.сhunkInterval) * this.сhunkInterval,
+							chunk: Math.floor((node.displayTimestamp || 0) / this.сhunkInterval),
 						};
 					}
 				}
