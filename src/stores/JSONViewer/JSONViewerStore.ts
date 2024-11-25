@@ -438,7 +438,9 @@ export class JSONViewerStore {
 	}
 
 	getChunkHeight = (type: PanelType) => {
-		const displayed: TreeNode[] = this.listData[type].filter(leaf => isTreeNode(leaf));
+		const displayed: TreeNode[] = this.listData[type].filter(
+			leaf => isTreeNode(leaf) && 'id' in leaf,
+		);
 		const chunks: {
 			[timestamp: string]: {
 				id: string;
