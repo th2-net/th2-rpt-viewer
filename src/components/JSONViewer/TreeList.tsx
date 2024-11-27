@@ -22,7 +22,7 @@ const TreeList = ({ type }: { type: PanelType }) => {
 							dataNode.id,
 					  )}`
 					: 'lastElement' in dataNode
-					? `${dataNode.chunk}-${dataNode.firstElement}-${dataNode.lastElement}`
+					? `${dataNode.chunk}-${dataNode.firstElement}-${dataNode.lastElement}-${dataNode.height}`
 					: dataNode.name
 			}`,
 		[],

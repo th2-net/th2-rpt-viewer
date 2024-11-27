@@ -108,7 +108,6 @@ const FileChoosing = ({
 								id: nanoid(),
 								parentIds: [],
 								key: filePath,
-								height: 22,
 								failed: false,
 								viewInstruction: '',
 								simpleFields: [],

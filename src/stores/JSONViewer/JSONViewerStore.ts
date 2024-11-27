@@ -61,14 +61,14 @@ export class JSONViewerStore {
 			() => this.openTreeNodes.default.values(),
 			() => {
 				this.initChunksData('default');
-				this.initChunksData('compare');
+				this.initChunksData('compare', false);
 			},
 		);
 
 		reaction(
 			() => this.openTreeNodes.compare.values(),
 			() => {
-				this.initChunksData('default');
+				this.initChunksData('default', false);
 				this.initChunksData('compare');
 			},
 		);
@@ -341,8 +341,8 @@ export class JSONViewerStore {
 		}
 	}
 
-	@action initChunksData(type: PanelType) {
-		this.clearChunksData(type);
+	@action initChunksData(type: PanelType, clear = true) {
+		if (clear) this.clearChunksData(type);
 		this.treeNodes[type]
 			.filter(node => node.parentIds.every(parentId => this.openTreeNodes[type].has(parentId)))
 			.forEach(node => {
@@ -497,10 +497,15 @@ export class JSONViewerStore {
 					)
 					.flatMap(node => [
 						...this.chunksHeights.default.filter(
-							chunkData => chunkData.lastElement === '' && chunkData.firstElement === node.id,
+							chunkData =>
+								chunkData.height > 0 &&
+								chunkData.lastElement === '' &&
+								chunkData.firstElement === node.id,
 						),
 						node,
-						...this.chunksHeights.default.filter(chunkData => chunkData.lastElement === node.id),
+						...this.chunksHeights.default.filter(
+							chunkData => chunkData.height > 0 && chunkData.lastElement === node.id,
+						),
 					]),
 			],
 			compare: [
@@ -511,10 +516,15 @@ export class JSONViewerStore {
 					)
 					.flatMap(node => [
 						...this.chunksHeights.compare.filter(
-							chunkData => chunkData.lastElement === '' && chunkData.firstElement === node.id,
+							chunkData =>
+								chunkData.height > 0 &&
+								chunkData.lastElement === '' &&
+								chunkData.firstElement === node.id,
 						),
 						node,
-						...this.chunksHeights.compare.filter(chunkData => chunkData.lastElement === node.id),
+						...this.chunksHeights.compare.filter(
+							chunkData => chunkData.height > 0 && chunkData.lastElement === node.id,
+						),
 					]),
 			],
 		};
@@ -569,15 +579,8 @@ export class JSONViewerStore {
 		);
 		for (let i = 0; i < newKeys.length; i++) {
 			const lastExisting =
-				sameKeys
-					.concat(exclusiveKeys)
-					.sort()
-					.findLast(key => key <= newKeys[i]) || '';
-			const firstExisting =
-				sameKeys
-					.concat(exclusiveKeys)
-					.sort()
-					.find(key => key >= newKeys[i]) || '';
+				[...keys1].reverse().find(key => Number(key) <= Number(newKeys[i])) || '';
+			const firstExisting = keys1.find(key => Number(key) >= Number(newKeys[i])) || '';
 			chunkFixed.push({
 				chunk: Number(newKeys[i]),
 				firstElement: chunks1[firstExisting]?.firstElement || '',
