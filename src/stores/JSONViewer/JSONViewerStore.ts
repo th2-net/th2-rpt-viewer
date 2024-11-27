@@ -1,4 +1,4 @@
-import { action, computed, observable } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import {
 	BlankTreeNode,
@@ -9,6 +9,7 @@ import {
 } from '../../models/JSONSchema';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import {
+	getChunk,
 	getFlatListFromTree,
 	getFlatListFromTreeWSimple,
 	isTreeNode,
@@ -26,15 +27,52 @@ const nullTreeNode: TreeNode = {
 	complexFields: [],
 	childIds: [],
 	simpleFields: [],
-	height: 0,
 };
+export interface ChunkHeightData {
+	chunk: number;
+	firstElement: string;
+	lastElement: string;
+	height: number;
+}
 
 export type PanelType = 'default' | 'compare';
 
 export class JSONViewerStore {
 	public id = nanoid();
 
-	constructor(private openTabs: (layout: WorkspacePanelsLayout) => void) {}
+	constructor(private openTabs: (layout: WorkspacePanelsLayout) => void) {
+		reaction(
+			() => this.intervalUnit,
+			() => {
+				this.initChunksData('default');
+				this.initChunksData('compare');
+			},
+		);
+
+		reaction(
+			() => this.intervalSize,
+			() => {
+				this.initChunksData('default');
+				this.initChunksData('compare');
+			},
+		);
+
+		reaction(
+			() => this.openTreeNodes.default.values(),
+			() => {
+				this.initChunksData('default');
+				this.initChunksData('compare');
+			},
+		);
+
+		reaction(
+			() => this.openTreeNodes.compare.values(),
+			() => {
+				this.initChunksData('default');
+				this.initChunksData('compare');
+			},
+		);
+	}
 
 	@observable
 	public isModalOpen: { default: boolean; compare: boolean } = {
@@ -151,6 +189,15 @@ export class JSONViewerStore {
 		compare: 0,
 	};
 
+	@observable
+	public chunks: {
+		default: Map<number, Map<string, number>>;
+		compare: Map<number, Map<string, number>>;
+	} = {
+		default: new Map(),
+		compare: new Map(),
+	};
+
 	@action
 	updateTokens = (nextTokens: SearchToken[], type: PanelType) => {
 		const tokens = nextTokens.filter(
@@ -245,6 +292,7 @@ export class JSONViewerStore {
 	@action setTreeNodes(n: TreeNode[], type: PanelType) {
 		this.treeNodes[type] = n.slice();
 		this.selectedTreeNode[type] = nullTreeNode;
+		this.initChunksData(type);
 	}
 
 	@action setNotebooks(n: NotebookNode[], type: PanelType) {
@@ -277,6 +325,37 @@ export class JSONViewerStore {
 		this.treeNodes[type] = this.treeNodes[type].filter(node => !ids.includes(node.id));
 	}
 
+	@action clearChunksData(type: PanelType) {
+		this.chunks[type].clear();
+	}
+
+	@action setChunkElement(chunk: number, id: string, height: number, type: PanelType) {
+		if (chunk === -1) return;
+		if (this.chunks[type].has(chunk)) {
+			const newValue = this.chunks[type].get(chunk);
+			if (newValue) newValue.set(id, height);
+		} else {
+			this.chunks[type].set(chunk, new Map<string, number>());
+			const newValue = this.chunks[type].get(chunk);
+			if (newValue) newValue.set(id, height);
+		}
+	}
+
+	@action initChunksData(type: PanelType) {
+		this.clearChunksData(type);
+		this.treeNodes[type]
+			.filter(node => node.parentIds.every(parentId => this.openTreeNodes[type].has(parentId)))
+			.forEach(node => {
+				if (isTreeNode(node))
+					this.setChunkElement(
+						getChunk(node.displayTimestamp, this.сhunkInterval),
+						node.id,
+						22,
+						type,
+					);
+			});
+	}
+
 	@action openNode(id: string, type: PanelType) {
 		this.openTreeNodes[type].add(id);
 	}
@@ -301,18 +380,6 @@ export class JSONViewerStore {
 			{
 				...this.treeNodes[type][index],
 				viewType,
-			},
-			...this.treeNodes[type].slice(index + 1),
-		];
-	}
-
-	@action setNodeHeight(id: string, height: number, type: PanelType) {
-		const index = this.treeNodes[type].findIndex(tree => tree.id === id);
-		this.treeNodes[type] = [
-			...this.treeNodes[type].slice(0, index),
-			{
-				...this.treeNodes[type][index],
-				height,
 			},
 			...this.treeNodes[type].slice(index + 1),
 		];
@@ -418,125 +485,143 @@ export class JSONViewerStore {
 
 	@computed
 	public get listData(): {
-		default: (TreeNode | NotebookNode)[];
-		compare: (TreeNode | NotebookNode)[];
+		default: (TreeNode | NotebookNode | ChunkHeightData)[];
+		compare: (TreeNode | NotebookNode | ChunkHeightData)[];
 	} {
 		return {
 			default: [
 				...this.notebooks.default,
-				...this.treeNodes.default.filter(node =>
-					node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)),
-				),
+				...this.treeNodes.default
+					.filter(node =>
+						node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)),
+					)
+					.flatMap(node => [
+						...this.chunksHeights.default.filter(
+							chunkData => chunkData.lastElement === '' && chunkData.firstElement === node.id,
+						),
+						node,
+						...this.chunksHeights.default.filter(chunkData => chunkData.lastElement === node.id),
+					]),
 			],
 			compare: [
 				...this.notebooks.compare,
-				...this.treeNodes.compare.filter(node =>
-					node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)),
-				),
+				...this.treeNodes.compare
+					.filter(node =>
+						node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)),
+					)
+					.flatMap(node => [
+						...this.chunksHeights.compare.filter(
+							chunkData => chunkData.lastElement === '' && chunkData.firstElement === node.id,
+						),
+						node,
+						...this.chunksHeights.compare.filter(chunkData => chunkData.lastElement === node.id),
+					]),
 			],
 		};
 	}
 
-	getChunkHeight = (type: PanelType) => {
-		const chunks: {
-			[timestamp: string]: {
-				id: string;
-				height: number;
-				displayTimestamp: number;
-				chunk: number;
-			};
-		} = {};
-		let tempChunk: {
-			id: string;
-			height: number;
-			displayTimestamp: number;
-			chunk: number;
-		} = {
-			id: '',
-			height: 0,
-			displayTimestamp: 0,
-			chunk: 0,
-		};
+	public getChunksHeight = (type: PanelType) => {
+		const chunks = Array.from(this.chunks[type].entries());
+		return Object.fromEntries(
+			chunks.map(([key, value]) => {
+				const firstElement = Array.from(value.keys()).shift();
+				const lastElement = Array.from(value.keys()).pop();
+				return [
+					key,
+					{
+						firstElement: firstElement || '',
+						lastElement: lastElement || '',
+						height: Array.from(value.values()).reduce(
+							(accumulator, height) => accumulator + height,
+							0,
+						),
+					},
+				];
+			}),
+		);
+	};
 
-		for (let i = 0; i < this.listData[type].length; i++) {
-			const node = this.listData[type][i];
-			if (isTreeNode(node) && !node.isRoot) {
-				if (node.displayTimestamp) {
-					if (tempChunk.displayTimestamp === 0) {
-						tempChunk = {
-							id: node.id,
-							height: tempChunk.height + node.height,
-							displayTimestamp:
-								Math.floor((node.displayTimestamp || 0) / this.сhunkInterval) * this.сhunkInterval,
-							chunk: Math.floor((node.displayTimestamp || 0) / this.сhunkInterval),
-						};
-					} else if (
-						tempChunk.chunk === Math.floor((node.displayTimestamp || 0) / this.сhunkInterval)
-					) {
-						tempChunk = {
-							...tempChunk,
-							id: node.id,
-							height: tempChunk.height + node.height,
-						};
-					} else {
-						chunks[tempChunk.displayTimestamp] = { ...tempChunk };
-						tempChunk = {
-							id: node.id,
-							height: node.height,
-							displayTimestamp:
-								Math.floor((node.displayTimestamp || 0) / this.сhunkInterval) * this.сhunkInterval,
-							chunk: Math.floor((node.displayTimestamp || 0) / this.сhunkInterval),
-						};
-					}
-				}
-			}
+	public fixChunksHeight = (type: PanelType) => {
+		const chunks1 = this.getChunksHeight(type);
+		const chunks2 = this.getChunksHeight(type === 'default' ? 'compare' : 'default');
+		const chunkFixed = [];
+		const keys1 = Object.keys(chunks1);
+		const keys2 = Object.keys(chunks2);
+		const sameKeys = keys1.filter(key => keys2.includes(key));
+		const exclusiveKeys = keys1.filter(key => !keys2.includes(key));
+		const newKeys = keys2.filter(key => !keys1.includes(key));
+
+		for (let i = 0; i < sameKeys.length; i++) {
+			chunkFixed.push({
+				chunk: Number(sameKeys[i]),
+				firstElement: chunks1[sameKeys[i]].firstElement,
+				lastElement: chunks1[sameKeys[i]].lastElement,
+				height: Math.max(chunks2[sameKeys[i]].height - chunks1[sameKeys[i]].height, 0),
+			});
 		}
-
-		return chunks;
+		exclusiveKeys.forEach(key =>
+			chunkFixed.push({
+				chunk: Number(key),
+				firstElement: chunks1[key].firstElement,
+				lastElement: chunks1[key].lastElement,
+				height: 0,
+			}),
+		);
+		for (let i = 0; i < newKeys.length; i++) {
+			const lastExisting =
+				sameKeys
+					.concat(exclusiveKeys)
+					.sort()
+					.findLast(key => key <= newKeys[i]) || '';
+			const firstExisting =
+				sameKeys
+					.concat(exclusiveKeys)
+					.sort()
+					.find(key => key >= newKeys[i]) || '';
+			chunkFixed.push({
+				chunk: Number(newKeys[i]),
+				firstElement: chunks1[firstExisting]?.firstElement || '',
+				lastElement: chunks1[lastExisting]?.lastElement || '',
+				height: chunks2[newKeys[i]].height,
+			});
+		}
+		return chunkFixed.sort((a, b) => a.chunk - b.chunk);
 	};
 
 	@computed
-	public get chunkHeights() {
-		const chunksDefault = this.getChunkHeight('default');
-		const chunksCompare = this.getChunkHeight('compare');
+	public get chunksHeights(): { default: ChunkHeightData[]; compare: ChunkHeightData[] } {
 		return {
-			default: Object.values(chunksDefault).map(chunk => ({
-				...chunk,
-				height: chunksCompare[chunk.displayTimestamp]
-					? Math.max(chunksCompare[chunk.displayTimestamp].height - chunk.height, 0)
-					: 0,
-			})),
-			compare: Object.values(chunksCompare).map(chunk => ({
-				...chunk,
-				height: chunksDefault[chunk.displayTimestamp]
-					? Math.max(chunksDefault[chunk.displayTimestamp].height - chunk.height, 0)
-					: 0,
-			})),
+			default: this.fixChunksHeight('default'),
+			compare: this.fixChunksHeight('compare'),
 		};
 	}
 
 	@action scrollToNearest(timestamp: number, type: PanelType) {
 		const convertType = type === 'default' ? 'compare' : 'default';
-		const chunk = Math.floor(timestamp / this.сhunkInterval);
-		const nearestNode = this.treeNodes[convertType].find(
-			node =>
-				'displayTimestamp' in node &&
-				node.displayTimestamp &&
-				node.parentIds.every(parentId => this.openTreeNodes[convertType].has(parentId)) &&
-				Math.floor(node.displayTimestamp / this.сhunkInterval) >= chunk,
+		const chunk = getChunk(timestamp, this.сhunkInterval);
+		const nearestNodeIndex = this.listData[convertType].findIndex(node =>
+			!('paramsValue' in node) && 'lastElement' in node
+				? node.chunk >= chunk
+				: isTreeNode(node) &&
+				  node.displayTimestamp &&
+				  node.parentIds.every(parentId => this.openTreeNodes[convertType].has(parentId)) &&
+				  getChunk(node.displayTimestamp, this.сhunkInterval) >= chunk,
 		);
-		const nearestNodeLocal = this.treeNodes[type].find(
-			node =>
-				'displayTimestamp' in node &&
-				node.displayTimestamp &&
-				node.parentIds.every(parentId => this.openTreeNodes[type].has(parentId)) &&
-				Math.floor(node.displayTimestamp / this.сhunkInterval) >= chunk,
+		const nearestNodeLocalIndex = this.listData[type].findIndex(node =>
+			!('paramsValue' in node) && 'lastElement' in node
+				? node.chunk >= chunk
+				: isTreeNode(node) &&
+				  node.displayTimestamp &&
+				  node.parentIds.every(parentId => this.openTreeNodes[type].has(parentId)) &&
+				  getChunk(node.displayTimestamp, this.сhunkInterval) >= chunk,
 		);
-		if (nearestNode && nearestNodeLocal) {
-			this.selectedTreeNode[convertType] = nearestNode;
-			this.scrollToId(nearestNode.id, convertType);
-			this.selectedTreeNode[type] = nearestNodeLocal;
-			this.scrollToId(nearestNodeLocal.id, type);
+		if (nearestNodeIndex && nearestNodeLocalIndex) {
+			const nearestNode = this.listData[convertType][nearestNodeIndex];
+			if (isTreeNode(nearestNode)) this.selectedTreeNode[convertType] = nearestNode;
+			this.activeIndex[convertType] = nearestNodeIndex;
+			const nearestNodeLocal = this.listData[type][nearestNodeLocalIndex];
+			if (isTreeNode(nearestNodeLocal)) this.selectedTreeNode[type] = nearestNodeLocal;
+			this.activeIndex[type] = nearestNodeLocalIndex;
 		}
 	}
 }

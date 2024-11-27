@@ -44,7 +44,6 @@ export interface TreeNode {
 	isGeneratedKey?: boolean;
 	isRoot?: boolean;
 	viewType?: TreeViewType;
-	height: number;
 }
 
 export interface NotebookNode {

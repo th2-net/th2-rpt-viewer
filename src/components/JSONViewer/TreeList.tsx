@@ -6,7 +6,8 @@ import StateSaverProvider from '../util/StateSaverProvider';
 import { NotebookNode, TreeNode } from '../../models/JSONSchema';
 import TreeLeaf from './TreeLeaf';
 import NotebookParamsCell from './NotebookParamsCell';
-import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import { ChunkHeightData, PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import EmptyLeaf from './EmptyLeaf';
 
 const TreeList = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -14,21 +15,27 @@ const TreeList = ({ type }: { type: PanelType }) => {
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
 	const computeTreeKey = React.useCallback(
-		(index: number, dataNode: TreeNode | NotebookNode) =>
+		(index: number, dataNode: TreeNode | NotebookNode | ChunkHeightData) =>
 			`${
 				'id' in dataNode
 					? `${dataNode.id}-${dataNode.viewType}-${JSONViewerStore.openTreeNodes[type].has(
 							dataNode.id,
 					  )}`
+					: 'lastElement' in dataNode
+					? `${dataNode.chunk}-${dataNode.firstElement}-${dataNode.lastElement}`
 					: dataNode.name
 			}`,
 		[],
 	);
 
-	const renderTree = React.useCallback((index: number, dataNode: TreeNode | NotebookNode) => {
-		if ('id' in dataNode) return <TreeLeaf treeNode={dataNode} type={type} />;
-		return <NotebookParamsCell notebookProp={dataNode} type={type} />;
-	}, []);
+	const renderTree = React.useCallback(
+		(index: number, dataNode: TreeNode | NotebookNode | ChunkHeightData) => {
+			if ('id' in dataNode) return <TreeLeaf treeNode={dataNode} type={type} />;
+			if ('lastElement' in dataNode) return <EmptyLeaf chunkNode={dataNode} type={type} />;
+			return <NotebookParamsCell notebookProp={dataNode} type={type} />;
+		},
+		[],
+	);
 
 	useEffect(() => {
 		if (JSONViewerStore.activeIndex[type] !== -1) {

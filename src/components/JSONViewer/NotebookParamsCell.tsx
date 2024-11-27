@@ -119,7 +119,6 @@ const NotebookParamsCell = ({
 						childIds: [],
 						isGeneratedKey: true,
 						isRoot: true,
-						height: 22,
 					};
 					try {
 						node.complexFields.push(...parseText(result, '0', true));
@@ -148,8 +147,8 @@ const NotebookParamsCell = ({
 						type: 'error',
 						description: `Resulting file of ${notebook.name} doesn't include json.`,
 					});
-					setIsRunLoading(false);
 				}
+				setIsRunLoading(false);
 				break;
 			case 'failed':
 				{
@@ -219,9 +218,11 @@ const NotebookParamsCell = ({
 	const refreshNotebook = () => {
 		getParameters();
 		setIsRunLoading(false);
+		setIsReloadOpen(false);
 	};
 
 	const readFile = async (files: FileList) => {
+		setIsReloadOpen(false);
 		const presetText = await files[0].text();
 		const prevValue = JSON.parse(JSON.stringify(paramsValue));
 		let params = JSON.parse(JSON.stringify(paramsValue));
@@ -308,7 +309,7 @@ const NotebookParamsCell = ({
 							<thead>
 								{parameters.length > 0 && (
 									<tr style={{ textAlign: 'left' }}>
-										<th>Off</th>
+										<th>On</th>
 										<th>Name</th>
 										<th>Type</th>
 										<th>Value</th>
@@ -365,24 +366,22 @@ const NotebookParamsCell = ({
 							<ToolsPopup isOpen={isReloadOpen}>
 								<div className='message-card-tools__controls-group'>
 									<div
-										title='Reload from Server'
+										title='Default'
 										className='message-card-tools__item'
 										onClick={e => {
 											e.stopPropagation();
-											setIsReloadOpen(false);
 											refreshNotebook();
 										}}>
-										<span className='message-card-tools__item-title'>From Server</span>
+										<span className='message-card-tools__item-title'>Default</span>
 									</div>
 									<div
-										title='Reload from Preset'
+										title='Load File'
 										className='message-card-tools__item'
 										onClick={e => {
 											e.stopPropagation();
-											setIsReloadOpen(false);
 											inputJSONRef.current?.click();
 										}}>
-										<span className='message-card-tools__item-title'>From Preset</span>
+										<span className='message-card-tools__item-title'>Load File</span>
 									</div>
 								</div>
 							</ToolsPopup>

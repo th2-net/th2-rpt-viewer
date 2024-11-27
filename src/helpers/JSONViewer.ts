@@ -86,7 +86,6 @@ export const convertJSONtoNode = (
 		simpleFields,
 		complexFields,
 		childIds: complexFields.map(node => node.id),
-		height: 22,
 	};
 };
 
@@ -262,3 +261,6 @@ export const getFlatListFromTreeWSimple = (tree: TreeNode) => {
 	];
 	return flatten(tree);
 };
+
+export const getChunk = (timestamp: number | undefined, chunkInterval: number) =>
+	timestamp ? Math.floor(timestamp / chunkInterval) : -1;

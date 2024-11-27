@@ -30,8 +30,30 @@ import '../../styles/search.scss';
 export const REACTIVE_SEARCH_DELAY = 500;
 const INPUT_PLACEHOLDER = 'Use Space to separate different words & Tab to finish';
 
-export const COLORS = ['#E69900', '#FF5500', '#1F66AD', '#45A155', '#987DB3'];
-export const BACKGROUND_COLORS = ['#fff7e9', '#fff1eb', '#eaf3fb', '#eff8f1', '#f7f5f9'];
+export const COLORS = [
+	'#E69900',
+	'#FF5500',
+	'#1F66AD',
+	'#45A155',
+	'#987DB3',
+	'#DBCD5A',
+	'#E10901',
+	'#16C0A3',
+	'#537000',
+	'#3F0099',
+];
+export const BACKGROUND_COLORS = [
+	'#fff7e9',
+	'#fff1eb',
+	'#f2f7fd',
+	'#f5fbf6',
+	'#f7f5f9',
+	'#fcfbf2',
+	'#ffe9e8',
+	'#f2fdfb',
+	'#f7ffdf',
+	'#f9f4ff',
+];
 
 interface StateProps {
 	searchTokens: SearchToken[];

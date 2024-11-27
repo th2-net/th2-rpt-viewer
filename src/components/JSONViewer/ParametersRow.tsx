@@ -67,9 +67,9 @@ const ParametersRow = ({
 		<tr>
 			<td>
 				<Checkbox
-					checked={parameterValue.isOff}
+					checked={!parameterValue.isOff}
 					onChange={e => {
-						toggleParameter(e.target.checked);
+						toggleParameter(!e.target.checked);
 					}}
 					label=''
 					id={`{parameter.name}-toggle`}
