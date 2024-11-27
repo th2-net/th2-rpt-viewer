@@ -193,8 +193,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 									style={{ backgroundColor: contentPart.token?.color }}>
 									{contentPart.content}
 								</span>
-							))}{' '}
-							{chunk}
+							))}
 						</span>{' '}
 						<span style={{ color: '#333333' }}>
 							{complexFieldsDisplay()} {simpleFieldsDisplay()}
