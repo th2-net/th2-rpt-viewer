@@ -73,28 +73,24 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	}, [JSONViewerStore.openTreeNodes[type].values]);
 
 	useEffect(() => {
-		const observer = new ResizeObserver(entries => {
-			JSONViewerStore.setChunkElement(
-				chunk,
+		const resizeObserver = new ResizeObserver(entries => {
+			JSONViewerStore.setNodeHeight(
 				treeNode.id,
+				treeNode.displayTimestamp,
 				entries[0].borderBoxSize?.length > 0
 					? entries[0].borderBoxSize[0].blockSize
 					: entries[0].contentRect.height,
+				treeNode.parentIds,
 				type,
 			);
 		});
 		if (leafRef.current) {
-			observer.observe(leafRef.current);
+			resizeObserver.observe(leafRef.current);
 		}
 		return () => {
-			if (leafRef.current) observer.unobserve(leafRef.current);
+			if (leafRef.current) resizeObserver.unobserve(leafRef.current);
 		};
 	}, []);
-
-	useEffect(() => {
-		if (leafRef.current)
-			JSONViewerStore.setChunkElement(chunk, treeNode.id, leafRef.current.offsetHeight, type);
-	}, [leafRef.current]);
 
 	const toggleNode = () => {
 		if (open) {

@@ -1,4 +1,4 @@
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 import {
 	BlankTreeNode,
@@ -40,39 +40,7 @@ export type PanelType = 'default' | 'compare';
 export class JSONViewerStore {
 	public id = nanoid();
 
-	constructor(private openTabs: (layout: WorkspacePanelsLayout) => void) {
-		reaction(
-			() => this.intervalUnit,
-			() => {
-				this.initChunksData('default');
-				this.initChunksData('compare');
-			},
-		);
-
-		reaction(
-			() => this.intervalSize,
-			() => {
-				this.initChunksData('default');
-				this.initChunksData('compare');
-			},
-		);
-
-		reaction(
-			() => this.openTreeNodes.default.values(),
-			() => {
-				this.initChunksData('default');
-				this.initChunksData('compare', false);
-			},
-		);
-
-		reaction(
-			() => this.openTreeNodes.compare.values(),
-			() => {
-				this.initChunksData('default', false);
-				this.initChunksData('compare');
-			},
-		);
-	}
+	constructor(private openTabs: (layout: WorkspacePanelsLayout) => void) {}
 
 	@observable
 	public isModalOpen: { default: boolean; compare: boolean } = {
@@ -190,9 +158,9 @@ export class JSONViewerStore {
 	};
 
 	@observable
-	public chunks: {
-		default: Map<number, Map<string, number>>;
-		compare: Map<number, Map<string, number>>;
+	public heights: {
+		default: Map<string, { height: number; displayTimestamp: number; parentIds: string[] }>;
+		compare: Map<string, { height: number; displayTimestamp: number; parentIds: string[] }>;
 	} = {
 		default: new Map(),
 		compare: new Map(),
@@ -290,9 +258,10 @@ export class JSONViewerStore {
 	};
 
 	@action setTreeNodes(n: TreeNode[], type: PanelType) {
+		this.clearHeights(type);
 		this.treeNodes[type] = n.slice();
 		this.selectedTreeNode[type] = nullTreeNode;
-		this.initChunksData(type);
+		this.initHeightsData(type);
 	}
 
 	@action setNotebooks(n: NotebookNode[], type: PanelType) {
@@ -325,35 +294,25 @@ export class JSONViewerStore {
 		this.treeNodes[type] = this.treeNodes[type].filter(node => !ids.includes(node.id));
 	}
 
-	@action clearChunksData(type: PanelType) {
-		this.chunks[type].clear();
+	@action setNodeHeight(
+		id: string,
+		displayTimestamp: number | undefined,
+		height: number,
+		parentIds: string[],
+		type: PanelType,
+	) {
+		if (displayTimestamp) this.heights[type].set(id, { displayTimestamp, height, parentIds });
 	}
 
-	@action setChunkElement(chunk: number, id: string, height: number, type: PanelType) {
-		if (chunk === -1) return;
-		if (this.chunks[type].has(chunk)) {
-			const newValue = this.chunks[type].get(chunk);
-			if (newValue) newValue.set(id, height);
-		} else {
-			this.chunks[type].set(chunk, new Map<string, number>());
-			const newValue = this.chunks[type].get(chunk);
-			if (newValue) newValue.set(id, height);
-		}
+	@action clearHeights(type: PanelType) {
+		this.heights[type].clear();
 	}
 
-	@action initChunksData(type: PanelType, clear = true) {
-		if (clear) this.clearChunksData(type);
-		this.treeNodes[type]
-			.filter(node => node.parentIds.every(parentId => this.openTreeNodes[type].has(parentId)))
-			.forEach(node => {
-				if (isTreeNode(node))
-					this.setChunkElement(
-						getChunk(node.displayTimestamp, this.сhunkInterval),
-						node.id,
-						22,
-						type,
-					);
-			});
+	@action initHeightsData(type: PanelType) {
+		this.treeNodes[type].forEach(node => {
+			if (isTreeNode(node) && !this.heights[type].has(node.id))
+				this.setNodeHeight(node.id, node.displayTimestamp, 22, node.parentIds, type);
+		});
 	}
 
 	@action openNode(id: string, type: PanelType) {
@@ -531,24 +490,33 @@ export class JSONViewerStore {
 	}
 
 	public getChunksHeight = (type: PanelType) => {
-		const chunks = Array.from(this.chunks[type].entries());
-		return Object.fromEntries(
-			chunks.map(([key, value]) => {
-				const firstElement = Array.from(value.keys()).shift();
-				const lastElement = Array.from(value.keys()).pop();
-				return [
-					key,
-					{
-						firstElement: firstElement || '',
-						lastElement: lastElement || '',
-						height: Array.from(value.values()).reduce(
-							(accumulator, height) => accumulator + height,
-							0,
-						),
-					},
-				];
-			}),
+		const heightsFiltered = Array.from(this.heights[type].entries()).filter(([_id, data]) =>
+			data.parentIds.every(parentId => this.openTreeNodes[type].has(parentId)),
 		);
+		const chunks: {
+			[chunk: string]: {
+				height: number;
+				lastElement: string;
+				firstElement: string;
+			};
+		} = {};
+		for (let i = 0; i < heightsFiltered.length; i++) {
+			const chunk = getChunk(heightsFiltered[i][1].displayTimestamp, this.сhunkInterval);
+			if (chunks[chunk]) {
+				chunks[chunk] = {
+					height: chunks[chunk].height + heightsFiltered[i][1].height,
+					lastElement: heightsFiltered[i][0],
+					firstElement: chunks[chunk].firstElement,
+				};
+			} else {
+				chunks[chunk] = {
+					height: heightsFiltered[i][1].height,
+					lastElement: heightsFiltered[i][0],
+					firstElement: heightsFiltered[i][0],
+				};
+			}
+		}
+		return chunks;
 	};
 
 	public fixChunksHeight = (type: PanelType) => {
