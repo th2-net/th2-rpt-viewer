@@ -6,7 +6,7 @@ import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 
 const shownCapacity = 50;
 
-const DisplayTable = ({ value, type }: { value: string[][] | undefined; type: PanelType }) => {
+const DisplayTable = ({ value }: { value: string[][] | undefined; type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const [shownSize, setShownSize] = React.useState(shownCapacity);
 	if (!value) return <div className='display-table-error'>#display-table is undefined</div>;
@@ -21,7 +21,7 @@ const DisplayTable = ({ value, type }: { value: string[][] | undefined; type: Pa
 					<tr>
 						{header.map((key, index) => (
 							<th key={index}>
-								{multiTokenSplit(key, JSONViewerStore.tokens[type]).map((contentPart, i) => (
+								{multiTokenSplit(key, JSONViewerStore.tokens).map((contentPart, i) => (
 									<span
 										key={i}
 										className={contentPart.token != null ? 'found-content' : undefined}
@@ -41,7 +41,7 @@ const DisplayTable = ({ value, type }: { value: string[][] | undefined; type: Pa
 								<td key={ind}>
 									{multiTokenSplit(
 										typeof val === 'string' ? `"${val}"` : String(val),
-										JSONViewerStore.tokens[type],
+										JSONViewerStore.tokens,
 									).map((contentPart, i) => (
 										<span
 											key={i}
