@@ -53,7 +53,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 		[`borderBottom${borderSide}Radius`]: chunk !== -1 ? '0px' : undefined,
 	};
 
-	const splitContent = multiTokenSplit(nodeName, JSONViewerStore.tokens[type]);
+	const splitContent = multiTokenSplit(nodeName, JSONViewerStore.tokens);
 
 	useEffect(() => {
 		const isChildDisplay =
@@ -234,7 +234,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 						<JSONView
 							isBeautified={viewType === TreeViewType.PRETTY}
 							node={treeNode}
-							tokens={JSONViewerStore.tokens[type]}
+							tokens={JSONViewerStore.tokens}
 						/>
 					</div>
 				</div>

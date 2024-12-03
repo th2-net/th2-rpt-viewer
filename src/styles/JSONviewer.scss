@@ -298,7 +298,7 @@
 
 .JSON-search-wrapper{
 	display: flex;
-	width: 100%;
+	width: calc(100% - 365px);
 	gap: 5px;
 	align-items: center;
 	padding: 5px;
@@ -410,6 +410,18 @@
 	border: 1px $alternativeTextColor solid;
 	font-size: 14px;
 	padding: 0px 5px;
+}
+
+.JSON-search-header{ 
+	position: absolute;
+    top: 50px;
+    width: 90%;
+    left: 5%;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+	font-size: 12px;
+	font-weight: bold;
 }
 
 .load-JSON-button {

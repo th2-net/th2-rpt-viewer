@@ -106,7 +106,7 @@ export const parseText = (text: string, name = '', isGeneratedKey = false): Tree
 
 const stringPunct = `'"\``;
 const numberReg = /^-?\d*\.?\d{0,}$/;
-export const OFF_VALUE = `'[NA]'`;
+export const OFF_VALUE = [`'[NA]'`, `"[NA]"`];
 export const OFF_VALUE_SERVER = '[NA]';
 
 export const convertParameterValue = (
@@ -124,7 +124,11 @@ export const convertParameterValue = (
 			}
 			case 'str': {
 				return {
-					value: value === OFF_VALUE ? '' : cutString ? value.slice(1, value.length - 1) : value,
+					value: OFF_VALUE.includes(value)
+						? ''
+						: cutString
+						? value.slice(1, value.length - 1)
+						: value,
 					type,
 				};
 			}
@@ -241,7 +245,7 @@ export const convertParameterToInput = (parameter: NotebookParameter): InputNote
 		value: String(convertParameterValue(parameter.default, type, true).value),
 		type,
 		isValid: validateParameter(parameter.default, type),
-		isOff: parameter.default === OFF_VALUE,
+		isOff: OFF_VALUE.includes(parameter.default),
 	};
 };
 

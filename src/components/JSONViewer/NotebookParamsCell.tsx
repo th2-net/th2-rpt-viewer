@@ -137,7 +137,7 @@ const NotebookParamsCell = ({
 					JSONViewerStore.addNotebookResult(notebook.name, node, convertResultCount, type);
 					setResultCount(String(convertResultCount));
 					setResults(newResults.slice(0, convertResultCount));
-					if (customization) JSONViewerStore.updateTokensFromText(customization, type);
+					if (customization) JSONViewerStore.updateTokensFromText(customization);
 					setIsExpanded(false);
 				} else {
 					notificationsStore.addMessage({

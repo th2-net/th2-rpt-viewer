@@ -31,12 +31,13 @@ import {
 } from '../../hooks';
 import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
-import { isWorkspaceStore } from '../../helpers/workspace';
+import { isJSONViewerWorkspaceStore, isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import GraphLastEventsButton from './GraphLastEventsButton';
 import BookSelect from '../books/BookSelect';
 import { GraphResizer } from './GraphResizer';
 import '../../styles/graph.scss';
+import JSONSearch from '../JSONViewer/JSONSearch';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -182,6 +183,7 @@ const GraphRoot = () => {
 						findLastEvents={activeWorkspace.eventsStore.eventDataStore.findLastEvents}
 					/>
 				)}
+				{isJSONViewerWorkspaceStore(activeWorkspace) && <JSONSearch />}
 				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
 				{isWorkspaceStore(activeWorkspace) && <GraphResizer />}
 			</div>

@@ -41,7 +41,7 @@ const TablePanel = ({ type }: props) => {
 								)}
 							/>
 							<div className={'title'} title={treeNode.key}>
-								{multiTokenSplit(getName(treeNode), JSONViewerStore.tokens[type]).map(
+								{multiTokenSplit(getName(treeNode), JSONViewerStore.tokens).map(
 									(contentPart, index) => (
 										<span
 											key={index}

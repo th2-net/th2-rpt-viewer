@@ -119,13 +119,7 @@ export class JSONViewerStore {
 	@observable isCompare = false;
 
 	@observable
-	public tokens: {
-		default: SearchToken[];
-		compare: SearchToken[];
-	} = {
-		default: [],
-		compare: [],
-	};
+	public tokens: SearchToken[] = [];
 
 	@observable
 	public scrolledIndex: number | null = null;
@@ -140,13 +134,7 @@ export class JSONViewerStore {
 	};
 
 	@observable
-	public searchInputValue: {
-		default: string;
-		compare: string;
-	} = {
-		default: '',
-		compare: '',
-	};
+	public searchInputValue = '';
 
 	@observable
 	public activeIndex: {
@@ -167,12 +155,12 @@ export class JSONViewerStore {
 	};
 
 	@action
-	updateTokens = (nextTokens: SearchToken[], type: PanelType) => {
+	updateTokens = (nextTokens: SearchToken[]) => {
 		const tokens = nextTokens.filter(
 			(token, index, newTokens) => newTokens.findIndex(t => t.pattern === token.pattern) === index,
 		);
 
-		this.tokens[type] = tokens;
+		this.tokens = tokens;
 	};
 
 	@action
@@ -186,7 +174,7 @@ export class JSONViewerStore {
 	};
 
 	@action
-	updateTokensFromText = (text: string, type: PanelType) => {
+	updateTokensFromText = (text: string) => {
 		const newTokens: SearchToken[] = [];
 		try {
 			const json = JSON.parse(text);
@@ -213,14 +201,14 @@ export class JSONViewerStore {
 			});
 			return;
 		}
-		this.updateTokens(newTokens, type);
-		this.searchInputValue[type] = '';
+		this.updateTokens(newTokens);
+		this.searchInputValue = '';
 		this.scrolledIndex = 0;
 	};
 
 	@action
-	exportSearch = (type: PanelType) => {
-		const tokensConverted = this.tokens[type].map(token => ({
+	exportSearch = () => {
+		const tokensConverted = this.tokens.map(token => ({
 			pattern: token.pattern,
 			color: token.color,
 		}));
@@ -242,13 +230,13 @@ export class JSONViewerStore {
 	};
 
 	@action
-	clearSearchField = (type: PanelType) => {
-		this.tokens[type] = [];
+	clearSearchField = () => {
+		this.tokens = [];
 	};
 
 	@action
-	setInputValue = (value: string, type: PanelType) => {
-		this.searchInputValue[type] = value;
+	setInputValue = (value: string) => {
+		this.searchInputValue = value;
 	};
 
 	@action

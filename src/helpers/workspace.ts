@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import JSONViewerWorkspaceStore from '../stores/workspace/JSONViewerWorkspaceStore';
 import SearchWorkspaceStore from '../stores/workspace/SearchWorkspaceStore';
 import WorkspaceStore from '../stores/workspace/WorkspaceStore';
 
@@ -22,3 +23,6 @@ export const isWorkspaceStore = (object: unknown): object is WorkspaceStore =>
 
 export const isSearchWorkspaceStore = (object: unknown): object is SearchWorkspaceStore =>
 	object instanceof SearchWorkspaceStore;
+
+export const isJSONViewerWorkspaceStore = (object: unknown): object is JSONViewerWorkspaceStore =>
+	object instanceof JSONViewerWorkspaceStore;

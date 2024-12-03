@@ -45,12 +45,12 @@ const Table = ({ type }: { type: PanelType }) => {
 						field={row}
 						isOpen={JSONViewerStore.openSelectedRows[type].has(row.id)}
 						setOpen={toggleNode}
-						tokens={JSONViewerStore.tokens[type]}
+						tokens={JSONViewerStore.tokens}
 					/>
 				);
 			}
 
-			return <SimpleRow field={row} tokens={JSONViewerStore.tokens[type]} />;
+			return <SimpleRow field={row} tokens={JSONViewerStore.tokens} />;
 		},
 		[JSONViewerStore.tokens],
 	);
