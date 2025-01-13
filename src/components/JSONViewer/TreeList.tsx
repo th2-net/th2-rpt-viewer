@@ -30,7 +30,11 @@ const TreeList = ({ type }: { type: PanelType }) => {
 
 	const renderTree = React.useCallback(
 		(index: number, dataNode: TreeNode | NotebookNode | ChunkHeightData) => {
-			if ('id' in dataNode) return <TreeLeaf treeNode={dataNode} type={type} />;
+			if ('id' in dataNode) {
+				const nextNode = JSONViewerStore.listData[type][index + 1];
+				const nextTimestamp = nextNode && 'id' in nextNode ? nextNode.displayTimestamp : undefined;
+				return <TreeLeaf treeNode={dataNode} type={type} nextNodeTimestamp={nextTimestamp} />;
+			}
 			if ('lastElement' in dataNode) return <EmptyLeaf chunkNode={dataNode} type={type} />;
 			return <NotebookParamsCell notebookProp={dataNode} type={type} />;
 		},

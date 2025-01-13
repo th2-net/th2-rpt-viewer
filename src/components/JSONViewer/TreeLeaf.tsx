@@ -14,7 +14,15 @@ import { Chip } from '../Chip';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { getChunk } from '../../helpers/JSONViewer';
 
-const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) => {
+const TreeLeaf = ({
+	treeNode,
+	type,
+	nextNodeTimestamp,
+}: {
+	treeNode: TreeNode;
+	type: PanelType;
+	nextNodeTimestamp?: number;
+}) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const isSelected = treeNode.id === JSONViewerStore.selectedTreeNode[type].id;
 	const viewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
@@ -41,16 +49,31 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 		[treeNode.displayTimestamp, JSONViewerStore.сhunkInterval],
 	);
 
+	const nextChunk = useMemo(
+		() => getChunk(nextNodeTimestamp, JSONViewerStore.сhunkInterval),
+		[nextNodeTimestamp, JSONViewerStore.сhunkInterval],
+	);
+
 	const chunkColor = useMemo(() => chunk % COLORS.length, [chunk]);
+	const nextChunkColor = useMemo(() => nextChunk % COLORS.length, [nextChunk]);
+
+	const isNextDifferentChunk = useMemo(
+		() => nextChunkColor === chunkColor && nextChunk !== chunk && chunk !== -1 && nextChunk !== -1,
+		[chunk, nextChunk, chunkColor, nextChunkColor],
+	);
 
 	const leafRef = useRef<HTMLDivElement>(null);
 	const borderSide = type === 'default' ? 'Right' : 'Left';
+	const otherBorderSide = type === 'default' ? 'Left' : 'Right';
 
 	const borderStyle = {
 		[`border${borderSide}Color`]: chunk !== -1 ? COLORS[chunkColor] : undefined,
 		[`border${borderSide}Width`]: chunk !== -1 ? '5px' : undefined,
 		[`borderTop${borderSide}Radius`]: chunk !== -1 ? '0px' : undefined,
 		[`borderBottom${borderSide}Radius`]: chunk !== -1 ? '0px' : undefined,
+		[`borderBottomColor`]: chunk !== -1 ? COLORS[chunkColor] : undefined,
+		[`borderBottomWidth`]: isNextDifferentChunk ? '4px' : undefined,
+		[`borderBottom${otherBorderSide}Radius`]: isNextDifferentChunk ? '0px' : undefined,
 	};
 
 	const splitContent = multiTokenSplit(nodeName, JSONViewerStore.tokens);
@@ -193,6 +216,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 						</span>{' '}
 						<span style={{ color: '#333333' }}>
 							{complexFieldsDisplay()} {simpleFieldsDisplay()}
+							{chunk} {nextChunk}
 						</span>
 					</div>
 					<div style={{ display: 'flex', minWidth: treeNode.displayTimestamp ? '135px' : '20px' }}>
