@@ -133,6 +133,8 @@ export class JSONViewerStore {
 		compare: [],
 	};
 
+	@observable lastViewType: TreeViewType = TreeViewType.EVENTS_LIST;
+
 	@observable
 	public searchInputValue = '';
 
@@ -347,6 +349,7 @@ export class JSONViewerStore {
 			this.setGroupView(node.childIds[i], viewType, type);
 		}
 		if (node.isRoot) this.openNode(node.id, type);
+		this.lastViewType = viewType;
 	}
 
 	@action getNotebook(name: string, defaultNotebook: NotebookNode, type: PanelType) {

@@ -26,6 +26,7 @@ export const convertJSONtoNode = (
 	obj: object,
 	key = '',
 	isGeneratedKey = false,
+	defaultViewType = TreeViewType.EVENTS_LIST,
 	parentIds: string[] = [],
 	depth = 0,
 ): TreeNode => {
@@ -41,7 +42,14 @@ export const convertJSONtoNode = (
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
 			if (typeof obj[i] === 'object') {
-				const val = convertJSONtoNode(obj[i], i.toString(), true, [id, ...parentIds], depth + 1);
+				const val = convertJSONtoNode(
+					obj[i],
+					i.toString(),
+					true,
+					defaultViewType,
+					[id, ...parentIds],
+					depth + 1,
+				);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
 			} else {
@@ -62,7 +70,14 @@ export const convertJSONtoNode = (
 			} else if (entryKey === '#view-instruction') {
 				viewInstruction = String(value);
 			} else if (typeof value === 'object' && value !== null) {
-				const val = convertJSONtoNode(value, entryKey, false, [id, ...parentIds], depth + 1);
+				const val = convertJSONtoNode(
+					value,
+					entryKey,
+					false,
+					defaultViewType,
+					[id, ...parentIds],
+					depth + 1,
+				);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
 			} else {
@@ -82,16 +97,21 @@ export const convertJSONtoNode = (
 		isArray,
 		isGeneratedKey,
 		viewInstruction,
-		viewType: TreeViewType.EVENTS_LIST,
+		viewType: defaultViewType,
 		simpleFields,
 		complexFields,
 		childIds: complexFields.map(node => node.id),
 	};
 };
 
-export const parseText = (text: string, name = '', isGeneratedKey = false): TreeNode[] => {
+export const parseText = (
+	text: string,
+	name = '',
+	isGeneratedKey = false,
+	defaultViewType = TreeViewType.EVENTS_LIST,
+): TreeNode[] => {
 	const js = JSON.parse(text);
-	const node = convertJSONtoNode(js, undefined, isGeneratedKey);
+	const node = convertJSONtoNode(js, undefined, isGeneratedKey, defaultViewType);
 
 	if (node.simpleFields.length > 0) {
 		return [

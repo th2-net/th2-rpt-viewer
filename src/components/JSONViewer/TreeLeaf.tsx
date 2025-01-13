@@ -216,7 +216,6 @@ const TreeLeaf = ({
 						</span>{' '}
 						<span style={{ color: '#333333' }}>
 							{complexFieldsDisplay()} {simpleFieldsDisplay()}
-							{chunk} {nextChunk}
 						</span>
 					</div>
 					<div style={{ display: 'flex', minWidth: treeNode.displayTimestamp ? '135px' : '20px' }}>

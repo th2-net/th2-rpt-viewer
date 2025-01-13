@@ -119,14 +119,17 @@ const NotebookParamsCell = ({
 						childIds: [],
 						isGeneratedKey: true,
 						isRoot: true,
+						viewType: JSONViewerStore.lastViewType,
 					};
 					try {
-						node.complexFields.push(...parseText(result, '0', true));
+						node.complexFields.push(...parseText(result, '0', true, JSONViewerStore.lastViewType));
 					} catch {
 						const lines = result.split('\n');
 						for (let i = 0; i < lines.length; i++) {
 							if (lines[i] !== '') {
-								node.complexFields.push(...parseText(lines[i], String(i), true));
+								node.complexFields.push(
+									...parseText(lines[i], String(i), true, JSONViewerStore.lastViewType),
+								);
 							}
 						}
 					}
