@@ -274,6 +274,7 @@ export class JSONViewerStore {
 
 	@action addNodes(tree: TreeNode[], type: PanelType) {
 		this.treeNodes[type] = this.treeNodes[type].concat(tree);
+		this.initHeightsData(type);
 	}
 
 	@action removeNodesById(ids: string[], type: PanelType) {
@@ -301,7 +302,7 @@ export class JSONViewerStore {
 	@action initHeightsData(type: PanelType) {
 		this.treeNodes[type].forEach(node => {
 			if (isTreeNode(node) && !this.heights[type].has(node.id))
-				this.setNodeHeight(node.id, node.displayTimestamp, 22, node.parentIds, type);
+				this.setNodeHeight(node.id, node.displayTimestamp, 30, node.parentIds, type);
 		});
 	}
 
