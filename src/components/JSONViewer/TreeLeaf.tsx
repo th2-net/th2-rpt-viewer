@@ -18,10 +18,12 @@ const TreeLeaf = ({
 	treeNode,
 	type,
 	nextNodeTimestamp,
+	nextNodeChunk,
 }: {
 	treeNode: TreeNode;
 	type: PanelType;
 	nextNodeTimestamp?: number;
+	nextNodeChunk?: number;
 }) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const isSelected = treeNode.id === JSONViewerStore.selectedTreeNode[type].id;
@@ -50,8 +52,8 @@ const TreeLeaf = ({
 	);
 
 	const nextChunk = useMemo(
-		() => getChunk(nextNodeTimestamp, JSONViewerStore.сhunkInterval),
-		[nextNodeTimestamp, JSONViewerStore.сhunkInterval],
+		() => nextNodeChunk || getChunk(nextNodeTimestamp, JSONViewerStore.сhunkInterval),
+		[nextNodeChunk, nextNodeTimestamp, JSONViewerStore.сhunkInterval],
 	);
 
 	const chunkColor = useMemo(() => chunk % COLORS.length, [chunk]);
