@@ -81,7 +81,7 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 						onClick={() =>
 							JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen[type], 'notebooks', type)
 						}>
-						Load Executable(s) From Server
+						Load Notebook(s)
 					</button>
 					<button
 						className='load-JSON-button'
@@ -89,7 +89,7 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 						onClick={() =>
 							JSONViewerStore.setIsModalOpen(!JSONViewerStore.isModalOpen[type], 'results', type)
 						}>
-						Load Result(s) From Server
+						Load Server Result(s)
 					</button>
 					<button
 						className='load-JSON-button'
