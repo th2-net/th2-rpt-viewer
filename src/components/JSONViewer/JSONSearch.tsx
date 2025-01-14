@@ -34,6 +34,7 @@ const JSONSearch = () => {
 				}}>
 				<label htmlFor='chunk-size'>Chunk interval:</label>
 				<input
+					type='number'
 					style={{
 						border: '1px solid black',
 						borderRadius: '5px',
