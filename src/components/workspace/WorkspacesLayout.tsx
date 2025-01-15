@@ -64,7 +64,7 @@ const WorkspacesLayout = () => {
 								? `Workspace ${index}`
 								: isSearchWorkspaceStore(workspace)
 								? 'Search'
-								: `JSON Reader ${index}`}
+								: `JSONL Reader ${index}`}
 						</h3>
 					</div>
 				)}
