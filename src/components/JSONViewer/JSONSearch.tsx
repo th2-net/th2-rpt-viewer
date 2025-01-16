@@ -54,7 +54,7 @@ const JSONSearch = () => {
 						JSONViewerStore.updateIntervalUnit(Number(e.target.value));
 					}}
 					value={JSONViewerStore.intervalUnit}>
-					<option value={10}>millisec</option>
+					<option value={1}>millisec</option>
 					<option value={1000}>sec</option>
 					<option value={60000}>min</option>
 				</select>
