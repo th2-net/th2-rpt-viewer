@@ -449,13 +449,15 @@ export class JSONViewerStore {
 					.flatMap(node => [
 						...this.chunksHeights.default.filter(
 							chunkData =>
+								this.isCompare &&
 								chunkData.height > 0 &&
 								chunkData.lastElement === '' &&
 								chunkData.firstElement === node.id,
 						),
 						node,
 						...this.chunksHeights.default.filter(
-							chunkData => chunkData.height > 0 && chunkData.lastElement === node.id,
+							chunkData =>
+								this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
 						),
 					]),
 			],
@@ -468,13 +470,15 @@ export class JSONViewerStore {
 					.flatMap(node => [
 						...this.chunksHeights.compare.filter(
 							chunkData =>
+								this.isCompare &&
 								chunkData.height > 0 &&
 								chunkData.lastElement === '' &&
 								chunkData.firstElement === node.id,
 						),
 						node,
 						...this.chunksHeights.compare.filter(
-							chunkData => chunkData.height > 0 && chunkData.lastElement === node.id,
+							chunkData =>
+								this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
 						),
 					]),
 			],
