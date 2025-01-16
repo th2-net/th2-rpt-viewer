@@ -67,7 +67,7 @@ This functionality needs `th2-json-stream-provider 0.0.7 (or newer)` backend com
 }, ...]
 ```
 
-- JSONL reader can also get data of Jupyter Notebooks using  `th2-json-stream-provider`, when notebook is requested it will be displayed as list of parameters which could be modified. Then this notebook could be launched and resulting JSONL file will be requested on finish and added to current list.
+- JSONL reader can also generate data by Jupyter Notebooks execution using `th2-json-stream-provider`, when notebook is requested it will be displayed as list of parameters which could be modified. Then this notebook could be launched and resulting JSONL file will be requested on finish and added to current list.
 - Notebooks has default result of 1 in which case new results will overwrite previous result of this notebook, this could be changed in the bottom of notebook editing form, if amount is more than 1 then result will overwrite oldest one.
 - If notebook result had search file with structure stated before, it will replace current search.
 - Current parameters value could be saved into JSON file, and reloaded back with such file. Parameters file has this structure:
