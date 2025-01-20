@@ -24,9 +24,9 @@ import ParametersRow from './ParametersRow';
 import { downloadTxtFile } from '../../helpers/files/downloadTxt';
 import { ToolsPopup } from './LeafTools';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import { IGNORED_PARAMETERS_NAMES } from './FileChoosing';
 
 const timeBetweenResults = 50;
-const ignoredParamNames = ['output_path', 'customization_path'];
 
 const NotebookParamsCell = ({
 	notebookProp,
@@ -62,7 +62,7 @@ const NotebookParamsCell = ({
 			.getParameters(notebook.name)
 			.then((data: NotebookParameters) => {
 				const newParameters = Object.values(data).filter(
-					param => !ignoredParamNames.includes(param.name),
+					param => !IGNORED_PARAMETERS_NAMES.includes(param.name),
 				);
 				const newParamsValue = newParameters.map(convertParameterToInput);
 				setParameters(newParameters);

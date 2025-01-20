@@ -6,6 +6,8 @@ import { useOutsideClickListener } from '../../hooks';
 import api from '../../api';
 import { convertParameterToInput, parseText } from '../../helpers/JSONViewer';
 
+export const IGNORED_PARAMETERS_NAMES = ['output_path', 'customization_path'];
+
 const FileChoosing = ({
 	type,
 	multiple,
@@ -83,7 +85,9 @@ const FileChoosing = ({
 				selectedFiles.forEach(filePath =>
 					promises.push(
 						api.jsonViewer.getParameters(filePath).then((data: NotebookParameters) => {
-							const parameters = Object.values(data).filter(param => param.name !== 'output_path');
+							const parameters = Object.values(data).filter(
+								param => !IGNORED_PARAMETERS_NAMES.includes(param.name),
+							);
 							const paramsValue = parameters.map(convertParameterToInput);
 							const node: NotebookNode = {
 								name: filePath,
