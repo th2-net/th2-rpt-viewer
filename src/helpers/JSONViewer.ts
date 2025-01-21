@@ -113,7 +113,12 @@ export const parseText = (
 	const js = JSON.parse(text);
 	const node = convertJSONtoNode(js, undefined, isGeneratedKey, defaultViewType);
 
-	if (node.simpleFields.length > 0) {
+	if (
+		node.simpleFields.length > 0 ||
+		node.displayName ||
+		node.displayTable ||
+		node.displayTimestamp
+	) {
 		return [
 			{
 				...node,
