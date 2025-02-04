@@ -211,7 +211,6 @@ const TreeLeaf = ({
 						}}>
 						<div className={createBemBlock('event-status-icon')} />
 						<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
-							{treeNode.id} ={'>'} {treeNode.parentIds.join(', ')} {'    '}
 							{splitContent.map((contentPart, index) => (
 								<span
 									key={index}

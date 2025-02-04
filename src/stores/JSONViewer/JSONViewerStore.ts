@@ -61,6 +61,21 @@ export interface BodyReaderSearchResult extends BaseReaderSearchResult {
 	position: 'key' | 'value';
 }
 
+const defaultSearchTokens: SearchToken[] = [
+	{
+		pattern: 'PASS',
+		color: 'green',
+		isScrollable: true,
+		isActive: false,
+	},
+	{
+		pattern: 'FAIL',
+		color: 'red',
+		isScrollable: true,
+		isActive: false,
+	},
+];
+
 type ReaderSearchResult = NameReaderSearchResult | TableReaderSearchResult | BodyReaderSearchResult;
 
 export type PanelType = 'default' | 'compare';
@@ -163,20 +178,7 @@ export class JSONViewerStore {
 	@observable isCompare = false;
 
 	@observable
-	public tokens: SearchToken[] = [
-		{
-			pattern: 'PASS',
-			color: 'green',
-			isScrollable: true,
-			isActive: false,
-		},
-		{
-			pattern: 'FAIL',
-			color: 'red',
-			isScrollable: true,
-			isActive: false,
-		},
-	];
+	public tokens: SearchToken[] = [...defaultSearchTokens];
 
 	@observable
 	public currentSearchResult: {
@@ -523,7 +525,7 @@ export class JSONViewerStore {
 
 	@action
 	updateTokensFromText = (text: string) => {
-		const newTokens: SearchToken[] = [];
+		const newTokens: SearchToken[] = [...defaultSearchTokens];
 		try {
 			const json = JSON.parse(text);
 			for (let i = 0; i < json.length; i++) {
@@ -579,20 +581,7 @@ export class JSONViewerStore {
 
 	@action
 	clearSearchField = () => {
-		this.tokens = [
-			{
-				pattern: 'PASS',
-				color: 'green',
-				isScrollable: true,
-				isActive: false,
-			},
-			{
-				pattern: 'FAIL',
-				color: 'red',
-				isScrollable: true,
-				isActive: false,
-			},
-		];
+		this.tokens = [...defaultSearchTokens];
 	};
 
 	@action
