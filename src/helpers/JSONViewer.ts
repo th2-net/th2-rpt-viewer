@@ -29,6 +29,7 @@ export const convertJSONtoNode = (
 	defaultViewType = TreeViewType.EVENTS_LIST,
 	parentIds: string[] = [],
 	depth = 0,
+	index?: number,
 ): TreeNode => {
 	const id = nanoid();
 	let failed = isKeyFailed(key);
@@ -36,7 +37,7 @@ export const convertJSONtoNode = (
 	const simpleFields: SimpleField[] = [];
 	const complexFields: TreeNode[] = [];
 	let viewInstruction = '';
-	let displayName: string | undefined;
+	let displayName: string | undefined = typeof index !== 'undefined' ? String(index) : undefined;
 	let displayTimestamp: number | undefined;
 	let displayTable: string[][] | undefined;
 	if (Array.isArray(obj)) {
@@ -49,6 +50,7 @@ export const convertJSONtoNode = (
 					defaultViewType,
 					[...parentIds, id],
 					depth + 1,
+					i,
 				);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
