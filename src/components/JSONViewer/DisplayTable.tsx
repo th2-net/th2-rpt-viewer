@@ -6,7 +6,15 @@ import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 
 const shownCapacity = 50;
 
-const DisplayTable = ({ value }: { value: string[][] | undefined; type: PanelType }) => {
+const DisplayTable = ({
+	value,
+	type,
+	id,
+}: {
+	value: string[][] | undefined;
+	type: PanelType;
+	id: string;
+}) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const [shownSize, setShownSize] = React.useState(shownCapacity);
 	if (!value) return <div className='display-table-error'>#display-table is undefined</div>;
@@ -21,7 +29,13 @@ const DisplayTable = ({ value }: { value: string[][] | undefined; type: PanelTyp
 					<tr>
 						{header.map((key, index) => (
 							<th key={index}>
-								{multiTokenSplit(key, JSONViewerStore.tokens).map((contentPart, i) => (
+								{JSONViewerStore.compareTableResults(
+									type,
+									id,
+									0,
+									index,
+									multiTokenSplit(key, JSONViewerStore.tokens),
+								).map((contentPart, i) => (
 									<span
 										key={i}
 										className={contentPart.token != null ? 'found-content' : undefined}
@@ -39,15 +53,21 @@ const DisplayTable = ({ value }: { value: string[][] | undefined; type: PanelTyp
 						<tr key={index}>
 							{row.slice(0, header.length).map((val, ind) => (
 								<td key={ind}>
-									{multiTokenSplit(
-										typeof val === 'string' ? `"${val}"` : String(val),
-										JSONViewerStore.tokens,
+									{JSONViewerStore.compareTableResults(
+										type,
+										id,
+										index + 1,
+										ind,
+										multiTokenSplit(
+											typeof val === 'string' ? `"${val}"` : String(val),
+											JSONViewerStore.tokens,
+										),
 									).map((contentPart, i) => (
 										<span
 											key={i}
 											className={contentPart.token != null ? 'found-content' : undefined}
 											style={{ backgroundColor: contentPart.token?.color }}>
-											{contentPart.content}
+											{contentPart.content} {i}
 										</span>
 									))}
 								</td>

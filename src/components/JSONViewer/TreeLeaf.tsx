@@ -78,7 +78,11 @@ const TreeLeaf = ({
 		[`borderBottom${otherBorderSide}Radius`]: isNextDifferentChunk ? '0px' : undefined,
 	};
 
-	const splitContent = multiTokenSplit(nodeName, JSONViewerStore.tokens);
+	const splitContent = JSONViewerStore.compareNameResults(
+		type,
+		treeNode.id,
+		multiTokenSplit(nodeName, JSONViewerStore.tokens),
+	);
 
 	useEffect(() => {
 		const isChildDisplay =
@@ -207,6 +211,7 @@ const TreeLeaf = ({
 						}}>
 						<div className={createBemBlock('event-status-icon')} />
 						<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
+							{treeNode.id} ={'>'} {treeNode.parentIds.join(', ')} {'    '}
 							{splitContent.map((contentPart, index) => (
 								<span
 									key={index}
@@ -251,12 +256,13 @@ const TreeLeaf = ({
 				)}
 			</div>
 			{!treeNode.isRoot && open && viewType === TreeViewType.DISPLAY_TABLE && (
-				<DisplayTable value={treeNode.displayTable} type={type} />
+				<DisplayTable id={treeNode.id} value={treeNode.displayTable} type={type} />
 			)}
 			{!treeNode.isRoot && (viewType === TreeViewType.JSON || viewType === TreeViewType.PRETTY) && (
 				<div className='message-card-wrapper'>
 					<div className='mc__mc-body mc-body'>
 						<JSONView
+							type={type}
 							isBeautified={viewType === TreeViewType.PRETTY}
 							node={treeNode}
 							tokens={JSONViewerStore.tokens}

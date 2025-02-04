@@ -188,13 +188,13 @@ const FileChoosing = ({
 						<>
 							<button
 								disabled={selectedFiles.length === 0 || isLoading}
-								className='load-JSON-button'
+								className='JSON-load-button'
 								onClick={() => setSelectedFiles([])}>
 								Reset Selection
 							</button>
 							<button
 								disabled={selectedFiles.length === 0 || isLoading}
-								className='load-JSON-button'
+								className='JSON-load-button'
 								onClick={getFiles}>
 								Load {selectedFiles.length} Files
 							</button>

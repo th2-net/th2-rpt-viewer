@@ -6,10 +6,13 @@ import { createBemElement } from '../../helpers/styleCreators';
 import SearchToken from '../../models/search/SearchToken';
 import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
+import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 
 interface JSONViewProps {
+	type: PanelType;
 	node: TreeNode;
 	isBeautified: boolean;
 	isArrayElement?: boolean;
@@ -18,6 +21,8 @@ interface JSONViewProps {
 }
 
 interface JSONViewFieldsReqProps {
+	id: string;
+	type: PanelType;
 	label: string;
 	isBeautified: boolean;
 	isArrayElement?: boolean;
@@ -27,13 +32,15 @@ interface JSONViewFieldsReqProps {
 }
 
 const JSONViewSimpleField = ({
+	id,
+	type,
 	label,
 	field,
 	isBeautified,
 	isArrayElement,
 	setIsHighlighted,
-	tokens,
 }: JSONViewFieldsReqProps) => {
+	const JSONViewerStore = useJSONViewerStore();
 	const highlight = React.useMemo(() => debounce(() => setIsHighlighted(true), 60), []);
 	const valueString =
 		typeof field === 'object'
@@ -41,7 +48,8 @@ const JSONViewSimpleField = ({
 			: typeof field === 'string'
 			? `"${field}"`
 			: String(field);
-	const keyValueTokens = getKeyValueTokens(tokens, true).filter(
+	const row = `${label}:${field}`;
+	const keyValueTokens = getKeyValueTokens(JSONViewerStore.tokens, true).filter(
 		({ isOne, keyToken, valueToken }) =>
 			!isOne ||
 			(`${label}:`.endsWith(keyToken.pattern) && valueString.startsWith(valueToken.pattern)),
@@ -66,7 +74,13 @@ const JSONViewSimpleField = ({
 				onMouseLeave={removeHighlight}
 				className='mc-body__field-label'>
 				{label && !isArrayElement
-					? multiTokenSplit(`${label}: `, keyTokens).map((contentPart, index) => (
+					? JSONViewerStore.compareBodyResults(
+							type,
+							id,
+							row,
+							'key',
+							multiTokenSplit(`${label}: `, keyTokens),
+					  ).map((contentPart, index) => (
 							<span
 								key={index}
 								className={contentPart.token != null ? 'found-content' : undefined}
@@ -80,7 +94,13 @@ const JSONViewSimpleField = ({
 				onMouseEnter={highlight}
 				onMouseLeave={removeHighlight}
 				className='mc-body__field-simple-value'>
-				{multiTokenSplit(valueString, valueTokens).map((contentPart, index) => (
+				{JSONViewerStore.compareBodyResults(
+					type,
+					id,
+					row,
+					'value',
+					multiTokenSplit(valueString, valueTokens),
+				).map((contentPart, index) => (
 					<span
 						key={index}
 						className={contentPart.token != null ? 'found-content' : undefined}
@@ -94,12 +114,14 @@ const JSONViewSimpleField = ({
 };
 
 const JSONView = ({
+	type,
 	node,
 	isBeautified,
 	setIsHighlighted,
 	isArrayElement,
 	tokens,
 }: JSONViewProps) => {
+	const JSONViewerStore = useJSONViewerStore();
 	const [areSameContext, highlightSameContext] = React.useState(false);
 	const keyValueTokens = getKeyValueTokens(tokens, true).filter(
 		({ isOne, keyToken, valueToken }) =>
@@ -152,8 +174,10 @@ const JSONView = ({
 						paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
 					}}>
 					{node.simpleFields.map(({ key, value }, idx, arr) => (
-						<React.Fragment key={key}>
+						<React.Fragment key={`${key}-${JSONViewerStore.currentSearchResult[type]}`}>
 							<JSONViewSimpleField
+								id={node.id}
+								type={type}
 								label={key}
 								field={value}
 								isArrayElement={node.isArray}
@@ -170,6 +194,7 @@ const JSONView = ({
 					{node.complexFields.map((n, idx, arr) => (
 						<React.Fragment key={n.id}>
 							<JSONView
+								type={type}
 								node={n}
 								isArrayElement={node.isArray}
 								isBeautified={isBeautified}

@@ -47,7 +47,7 @@ export const convertJSONtoNode = (
 					i.toString(),
 					true,
 					defaultViewType,
-					[id, ...parentIds],
+					[...parentIds, id],
 					depth + 1,
 				);
 				if (!failed && val.failed) failed = false;
@@ -75,7 +75,7 @@ export const convertJSONtoNode = (
 					entryKey,
 					false,
 					defaultViewType,
-					[id, ...parentIds],
+					[...parentIds, id],
 					depth + 1,
 				);
 				if (!failed && val.failed) failed = false;
@@ -277,7 +277,7 @@ export const convertParameterToInput = (parameter: NotebookParameter): InputNote
 export const getFlatListFromTree = (tree: TreeNode) => {
 	const flatten = (node: TreeNode, parentIds: string[] = []): TreeNode[] => [
 		{ ...node, parentIds, childIds: node.complexFields.map(f => f.id) },
-		...node.complexFields.flatMap(child => flatten(child, [node.id, ...parentIds])),
+		...node.complexFields.flatMap(child => flatten(child, [...parentIds, node.id])),
 	];
 	return flatten(tree);
 };
@@ -286,7 +286,7 @@ export const getFlatListFromTreeWSimple = (tree: TreeNode) => {
 	const flatten = (node: TreeNode, parentIds: string[] = []): (TreeNode | SimpleField)[] => [
 		{ ...node, parentIds, complexFields: [], childIds: node.complexFields.map(f => f.id) },
 		...node.simpleFields.flatMap(child => ({ ...child, parentIds: [...parentIds, node.id] })),
-		...node.complexFields.flatMap(child => flatten(child, [node.id, ...parentIds])),
+		...node.complexFields.flatMap(child => flatten(child, [...parentIds, node.id])),
 	];
 	return flatten(tree);
 };

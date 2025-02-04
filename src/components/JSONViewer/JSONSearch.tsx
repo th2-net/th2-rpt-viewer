@@ -21,7 +21,7 @@ const JSONSearch = () => {
 	return (
 		<div className={'JSON-search-header'}>
 			<button
-				className='load-JSON-button'
+				className='JSON-load-button'
 				onClick={() => JSONViewerStore.toggleMode()}
 				style={{ width: '120px' }}>
 				Switch mode to {JSONViewerStore.isCompare ? 'table' : 'compare'}
@@ -76,12 +76,12 @@ const JSONSearch = () => {
 					disabled={true}
 				/>
 				<div
-					className='import-JSON-button'
+					className='import-button'
 					onClick={() => inputSearchRef.current?.click()}
 					title='Import Search'
 				/>
 				<div
-					className='export-JSON-button'
+					className='export-button'
 					onClick={() => JSONViewerStore.exportSearch()}
 					title='Export Search'
 				/>

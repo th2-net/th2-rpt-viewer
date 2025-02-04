@@ -17,6 +17,11 @@ import {
 import SearchToken from '../../models/search/SearchToken';
 import notificationsStore from '../NotificationsStore';
 import { downloadTxtFile } from '../../helpers/files/downloadTxt';
+import multiTokenSplit from '../../helpers/search/multiTokenSplit';
+import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
+import SearchSplitResult from '../../models/search/SearchSplitResult';
+
+const SEARCH_COLOR = 'black';
 
 const nullTreeNode: TreeNode = {
 	id: '',
@@ -34,6 +39,29 @@ export interface ChunkHeightData {
 	lastElement: string;
 	height: number;
 }
+
+export interface BaseReaderSearchResult {
+	type: 'name' | 'table' | 'body';
+	id: string;
+	contentIndex: number;
+}
+
+export interface NameReaderSearchResult extends BaseReaderSearchResult {
+	type: 'name';
+}
+
+export interface TableReaderSearchResult extends BaseReaderSearchResult {
+	type: 'table';
+	rowIndex: number;
+	cellIndex: number;
+}
+export interface BodyReaderSearchResult extends BaseReaderSearchResult {
+	type: 'body';
+	row: string;
+	position: 'key' | 'value';
+}
+
+type ReaderSearchResult = NameReaderSearchResult | TableReaderSearchResult | BodyReaderSearchResult;
 
 export type PanelType = 'default' | 'compare';
 
@@ -107,6 +135,22 @@ export class JSONViewerStore {
 		compare: new Set(),
 	};
 
+	@observable activeSearch: {
+		default: boolean;
+		compare: boolean;
+	} = {
+		default: false,
+		compare: false,
+	};
+
+	@observable searchResults: {
+		default: Array<ReaderSearchResult>;
+		compare: Array<ReaderSearchResult>;
+	} = {
+		default: [],
+		compare: [],
+	};
+
 	@observable intervalSize = 1;
 
 	@observable intervalUnit = 1000;
@@ -119,7 +163,29 @@ export class JSONViewerStore {
 	@observable isCompare = false;
 
 	@observable
-	public tokens: SearchToken[] = [];
+	public tokens: SearchToken[] = [
+		{
+			pattern: 'PASS',
+			color: 'green',
+			isScrollable: true,
+			isActive: false,
+		},
+		{
+			pattern: 'FAIL',
+			color: 'red',
+			isScrollable: true,
+			isActive: false,
+		},
+	];
+
+	@observable
+	public currentSearchResult: {
+		default: number;
+		compare: number;
+	} = {
+		default: 0,
+		compare: 0,
+	};
 
 	@observable
 	public scrolledIndex: number | null = null;
@@ -163,7 +229,287 @@ export class JSONViewerStore {
 		);
 
 		this.tokens = tokens;
+		this.deactivateSearch();
 	};
+
+	@action
+	updateSearchResults = (type: PanelType) => {
+		this.searchResults[type] = [];
+		const findInDisplayTable = (id: string, displayTable?: string[][]) => {
+			if (!displayTable) return;
+			displayTable.forEach((row, rowIndex) =>
+				row.forEach((cell, cellIndex) =>
+					multiTokenSplit(
+						typeof cell === 'string' ? `"${cell}"` : String(cell),
+						this.tokens,
+					).forEach((content, contentIndex) => {
+						if (content.token)
+							this.searchResults[type].push({
+								type: 'table',
+								id,
+								contentIndex,
+								rowIndex,
+								cellIndex,
+							});
+					}),
+				),
+			);
+		};
+
+		const findInSimpleFields = (id: string, simpleFields: SimpleField[]) => {
+			const keyValueTokens = getKeyValueTokens(this.tokens, true);
+
+			simpleFields.forEach(field => {
+				const { key, value } = field;
+				const valueString =
+					typeof value === 'object'
+						? JSON.stringify(value)
+						: typeof value === 'string'
+						? `"${value}"`
+						: String(value);
+
+				const keyValueTokensFiltered = keyValueTokens.filter(
+					({ isOne, keyToken, valueToken }) =>
+						!isOne ||
+						(`${key}:`.endsWith(keyToken.pattern) && valueString.startsWith(valueToken.pattern)),
+				);
+
+				const keyTokens = keyValueTokensFiltered.map(({ keyToken }) => keyToken);
+				const valueTokens = keyValueTokensFiltered.map(({ valueToken }) => valueToken);
+
+				multiTokenSplit(`${key}: `, keyTokens).forEach((content, contentIndex) => {
+					if (content.token)
+						this.searchResults[type].push({
+							type: 'body',
+							id,
+							contentIndex,
+							row: `${key}:${value}`,
+							position: 'key',
+						});
+				});
+
+				multiTokenSplit(valueString, valueTokens).forEach((content, contentIndex) => {
+					if (content.token)
+						this.searchResults[type].push({
+							type: 'body',
+							id,
+							contentIndex,
+							row: `${key}:${value}`,
+							position: 'value',
+						});
+				});
+			});
+		};
+
+		const results: Array<ReaderSearchResult> = [];
+		for (let nodeIndex = 0; nodeIndex < this.treeNodes[type].length; nodeIndex++) {
+			const node = this.treeNodes[type][nodeIndex];
+			const nodeName = node.displayName
+				? node.displayName
+				: node.key && !(node.isGeneratedKey && !node.isRoot)
+				? node.key
+				: 'no display name';
+			const nameSplitContent = multiTokenSplit(nodeName, this.tokens);
+			nameSplitContent.forEach((content, contentIndex) => {
+				if (content.token) results.push({ type: 'name', id: node.id, contentIndex });
+			});
+			if (node.viewType === TreeViewType.JSON) {
+				const simpleFields = node.simpleFields;
+				findInSimpleFields(node.id, simpleFields);
+
+				const displayTable = node.displayTable;
+				findInDisplayTable(node.id, displayTable);
+			} else {
+				const displayTable = node.displayTable;
+				findInDisplayTable(node.id, displayTable);
+
+				const simpleFields = node.simpleFields;
+				findInSimpleFields(node.id, simpleFields);
+			}
+		}
+		this.currentSearchResult[type] = 0;
+	};
+
+	@action
+	moveToNextSearchResult = (type: PanelType) => {
+		const index = this.treeNodes[type].findIndex(
+			tree => tree.id === this.searchResults[type][this.currentSearchResult[type]].id,
+		);
+
+		if (
+			this.searchResults[type][this.currentSearchResult[type]].type === 'table' &&
+			this.treeNodes[type][index].viewType !== TreeViewType.DISPLAY_TABLE
+		) {
+			this.setNodeView(
+				this.searchResults[type][this.currentSearchResult[type]].id,
+				TreeViewType.DISPLAY_TABLE,
+				type,
+			);
+		}
+
+		if (
+			this.searchResults[type][this.currentSearchResult[type]].type === 'body' &&
+			this.treeNodes[type][index].viewType !== TreeViewType.JSON &&
+			this.treeNodes[type][index].viewType !== TreeViewType.PRETTY
+		) {
+			this.setNodeView(
+				this.searchResults[type][this.currentSearchResult[type]].id,
+				TreeViewType.JSON,
+				type,
+			);
+		}
+
+		if (!this.treeNodes[type][index].parentIds.every(id => this.openTreeNodes[type].has(id))) {
+			this.treeNodes[type][index].parentIds.forEach(id => {
+				if (this.treeNodes[type].find(tree => tree.id === id)?.isRoot) {
+					this.openNodeAndCloseOthers([id], type);
+				} else {
+					this.setNodeView(id, TreeViewType.EVENTS_LIST, type);
+					this.openNode(id, type);
+				}
+			});
+		}
+
+		this.scrollToId(this.searchResults[type][this.currentSearchResult[type]].id, type);
+	};
+
+	@action
+	deactivateSearch = () => {
+		this.activeSearch.default = false;
+		this.activeSearch.compare = false;
+	};
+
+	@action
+	activateSearch = (type: PanelType) => {
+		this.updateSearchResults(type);
+		this.activeSearch[type] = true;
+		this.moveToNextSearchResult(type);
+	};
+
+	@action
+	nextSearchResult = (type: PanelType) => {
+		this.currentSearchResult[type] = Math.min(
+			this.currentSearchResult[type] + 1,
+			this.searchResults[type].length - 1,
+		);
+
+		this.moveToNextSearchResult(type);
+	};
+
+	@action
+	prevSearchResult = (type: PanelType) => {
+		this.currentSearchResult[type] = Math.max(this.currentSearchResult[type] - 1, 0);
+
+		this.moveToNextSearchResult(type);
+	};
+
+	getCurrentResult = (type: PanelType) => this.searchResults[type][this.currentSearchResult[type]];
+
+	compareResults = (result1?: ReaderSearchResult, result2?: ReaderSearchResult) => {
+		if (!result1) return false;
+		if (!result2) return false;
+
+		switch (result1.type) {
+			case 'name': {
+				return (
+					result2.type === 'name' &&
+					result1.id === result2.id &&
+					result1.contentIndex === result2.contentIndex
+				);
+			}
+			case 'table': {
+				return (
+					result2.type === 'table' &&
+					result1.id === result2.id &&
+					result1.contentIndex === result2.contentIndex &&
+					result1.rowIndex === result2.rowIndex &&
+					result1.cellIndex === result2.cellIndex
+				);
+			}
+			case 'body': {
+				return (
+					result2.type === 'body' &&
+					result1.id === result2.id &&
+					result1.contentIndex === result2.contentIndex &&
+					result1.row === result2.row &&
+					result1.position === result2.position
+				);
+			}
+			default: {
+				return false;
+			}
+		}
+	};
+
+	compareResult = (type: PanelType, result: ReaderSearchResult) =>
+		JSON.stringify(result) === JSON.stringify(this.getCurrentResult(type));
+
+	compareNameResults = (type: PanelType, id: string, results: SearchSplitResult[]) =>
+		results.map((content, index) =>
+			this.compareResult(type, {
+				type: 'name',
+				id,
+				contentIndex: index,
+			})
+				? {
+						...content,
+						token: {
+							...content.token,
+							color: SEARCH_COLOR,
+						},
+				  }
+				: content,
+		);
+
+	compareBodyResults = (
+		type: PanelType,
+		id: string,
+		row: string,
+		position: 'key' | 'value',
+		results: SearchSplitResult[],
+	) =>
+		results.map((content, index) =>
+			this.compareResult(type, {
+				type: 'body',
+				id,
+				contentIndex: index,
+				row,
+				position,
+			})
+				? {
+						...content,
+						token: {
+							...content.token,
+							color: SEARCH_COLOR,
+						},
+				  }
+				: content,
+		);
+
+	compareTableResults = (
+		type: PanelType,
+		id: string,
+		rowIndex: number,
+		cellIndex: number,
+		results: SearchSplitResult[],
+	) =>
+		results.map((content, index) =>
+			this.compareResult(type, {
+				type: 'table',
+				id,
+				contentIndex: index,
+				rowIndex,
+				cellIndex,
+			})
+				? {
+						...content,
+						token: {
+							...content.token,
+							color: SEARCH_COLOR,
+						},
+				  }
+				: content,
+		);
 
 	@action
 	updateIntervalUnit = (newInterval: number) => {
@@ -233,7 +579,20 @@ export class JSONViewerStore {
 
 	@action
 	clearSearchField = () => {
-		this.tokens = [];
+		this.tokens = [
+			{
+				pattern: 'PASS',
+				color: 'green',
+				isScrollable: true,
+				isActive: false,
+			},
+			{
+				pattern: 'FAIL',
+				color: 'red',
+				isScrollable: true,
+				isActive: false,
+			},
+		];
 	};
 
 	@action
@@ -252,6 +611,7 @@ export class JSONViewerStore {
 		this.treeNodes[type] = n.slice();
 		this.selectedTreeNode[type] = nullTreeNode;
 		this.initHeightsData(type);
+		this.deactivateSearch();
 	}
 
 	@action setNotebooks(n: NotebookNode[], type: PanelType) {
@@ -275,6 +635,7 @@ export class JSONViewerStore {
 	@action addNodes(tree: TreeNode[], type: PanelType) {
 		this.treeNodes[type] = this.treeNodes[type].concat(tree);
 		this.initHeightsData(type);
+		this.deactivateSearch();
 	}
 
 	@action removeNodesById(ids: string[], type: PanelType) {
@@ -315,8 +676,10 @@ export class JSONViewerStore {
 	}
 
 	@action openNodeAndCloseOthers(ids: string[], type: PanelType) {
-		this.openTreeNodes[type].clear();
-		for (let i = 0; i < ids.length; i++) this.openTreeNodes[type].add(ids[i]);
+		if (!ids.every(id => this.openTreeNodes[type].has(id))) {
+			this.openTreeNodes[type].clear();
+			for (let i = 0; i < ids.length; i++) this.openTreeNodes[type].add(ids[i]);
+		}
 	}
 
 	@action scrollToId(id: string, type: PanelType) {
@@ -325,14 +688,15 @@ export class JSONViewerStore {
 
 	@action setNodeView(id: string, viewType: TreeViewType, type: PanelType) {
 		const index = this.treeNodes[type].findIndex(tree => tree.id === id);
-		this.treeNodes[type] = [
-			...this.treeNodes[type].slice(0, index),
-			{
-				...this.treeNodes[type][index],
-				viewType,
-			},
-			...this.treeNodes[type].slice(index + 1),
-		];
+		if (this.treeNodes[type][index].viewType !== viewType)
+			this.treeNodes[type] = [
+				...this.treeNodes[type].slice(0, index),
+				{
+					...this.treeNodes[type][index],
+					viewType,
+				},
+				...this.treeNodes[type].slice(index + 1),
+			];
 	}
 
 	@action setGroupView(id: string, viewType: TreeViewType, type: PanelType) {
@@ -349,7 +713,7 @@ export class JSONViewerStore {
 		for (let i = 0; i < node.childIds.length; i++) {
 			this.setGroupView(node.childIds[i], viewType, type);
 		}
-		if (node.isRoot) this.openNode(node.id, type);
+		if (node.isRoot) this.openNodeAndCloseOthers([node.id], type);
 		this.lastViewType = viewType;
 	}
 
