@@ -33,7 +33,7 @@
 		"mobx": "^5.2.1",
 		"mobx-react-lite": "^1.5.2",
 		"moment": "^2.29.4",
-		"nanoid": "^4.0.1",
+		"nanoid": "^5.0.9",
 		"p-queue": "^6.6.2",
 		"rc-calendar": "^9.15.11",
 		"react": "^16.13.0",
