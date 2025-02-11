@@ -16,17 +16,7 @@ import { getChunk } from '../../helpers/JSONViewer';
 export const LEAF_COLORS = ['lightgray', 'black'];
 export const LEAF_BACKGROUND_COLORS = ['white', 'gainsboro'];
 
-const TreeLeaf = ({
-	treeNode,
-	type,
-	nextNodeTimestamp,
-	nextNodeChunk,
-}: {
-	treeNode: TreeNode;
-	type: PanelType;
-	nextNodeTimestamp?: number;
-	nextNodeChunk?: number;
-}) => {
+const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const isSelected = treeNode.id === JSONViewerStore.selectedTreeNode[type].id;
 	const viewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
@@ -53,31 +43,16 @@ const TreeLeaf = ({
 		[treeNode.displayTimestamp, JSONViewerStore.сhunkInterval],
 	);
 
-	const nextChunk = useMemo(
-		() => nextNodeChunk || getChunk(nextNodeTimestamp, JSONViewerStore.сhunkInterval),
-		[nextNodeChunk, nextNodeTimestamp, JSONViewerStore.сhunkInterval],
-	);
-
 	const chunkColor = useMemo(() => JSONViewerStore.intervalsColor[chunk], [chunk]);
-	const nextChunkColor = useMemo(() => JSONViewerStore.intervalsColor[nextChunk], [nextChunk]);
-
-	const isNextDifferentChunk = useMemo(
-		() => nextChunkColor === chunkColor && nextChunk !== chunk && chunk !== -1 && nextChunk !== -1,
-		[chunk, nextChunk, chunkColor, nextChunkColor],
-	);
 
 	const leafRef = useRef<HTMLDivElement>(null);
 	const borderSide = type === 'default' ? 'Right' : 'Left';
-	const otherBorderSide = type === 'default' ? 'Left' : 'Right';
 
 	const borderStyle = {
 		[`border${borderSide}Color`]: chunk !== -1 ? LEAF_COLORS[chunkColor] : undefined,
 		[`border${borderSide}Width`]: chunk !== -1 ? '5px' : undefined,
 		[`borderTop${borderSide}Radius`]: chunk !== -1 ? '0px' : undefined,
 		[`borderBottom${borderSide}Radius`]: chunk !== -1 ? '0px' : undefined,
-		[`borderBottomColor`]: chunk !== -1 ? LEAF_COLORS[chunkColor] : undefined,
-		[`borderBottomWidth`]: isNextDifferentChunk ? '4px' : undefined,
-		[`borderBottom${otherBorderSide}Radius`]: isNextDifferentChunk ? '0px' : undefined,
 	};
 
 	const splitContent = JSONViewerStore.compareNameResults(
@@ -105,15 +80,19 @@ const TreeLeaf = ({
 
 	useEffect(() => {
 		const resizeObserver = new ResizeObserver(entries => {
-			JSONViewerStore.setNodeHeight(
-				treeNode.id,
-				treeNode.displayTimestamp,
+			const currentHeight = JSONViewerStore.heights[type].get(treeNode.id);
+			const height =
 				entries[0].borderBoxSize?.length > 0
 					? entries[0].borderBoxSize[0].blockSize
-					: entries[0].contentRect.height,
-				treeNode.parentIds,
-				type,
-			);
+					: entries[0].contentRect.height;
+			if (!currentHeight || currentHeight.height !== height)
+				JSONViewerStore.setNodeHeight(
+					treeNode.id,
+					treeNode.displayTimestamp,
+					height,
+					treeNode.parentIds,
+					type,
+				);
 		});
 		if (leafRef.current) {
 			resizeObserver.observe(leafRef.current);
@@ -174,7 +153,7 @@ const TreeLeaf = ({
 				backgroundColor: chunk !== -1 ? LEAF_BACKGROUND_COLORS[chunkColor] : undefined,
 				...borderStyle,
 			}}>
-			<div className='leafWrapper'>
+			<div className={borderSide === 'Left' ? 'leafWrapper-right' : 'leafWrapper'}>
 				{JSONViewerStore.isCompare && treeNode.displayTimestamp && borderSide === 'Left' && (
 					<div
 						title='Move to nearest chunk in other panel'

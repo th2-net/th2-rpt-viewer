@@ -53,8 +53,34 @@ const EmptyLeaf = ({
 				[`borderBottomColor`]: LEAF_COLORS[chunkColor],
 				[`borderBottomWidth`]: isNextDifferentChunk ? '4px' : undefined,
 				[`borderBottom${otherBorderSide}Radius`]: isNextDifferentChunk ? '0px' : undefined,
-			}}
-		/>
+				padding: '5px',
+				flexDirection: 'row',
+				justifyContent: borderSide === 'Left' ? 'flex-start' : 'flex-end',
+				alignItems: 'center',
+			}}>
+			{/*
+			{JSONViewerStore.isCompare && borderSide === 'Left' && (
+				<div
+					title='Move to nearest chunk in other panel'
+					className={`timestamp-pointer-left`}
+					onClick={e => {
+						e.preventDefault();
+						JSONViewerStore.scrollToNearest(chunkNode.chunk * JSONViewerStore.сhunkInterval, type);
+					}}
+				/>
+			)}
+			{JSONViewerStore.isCompare && borderSide === 'Right' && (
+				<div
+					title='Move to nearest chunk in other panel'
+					className={`timestamp-pointer-right`}
+					onClick={e => {
+						e.preventDefault();
+						JSONViewerStore.scrollToNearest(chunkNode.chunk * JSONViewerStore.сhunkInterval, type);
+					}}
+				/>
+			)} 
+			*/}
+		</div>
 	);
 };
 

@@ -31,17 +31,7 @@ const TreeList = ({ type }: { type: PanelType }) => {
 	const renderTree = React.useCallback(
 		(index: number, dataNode: TreeNode | NotebookNode | ChunkHeightData) => {
 			if ('id' in dataNode) {
-				const nextNode = JSONViewerStore.listData[type][index + 1];
-				const nextTimestamp = nextNode && 'id' in nextNode ? nextNode.displayTimestamp : undefined;
-				const nextChunk = nextNode && 'lastElement' in nextNode ? nextNode.chunk : undefined;
-				return (
-					<TreeLeaf
-						treeNode={dataNode}
-						type={type}
-						nextNodeTimestamp={nextTimestamp}
-						nextNodeChunk={nextChunk}
-					/>
-				);
+				return <TreeLeaf treeNode={dataNode} type={type} />;
 			}
 			if ('lastElement' in dataNode) {
 				const nextNode = JSONViewerStore.listData[type][index + 1];

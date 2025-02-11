@@ -137,6 +137,14 @@
 	flex-direction: row;
 	align-items: center;
 	padding: 1px 5px 1px 0;
+	&-right {
+		display: flex;
+		gap: 5px;
+		flex-direction: row;
+		align-items: center;
+		padding: 1px 0 1px 5px;
+
+	}
 }
 
 .leaf {
