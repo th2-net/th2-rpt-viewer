@@ -838,6 +838,25 @@ export class JSONViewerStore {
 		};
 	}
 
+	@computed
+	public get intervalsColor() {
+		return Object.fromEntries(
+			Object.keys(
+				Object.groupBy(
+					[
+						...this.treeNodes.default.filter(node =>
+							node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)),
+						),
+						...this.treeNodes.compare.filter(node =>
+							node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)),
+						),
+					].sort((a, b) => (a.displayTimestamp || 0) - (b.displayTimestamp || 0)),
+					({ displayTimestamp }) => getChunk(displayTimestamp, this.сhunkInterval),
+				),
+			).map((interval, index) => [interval, index % 2]),
+		);
+	}
+
 	public getChunksHeight = (type: PanelType) => {
 		const heightsFiltered = Array.from(this.heights[type].entries()).filter(([_id, data]) =>
 			data.parentIds.every(parentId => this.openTreeNodes[type].has(parentId)),

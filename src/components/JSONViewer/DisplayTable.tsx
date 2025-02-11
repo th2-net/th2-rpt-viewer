@@ -67,7 +67,7 @@ const DisplayTable = ({
 											key={i}
 											className={contentPart.token != null ? 'found-content' : undefined}
 											style={{ backgroundColor: contentPart.token?.color }}>
-											{contentPart.content} {i}
+											{contentPart.content}
 										</span>
 									))}
 								</td>

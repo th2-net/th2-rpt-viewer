@@ -8,11 +8,13 @@ import JSONView from './JSONViewSimpleField';
 import LeafTools from './LeafTools';
 import DisplayTable from './DisplayTable';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
-import { BACKGROUND_COLORS, COLORS } from '../search/SearchInput';
 import { formatTime } from '../../helpers/date';
 import { Chip } from '../Chip';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { getChunk } from '../../helpers/JSONViewer';
+
+export const LEAF_COLORS = ['lightgray', 'black'];
+export const LEAF_BACKGROUND_COLORS = ['white', 'gainsboro'];
 
 const TreeLeaf = ({
 	treeNode,
@@ -56,8 +58,8 @@ const TreeLeaf = ({
 		[nextNodeChunk, nextNodeTimestamp, JSONViewerStore.сhunkInterval],
 	);
 
-	const chunkColor = useMemo(() => chunk % COLORS.length, [chunk]);
-	const nextChunkColor = useMemo(() => nextChunk % COLORS.length, [nextChunk]);
+	const chunkColor = useMemo(() => JSONViewerStore.intervalsColor[chunk], [chunk]);
+	const nextChunkColor = useMemo(() => JSONViewerStore.intervalsColor[nextChunk], [nextChunk]);
 
 	const isNextDifferentChunk = useMemo(
 		() => nextChunkColor === chunkColor && nextChunk !== chunk && chunk !== -1 && nextChunk !== -1,
@@ -69,11 +71,11 @@ const TreeLeaf = ({
 	const otherBorderSide = type === 'default' ? 'Left' : 'Right';
 
 	const borderStyle = {
-		[`border${borderSide}Color`]: chunk !== -1 ? COLORS[chunkColor] : undefined,
+		[`border${borderSide}Color`]: chunk !== -1 ? LEAF_COLORS[chunkColor] : undefined,
 		[`border${borderSide}Width`]: chunk !== -1 ? '5px' : undefined,
 		[`borderTop${borderSide}Radius`]: chunk !== -1 ? '0px' : undefined,
 		[`borderBottom${borderSide}Radius`]: chunk !== -1 ? '0px' : undefined,
-		[`borderBottomColor`]: chunk !== -1 ? COLORS[chunkColor] : undefined,
+		[`borderBottomColor`]: chunk !== -1 ? LEAF_COLORS[chunkColor] : undefined,
 		[`borderBottomWidth`]: isNextDifferentChunk ? '4px' : undefined,
 		[`borderBottom${otherBorderSide}Radius`]: isNextDifferentChunk ? '0px' : undefined,
 	};
@@ -169,7 +171,7 @@ const TreeLeaf = ({
 				isSelected ? 'selected' : null,
 			)}
 			style={{
-				backgroundColor: chunk !== -1 ? BACKGROUND_COLORS[chunkColor] : undefined,
+				backgroundColor: chunk !== -1 ? LEAF_BACKGROUND_COLORS[chunkColor] : undefined,
 				...borderStyle,
 			}}>
 			<div className='leafWrapper'>

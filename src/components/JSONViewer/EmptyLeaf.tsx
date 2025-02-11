@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { BACKGROUND_COLORS, COLORS } from '../search/SearchInput';
 import { ChunkHeightData, PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { getChunk } from '../../helpers/JSONViewer';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import { LEAF_BACKGROUND_COLORS, LEAF_COLORS } from './TreeLeaf';
 
 const EmptyLeaf = ({
 	chunkNode,
@@ -25,8 +25,11 @@ const EmptyLeaf = ({
 		[nextNodeChunk, nextNodeTimestamp, JSONViewerStore.сhunkInterval],
 	);
 
-	const chunkColor = useMemo(() => chunkNode.chunk % COLORS.length, [chunkNode.chunk]);
-	const nextChunkColor = useMemo(() => nextChunk % COLORS.length, [nextChunk]);
+	const chunkColor = useMemo(
+		() => JSONViewerStore.intervalsColor[chunkNode.chunk],
+		[chunkNode.chunk],
+	);
+	const nextChunkColor = useMemo(() => JSONViewerStore.intervalsColor[nextChunk], [nextChunk]);
 
 	const isNextDifferentChunk = useMemo(
 		() =>
@@ -42,12 +45,12 @@ const EmptyLeaf = ({
 			className='leaf'
 			style={{
 				height: chunkNode.height,
-				backgroundColor: BACKGROUND_COLORS[chunkNode.chunk % BACKGROUND_COLORS.length],
-				[`border${borderSide}Color`]: COLORS[chunkColor],
+				backgroundColor: LEAF_BACKGROUND_COLORS[chunkColor],
+				[`border${borderSide}Color`]: LEAF_COLORS[chunkColor],
 				[`border${borderSide}Width`]: '5px',
 				[`borderTop${borderSide}Radius`]: '0px',
 				[`borderBottom${borderSide}Radius`]: '0px',
-				[`borderBottomColor`]: COLORS[chunkColor],
+				[`borderBottomColor`]: LEAF_COLORS[chunkColor],
 				[`borderBottomWidth`]: isNextDifferentChunk ? '4px' : undefined,
 				[`borderBottom${otherBorderSide}Radius`]: isNextDifferentChunk ? '0px' : undefined,
 			}}
