@@ -291,9 +291,8 @@ const TableRow = ({
 	}, [field.displayName, field.key, field.isGeneratedKey]);
 
 	const fields = field.simpleFields.map(({ value }) =>
-		Array.isArray(value) ? value.map(v => String(v)) : false,
+		Array.isArray(value) ? value.map(v => String(v)) : [''],
 	);
-	const fieldsFiltered = fields.filter(value => Array.isArray(value));
 
 	const toggleOpen = () => {
 		setTableOpen(!isTableOpen);
@@ -324,7 +323,7 @@ const TableRow = ({
 						))}
 					</div>
 				</div>
-				{isTableOpen && <DisplayTable type={type} value={fieldsFiltered} id={field.id} />}
+				{isTableOpen && <DisplayTable type={type} value={fields} id={field.id} />}
 			</td>
 		</>
 	);
