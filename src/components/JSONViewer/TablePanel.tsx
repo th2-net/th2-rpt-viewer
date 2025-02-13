@@ -54,6 +54,16 @@ const TablePanel = ({ type }: props) => {
 							</div>
 						</div>
 					)}
+					<button
+						onClick={() =>
+							console.log(
+								JSON.stringify(
+									JSONViewerStore.shownSelectRows[type].filter(row => 'complexFields' in row),
+								),
+							)
+						}>
+						info
+					</button>
 					<Table type={type} />
 					<br />
 				</>

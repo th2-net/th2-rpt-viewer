@@ -42,7 +42,13 @@ export const convertJSONtoNode = (
 	let displayTable: string[][] | undefined;
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
-			if (typeof obj[i] === 'object') {
+			if (
+				typeof obj[i] === 'object' &&
+				!(
+					(key.endsWith('-table') || (displayName && displayName.endsWith('-table'))) &&
+					Array.isArray(obj[i])
+				)
+			) {
 				const val = convertJSONtoNode(
 					obj[i],
 					i.toString(),

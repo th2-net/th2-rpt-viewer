@@ -13,6 +13,7 @@ import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import SearchToken from '../../models/search/SearchToken';
 import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import DisplayTable from './DisplayTable';
 
 const Table = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -40,6 +41,13 @@ const Table = ({ type }: { type: PanelType }) => {
 	const renderRow = React.useCallback(
 		(index: number, row: TreeNode | SimpleField) => {
 			if ('complexFields' in row) {
+				const rowName = row.displayName
+					? row.displayName
+					: row.key && !(row.isGeneratedKey && !row.isRoot)
+					? row.key
+					: 'no display name';
+				if (rowName.endsWith('-table'))
+					return <TableRow type={type} field={row} tokens={JSONViewerStore.tokens} />;
 				return (
 					<ExpandRow
 						field={row}
@@ -261,6 +269,61 @@ const ExpandRow = ({
 						))}
 					</div>
 				</div>
+			</td>
+		</>
+	);
+};
+
+const TableRow = ({
+	field,
+	tokens,
+	type,
+}: {
+	field: TreeNode;
+	tokens: SearchToken[];
+	type: PanelType;
+}) => {
+	const [isTableOpen, setTableOpen] = React.useState(false);
+	const nodeName = useMemo(() => {
+		if (field.displayName) return field.displayName;
+		if (field.key && !(field.isGeneratedKey && !field.isRoot)) return field.key;
+		return 'no display name';
+	}, [field.displayName, field.key, field.isGeneratedKey]);
+
+	const fields = field.simpleFields
+		.map(({ value }) => (Array.isArray(value) ? value.map(v => String(v)) : false))
+		.filter(value => Array.isArray(value));
+
+	const toggleOpen = () => {
+		setTableOpen(!isTableOpen);
+	};
+
+	const splitContent = multiTokenSplit(nodeName, tokens);
+
+	return (
+		<>
+			<td
+				className={'json-table-row-togler'}
+				style={{
+					gridColumn: `1/3`,
+					paddingLeft: `${field.parentIds.length * 10}px`,
+				}}
+				colSpan={2}
+				onClick={toggleOpen}>
+				<div className='leafWrapper'>
+					<div className={createBemBlock('expand-icon', isTableOpen ? 'expanded' : 'hidden')} />
+					<div className={'valueLeaf-table'} title={nodeName}>
+						{splitContent.map((contentPart, index) => (
+							<span
+								key={index}
+								className={contentPart.token != null ? 'found-content' : undefined}
+								style={{ backgroundColor: contentPart.token?.color }}>
+								{contentPart.content}
+							</span>
+						))}
+					</div>
+				</div>
+				{isTableOpen && <DisplayTable type={type} value={fields} id={field.id} />}
 			</td>
 		</>
 	);

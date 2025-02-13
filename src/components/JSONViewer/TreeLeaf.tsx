@@ -108,7 +108,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 			JSONViewerStore.closeNode(treeNode.id, type);
 		} else {
 			setOpen(true);
-			if (viewType !== TreeViewType.DISPLAY_TABLE) {
+			if (viewType === TreeViewType.EVENTS_LIST) {
 				if (treeNode.isRoot) {
 					JSONViewerStore.openNodeAndCloseOthers([treeNode.id, ...treeNode.parentIds], type);
 					JSONViewerStore.scrollToId(treeNode.id, type);
@@ -168,7 +168,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 					style={{
 						width: `${
 							20 * treeNode.parentIds.length +
-							(treeNode.childIds.length === 0 && viewType !== TreeViewType.DISPLAY_TABLE ? 23 : 0) -
+							(treeNode.childIds.length === 0 && viewType === TreeViewType.EVENTS_LIST ? 23 : 0) -
 							(JSONViewerStore.isCompare && treeNode.displayTimestamp && borderSide === 'Left'
 								? 12
 								: 0)
@@ -177,7 +177,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 				/>
 				{((treeNode.childIds.length > 0 &&
 					(treeNode.isRoot || viewType === TreeViewType.EVENTS_LIST)) ||
-					viewType === TreeViewType.DISPLAY_TABLE) && (
+					viewType !== TreeViewType.EVENTS_LIST) && (
 					<div
 						className={createBemBlock('expand-icon', open ? 'expanded' : 'hidden')}
 						onClick={toggleNode}
@@ -238,18 +238,20 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 			{!treeNode.isRoot && open && viewType === TreeViewType.DISPLAY_TABLE && (
 				<DisplayTable id={treeNode.id} value={treeNode.displayTable} type={type} />
 			)}
-			{!treeNode.isRoot && (viewType === TreeViewType.JSON || viewType === TreeViewType.PRETTY) && (
-				<div className='message-card-wrapper'>
-					<div className='mc__mc-body mc-body'>
-						<JSONView
-							type={type}
-							isBeautified={viewType === TreeViewType.PRETTY}
-							node={treeNode}
-							tokens={JSONViewerStore.tokens}
-						/>
+			{!treeNode.isRoot &&
+				open &&
+				(viewType === TreeViewType.JSON || viewType === TreeViewType.PRETTY) && (
+					<div className='message-card-wrapper'>
+						<div className='mc__mc-body mc-body'>
+							<JSONView
+								type={type}
+								isBeautified={viewType === TreeViewType.PRETTY}
+								node={treeNode}
+								tokens={JSONViewerStore.tokens}
+							/>
+						</div>
 					</div>
-				</div>
-			)}
+				)}
 		</div>
 	);
 };

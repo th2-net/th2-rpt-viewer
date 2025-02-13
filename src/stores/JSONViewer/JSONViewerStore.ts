@@ -840,20 +840,19 @@ export class JSONViewerStore {
 
 	@computed
 	public get intervalsColor() {
+		const chunks = new Set<number>();
+		[
+			...this.treeNodes.default.filter(node =>
+				node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)),
+			),
+			...this.treeNodes.compare.filter(node =>
+				node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)),
+			),
+		].forEach(({ displayTimestamp }) => chunks.add(getChunk(displayTimestamp, this.сhunkInterval)));
 		return Object.fromEntries(
-			Object.keys(
-				Object.groupBy(
-					[
-						...this.treeNodes.default.filter(node =>
-							node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)),
-						),
-						...this.treeNodes.compare.filter(node =>
-							node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)),
-						),
-					].sort((a, b) => (a.displayTimestamp || 0) - (b.displayTimestamp || 0)),
-					({ displayTimestamp }) => getChunk(displayTimestamp, this.сhunkInterval),
-				),
-			).map((interval, index) => [interval, index % 2]),
+			Array.from(chunks)
+				.sort((a, b) => a - b)
+				.map((interval, index) => [interval, index % 2]),
 		);
 	}
 
