@@ -115,6 +115,37 @@ export interface JSONViewerApiSchema {
 	getResults: (
 		taskId: string,
 	) => Promise<{ status: string; result: string; path?: string; customization?: string }>;
+	getInfo: (
+		path: string,
+		interval?: number,
+	) => Promise<{
+		lines: number;
+		intervals: {
+			'first-line': number;
+			'first-display-timestamp': number;
+			'last-line': number;
+			'last-display-timestamp': number;
+		}[];
+	}>;
+	getResultInfo: (
+		path: string,
+		interval?: number,
+	) => Promise<{
+		lines: number;
+		intervals: {
+			'first-line': number;
+			'first-display-timestamp': number;
+			'last-line': number;
+			'last-display-timestamp': number;
+		}[];
+	}>;
+	getLines: (
+		path: string,
+		start: number,
+		end: number,
+	) => Promise<{
+		result: string;
+	}>;
 	getFile: (path: string) => Promise<{ result: string }>;
 	launchNotebook: (path: string, parameters?: Object) => Promise<{ task_id: string }>;
 	stopNotebook: (taskId: string) => Promise<boolean>;

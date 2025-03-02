@@ -44,6 +44,18 @@ export interface TreeNode {
 	isGeneratedKey?: boolean;
 	isRoot?: boolean;
 	viewType?: TreeViewType;
+	onLoad?: boolean;
+	line?: number;
+	fileInfo?: {
+		filePath: string;
+		lines: number;
+		intervals: {
+			'first-line': number;
+			'first-display-timestamp': number;
+			'last-line': number;
+			'last-display-timestamp': number;
+		}[];
+	};
 }
 
 export interface NotebookNode {

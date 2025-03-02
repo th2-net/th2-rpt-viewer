@@ -107,51 +107,62 @@ const NotebookParamsCell = ({
 
 		switch (status) {
 			case 'success':
-				if (result.includes('{')) {
-					const node: TreeNode = {
-						id: nanoid(),
-						parentIds: [],
-						key: `Result of ${notebook.name}'s run`,
-						failed: false,
-						viewInstruction: '',
-						simpleFields: [{ id: nanoid(), key: 'filepath', value: path }],
-						complexFields: [],
-						childIds: [],
-						isGeneratedKey: true,
-						isRoot: true,
-						viewType: JSONViewerStore.lastViewType,
-					};
-					try {
-						node.complexFields.push(...parseText(result, '0', true, JSONViewerStore.lastViewType));
-					} catch {
-						const lines = result.split('\n');
-						for (let i = 0; i < lines.length; i++) {
-							if (lines[i] !== '') {
+				{
+					const filePath = path || '';
+					const fileInfo = await api.jsonViewer.getResultInfo(filePath);
+					const firstLIne = fileInfo.intervals[0];
+					if (firstLIne) {
+						const res = await api.jsonViewer.getLines(
+							filePath,
+							firstLIne['first-line'],
+							firstLIne['last-line'],
+						);
+						const lines: Object[] = JSON.parse(res.result);
+						const node: TreeNode = {
+							id: nanoid(),
+							parentIds: [],
+							key: `Result of ${notebook.name}'s run`,
+							failed: false,
+							viewInstruction: '',
+							simpleFields: [{ id: nanoid(), key: 'filepath', value: path }],
+							complexFields: [],
+							childIds: [],
+							isGeneratedKey: true,
+							isRoot: true,
+							viewType: JSONViewerStore.lastViewType,
+							fileInfo,
+						};
+						lines.forEach((line, index) => {
+							if (line !== '')
 								node.complexFields.push(
-									...parseText(lines[i], String(i), true, JSONViewerStore.lastViewType),
+									...parseText(
+										JSON.stringify(line),
+										String(index),
+										true,
+										JSONViewerStore.lastViewType,
+									),
 								);
-							}
-						}
+						});
+						node.failed = node.complexFields.some(v => v.failed);
+						const newResults = [node.id, ...results];
+						const maxResultCount = Number(resultCount);
+						const convertResultCount = Math.max(1, Math.round(maxResultCount));
+						JSONViewerStore.addNotebookResult(notebook.name, node, convertResultCount, type);
+						setResultCount(String(convertResultCount));
+						setResults(newResults.slice(0, convertResultCount));
+						if (customization) JSONViewerStore.updateTokensFromText(customization);
+						setIsExpanded(false);
+					} else {
+						notificationsStore.addMessage({
+							id: nanoid(),
+							notificationType: 'genericError',
+							header: `Failed to get result`,
+							type: 'error',
+							description: `Resulting file of ${notebook.name} doesn't include json.`,
+						});
 					}
-					node.failed = node.complexFields.some(v => v.failed);
-					const newResults = [node.id, ...results];
-					const maxResultCount = Number(resultCount);
-					const convertResultCount = Math.max(1, Math.round(maxResultCount));
-					JSONViewerStore.addNotebookResult(notebook.name, node, convertResultCount, type);
-					setResultCount(String(convertResultCount));
-					setResults(newResults.slice(0, convertResultCount));
-					if (customization) JSONViewerStore.updateTokensFromText(customization);
-					setIsExpanded(false);
-				} else {
-					notificationsStore.addMessage({
-						id: nanoid(),
-						notificationType: 'genericError',
-						header: `Failed to get result`,
-						type: 'error',
-						description: `Resulting file of ${notebook.name} doesn't include json.`,
-					});
+					setIsRunLoading(false);
 				}
-				setIsRunLoading(false);
 				break;
 			case 'failed':
 				{

@@ -79,6 +79,7 @@ const FileChoosing = ({
 		const fileData: TreeNode[] = [];
 		const notebookData: NotebookNode[] = [];
 		const promises: Promise<void>[] = [];
+		const linePromises: Promise<void>[] = [];
 		if (selectedFiles.length > 0) {
 			setIsLoading(true);
 			if (type === 'notebooks') {
@@ -107,35 +108,61 @@ const FileChoosing = ({
 			} else {
 				selectedFiles.forEach(filePath =>
 					promises.push(
-						api.jsonViewer.getFile(filePath).then(({ result }) => {
-							const node: TreeNode = {
-								id: nanoid(),
-								parentIds: [],
-								key: filePath,
-								failed: false,
-								viewInstruction: '',
-								simpleFields: [],
-								complexFields: [],
-								childIds: [],
-								isGeneratedKey: true,
-								isRoot: true,
-							};
-							try {
-								node.complexFields.push(...parseText(result, '0', true));
-							} catch {
-								const lines = result.split('\n');
-								for (let i = 0; i < lines.length; i++) {
-									if (lines[i] !== '')
-										node.complexFields.push(...parseText(lines[i], String(i), true));
-								}
+						api.jsonViewer.getInfo(filePath).then(fileInfo => {
+							const firstLIne = fileInfo.intervals[0];
+							if (firstLIne) {
+								linePromises.push(
+									api.jsonViewer
+										.getLines(filePath, firstLIne['first-line'], firstLIne['last-line'])
+										.then(res => {
+											const lines: Object[] = JSON.parse(res.result);
+											const node: TreeNode = {
+												id: nanoid(),
+												parentIds: [],
+												key: filePath,
+												failed: false,
+												viewInstruction: '',
+												simpleFields: [],
+												complexFields: [],
+												childIds: [],
+												isGeneratedKey: true,
+												isRoot: true,
+												fileInfo: {
+													...fileInfo,
+													filePath,
+												},
+											};
+											lines.forEach((line, index) => {
+												if (line !== '') {
+													node.complexFields.push(
+														...parseText(JSON.stringify(line), String(index), true),
+													);
+												}
+											});
+											node.complexFields.push({
+												id: nanoid(),
+												parentIds: [node.id],
+												key: 'loadMore',
+												failed: false,
+												viewInstruction: '',
+												simpleFields: [],
+												complexFields: [],
+												childIds: [],
+												onLoad: true,
+												line: 0,
+											});
+											node.failed = node.complexFields.some(v => v.failed);
+											fileData.push(node);
+										}),
+								);
 							}
-							node.failed = node.complexFields.some(v => v.failed);
-							fileData.push(node);
 						}),
 					),
 				);
 				Promise.all(promises).then(() => {
-					if (onSubmit) onSubmit(fileData, notebookData);
+					Promise.all(linePromises).then(() => {
+						if (onSubmit) onSubmit(fileData, notebookData);
+					});
 				});
 			}
 		}

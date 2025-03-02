@@ -36,8 +36,56 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		notificationsStore.handleRequestError(res);
 		return { status: 'error', result: taskId };
 	},
+	getInfo: async (
+		path: string,
+		interval = 10,
+	): Promise<{
+		lines: number;
+		intervals: {
+			'first-line': number;
+			'first-display-timestamp': number;
+			'last-line': number;
+			'last-display-timestamp': number;
+		}[];
+	}> => {
+		const res = await fetch(`json-stream-provider/file/info?path=${path}&interval=${interval}`);
+		if (res.ok) {
+			return res.json();
+		}
+		notificationsStore.handleRequestError(res);
+		return { lines: 0, intervals: [] };
+	},
+	getResultInfo: async (
+		path: string,
+		interval = 10,
+	): Promise<{
+		lines: number;
+		intervals: {
+			'first-line': number;
+			'first-display-timestamp': number;
+			'last-line': number;
+			'last-display-timestamp': number;
+		}[];
+	}> => {
+		const res = await fetch(`json-stream-provider/result/info?path=${path}&interval=${interval}`);
+		if (res.ok) {
+			return res.json();
+		}
+		notificationsStore.handleRequestError(res);
+		return { lines: 0, intervals: [] };
+	},
 	getFile: async (path: string): Promise<{ result: string }> => {
 		const res = await fetch(`json-stream-provider/file?path=${path}`);
+		if (res.ok) {
+			return res.json();
+		}
+		notificationsStore.handleRequestError(res);
+		return { result: '' };
+	},
+	getLines: async (path: string, start: number, end: number): Promise<{ result: string }> => {
+		const res = await fetch(
+			`json-stream-provider/file/lines?path=${path}&start=${start}&end=${end}`,
+		);
 		if (res.ok) {
 			return res.json();
 		}

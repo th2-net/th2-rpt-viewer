@@ -66,7 +66,10 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 			type,
 		);
 		JSONViewerStore.selectTreeNode(type);
-		if (nodes.length > 0) JSONViewerStore.selectTreeNode(type, nodes[0]);
+		if (nodes.length > 0) {
+			JSONViewerStore.selectTreeNode(type, nodes[0]);
+			nodes.forEach(node => JSONViewerStore.addLoadedIntervals(type, node.id, [0]));
+		}
 		JSONViewerStore.setNotebooks(notebooks, type);
 		JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType, type);
 	};

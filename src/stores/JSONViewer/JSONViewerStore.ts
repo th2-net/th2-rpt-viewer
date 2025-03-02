@@ -1,5 +1,6 @@
 import { action, computed, observable } from 'mobx';
 import { nanoid } from 'nanoid';
+import api from '../../api';
 import {
 	BlankTreeNode,
 	NotebookNode,
@@ -13,6 +14,7 @@ import {
 	getFlatListFromTree,
 	getFlatListFromTreeWSimple,
 	isTreeNode,
+	parseText,
 } from '../../helpers/JSONViewer';
 import SearchToken from '../../models/search/SearchToken';
 import notificationsStore from '../NotificationsStore';
@@ -224,6 +226,15 @@ export class JSONViewerStore {
 		compare: new Map(),
 	};
 
+	@observable
+	public loadedIntervals: {
+		default: Map<string, Set<number>>;
+		compare: Map<string, Set<number>>;
+	} = {
+		default: new Map(),
+		compare: new Map(),
+	};
+
 	@action
 	updateTokens = (nextTokens: SearchToken[]) => {
 		const tokens = nextTokens.filter(
@@ -386,6 +397,15 @@ export class JSONViewerStore {
 		this.updateSearchResults(type);
 		this.activeSearch[type] = true;
 		this.moveToNextSearchResult(type);
+	};
+
+	@action
+	addLoadedIntervals = (type: PanelType, group: string, lines: number[]) => {
+		const currentLines = this.loadedIntervals[type].get(group);
+		this.loadedIntervals[type].set(
+			group,
+			new Set([...lines, ...(currentLines ? currentLines.values() : [])]),
+		);
 	};
 
 	@action
@@ -937,6 +957,20 @@ export class JSONViewerStore {
 	@action scrollToNearest(timestamp: number, type: PanelType) {
 		const convertType = type === 'default' ? 'compare' : 'default';
 		const chunk = getChunk(timestamp, this.сhunkInterval);
+		const oppositeGroup = this.listData[convertType].find(
+			node => isTreeNode(node) && node.isRoot && this.openTreeNodes[convertType].has(node.id),
+		);
+
+		if (oppositeGroup && isTreeNode(oppositeGroup) && oppositeGroup.fileInfo) {
+			const neededInterval = oppositeGroup.fileInfo.intervals.findIndex(
+				interval => interval['first-display-timestamp'] >= chunk * this.сhunkInterval,
+			);
+			if (neededInterval < 0) return;
+			if (!this.loadedIntervals[convertType].get(oppositeGroup.id)?.has(neededInterval - 1)) {
+				this.loadMore(convertType, oppositeGroup.id, neededInterval + 1);
+			}
+		}
+
 		const nearestNodeIndex = this.listData[convertType].findIndex(node =>
 			!('paramsValue' in node) && 'lastElement' in node
 				? node.chunk >= chunk
@@ -961,5 +995,114 @@ export class JSONViewerStore {
 			if (isTreeNode(nearestNodeLocal)) this.selectedTreeNode[type] = nearestNodeLocal;
 			this.activeIndex[type] = nearestNodeLocalIndex;
 		}
+	}
+
+	@action updateNode(newNode: TreeNode, type: PanelType) {
+		const index = this.treeNodes[type].findIndex(tree => tree.id === newNode.id);
+		if (index !== -1)
+			this.treeNodes[type] = [
+				...this.treeNodes[type].slice(0, index),
+				newNode,
+				...this.treeNodes[type].slice(index + 1),
+			];
+	}
+
+	@action replaceNode(id: string, newNode: TreeNode[], type: PanelType) {
+		const index = this.treeNodes[type].findIndex(tree => tree.id === id);
+		if (index !== -1)
+			this.treeNodes[type] = [
+				...this.treeNodes[type].slice(0, index),
+				...newNode,
+				...this.treeNodes[type].slice(index + 1),
+			];
+	}
+
+	@action loadMore(type: PanelType, parentTreeId: string, lineNumber: number, treeId?: string) {
+		const groupIndex = this.treeNodes[type].findIndex(({ id }) => id === parentTreeId);
+		const index = treeId
+			? this.treeNodes[type].findIndex(tree => tree.id === treeId)
+			: this.treeNodes[type].reverse().findIndex(tree => tree.parentIds.includes(parentTreeId));
+		if (treeId) {
+			this.treeNodes[type] = [
+				...this.treeNodes[type].slice(0, index),
+				{
+					...this.treeNodes[type][index],
+					onLoad: false,
+				},
+				...this.treeNodes[type].slice(index + 1),
+			];
+		}
+		if (groupIndex === -1) return;
+		const group = this.treeNodes[type][groupIndex];
+		const fileInfo = group.fileInfo;
+		if (!fileInfo) return;
+		const interval = fileInfo.intervals[lineNumber + 1];
+		if (!interval) {
+			if (treeId) {
+				group.complexFields.pop();
+				this.treeNodes[type] = [
+					...this.treeNodes[type].slice(0, groupIndex),
+					...getFlatListFromTree(group),
+					...this.treeNodes[type].slice(index + 1),
+				];
+			} else {
+				this.treeNodes[type] = [
+					...this.treeNodes[type].slice(0, groupIndex),
+					...getFlatListFromTree(group),
+					...this.treeNodes[type].slice(index + 1),
+				];
+			}
+			return;
+		}
+
+		api.jsonViewer
+			.getLines(fileInfo.filePath, interval['first-line'], interval['last-line'])
+			.then(res => {
+				const lines: Object[] = JSON.parse(res.result);
+				const newNodes: TreeNode[] = [];
+				if (
+					this.loadedIntervals[type].has(parentTreeId) &&
+					this.loadedIntervals[type].get(parentTreeId)?.has(lineNumber - 1)
+				) {
+					group.complexFields.push({
+						id: nanoid(),
+						parentIds: [group.id],
+						key: 'loadMore',
+						failed: false,
+						viewInstruction: '',
+						simpleFields: [],
+						complexFields: [],
+						childIds: [],
+						onLoad: true,
+						line: lineNumber - 1,
+					});
+				} else {
+					group.complexFields.pop();
+				}
+				lines.forEach((line, ind) => {
+					if (line !== '') {
+						const val = parseText(JSON.stringify(line), String(ind), true);
+						group.complexFields.push(...val);
+						newNodes.push(...val);
+					}
+				});
+				group.complexFields.push({
+					id: nanoid(),
+					parentIds: [group.id],
+					key: 'loadMore',
+					failed: false,
+					viewInstruction: '',
+					simpleFields: [],
+					complexFields: [],
+					childIds: [],
+					onLoad: true,
+					line: lineNumber + 1,
+				});
+				this.treeNodes[type] = [
+					...this.treeNodes[type].slice(0, groupIndex),
+					...getFlatListFromTree(group),
+					...this.treeNodes[type].slice(index + 1),
+				];
+			});
 	}
 }

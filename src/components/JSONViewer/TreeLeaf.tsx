@@ -79,6 +79,9 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	}, [JSONViewerStore.openTreeNodes[type].values]);
 
 	useEffect(() => {
+		if (treeNode.onLoad && treeNode.line !== undefined) {
+			JSONViewerStore.loadMore(type, treeNode.parentIds[0], treeNode.line, treeNode.id);
+		}
 		const resizeObserver = new ResizeObserver(entries => {
 			const currentHeight = JSONViewerStore.heights[type].get(treeNode.id);
 			const height =
@@ -140,6 +143,8 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	const selectNode = () => {
 		JSONViewerStore.selectTreeNode(type, treeNode);
 	};
+	if (treeNode.onLoad && treeNode.key === 'loadMore')
+		return <div className='splash-screen__spinner' />;
 
 	return (
 		<div
