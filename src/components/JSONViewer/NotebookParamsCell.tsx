@@ -130,7 +130,10 @@ const NotebookParamsCell = ({
 							isGeneratedKey: true,
 							isRoot: true,
 							viewType: JSONViewerStore.lastViewType,
-							fileInfo,
+							fileInfo: {
+								...fileInfo,
+								filePath,
+							},
 						};
 						lines.forEach((line, index) => {
 							if (line !== '')
