@@ -114,7 +114,7 @@ const WorkspacesLayout = () => {
 						<span className='message-card-tools__item-title'>Add event workspace</span>
 					</div>
 					<div
-						title={'Add JSON reader'}
+						title={'Add JSONL reader'}
 						className='message-card-tools__item'
 						onClick={e => {
 							e.stopPropagation();

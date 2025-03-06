@@ -26,11 +26,6 @@ const JSONSearch = () => {
 				style={{ width: '120px' }}>
 				Switch mode to {JSONViewerStore.isCompare ? 'table' : 'compare'}
 			</button>
-			<button
-				className='JSON-load-button'
-				onClick={() => console.log(JSONViewerStore.intervalsColor)}>
-				INterval Colors
-			</button>
 			<div
 				style={{
 					display: 'flex',
