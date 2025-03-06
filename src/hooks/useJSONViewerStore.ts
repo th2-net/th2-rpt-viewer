@@ -1,7 +1,7 @@
-import { useWorkspaces } from './useWorkspacesStore';
+import { useJSONViewerWorkspace } from './useJSONViewerWorkspace';
 
 export const useJSONViewerStore = () => {
-	const workspacesStore = useWorkspaces();
+	const JSONViewerWorkspace = useJSONViewerWorkspace();
 
-	return workspacesStore.JSONViewerWorkspace.JSONviewerStore;
+	return JSONViewerWorkspace.JSONviewerStore;
 };

@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
 import {
 	InputNotebookParameter,
+	NotebookNode,
 	NotebookParameter,
 	NotebookParameters,
 	TreeNode,
@@ -14,40 +15,58 @@ import {
 	convertParameterToInput,
 	convertParameterValue,
 	getParameterType,
+	OFF_VALUE_SERVER,
 	parseText,
 	validateParameter,
 } from '../../helpers/JSONViewer';
-import { useNotificationsStore } from '../../hooks';
+import { useNotificationsStore, useOutsideClickListener } from '../../hooks';
 import ParametersRow from './ParametersRow';
+import { downloadTxtFile } from '../../helpers/files/downloadTxt';
+import { ToolsPopup } from './LeafTools';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import { IGNORED_PARAMETERS_NAMES } from './FileChoosing';
 
-const timeBetweenResults = 1000;
+const timeBetweenResults = 50;
 
-const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
+const NotebookParamsCell = ({
+	notebookProp,
+	type,
+}: {
+	notebookProp: NotebookNode;
+	type: PanelType;
+}) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const notificationsStore = useNotificationsStore();
-	const [parameters, setParameters] = React.useState<NotebookParameter[]>([]);
-	const [paramsValue, setParamsValue] = React.useState<InputNotebookParameter[]>([]);
-	const [isLoading, setIsLoading] = React.useState(true);
+	const notebook: NotebookNode = {
+		...JSONViewerStore.getNotebook(notebookProp.name, notebookProp, type),
+	};
+	const [parameters, setParameters] = React.useState<NotebookParameter[]>(notebook.parameters);
+	const [paramsValue, setParamsValue] = React.useState<InputNotebookParameter[]>(
+		notebook.paramsValue,
+	);
+	const [isLoading, setIsLoading] = React.useState(false);
 	const [isRunLoading, setIsRunLoading] = React.useState(false);
-	const [isExpanded, setIsExpanded] = React.useState(false);
+	const [isReloadOpen, setIsReloadOpen] = React.useState(false);
+	const [isExpanded, setIsExpanded] = React.useState(notebook.open);
 	const [timer, setTimer] = React.useState<NodeJS.Timeout | null>();
 	const [taskId, setTaskId] = React.useState<string | null>();
-	const [resultCount, setResultCount] = React.useState<string>('1');
-	const [results, setResults] = React.useState<string[]>([]);
-	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid), [paramsValue]);
-
-	const initParameters = () => {
-		setParamsValue(parameters.map(convertParameterToInput));
-	};
-
-	React.useEffect(initParameters, [parameters]);
+	const [resultCount, setResultCount] = React.useState<string>(String(notebook.resultsCount));
+	const [results, setResults] = React.useState<string[]>(notebook.results);
+	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid || v.isOff), [paramsValue]);
+	const reloadRef = React.useRef<HTMLButtonElement>(null);
+	const inputJSONRef = React.useRef<HTMLInputElement>(null);
 
 	const getParameters = async () => {
 		setIsLoading(true);
 		api.jsonViewer
-			.getParameters(notebook)
+			.getParameters(notebook.name)
 			.then((data: NotebookParameters) => {
-				setParameters(Object.values(data).filter(param => param.name !== 'output_path'));
+				const newParameters = Object.values(data).filter(
+					param => !IGNORED_PARAMETERS_NAMES.includes(param.name),
+				);
+				const newParamsValue = newParameters.map(convertParameterToInput);
+				setParameters(newParameters);
+				setParamsValue(newParamsValue);
 			})
 			.finally(() => {
 				setIsLoading(false);
@@ -58,53 +77,81 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const open = () => {
 		if (isLoading) return;
 		setIsExpanded(!isExpanded);
+		JSONViewerStore.setNotebook(
+			{
+				...notebook,
+				open: !isExpanded,
+			},
+			type,
+		);
+	};
+
+	const savePreset = () => {
+		downloadTxtFile(
+			[
+				JSON.stringify(
+					paramsValue.map(val => ({
+						name: val.name,
+						value: val.value,
+						type: val.type,
+						isOff: val.isOff,
+					})),
+				),
+			],
+			`preset for ${notebook.name.slice(notebook.name.lastIndexOf('/'))}.json`,
+		);
 	};
 
 	const getResults = async (respTaskId: string) => {
-		const { status, result, path } = await api.jsonViewer.getResults(respTaskId);
+		const { status, result, path, customization } = await api.jsonViewer.getResults(respTaskId);
 
 		switch (status) {
 			case 'success':
 				if (result.includes('{')) {
 					const node: TreeNode = {
 						id: nanoid(),
-						key: `Result of ${notebook}'s run`,
+						parentIds: [],
+						key: `Result of ${notebook.name}'s run`,
 						failed: false,
 						viewInstruction: '',
-						simpleFields: [{ key: 'filepath', value: path }],
+						simpleFields: [{ id: nanoid(), key: 'filepath', value: path }],
 						complexFields: [],
+						childIds: [],
 						isGeneratedKey: true,
 						isRoot: true,
+						viewType: JSONViewerStore.lastViewType,
 					};
 					try {
-						node.complexFields.push(...parseText(result, '0', true));
+						node.complexFields.push(...parseText(result, '0', true, JSONViewerStore.lastViewType));
 					} catch {
 						const lines = result.split('\n');
 						for (let i = 0; i < lines.length; i++) {
 							if (lines[i] !== '') {
-								node.complexFields.push(...parseText(lines[i], String(i), true));
+								node.complexFields.push(
+									...parseText(lines[i], String(i), true, JSONViewerStore.lastViewType),
+								);
 							}
 						}
 					}
 					node.failed = node.complexFields.some(v => v.failed);
 					const newResults = [node.id, ...results];
 					const maxResultCount = Number(resultCount);
-					const convertResultCount = maxResultCount < 1 ? 1 : Math.round(maxResultCount);
-					if (maxResultCount < 1) {
-						setResultCount('1');
-					}
-
-					if (node.complexFields.length > 0) {
-						JSONViewerStore.addNodes([node]);
-						if (newResults.length > convertResultCount) {
-							JSONViewerStore.removeNodesById(newResults.slice(convertResultCount));
-						}
-						setResults(newResults.slice(0, convertResultCount));
-						JSONViewerStore.selectTreeNode(node);
-					}
-					setIsRunLoading(false);
+					const convertResultCount = Math.max(1, Math.round(maxResultCount));
+					JSONViewerStore.addNotebookResult(notebook.name, node, convertResultCount, type);
+					setResultCount(String(convertResultCount));
+					setResults(newResults.slice(0, convertResultCount));
+					if (customization) JSONViewerStore.updateTokensFromText(customization);
 					setIsExpanded(false);
+				} else {
+					notificationsStore.addMessage({
+						id: nanoid(),
+						notificationType: 'genericError',
+						header: `Failed to get result`,
+						type: 'error',
+						description: `Resulting file of ${notebook.name} doesn't include json.`,
+					});
 				}
+				setIsRunLoading(false);
 				break;
 			case 'failed':
 				{
@@ -115,6 +162,9 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 					notificationsStore.handleRequestError(response);
 					setIsRunLoading(false);
 				}
+				break;
+			case 'error':
+				setIsRunLoading(false);
 				break;
 			case 'in progress':
 				setTimer(setTimeout(() => getResults(respTaskId), timeBetweenResults));
@@ -152,9 +202,14 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 		const paramsWithType = Object.fromEntries(
 			paramsValue
 				.filter(filterParameters)
-				.map(({ name, type, value }) => [name, convertParameterValue(value, type)]),
+				.map(({ name, type: paramType, value, isOff }) => [
+					name,
+					isOff
+						? { value: OFF_VALUE_SERVER, type: 'str' }
+						: convertParameterValue(value, paramType),
+				]),
 		);
-		const res = await api.jsonViewer.launchNotebook(notebook, paramsWithType);
+		const res = await api.jsonViewer.launchNotebook(notebook.name, paramsWithType);
 		if (res.task_id !== '') {
 			setTaskId(res.task_id);
 			setTimer(setTimeout(() => getResults(res.task_id), timeBetweenResults));
@@ -166,16 +221,84 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 	const refreshNotebook = () => {
 		getParameters();
 		setIsRunLoading(false);
+		setIsReloadOpen(false);
 	};
 
-	React.useEffect(() => {
-		getParameters();
-	}, []);
+	const readFile = async (files: FileList) => {
+		setIsReloadOpen(false);
+		const presetText = await files[0].text();
+		const prevValue = JSON.parse(JSON.stringify(paramsValue));
+		let params = JSON.parse(JSON.stringify(paramsValue));
+		try {
+			const preset: Array<{ name: string; value: string; type: string; isOff: string }> =
+				JSON.parse(presetText);
+			const presetKeys = preset.map(p => p.name);
+			const parametersKeys = parameters.map(p => p.name);
+			const indexes = presetKeys.map(p => parametersKeys.indexOf(p));
+			const notIncludedParameters = parametersKeys.filter(p => !presetKeys.includes(p));
+			const errors = [];
+			for (let i = 0; i < notIncludedParameters.length; i++) {
+				errors.push(`Parameter ${notIncludedParameters[i]} not included in preset and was skipped`);
+			}
+			for (let i = 0; i < preset.length; i++) {
+				if (indexes[i] < 0) {
+					errors.push(`Parameter ${preset[i].name} not included in notebook and was skipped`);
+				} else {
+					params = [
+						...params.slice(0, indexes[i]),
+						{
+							...preset[i],
+							isValid: validateParameter(preset[i].value, preset[i].type),
+						},
+						...params.slice(indexes[i] + 1),
+					];
+				}
+			}
+			if (errors.length > 0) {
+				notificationsStore.addMessage({
+					id: nanoid(),
+					notificationType: 'genericError',
+					header: `Errors in parsing preset file for ${notebook.name}`,
+					type: 'error',
+					action: {
+						label: 'Revert Changes',
+						callback: () => {
+							setParamsValue(prevValue);
+						},
+					},
+					description: errors.join('\n'),
+				});
+			}
+			setParamsValue(params.slice());
+		} catch (error) {
+			notificationsStore.addMessage({
+				id: nanoid(),
+				notificationType: 'genericError',
+				header: `Unable to parse preset file for ${notebook.name}`,
+				type: 'error',
+				description: error instanceof Error ? error.message : `${error}`,
+			});
+		}
+	};
+
+	useOutsideClickListener(
+		reloadRef,
+		(e: MouseEvent) => {
+			if (
+				e.target instanceof Element &&
+				reloadRef.current &&
+				!reloadRef.current.contains(e.target)
+			) {
+				setIsReloadOpen(false);
+			}
+		},
+		isReloadOpen,
+	);
 
 	return (
 		<div className='notebookCell'>
 			<div className={`notebookCell-header ${isExpanded ? 'expanded' : ''}`} onClick={open}>
-				<label>Parameters for {notebook}</label>
+				<label>Parameters for {notebook.name}</label>
 				<div
 					className={`notebookCell-icon ${
 						isLoading ? 'loading' : isExpanded ? 'expanded' : 'hidden'
@@ -189,6 +312,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 							<thead>
 								{parameters.length > 0 && (
 									<tr style={{ textAlign: 'left' }}>
+										<th>On</th>
 										<th>Name</th>
 										<th>Type</th>
 										<th>Value</th>
@@ -220,6 +344,15 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 												...paramsValue.slice(index + 1),
 											]);
 										}}
+										toggleParameter={(newToggle: boolean) => {
+											const newState = paramsValue[index];
+											newState.isOff = newToggle;
+											setParamsValue([
+												...paramsValue.slice(0, index),
+												newState,
+												...paramsValue.slice(index + 1),
+											]);
+										}}
 										key={parameter.name}
 									/>
 								))}
@@ -231,8 +364,46 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 							<label>Run</label>
 							<div className={`notebookCell-icon ${isRunLoading ? 'loading' : 'play'}`} />
 						</button>
-						<button onClick={refreshNotebook} disabled={isLoading}>
-							<label>Refresh</label>
+						<button ref={reloadRef} disabled={isLoading} onClick={() => setIsReloadOpen(true)}>
+							<label>Reload</label>
+							<ToolsPopup isOpen={isReloadOpen}>
+								<div className='message-card-tools__controls-group'>
+									<div
+										title='Default'
+										className='message-card-tools__item'
+										onClick={e => {
+											e.stopPropagation();
+											refreshNotebook();
+										}}>
+										<span className='message-card-tools__item-title'>Default</span>
+									</div>
+									<div
+										title='Load File'
+										className='message-card-tools__item'
+										onClick={e => {
+											e.stopPropagation();
+											inputJSONRef.current?.click();
+										}}>
+										<span className='message-card-tools__item-title'>Load File</span>
+									</div>
+								</div>
+							</ToolsPopup>
+							<input
+								hidden
+								ref={inputJSONRef}
+								style={{ marginBottom: 10 }}
+								type='file'
+								accept='.json'
+								onChange={ev => {
+									if (ev.target.files) {
+										readFile(ev.target.files);
+										if (inputJSONRef.current) inputJSONRef.current.value = '';
+									}
+								}}
+							/>
+						</button>
+						<button onClick={savePreset} disabled={isLoading} title='Save Preseet'>
+							<label>Save</label>
 						</button>
 					</div>
 				</div>
@@ -248,6 +419,7 @@ const NotebookParamsCell = ({ notebook }: { notebook: string }) => {
 							pattern='\d+'
 							onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
 								setResultCount(ev.target.value);
+								JSONViewerStore.updateotebookResultCount(notebookProp.name, ev.target.value, type);
 							}}
 						/>
 					</div>

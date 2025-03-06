@@ -1,8 +1,21 @@
+import { observer } from 'mobx-react-lite';
 import React from 'react';
+import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import multiTokenSplit from '../../helpers/search/multiTokenSplit';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 
 const shownCapacity = 50;
 
-const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
+const DisplayTable = ({
+	value,
+	type,
+	id,
+}: {
+	value: string[][] | undefined;
+	type: PanelType;
+	id: string;
+}) => {
+	const JSONViewerStore = useJSONViewerStore();
 	const [shownSize, setShownSize] = React.useState(shownCapacity);
 	if (!value) return <div className='display-table-error'>#display-table is undefined</div>;
 
@@ -15,7 +28,22 @@ const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
 				<thead>
 					<tr>
 						{header.map((key, index) => (
-							<th key={index}>{key}</th>
+							<th key={index}>
+								{JSONViewerStore.compareTableResults(
+									type,
+									id,
+									0,
+									index,
+									multiTokenSplit(key, JSONViewerStore.tokens),
+								).map((contentPart, i) => (
+									<span
+										key={i}
+										className={contentPart.token != null ? 'found-content' : undefined}
+										style={{ backgroundColor: contentPart.token?.color }}>
+										{contentPart.content}
+									</span>
+								))}
+							</th>
 						))}
 						<th style={{ width: '16px' }}></th>
 					</tr>
@@ -24,7 +52,25 @@ const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
 					{rows.slice(0, shownSize).map((row, index) => (
 						<tr key={index}>
 							{row.slice(0, header.length).map((val, ind) => (
-								<td key={ind}>{typeof val === 'string' ? `"${val}"` : String(val)}</td>
+								<td key={ind}>
+									{JSONViewerStore.compareTableResults(
+										type,
+										id,
+										index + 1,
+										ind,
+										multiTokenSplit(
+											typeof val === 'string' ? `"${val}"` : String(val),
+											JSONViewerStore.tokens,
+										),
+									).map((contentPart, i) => (
+										<span
+											key={i}
+											className={contentPart.token != null ? 'found-content' : undefined}
+											style={{ backgroundColor: contentPart.token?.color }}>
+											{contentPart.content}
+										</span>
+									))}
+								</td>
 							))}
 							{row.length < header.length &&
 								Array(header.length - row.length)
@@ -53,4 +99,4 @@ const DisplayTable = ({ value }: { value: string[][] | undefined }) => {
 	);
 };
 
-export default DisplayTable;
+export default observer(DisplayTable);

@@ -149,6 +149,9 @@
                 background-color: transparent;
                 align-items: center;
                 text-align: center;
+                label {
+                    cursor: inherit;
+                }
             }
         }
     }
@@ -190,6 +193,10 @@
 
         th {
             background-color: $secondaryLightTextColor;
+        }
+
+        td {
+            color: black;
         }
     }
 }

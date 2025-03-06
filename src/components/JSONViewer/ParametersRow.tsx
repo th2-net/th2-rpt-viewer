@@ -1,23 +1,31 @@
 import * as React from 'react';
+import AceEditor from 'react-ace';
 import moment from 'moment';
-import { InputNotebookParameter, NotebookParameter, TreeNode } from '../../models/JSONSchema';
+// eslint-disable-next-line import/no-unassigned-import
+import 'ace-builds/src-noconflict/mode-python';
+// eslint-disable-next-line import/no-unassigned-import
+import 'ace-builds/src-noconflict/ext-language_tools';
+import { InputNotebookParameter, NotebookParameter } from '../../models/JSONSchema';
 import FileChoosing from './FileChoosing';
 import { DateTimeInputType, DateTimeMask, TimeInputType } from '../../models/filter/FilterInputs';
-import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
+import { DATE_TIME_ISO_INPUT_MASK } from '../../util/filterInputs';
 import TimestampParameter from './TimestampParameter';
+import Checkbox from '../util/Checkbox';
 
-const possibleTypes = ['int', 'float', 'str', 'bool', 'file path', 'timestamp'];
+const possibleTypes = ['int', 'float', 'str', 'bool', 'file path', 'timestamp', 'pycode'];
 
 const ParametersRow = ({
 	parameter,
 	parameterValue,
 	setParametersValue,
 	setParametersType,
+	toggleParameter,
 }: {
 	parameter: NotebookParameter;
 	parameterValue: InputNotebookParameter;
 	setParametersValue: (newValue: string) => void;
 	setParametersType: (newValue: string) => void;
+	toggleParameter: (toggle: boolean) => void;
 }) => {
 	const [browserOpen, setBrowserOpen] = React.useState(false);
 	const [timestamp, setTimestampNumber] = React.useState<number | null>(moment.utc().valueOf());
@@ -34,8 +42,8 @@ const ParametersRow = ({
 		}
 	}, [parameterValue.type]);
 
-	const updateValue = (_t: TreeNode[], files: string[]) => {
-		setParametersValue(files[0]);
+	const updateValue = (file: string) => {
+		setParametersValue(file);
 		setBrowserOpen(false);
 	};
 
@@ -49,19 +57,30 @@ const ParametersRow = ({
 		value: timestamp,
 		setValue: setTimestamp,
 		type: TimeInputType.DATE_TIME,
-		dateMask: DateTimeMask.DATE_TIME_MASK,
+		dateMask: DateTimeMask.DATE_TIME_ISO_MASK,
 		placeholder: '',
-		inputMask: DATE_TIME_INPUT_MASK,
+		inputMask: DATE_TIME_ISO_INPUT_MASK,
+		disabled: parameterValue.isOff,
 	};
 
 	return (
 		<tr>
 			<td>
+				<Checkbox
+					checked={!parameterValue.isOff}
+					onChange={e => {
+						toggleParameter(!e.target.checked);
+					}}
+					label=''
+					id={`{parameter.name}-toggle`}
+				/>
+			</td>
+			<td>
 				<label>{parameter.name}</label>
 			</td>
 			<td>
 				<select
-					disabled={parameter.inferred_type_name !== 'None'}
+					disabled={parameter.inferred_type_name !== 'None' || parameterValue.isOff}
 					value={parameterValue.type}
 					onChange={(ev: React.ChangeEvent<HTMLSelectElement>) =>
 						setParametersType(ev.target.value)
@@ -84,19 +103,48 @@ const ParametersRow = ({
 									className='open-browser'
 									onClick={() => setBrowserOpen(true)}
 									title='Open  file browser'
+									disabled={parameterValue.isOff}
 								/>
 							)}
-							<input
-								style={{ width: '100%' }}
-								type='text'
-								className={parameterValue.isValid ? undefined : 'failed'}
-								placeholder={`default: ${parameter.default}`}
-								value={parameterValue.value}
-								onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-									const newValue = ev.target.value;
-									setParametersValue(newValue);
-								}}
-							/>
+							{parameterValue.type === 'pycode' && (
+								<div
+									style={{
+										height: `${
+											parameterValue.value !== ''
+												? parameterValue.value.split('\n').length * 14 + 2
+												: 16
+										}px`,
+										width: '100%',
+										border: '1px solid black',
+										borderRadius: '5px',
+									}}>
+									<AceEditor
+										readOnly={parameterValue.isOff}
+										mode='python'
+										showGutter={false}
+										height='100%'
+										width='100%'
+										value={parameterValue.value}
+										onChange={(newValue: string) => {
+											setParametersValue(newValue);
+										}}
+									/>
+								</div>
+							)}
+							{parameterValue.type !== 'pycode' && (
+								<input
+									style={{ width: '100%' }}
+									type='text'
+									className={parameterValue.isValid ? undefined : 'failed'}
+									placeholder={`default: ${parameter.default}`}
+									value={parameterValue.value}
+									onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+										const newValue = ev.target.value;
+										setParametersValue(newValue);
+									}}
+									disabled={parameterValue.isOff}
+								/>
+							)}
 						</>
 					)}
 				</div>
@@ -105,7 +153,7 @@ const ParametersRow = ({
 					<FileChoosing
 						type='all'
 						multiple={false}
-						onSubmit={updateValue}
+						singleSubmit={updateValue}
 						close={() => setBrowserOpen(false)}
 					/>
 				)}

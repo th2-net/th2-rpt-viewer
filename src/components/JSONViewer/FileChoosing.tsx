@@ -1,20 +1,24 @@
 import * as React from 'react';
 import { nanoid } from 'nanoid';
-import { TreeNode } from '../../models/JSONSchema';
+import { NotebookNode, NotebookParameters, TreeNode } from '../../models/JSONSchema';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener } from '../../hooks';
 import api from '../../api';
-import { parseText } from '../../helpers/JSONViewer';
+import { convertParameterToInput, parseText } from '../../helpers/JSONViewer';
+
+export const IGNORED_PARAMETERS_NAMES = ['output_path', 'customization_path'];
 
 const FileChoosing = ({
 	type,
 	multiple,
 	onSubmit,
+	singleSubmit,
 	close,
 }: {
 	type: 'notebooks' | 'results' | 'all';
 	multiple: boolean;
-	onSubmit: (t: TreeNode[], n: string[]) => void;
+	onSubmit?: (t: TreeNode[], n: NotebookNode[]) => void;
+	singleSubmit?: (f: string) => void;
 	close: () => void;
 }) => {
 	const [isLoading, setIsLoading] = React.useState(true);
@@ -73,26 +77,46 @@ const FileChoosing = ({
 
 	const getFiles = () => {
 		const fileData: TreeNode[] = [];
-		const notebookData: string[] = [];
+		const notebookData: NotebookNode[] = [];
 		const promises: Promise<void>[] = [];
 		if (selectedFiles.length > 0) {
 			setIsLoading(true);
-			if (type === 'notebooks' || type === 'all') onSubmit([], selectedFiles);
-			else {
+			if (type === 'notebooks') {
+				selectedFiles.forEach(filePath =>
+					promises.push(
+						api.jsonViewer.getParameters(filePath).then((data: NotebookParameters) => {
+							const parameters = Object.values(data).filter(
+								param => !IGNORED_PARAMETERS_NAMES.includes(param.name),
+							);
+							const paramsValue = parameters.map(convertParameterToInput);
+							const node: NotebookNode = {
+								name: filePath,
+								parameters,
+								paramsValue,
+								results: [],
+								resultsCount: '1',
+								open: true,
+							};
+							notebookData.push(node);
+						}),
+					),
+				);
+				Promise.all(promises).then(() => {
+					if (onSubmit) onSubmit([], notebookData);
+				});
+			} else {
 				selectedFiles.forEach(filePath =>
 					promises.push(
 						api.jsonViewer.getFile(filePath).then(({ result }) => {
-							if (filePath.endsWith('.ipynb')) {
-								notebookData.push(filePath);
-								return;
-							}
 							const node: TreeNode = {
 								id: nanoid(),
+								parentIds: [],
 								key: filePath,
 								failed: false,
 								viewInstruction: '',
 								simpleFields: [],
 								complexFields: [],
+								childIds: [],
 								isGeneratedKey: true,
 								isRoot: true,
 							};
@@ -111,7 +135,7 @@ const FileChoosing = ({
 					),
 				);
 				Promise.all(promises).then(() => {
-					onSubmit(fileData, notebookData);
+					if (onSubmit) onSubmit(fileData, notebookData);
 				});
 			}
 		}
@@ -120,8 +144,8 @@ const FileChoosing = ({
 
 	const selectFile = (fileName: string) => {
 		const fileIndex = selectedFiles.indexOf(fileName);
-		if (!multiple) {
-			onSubmit([], [fileName]);
+		if (!multiple && singleSubmit) {
+			singleSubmit(fileName);
 			return;
 		}
 
@@ -164,13 +188,13 @@ const FileChoosing = ({
 						<>
 							<button
 								disabled={selectedFiles.length === 0 || isLoading}
-								className='load-JSON-button'
+								className='JSON-load-button'
 								onClick={() => setSelectedFiles([])}>
 								Reset Selection
 							</button>
 							<button
 								disabled={selectedFiles.length === 0 || isLoading}
-								className='load-JSON-button'
+								className='JSON-load-button'
 								onClick={getFiles}>
 								Load {selectedFiles.length} Files
 							</button>

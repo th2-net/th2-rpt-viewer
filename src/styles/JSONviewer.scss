@@ -137,12 +137,22 @@
 	flex-direction: row;
 	align-items: center;
 	padding: 1px 5px 1px 0;
+	&-right {
+		display: flex;
+		gap: 5px;
+		flex-direction: row;
+		align-items: center;
+		padding: 1px 0 1px 5px;
+
+	}
 }
 
 .leaf {
+	border: 0px solid;
 	display: flex;
 	flex-direction: column;
 	border-radius: 5px;
+	
 	&.expanded {
 		border: 2px solid;
 		border-color: $attachedMessageCardBorderColor;
@@ -152,52 +162,66 @@
 			border-color: $alternativeTextColor;
 		}
 	}
+
 	&.selected {
 		border: 2px solid;
 		border-color: var(--status-primary-border-color);
+	}
+	
+	&.compared {
+		border: 2px solid;
+		border-color: $rejectedMessageLabelBackground;
 	}
 }
 
 .json-table {
 	@include scrollbar;
-	@include default-table;
-
-	&-wrapper {
-		overflow-x: auto;
-		table {
-			grid-template-columns: 30% 70%;
-		}
+	table {
+		border-collapse: collapse;
+		border-style: hidden;
+		table-layout: fixed;
+		border-radius: 4px;
+		width: 100%;
 	}
 
-	td,
+	th,
+	td {
+		font-size: 11px;
+		line-height: 16px;
+		padding-top: 0;
+		padding-bottom: 0;
+		box-sizing: border-box;
+		border-bottom: 1px solid $tableCellBorderColor;
+	}
+
 	th {
-		text-align: left;
+		font-weight: bold;
+		line-height: 16px;
+		color: white;
+		background-color: $tableHeaderBackground;
+		padding: 4px;
+
+		&.transparent {
+			background-color: transparent;
+			border-color: transparent;
+		}
+
+		&:first-child {
+			border-radius: 4px 0 0 0;
+		}
+
+		&:last-child {
+			border-radius: 0 4px 0 0;
+		}
 	}
 
 	tr {
 		&:hover td {
-			background-color: white;
-		}
-	}
+			background-color: darken($color: $tableBodyBackground, $amount: 10);
 
-	display: block;
-	width: 100%;
-	height: auto;
-	overflow: auto;
-
-	&-row-value {
-		p {
-			margin: 0;
-			text-decoration: none;
-			font-size: 12px;
-		}
-		
-		&:hover td {
-			background-color: darken(white, 10px) !important;
-		}
-
-		td .mc-raw__content {
-			letter-spacing: 0;
+			&.transparent {
+				background-color: transparent;
+			}
 		}
 	}
 
@@ -207,17 +231,15 @@
 		justify-content: space-between;
 	}
 
-	&-row-toogler {
+	&-row-togler {
 		cursor: pointer;
 		color: #fff;
 		
-		&:hover td {
+		&:hover {
 			background-color: darken($tableHeaderBackgroundSecondary, 10px) !important;
 		}
 
-		& td {
-			background-color: $tableHeaderBackgroundSecondary !important;
-		}
+		background-color: $tableHeaderBackgroundSecondary !important;
 		
 		.expand-icon {
 			background-color: white;
@@ -233,12 +255,22 @@
 		
 			&.hidden {
 				background-color: white;
-				@include icon(url('../../resources/icons/expand.svg'), 12px, 12px);
 				:hover {
 					background-color: white;
 				}
 			}
 		}
+	}
+}
+
+.timestamp-pointer {
+	&-left {
+		cursor: pointer;
+		@include icon(url('../../resources/icons/arr1-left.svg'), 12px, 12px);
+	}
+	&-right {
+		cursor: pointer;
+		@include icon(url('../../resources/icons/arr1-right.svg'), 12px, 12px);
 	}
 }
 
@@ -252,19 +284,6 @@
 	width: 50vw;
 	height: calc(100vh - 40px);
 	overflow-y: auto;
-}
-
-.JSON-wrapper{ 
-	@include scrollbar;
-	background-color: white;
-	height: 100%;
-	overflow: auto;
-	padding: 5px;
-	&.tableView {
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-	}
 }
 
 .fileChoosing {
@@ -334,37 +353,118 @@
 	background-image: url('../../resources/icons/expand-on.svg');
 }
 
-.JSON-buttons-wrapper{ 
+.JSON {
+	&-wrapper{ 
+		@include scrollbar;
+		background-color: white;
+		height: 100%;
+		padding: 5px;
+		&.tableView {
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+		}
+	}
+
+	&-header-wrapper{
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+	}
+	
+	&-search-wrapper{
+		display: flex;
+		width: calc(100% - 365px);
+		gap: 5px;
+		align-items: center;
+		padding: 5px;
+		.search-field-wrapper{
+			width: 100%;
+			.search-field {
+				border: 1px solid black;
+				&__child-wrapper {
+					@include scrollbar;
+					max-height: 50px;
+					overflow-x: auto;
+					white-space: nowrap;
+					overflow-y: hidden;
+					flex-wrap: nowrap;
+				}
+			}
+			.search-field__search-controls.search-controls{
+				min-width: 0;
+			}
+		}
+		.import-button{
+			@include round-button(url(../../resources/icons/download.svg));
+		}
+		.export-button{
+			@include round-button(url(../../resources/icons/download.svg));
+			rotate: 180deg;
+		}
+	}
+
+	&-buttons-wrapper{ 
 	display: flex;
 	width: 100%;
 	padding: 5px;
-}
-
-.JSON-input{ 
-	border-radius: 3px;
-	width: 80%;
-	border: 1px $alternativeTextColor solid;
-	font-size: 14px;
-	padding: 0px 5px;
-}
-
-.load-JSON-button {
-	border-radius: 3px;
-	display: flex;
-	align-items: center;
 	font-size: 12px;
 	font-weight: bold;
-	color: $alternativeTextColor;
-	background: $searchButtonColor;
-	border: 1px $alternativeTextColor solid;
-	padding: 0px 2px;
-	font-family: 'Open Sans', sans-serif;
-	cursor: pointer;
-	outline: none;
-	margin: 5px;
-}
+	height: 45px;
+	}
 
-.JSON-virtuoso {
-	@include scrollbar;
-	height: calc(100% - 47px);
+	&-input{ 
+		border-radius: 3px;
+		width: 80%;
+		border: 1px $alternativeTextColor solid;
+		font-size: 14px;
+		padding: 0px 5px;
+	}
+
+	&-search-header{ 
+		position: absolute;
+		top: 50px;
+		width: 90%;
+		left: 5%;
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 12px;
+		font-weight: bold;
+	}
+
+	&-load-button {
+		border-radius: 3px;
+		display: flex;
+		align-items: center;
+		font-size: 12px;
+		font-weight: bold;
+		color: $alternativeTextColor;
+		background: $searchButtonColor;
+		border: 1px $alternativeTextColor solid;
+		padding: 0px 2px;
+		font-family: 'Open Sans', sans-serif;
+		cursor: pointer;
+		outline: none;
+		margin: 5px;
+
+		&:disabled {
+			color: $secondaryLightTextColor;
+			border-color: $secondaryLightTextColor;
+		}
+	}
+
+	&-virtuoso {
+		@include scrollbar;
+		height: calc(100% - 47px);
+	}
+
+	&-search-control {
+		display: flex;
+		font-size: 12px;
+		font-weight: bold;
+		font-family: 'Open Sans', sans-serif;
+		align-items: center;
+		gap: 4px;
+	}
 }

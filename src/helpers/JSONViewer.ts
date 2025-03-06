@@ -16,28 +16,53 @@ export const isNotebook = (obj: Object): obj is Notebook => {
 	);
 };
 
+export const isTreeNode = (obj: Object): obj is TreeNode => 'displayTimestamp' in obj;
+
 export const isKeyFailed = (key: string) => key.includes('[fail]') || key.trim().startsWith('#');
 export const isValueFailed = (value: string) =>
 	value.trim().startsWith('#') || value.trim().startsWith('!#');
 
-export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false): TreeNode => {
+export const convertJSONtoNode = (
+	obj: object,
+	key = '',
+	isGeneratedKey = false,
+	defaultViewType = TreeViewType.EVENTS_LIST,
+	parentIds: string[] = [],
+	depth = 0,
+	index?: number,
+): TreeNode => {
 	const id = nanoid();
 	let failed = isKeyFailed(key);
 	const isArray = Array.isArray(obj);
 	const simpleFields: SimpleField[] = [];
 	const complexFields: TreeNode[] = [];
 	let viewInstruction = '';
-	let displayName: string | undefined;
+	let displayName: string | undefined = typeof index !== 'undefined' ? String(index) : undefined;
+	let displayTimestamp: number | undefined;
 	let displayTable: string[][] | undefined;
 	if (Array.isArray(obj)) {
 		for (let i = 0; i < obj.length; i++) {
-			if (typeof obj[i] === 'object') {
-				const val = convertJSONtoNode(obj[i], i.toString(), true);
+			if (
+				typeof obj[i] === 'object' &&
+				!(
+					(key.endsWith('-table') || (displayName && displayName.endsWith('-table'))) &&
+					Array.isArray(obj[i])
+				)
+			) {
+				const val = convertJSONtoNode(
+					obj[i],
+					i.toString(),
+					true,
+					defaultViewType,
+					[...parentIds, id],
+					depth + 1,
+					i,
+				);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
 			} else {
 				if (!failed && typeof obj[i] === 'string') failed = isValueFailed(obj[i]);
-				simpleFields.push({ key: i.toString(), value: obj[i] });
+				simpleFields.push({ id: nanoid(), key: i.toString(), value: obj[i] });
 			}
 		}
 	} else {
@@ -48,37 +73,60 @@ export const convertJSONtoNode = (obj: object, key = '', isGeneratedKey = false)
 				displayTable = value;
 			} else if (entryKey === '#display-name') {
 				displayName = String(value);
+			} else if (entryKey === '#display-timestamp') {
+				displayTimestamp = Number(value) / 1_000_000;
 			} else if (entryKey === '#view-instruction') {
 				viewInstruction = String(value);
 			} else if (typeof value === 'object' && value !== null) {
-				const val = convertJSONtoNode(value, entryKey);
+				const val = convertJSONtoNode(
+					value,
+					entryKey,
+					false,
+					defaultViewType,
+					[...parentIds, id],
+					depth + 1,
+				);
 				if (!failed && val.failed) failed = false;
 				complexFields.push(val);
 			} else {
 				if (!failed && typeof value === 'string') failed = isValueFailed(value);
-				simpleFields.push({ key: entryKey, value });
+				simpleFields.push({ id: nanoid(), key: entryKey, value });
 			}
 		}
 	}
 	return {
 		id,
 		key,
+		parentIds,
 		displayTable,
 		displayName,
+		displayTimestamp,
 		failed,
 		isArray,
 		isGeneratedKey,
 		viewInstruction,
-		viewType: TreeViewType.EVENTS_LIST,
+		viewType: defaultViewType,
 		simpleFields,
 		complexFields,
+		childIds: complexFields.map(node => node.id),
 	};
 };
 
-export const parseText = (text: string, name = '', isGeneratedKey = false): TreeNode[] => {
+export const parseText = (
+	text: string,
+	name = '',
+	isGeneratedKey = false,
+	defaultViewType = TreeViewType.EVENTS_LIST,
+): TreeNode[] => {
 	const js = JSON.parse(text);
-	const node = convertJSONtoNode(js, undefined, isGeneratedKey);
-	if (node.simpleFields.length > 0) {
+	const node = convertJSONtoNode(js, undefined, isGeneratedKey, defaultViewType);
+
+	if (
+		node.simpleFields.length > 0 ||
+		node.displayName ||
+		node.displayTable ||
+		node.displayTimestamp
+	) {
 		return [
 			{
 				...node,
@@ -91,6 +139,8 @@ export const parseText = (text: string, name = '', isGeneratedKey = false): Tree
 
 const stringPunct = `'"\``;
 const numberReg = /^-?\d*\.?\d{0,}$/;
+export const OFF_VALUE = [`'[NA]'`, `"[NA]"`];
+export const OFF_VALUE_SERVER = '[NA]';
 
 export const convertParameterValue = (
 	value: string,
@@ -107,7 +157,21 @@ export const convertParameterValue = (
 			}
 			case 'str': {
 				return {
-					value: cutString ? value.slice(1, value.length - 1) : value,
+					value: OFF_VALUE.includes(value)
+						? ''
+						: cutString
+						? value.slice(1, value.length - 1)
+						: value,
+					type,
+				};
+			}
+			case 'pycode': {
+				return {
+					value: cutString
+						? value.startsWith('"""')
+							? value.slice(3, value.length - 3)
+							: value.slice(1, value.length - 1)
+						: value,
 					type,
 				};
 			}
@@ -170,6 +234,9 @@ export const validateParameter = (value: string, type: string): boolean => {
 		case 'timestamp': {
 			return moment.utc(value).isValid();
 		}
+		case 'pycode': {
+			return true;
+		}
 		default: {
 			return true;
 		}
@@ -182,6 +249,9 @@ export const getParameterType = (parameter: NotebookParameter) => {
 	if (type !== 'None') return type;
 	if (name.endsWith('_timestamp')) {
 		return 'timestamp';
+	}
+	if (name.endsWith('_pycode')) {
+		return 'pycode';
 	}
 	if (name.endsWith('_file')) {
 		return 'file path';
@@ -208,5 +278,26 @@ export const convertParameterToInput = (parameter: NotebookParameter): InputNote
 		value: String(convertParameterValue(parameter.default, type, true).value),
 		type,
 		isValid: validateParameter(parameter.default, type),
+		isOff: OFF_VALUE.includes(parameter.default),
 	};
 };
+
+export const getFlatListFromTree = (tree: TreeNode) => {
+	const flatten = (node: TreeNode, parentIds: string[] = []): TreeNode[] => [
+		{ ...node, parentIds, childIds: node.complexFields.map(f => f.id) },
+		...node.complexFields.flatMap(child => flatten(child, [...parentIds, node.id])),
+	];
+	return flatten(tree);
+};
+
+export const getFlatListFromTreeWSimple = (tree: TreeNode) => {
+	const flatten = (node: TreeNode, parentIds: string[] = []): (TreeNode | SimpleField)[] => [
+		{ ...node, parentIds, complexFields: [], childIds: node.complexFields.map(f => f.id) },
+		...node.simpleFields.flatMap(child => ({ ...child, parentIds: [...parentIds, node.id] })),
+		...node.complexFields.flatMap(child => flatten(child, [...parentIds, node.id])),
+	];
+	return flatten(tree);
+};
+
+export const getChunk = (timestamp: number | undefined, chunkInterval: number) =>
+	timestamp ? Math.floor(timestamp / chunkInterval) : -1;
