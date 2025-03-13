@@ -62,13 +62,12 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	);
 
 	useEffect(() => {
-		const isChildDisplay =
-			(treeNode.isRoot || viewType === TreeViewType.EVENTS_LIST) &&
-			JSONViewerStore.openTreeNodes[type].has(treeNode.id);
-		if (isChildDisplay) {
-			JSONViewerStore.openNode(treeNode.id, type);
-		} else JSONViewerStore.closeNode(treeNode.id, type);
-		setOpen(viewType === TreeViewType.DISPLAY_TABLE || isChildDisplay);
+		setOpen(JSONViewerStore.openTreeNodes[type].has(treeNode.id));
+		if (viewType !== TreeViewType.EVENTS_LIST) {
+			for (let i = 0; i < treeNode.childIds.length; i++) {
+				JSONViewerStore.closeNode(treeNode.childIds[i], type);
+			}
+		}
 	}, [viewType]);
 
 	useEffect(() => {
@@ -108,12 +107,10 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 			JSONViewerStore.closeNode(treeNode.id, type);
 		} else {
 			setOpen(true);
-			if (viewType === TreeViewType.EVENTS_LIST) {
-				if (treeNode.isRoot) {
-					JSONViewerStore.openNodeAndCloseOthers([treeNode.id, ...treeNode.parentIds], type);
-					JSONViewerStore.scrollToId(treeNode.id, type);
-				} else JSONViewerStore.openNode(treeNode.id, type);
-			}
+			if (treeNode.isRoot) {
+				JSONViewerStore.openNodeAndCloseOthers([treeNode.id, ...treeNode.parentIds], type);
+				JSONViewerStore.scrollToId(treeNode.id, type);
+			} else JSONViewerStore.openNode(treeNode.id, type);
 		}
 	};
 
@@ -192,6 +189,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 						}}>
 						<div className={createBemBlock('event-status-icon')} />
 						<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
+							{/* {treeNode.id} ={'>'} {treeNode.parentIds.join(', ')}{' '} */}
 							{splitContent.map((contentPart, index) => (
 								<span
 									key={index}

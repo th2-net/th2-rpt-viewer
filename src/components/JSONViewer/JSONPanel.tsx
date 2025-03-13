@@ -8,6 +8,8 @@ import { NotebookNode, TreeNode } from '../../models/JSONSchema';
 import FileChoosing from './FileChoosing';
 import JSONView from './JSONView';
 import TreeList from './TreeList';
+import Select from '../util/Select';
+import SearchToken from '../../models/search/SearchToken';
 
 const JSONPanel = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -71,6 +73,15 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 		JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType, type);
 	};
 
+	const onChange = (pattern: string) => {
+		const token = JSONViewerStore.tokens.find((token: SearchToken) => token.pattern === pattern);
+		if (token) {
+			JSONViewerStore.activateSearch(token, type);
+		} else {
+			JSONViewerStore.deactivateSearch(type);
+		}
+	};
+
 	return (
 		<div className='JSON-wrapper' style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
 			<div className='JSON-header-wrapper'>
@@ -97,18 +108,14 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 						onClick={() => inputJSONRef.current?.click()}>
 						Load Local Result(s)
 					</button>
-					{!JSONViewerStore.activeSearch[type] && (
-						<>
-							<button
-								className='JSON-load-button'
-								title='Previous search result'
-								disabled={JSONViewerStore.treeNodes[type].length === 0}
-								onClick={() => JSONViewerStore.activateSearch(type)}>
-								Search
-							</button>
-						</>
-					)}
-					{JSONViewerStore.activeSearch[type] && (
+					<div className='JSON-search-control'>Search:</div>
+					<Select
+						className='JSON-search-select'
+						onChange={onChange}
+						options={JSONViewerStore.tokens.map((token: SearchToken) => token.pattern)}
+						selected={JSONViewerStore.searchToken[type]?.pattern || ''}
+					/>
+					{JSONViewerStore.searchToken[type] !== null && (
 						<div className='JSON-search-control'>
 							<button
 								className='search-controls__prev'

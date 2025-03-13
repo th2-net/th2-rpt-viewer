@@ -150,14 +150,6 @@ export class JSONViewerStore {
 		compare: new Set(),
 	};
 
-	@observable activeSearch: {
-		default: boolean;
-		compare: boolean;
-	} = {
-		default: false,
-		compare: false,
-	};
-
 	@observable searchResults: {
 		default: Array<ReaderSearchResult>;
 		compare: Array<ReaderSearchResult>;
@@ -179,6 +171,16 @@ export class JSONViewerStore {
 
 	@observable
 	public tokens: SearchToken[] = [...defaultSearchTokens];
+
+	@observable
+	public searchToken: {
+		default: SearchToken | null;
+		compare: SearchToken | null;
+	} = {
+		default: null,
+		compare: null,
+	}
+
 
 	@observable
 	public currentSearchResult: {
@@ -231,19 +233,20 @@ export class JSONViewerStore {
 		);
 
 		this.tokens = tokens;
-		this.deactivateSearch();
+		this.deactivateSearchAll();
 	};
 
 	@action
-	updateSearchResults = (type: PanelType) => {
+	updateSearchResults = (token: SearchToken, type: PanelType) => {
 		this.searchResults[type] = [];
+		const searchTokens = [token]
 		const findInDisplayTable = (id: string, displayTable?: string[][]) => {
 			if (!displayTable) return;
 			displayTable.forEach((row, rowIndex) =>
 				row.forEach((cell, cellIndex) =>
 					multiTokenSplit(
 						typeof cell === 'string' ? `"${cell}"` : String(cell),
-						this.tokens,
+						searchTokens,
 					).forEach((content, contentIndex) => {
 						if (content.token)
 							this.searchResults[type].push({
@@ -259,7 +262,7 @@ export class JSONViewerStore {
 		};
 
 		const findInSimpleFields = (id: string, simpleFields: SimpleField[]) => {
-			const keyValueTokens = getKeyValueTokens(this.tokens, true);
+			const keyValueTokens = getKeyValueTokens(searchTokens, true);
 
 			simpleFields.forEach(field => {
 				const { key, value } = field;
@@ -311,7 +314,7 @@ export class JSONViewerStore {
 				: node.key && !(node.isGeneratedKey && !node.isRoot)
 				? node.key
 				: 'no display name';
-			const nameSplitContent = multiTokenSplit(nodeName, this.tokens);
+			const nameSplitContent = multiTokenSplit(nodeName, searchTokens);
 			nameSplitContent.forEach((content, contentIndex) => {
 				if (content.token) results.push({ type: 'name', id: node.id, contentIndex });
 			});
@@ -372,19 +375,28 @@ export class JSONViewerStore {
 			});
 		}
 
+		if (!this.openTreeNodes[type].has(this.treeNodes[type][index].id)) {
+			this.openNode(this.treeNodes[type][index].id, type);
+		}
+
 		this.scrollToId(this.searchResults[type][this.currentSearchResult[type]].id, type);
 	};
 
 	@action
-	deactivateSearch = () => {
-		this.activeSearch.default = false;
-		this.activeSearch.compare = false;
+	deactivateSearchAll = () => {
+		this.searchToken.default = null
+		this.searchToken.compare = null
 	};
 
 	@action
-	activateSearch = (type: PanelType) => {
-		this.updateSearchResults(type);
-		this.activeSearch[type] = true;
+	deactivateSearch = (type: PanelType) => {
+		this.searchToken[type] = null;
+	};
+
+	@action
+	activateSearch = (token: SearchToken, type: PanelType) => {
+		this.updateSearchResults(token, type);
+		this.searchToken[type] = token
 		this.moveToNextSearchResult(type);
 	};
 
@@ -600,7 +612,7 @@ export class JSONViewerStore {
 		this.treeNodes[type] = n.slice();
 		this.selectedTreeNode[type] = nullTreeNode;
 		this.initHeightsData(type);
-		this.deactivateSearch();
+		this.deactivateSearch(type);
 	}
 
 	@action setNotebooks(n: NotebookNode[], type: PanelType) {
@@ -624,7 +636,7 @@ export class JSONViewerStore {
 	@action addNodes(tree: TreeNode[], type: PanelType) {
 		this.treeNodes[type] = this.treeNodes[type].concat(tree);
 		this.initHeightsData(type);
-		this.deactivateSearch();
+		this.deactivateSearch(type);
 	}
 
 	@action removeNodesById(ids: string[], type: PanelType) {
@@ -792,49 +804,62 @@ export class JSONViewerStore {
 		default: (TreeNode | NotebookNode | ChunkHeightData)[];
 		compare: (TreeNode | NotebookNode | ChunkHeightData)[];
 	} {
+		// TODO: remove copy past
+		const defaultList = [
+			...this.notebooks.default,
+			...this.treeNodes.default
+				.filter(node => {
+					const parentId = node.parentIds.at(-1)
+					if (parentId) {
+						const parent = this.treeNodes.default.find(tree => tree.id === parentId)
+						return node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)) && (parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
+					}
+					return true
+				})
+				.flatMap(node => [
+					...this.chunksHeights.default.filter(
+						chunkData =>
+							this.isCompare &&
+							chunkData.height > 0 &&
+							chunkData.lastElement === '' &&
+							chunkData.firstElement === node.id,
+					),
+					node,
+					...this.chunksHeights.default.filter(
+						chunkData =>
+							this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
+					),
+				]),
+		]
+		const compareList = [
+			...this.notebooks.compare,
+			...this.treeNodes.compare
+				.filter(node => {
+					const parentId = node.parentIds.at(-1)
+					if (parentId) {
+						const parent = this.treeNodes.compare.find(tree => tree.id === parentId)
+						return node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)) && (parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
+					}
+					return true
+				})
+				.flatMap(node => [
+					...this.chunksHeights.compare.filter(
+						chunkData =>
+							this.isCompare &&
+							chunkData.height > 0 &&
+							chunkData.lastElement === '' &&
+							chunkData.firstElement === node.id,
+					),
+					node,
+					...this.chunksHeights.compare.filter(
+						chunkData =>
+							this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
+					),
+				]),
+		]
 		return {
-			default: [
-				...this.notebooks.default,
-				...this.treeNodes.default
-					.filter(node =>
-						node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)),
-					)
-					.flatMap(node => [
-						...this.chunksHeights.default.filter(
-							chunkData =>
-								this.isCompare &&
-								chunkData.height > 0 &&
-								chunkData.lastElement === '' &&
-								chunkData.firstElement === node.id,
-						),
-						node,
-						...this.chunksHeights.default.filter(
-							chunkData =>
-								this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
-						),
-					]),
-			],
-			compare: [
-				...this.notebooks.compare,
-				...this.treeNodes.compare
-					.filter(node =>
-						node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)),
-					)
-					.flatMap(node => [
-						...this.chunksHeights.compare.filter(
-							chunkData =>
-								this.isCompare &&
-								chunkData.height > 0 &&
-								chunkData.lastElement === '' &&
-								chunkData.firstElement === node.id,
-						),
-						node,
-						...this.chunksHeights.compare.filter(
-							chunkData =>
-								this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
-						),
-					]),
-			],
+			default: defaultList,
+			compare: compareList,
 		};
 	}
 
