@@ -179,8 +179,7 @@ export class JSONViewerStore {
 	} = {
 		default: null,
 		compare: null,
-	}
-
+	};
 
 	@observable
 	public currentSearchResult: {
@@ -239,7 +238,7 @@ export class JSONViewerStore {
 	@action
 	updateSearchResults = (token: SearchToken, type: PanelType) => {
 		this.searchResults[type] = [];
-		const searchTokens = [token]
+		const searchTokens = [token];
 		const findInDisplayTable = (id: string, displayTable?: string[][]) => {
 			if (!displayTable) return;
 			displayTable.forEach((row, rowIndex) =>
@@ -384,8 +383,8 @@ export class JSONViewerStore {
 
 	@action
 	deactivateSearchAll = () => {
-		this.searchToken.default = null
-		this.searchToken.compare = null
+		this.searchToken.default = null;
+		this.searchToken.compare = null;
 	};
 
 	@action
@@ -396,7 +395,7 @@ export class JSONViewerStore {
 	@action
 	activateSearch = (token: SearchToken, type: PanelType) => {
 		this.updateSearchResults(token, type);
-		this.searchToken[type] = token
+		this.searchToken[type] = token;
 		this.moveToNextSearchResult(type);
 	};
 
@@ -809,12 +808,15 @@ export class JSONViewerStore {
 			...this.notebooks.default,
 			...this.treeNodes.default
 				.filter(node => {
-					const parentId = node.parentIds.at(-1)
+					const parentId = node.parentIds.at(-1);
 					if (parentId) {
-						const parent = this.treeNodes.default.find(tree => tree.id === parentId)
-						return node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)) && (parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
+						const parent = this.treeNodes.default.find(tree => tree.id === parentId);
+						return (
+							node.parentIds.every(parentId => this.openTreeNodes.default.has(parentId)) &&
+							(parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
+						);
 					}
-					return true
+					return true;
 				})
 				.flatMap(node => [
 					...this.chunksHeights.default.filter(
@@ -830,17 +832,20 @@ export class JSONViewerStore {
 							this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
 					),
 				]),
-		]
+		];
 		const compareList = [
 			...this.notebooks.compare,
 			...this.treeNodes.compare
 				.filter(node => {
-					const parentId = node.parentIds.at(-1)
+					const parentId = node.parentIds.at(-1);
 					if (parentId) {
-						const parent = this.treeNodes.compare.find(tree => tree.id === parentId)
-						return node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)) && (parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
+						const parent = this.treeNodes.compare.find(tree => tree.id === parentId);
+						return (
+							node.parentIds.every(parentId => this.openTreeNodes.compare.has(parentId)) &&
+							(parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
+						);
 					}
-					return true
+					return true;
 				})
 				.flatMap(node => [
 					...this.chunksHeights.compare.filter(
@@ -856,7 +861,7 @@ export class JSONViewerStore {
 							this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
 					),
 				]),
-		]
+		];
 		return {
 			default: defaultList,
 			compare: compareList,
