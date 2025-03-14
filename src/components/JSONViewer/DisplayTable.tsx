@@ -4,7 +4,7 @@ import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 
-const shownCapacity = 50;
+const shownCapacity = 1000;
 
 const DisplayTable = ({
 	value,
