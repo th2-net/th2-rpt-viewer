@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2025 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { createCaseInsensitiveRegexp } from '../regexp';
+import { createCaseInsensitiveRegexp, createCaseSensitiveRegexp } from '../regexp';
 import SearchToken from '../../models/search/SearchToken';
 import SearchSplitResult from '../../models/search/SearchSplitResult';
 
@@ -43,10 +43,15 @@ export default function multiTokenSplit(
 		return a.isScrollable ? 1 : -1;
 	};
 
-	const splitContent = (token: SearchToken) => ({
-		content: content.split(createCaseInsensitiveRegexp(token.pattern)).slice(0, -1),
-		token,
-	});
+	const splitContent = (token: SearchToken) => {
+		const regexp = token.isCaseSensitive
+			? createCaseSensitiveRegexp(token.pattern)
+			: createCaseInsensitiveRegexp(token.pattern);
+		return {
+			content: content.split(regexp).slice(0, -1),
+			token,
+		};
+	};
 
 	const tokenSplitResults = [...tokens]
 		.filter(({ pattern }) => pattern.length > 0)
