@@ -21,7 +21,9 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	const isSelected = treeNode.id === JSONViewerStore.selectedTreeNode[type].id;
 	const viewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
 	const [open, setOpen] = React.useState(
-		viewType === TreeViewType.DISPLAY_TABLE || JSONViewerStore.openTreeNodes[type].has(treeNode.id),
+		viewType === TreeViewType.DISPLAY_TABLE ||
+			viewType === TreeViewType.JSON ||
+			JSONViewerStore.isOpenNode(treeNode.id, type),
 	);
 
 	const nodeName = useMemo(() => {
@@ -62,7 +64,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	);
 
 	useEffect(() => {
-		setOpen(JSONViewerStore.openTreeNodes[type].has(treeNode.id));
+		setOpen(JSONViewerStore.isOpenNode(treeNode.id, type));
 		if (viewType !== TreeViewType.EVENTS_LIST) {
 			for (let i = 0; i < treeNode.childIds.length; i++) {
 				JSONViewerStore.closeNode(treeNode.childIds[i], type);
@@ -73,7 +75,8 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	useEffect(() => {
 		setOpen(
 			viewType === TreeViewType.DISPLAY_TABLE ||
-				JSONViewerStore.openTreeNodes[type].has(treeNode.id),
+				viewType === TreeViewType.JSON ||
+				JSONViewerStore.isOpenNode(treeNode.id, type),
 		);
 	}, [JSONViewerStore.openTreeNodes[type].values]);
 
