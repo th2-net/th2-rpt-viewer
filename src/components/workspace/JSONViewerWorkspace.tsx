@@ -50,7 +50,7 @@ const JSONViewerWorkspace = () => {
 				isActive: true,
 			})),
 		[
-			JSONViewerStore.treeNodes.default,
+			JSONViewerStore.treeNodeHolders.default,
 			JSONViewerStore.notebooks.default,
 			JSONViewerStore.isModalOpen.default,
 			JSONViewerStore.selectedTreeNode.default,
@@ -68,7 +68,7 @@ const JSONViewerWorkspace = () => {
 				isActive: true,
 			})),
 		[
-			JSONViewerStore.treeNodes.compare,
+			JSONViewerStore.treeNodeHolders.compare,
 			JSONViewerStore.notebooks.compare,
 			JSONViewerStore.isModalOpen.compare,
 			JSONViewerStore.selectedTreeNode.compare,

@@ -21,8 +21,8 @@ const EmptyLeaf = ({
 	const otherBorderSide = type === 'default' ? 'Left' : 'Right';
 
 	const nextChunk = useMemo(
-		() => nextNodeChunk || getChunk(nextNodeTimestamp, JSONViewerStore.сhunkInterval),
-		[nextNodeChunk, nextNodeTimestamp, JSONViewerStore.сhunkInterval],
+		() => nextNodeChunk || getChunk(nextNodeTimestamp, JSONViewerStore.chunkInterval),
+		[nextNodeChunk, nextNodeTimestamp, JSONViewerStore.chunkInterval],
 	);
 
 	const chunkColor = useMemo(

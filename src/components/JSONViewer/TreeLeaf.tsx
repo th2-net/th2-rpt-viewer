@@ -41,8 +41,8 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	);
 
 	const chunk = useMemo(
-		() => getChunk(treeNode.displayTimestamp, JSONViewerStore.сhunkInterval),
-		[treeNode.displayTimestamp, JSONViewerStore.сhunkInterval],
+		() => getChunk(treeNode.displayTimestamp, JSONViewerStore.chunkInterval),
+		[treeNode.displayTimestamp, JSONViewerStore.chunkInterval],
 	);
 
 	const chunkColor = useMemo(() => JSONViewerStore.intervalsColor[chunk], [chunk]);

@@ -21,6 +21,7 @@ import {
 	NotebookNode,
 	SimpleField,
 	TreeNode,
+	TreeNodeHolder,
 	TreeViewType,
 } from '../../models/JSONSchema';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
@@ -120,12 +121,18 @@ export class JSONViewerStore {
 		compare: [],
 	};
 
-	@observable treeNodes: {
-		default: TreeNode[];
-		compare: TreeNode[];
+	@observable treeNodeHolders: {
+		default: TreeNodeHolder;
+		compare: TreeNodeHolder;
 	} = {
-		default: [],
-		compare: [],
+		default: {
+			nodes: [],
+			idToIndex: new Map<string, number>(),
+		},
+		compare: {
+			nodes: [],
+			idToIndex: new Map<string, number>(),
+		},
 	};
 
 	@observable openTreeNodes: {
@@ -181,7 +188,7 @@ export class JSONViewerStore {
 	@observable intervalUnit = 1000;
 
 	@computed
-	public get сhunkInterval() {
+	public get chunkInterval() {
 		return this.intervalSize * this.intervalUnit;
 	}
 
@@ -346,8 +353,8 @@ export class JSONViewerStore {
 			return false;
 		};
 
-		for (let nodeIndex = 0; nodeIndex < this.treeNodes[type].length; nodeIndex++) {
-			const node = this.treeNodes[type][nodeIndex];
+		const nodeHolder = this.getNodeHolder(type);
+		nodeHolder.nodes.forEach(node => {
 			if (!node.isRoot) {
 				if (node.parentIds.length === 1) {
 					if (!findInDisplayName(node.id, node.displayName)) {
@@ -357,7 +364,7 @@ export class JSONViewerStore {
 					}
 				}
 			}
-		}
+		})
 		this.currentSearchResult[type] = 0;
 	};
 
@@ -365,7 +372,7 @@ export class JSONViewerStore {
 	moveToNextSearchResult = (type: PanelType) => {
 		const searchResult = this.searchResults[type][this.currentSearchResult[type]];
 		const id = searchResult.id;
-		const searchNode = this.treeNodes[type].find(tree => tree.id === id);
+		const searchNode = JSONViewerStore.getNodeById(id, this.getNodeHolder(type));
 
 		if (!searchNode) {
 			console.error(`Node for '${id}' id isn't found`);
@@ -445,9 +452,17 @@ export class JSONViewerStore {
 		this.moveToNextSearchResult(type);
 	};
 
-	getCurrentResult = (type: PanelType) => this.searchResults[type][this.currentSearchResult[type]];
+	private getCurrentResult = (type: PanelType) => {
+		const results = this.searchResults[type]
+		const resultIndex = this.currentSearchResult[type]
+		if (results.length > 0 && results.length < resultIndex) {
+			results[resultIndex];
+		} else {
+			return undefined;
+		}
+	}
 
-	compareResults = (result1?: ReaderSearchResult, result2?: ReaderSearchResult) => {
+	private compareResults = (result1?: ReaderSearchResult, result2?: ReaderSearchResult) => {
 		if (!result1) return false;
 		if (!result2) return false;
 
@@ -638,7 +653,13 @@ export class JSONViewerStore {
 
 	@action setTreeNodes(n: TreeNode[], type: PanelType) {
 		this.clearHeights(type);
-		this.treeNodes[type] = n.slice();
+		const nodeHolder = this.getNodeHolder(type);
+		nodeHolder.nodes = n.slice();
+		nodeHolder.idToIndex.clear();
+		nodeHolder.nodes.forEach((n, i) => nodeHolder.idToIndex.set(n.id, i));
+		if (nodeHolder.nodes.length != nodeHolder.idToIndex.size) {
+			throw new Error(`Number of nodes '${nodeHolder.nodes.length}' isn't matched to number of unique ids '${nodeHolder.idToIndex.size}'`);
+		}
 		this.selectedTreeNode[type] = nullTreeNode;
 		this.initHeightsData(type);
 		this.deactivateSearch(type);
@@ -662,18 +683,46 @@ export class JSONViewerStore {
 		}
 	}
 
+	private getNodeHolder(type: PanelType) {
+		return this.treeNodeHolders[type];
+	}
+
+	private static getNodeById(id: string, nodeHolder: TreeNodeHolder) {
+		const index = nodeHolder.idToIndex.get(id)
+		if (index !== undefined) {
+			return nodeHolder.nodes[index]
+		}
+		return undefined
+	}
+
 	@action addNodes(tree: TreeNode[], type: PanelType) {
-		this.treeNodes[type] = this.treeNodes[type].concat(tree);
+		const nodeHolder = this.getNodeHolder(type);
+		const previousLength = nodeHolder.nodes.length;
+		nodeHolder.nodes = nodeHolder.nodes.concat(tree);
+		tree.forEach((n, i) => nodeHolder.idToIndex.set(n.id, i + previousLength));
+		if (nodeHolder.nodes.length != nodeHolder.idToIndex.size) {
+			throw new Error(`Number of nodes '${nodeHolder.nodes.length}' isn't matched to number of unique ids '${nodeHolder.idToIndex.size}'`);
+		}
 		this.initHeightsData(type);
 		this.deactivateSearch(type);
 	}
 
+	private static collectRelatedIndexes(ids: string[], result: Set<string>, nodeHolder: TreeNodeHolder) {
+		ids.forEach(id => {
+			result.add(id);
+			const node = JSONViewerStore.getNodeById(id, nodeHolder);
+			if (node) JSONViewerStore.collectRelatedIndexes(node.childIds, result, nodeHolder);
+		});
+		return result;
+	}
+
 	@action removeNodesById(ids: string[], type: PanelType) {
-		for (let i = 0; i < ids.length; i++) {
-			const index = this.treeNodes[type].findIndex(tree => tree.id === ids[i]);
-			this.removeNodesById(this.treeNodes[type][index].childIds, type);
-		}
-		this.treeNodes[type] = this.treeNodes[type].filter(node => !ids.includes(node.id));
+		const nodeHolder = this.getNodeHolder(type);
+		const relatedIds = new Set<string>();
+		JSONViewerStore.collectRelatedIndexes(ids, relatedIds, nodeHolder);
+		nodeHolder.nodes = nodeHolder.nodes.filter(node => !relatedIds.has(node.id));
+		nodeHolder.idToIndex.clear();
+		nodeHolder.nodes.forEach((n, i) => nodeHolder.idToIndex.set(n.id, i + length));
 	}
 
 	@action setNodeHeight(
@@ -691,7 +740,7 @@ export class JSONViewerStore {
 	}
 
 	@action initHeightsData(type: PanelType) {
-		this.treeNodes[type].forEach(node => {
+		this.getNodeHolder(type).nodes.forEach(node => {
 			if (isTreeNode(node) && !this.heights[type].has(node.id))
 				this.setNodeHeight(node.id, node.displayTimestamp, 30, node.parentIds, type);
 		});
@@ -720,29 +769,40 @@ export class JSONViewerStore {
 		this.activeIndex[type] = this.listData[type].findIndex(node => 'id' in node && node.id === id);
 	}
 
+	// TODO: try to replace to set instead of recreate
 	@action setNodeView(id: string, viewType: TreeViewType, type: PanelType) {
-		const index = this.treeNodes[type].findIndex(tree => tree.id === id);
-		if (this.treeNodes[type][index].viewType !== viewType)
-			this.treeNodes[type] = [
-				...this.treeNodes[type].slice(0, index),
+		const nodeHolder = this.getNodeHolder(type);
+		const index = nodeHolder.idToIndex.get(id);
+		if (index === undefined) {
+			return;
+		}
+		const node = nodeHolder.nodes[index];
+		if (node && node.viewType !== viewType)
+			nodeHolder.nodes = [
+				...nodeHolder.nodes.slice(0, index),
 				{
-					...this.treeNodes[type][index],
+					...node,
 					viewType,
 				},
-				...this.treeNodes[type].slice(index + 1),
+				...nodeHolder.nodes.slice(index + 1),
 			];
 	}
 
+	// TODO: try to replace to set instead of recreate
 	@action setGroupView(id: string, viewType: TreeViewType, type: PanelType) {
-		const index = this.treeNodes[type].findIndex(tree => tree.id === id);
+		const nodeHolder = this.getNodeHolder(type);
+		const index = nodeHolder.idToIndex.get(id);
+		if (index === undefined) {
+			return;
+		}
 		const node = {
-			...this.treeNodes[type][index],
+			...nodeHolder.nodes[index],
 			viewType,
 		};
-		this.treeNodes[type] = [
-			...this.treeNodes[type].slice(0, index),
+		nodeHolder.nodes = [
+			...nodeHolder.nodes.slice(0, index),
 			node,
-			...this.treeNodes[type].slice(index + 1),
+			...nodeHolder.nodes.slice(index + 1),
 		];
 		for (let i = 0; i < node.childIds.length; i++) {
 			this.setGroupView(node.childIds[i], viewType, type);
@@ -832,73 +892,51 @@ export class JSONViewerStore {
 			node => 'parentIds' in node && node.displayTimestamp && node.displayTimestamp >= timestamp,
 		);
 
+	private createListData(type: PanelType) {
+		const nodeHolder = this.getNodeHolder(type);
+		const result = [
+			...this.notebooks[type],
+			...nodeHolder.nodes
+				.filter(node => {
+					const parentId = node.parentIds.at(-1);
+					if (parentId) {
+						const parent = JSONViewerStore.getNodeById(parentId, nodeHolder);
+						return (
+							node.parentIds.every(parentId => this.isOpenNode(parentId, type)) &&
+							(parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
+						);
+					}
+					return true;
+				})
+				.flatMap(node => [
+					...this.chunksHeights[type].filter(
+						chunkData =>
+							this.isCompare &&
+							chunkData.height > 0 &&
+							chunkData.lastElement === '' &&
+							chunkData.firstElement === node.id,
+					),
+					node,
+					...this.chunksHeights[type].filter(
+						chunkData =>
+							this.isCompare && 
+						    chunkData.height > 0 && 
+							chunkData.lastElement === node.id,
+					),
+				]),
+		];
+		return result;
+	}
+
 	@computed
 	public get listData(): {
 		default: (TreeNode | NotebookNode | ChunkHeightData)[];
 		compare: (TreeNode | NotebookNode | ChunkHeightData)[];
 	} {
-		// TODO: remove copy past
-		const defaultList = [
-			...this.notebooks.default,
-			...this.treeNodes.default
-				.filter(node => {
-					const parentId = node.parentIds.at(-1);
-					if (parentId) {
-						const parent = this.treeNodes.default.find(tree => tree.id === parentId);
-						return (
-							node.parentIds.every(parentId => this.isOpenNode(parentId, 'default')) &&
-							(parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
-						);
-					}
-					return true;
-				})
-				.flatMap(node => [
-					...this.chunksHeights.default.filter(
-						chunkData =>
-							this.isCompare &&
-							chunkData.height > 0 &&
-							chunkData.lastElement === '' &&
-							chunkData.firstElement === node.id,
-					),
-					node,
-					...this.chunksHeights.default.filter(
-						chunkData =>
-							this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
-					),
-				]),
-		];
-		const compareList = [
-			...this.notebooks.compare,
-			...this.treeNodes.compare
-				.filter(node => {
-					const parentId = node.parentIds.at(-1);
-					if (parentId) {
-						const parent = this.treeNodes.compare.find(tree => tree.id === parentId);
-						return (
-							node.parentIds.every(parentId => this.isOpenNode(parentId, 'compare')) &&
-							(parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
-						);
-					}
-					return true;
-				})
-				.flatMap(node => [
-					...this.chunksHeights.compare.filter(
-						chunkData =>
-							this.isCompare &&
-							chunkData.height > 0 &&
-							chunkData.lastElement === '' &&
-							chunkData.firstElement === node.id,
-					),
-					node,
-					...this.chunksHeights.compare.filter(
-						chunkData =>
-							this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
-					),
-				]),
-		];
+		// console.log("Hello, world!");
 		return {
-			default: defaultList,
-			compare: compareList,
+			default: this.createListData('default'),
+			compare: this.createListData('compare'),
 		};
 	}
 
@@ -906,13 +944,13 @@ export class JSONViewerStore {
 	public get intervalsColor() {
 		const chunks = new Set<number>();
 		[
-			...this.treeNodes.default.filter(node =>
+			...this.treeNodeHolders.default.nodes.filter(node =>
 				node.parentIds.every(parentId => this.isOpenNode(parentId, 'default')),
 			),
-			...this.treeNodes.compare.filter(node =>
+			...this.treeNodeHolders.compare.nodes.filter(node =>
 				node.parentIds.every(parentId => this.isOpenNode(parentId, 'compare')),
 			),
-		].forEach(({ displayTimestamp }) => chunks.add(getChunk(displayTimestamp, this.сhunkInterval)));
+		].forEach(({ displayTimestamp }) => chunks.add(getChunk(displayTimestamp, this.chunkInterval)));
 		return Object.fromEntries(
 			Array.from(chunks)
 				.sort((a, b) => a - b)
@@ -932,7 +970,7 @@ export class JSONViewerStore {
 			};
 		} = {};
 		for (let i = 0; i < heightsFiltered.length; i++) {
-			const chunk = getChunk(heightsFiltered[i][1].displayTimestamp, this.сhunkInterval);
+			const chunk = getChunk(heightsFiltered[i][1].displayTimestamp, this.chunkInterval);
 			if (chunks[chunk]) {
 				chunks[chunk] = {
 					height: chunks[chunk].height + heightsFiltered[i][1].height,
@@ -1000,14 +1038,14 @@ export class JSONViewerStore {
 
 	@action scrollToNearest(timestamp: number, type: PanelType) {
 		const convertType = type === 'default' ? 'compare' : 'default';
-		const chunk = getChunk(timestamp, this.сhunkInterval);
+		const chunk = getChunk(timestamp, this.chunkInterval);
 		const nearestNodeIndex = this.listData[convertType].findIndex(node =>
 			!('paramsValue' in node) && 'lastElement' in node
 				? node.chunk >= chunk
 				: isTreeNode(node) &&
 				  node.displayTimestamp &&
 				  node.parentIds.every(parentId => this.isOpenNode(parentId, convertType)) &&
-				  getChunk(node.displayTimestamp, this.сhunkInterval) >= chunk,
+				  getChunk(node.displayTimestamp, this.chunkInterval) >= chunk,
 		);
 		const nearestNodeLocalIndex = this.listData[type].findIndex(node =>
 			!('paramsValue' in node) && 'lastElement' in node
@@ -1015,7 +1053,7 @@ export class JSONViewerStore {
 				: isTreeNode(node) &&
 				  node.displayTimestamp &&
 				  node.parentIds.every(parentId => this.isOpenNode(parentId, type)) &&
-				  getChunk(node.displayTimestamp, this.сhunkInterval) >= chunk,
+				  getChunk(node.displayTimestamp, this.chunkInterval) >= chunk,
 		);
 		if (nearestNodeIndex && nearestNodeLocalIndex) {
 			const nearestNode = this.listData[convertType][nearestNodeIndex];
