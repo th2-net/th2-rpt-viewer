@@ -655,10 +655,27 @@ export class JSONViewerStore {
 
 	private static getNodeById(id: string, nodeHolder: TreeNodeHolder) {
 		const index = nodeHolder.idToIndex.get(id);
-		if (index !== undefined) {
-			return nodeHolder.nodes[index];
+		if (index === undefined) {
+			return undefined;
 		}
-		return undefined;
+		return nodeHolder.nodes[index];
+	}
+
+	private static updateNodeView(id: string, viewType: TreeViewType, nodeHolder: TreeNodeHolder) {
+		const index = nodeHolder.idToIndex.get(id);
+		if (index === undefined) return undefined;
+
+		const oldNode = nodeHolder.nodes[index];
+		if (oldNode && oldNode.viewType !== viewType) {
+			const newNode = {
+				...oldNode,
+				viewType,
+			};
+			// eslint-disable-next-line no-param-reassign
+			nodeHolder.nodes[index] = newNode;
+			return newNode;
+		}
+		return oldNode;
 	}
 
 	@action addNodes(tree: TreeNode[], type: PanelType) {
@@ -741,41 +758,14 @@ export class JSONViewerStore {
 		this.activeIndex[type] = this.listData[type].findIndex(node => 'id' in node && node.id === id);
 	}
 
-	// TODO: try to replace to set instead of recreate
 	@action setNodeView(id: string, viewType: TreeViewType, type: PanelType) {
-		const nodeHolder = this.getNodeHolder(type);
-		const index = nodeHolder.idToIndex.get(id);
-		if (index === undefined) {
-			return;
-		}
-		const node = nodeHolder.nodes[index];
-		if (node && node.viewType !== viewType)
-			nodeHolder.nodes = [
-				...nodeHolder.nodes.slice(0, index),
-				{
-					...node,
-					viewType,
-				},
-				...nodeHolder.nodes.slice(index + 1),
-			];
+		JSONViewerStore.updateNodeView(id, viewType, this.getNodeHolder(type));
 	}
 
-	// TODO: try to replace to set instead of recreate
 	@action setGroupView(id: string, viewType: TreeViewType, type: PanelType) {
-		const nodeHolder = this.getNodeHolder(type);
-		const index = nodeHolder.idToIndex.get(id);
-		if (index === undefined) {
-			return;
-		}
-		const node = {
-			...nodeHolder.nodes[index],
-			viewType,
-		};
-		nodeHolder.nodes = [
-			...nodeHolder.nodes.slice(0, index),
-			node,
-			...nodeHolder.nodes.slice(index + 1),
-		];
+		const node = JSONViewerStore.updateNodeView(id, viewType, this.getNodeHolder(type));
+		if (node === undefined) return;
+
 		for (let i = 0; i < node.childIds.length; i++) {
 			this.setGroupView(node.childIds[i], viewType, type);
 		}
