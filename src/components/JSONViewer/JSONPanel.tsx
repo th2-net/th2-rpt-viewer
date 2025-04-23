@@ -1,9 +1,24 @@
-import React from 'react';
+/** ****************************************************************************
+ * Copyright 2024-2025 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************** */
+
+import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { nanoid } from 'nanoid';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
-import { getFlatListFromTree, parseText } from '../../helpers/JSONViewer';
+import { getFlatListFromTree, parseText, nextid } from '../../helpers/JSONViewer';
 import { NotebookNode, TreeNode } from '../../models/JSONSchema';
 import FileChoosing from './FileChoosing';
 import JSONView from './JSONView';
@@ -30,7 +45,7 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 		}
 		const nodes: TreeNode[] = (await Promise.all(promises)).map(([fileName, text]) => {
 			const node: TreeNode = {
-				id: nanoid(),
+				id: nextid(),
 				parentIds: [],
 				key: fileName,
 				failed: false,
@@ -82,8 +97,29 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 		}
 	};
 
+	const panelRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const resizeObserver = new ResizeObserver(entries => {
+			const width =
+				entries[0].borderBoxSize?.length > 0
+					? entries[0].borderBoxSize[0].inlineSize
+					: entries[0].contentRect.width;
+			JSONViewerStore.updatePanelWidth(width, type);
+		});
+		if (panelRef.current) {
+			resizeObserver.observe(panelRef.current);
+		}
+		return () => {
+			if (panelRef.current) resizeObserver.unobserve(panelRef.current);
+		};
+	}, []);
+
 	return (
-		<div className='JSON-wrapper' style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+		<div
+			ref={panelRef}
+			className='JSON-wrapper'
+			style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
 			<div className='JSON-header-wrapper'>
 				<div className='JSON-buttons-wrapper'>
 					<button

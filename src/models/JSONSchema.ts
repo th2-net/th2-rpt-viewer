@@ -30,31 +30,31 @@ export enum TreeViewType {
 }
 
 export interface SimpleField {
-	id: string;
+	id: number;
 	key: string;
 	value: any;
-	parentIds?: string[];
+	parentIds?: number[];
 }
 
 export interface BlankTreeNode {
-	id: string;
+	id: number;
 	displayTimestamp: number;
 	height: number;
-	nextId: string;
-	prevId: string;
+	nextId: number;
+	prevId: number;
 }
 
 export interface TreeNode {
-	id: string;
+	id: number;
 	key: string;
-	parentIds: string[];
+	parentIds: number[];
 	displayName?: string;
 	displayTimestamp?: number;
 	displayTable?: string[][];
 	failed: boolean;
 	viewInstruction: string;
 	complexFields: TreeNode[];
-	childIds: string[];
+	childIds: number[];
 	simpleFields: SimpleField[];
 	isArray?: boolean;
 	isGeneratedKey?: boolean;
@@ -64,14 +64,14 @@ export interface TreeNode {
 
 export interface TreeNodeHolder {
 	nodes: TreeNode[];
-	idToIndex: Map<string, number>;
+	idToIndex: Map<number, number>;
 }
 
 export interface NotebookNode {
 	name: string;
 	parameters: NotebookParameter[];
 	paramsValue: InputNotebookParameter[];
-	results: string[];
+	results: number[];
 	resultsCount: string;
 	open: boolean;
 }

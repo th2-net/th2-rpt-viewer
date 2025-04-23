@@ -1,3 +1,19 @@
+/** ****************************************************************************
+ * Copyright 2024-2025 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************** */
+
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
@@ -18,6 +34,7 @@ import {
 	OFF_VALUE_SERVER,
 	parseText,
 	validateParameter,
+	nextid,
 } from '../../helpers/JSONViewer';
 import { useNotificationsStore, useOutsideClickListener } from '../../hooks';
 import ParametersRow from './ParametersRow';
@@ -51,7 +68,7 @@ const NotebookParamsCell = ({
 	const [timer, setTimer] = React.useState<NodeJS.Timeout | null>();
 	const [taskId, setTaskId] = React.useState<string | null>();
 	const [resultCount, setResultCount] = React.useState<string>(String(notebook.resultsCount));
-	const [results, setResults] = React.useState<string[]>(notebook.results);
+	const [results, setResults] = React.useState<number[]>(notebook.results);
 	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid || v.isOff), [paramsValue]);
 	const reloadRef = React.useRef<HTMLButtonElement>(null);
 	const inputJSONRef = React.useRef<HTMLInputElement>(null);
@@ -109,12 +126,12 @@ const NotebookParamsCell = ({
 			case 'success':
 				if (result.includes('{')) {
 					const node: TreeNode = {
-						id: nanoid(),
+						id: nextid(),
 						parentIds: [],
 						key: `Result of ${notebook.name}'s run`,
 						failed: false,
 						viewInstruction: '',
-						simpleFields: [{ id: nanoid(), key: 'filepath', value: path }],
+						simpleFields: [{ id: nextid(), key: 'filepath', value: path }],
 						complexFields: [],
 						childIds: [],
 						isGeneratedKey: true,
