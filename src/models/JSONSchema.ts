@@ -63,8 +63,8 @@ export interface TreeNode {
 }
 
 export interface TreeNodeHolder {
-	nodes: TreeNode[]
-	idToIndex: Map<string, number>
+	nodes: TreeNode[];
+	idToIndex: Map<string, number>;
 }
 
 export interface NotebookNode {

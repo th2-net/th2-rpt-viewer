@@ -364,7 +364,7 @@ export class JSONViewerStore {
 					}
 				}
 			}
-		})
+		});
 		this.currentSearchResult[type] = 0;
 	};
 
@@ -453,49 +453,12 @@ export class JSONViewerStore {
 	};
 
 	private getCurrentResult = (type: PanelType) => {
-		const results = this.searchResults[type]
-		const resultIndex = this.currentSearchResult[type]
+		const results = this.searchResults[type];
+		const resultIndex = this.currentSearchResult[type];
 		if (results.length > 0 && results.length < resultIndex) {
-			results[resultIndex];
-		} else {
-			return undefined;
+			return results[resultIndex];
 		}
-	}
-
-	private compareResults = (result1?: ReaderSearchResult, result2?: ReaderSearchResult) => {
-		if (!result1) return false;
-		if (!result2) return false;
-
-		switch (result1.type) {
-			case 'name': {
-				return (
-					result2.type === 'name' &&
-					result1.id === result2.id &&
-					result1.contentIndex === result2.contentIndex
-				);
-			}
-			case 'table': {
-				return (
-					result2.type === 'table' &&
-					result1.id === result2.id &&
-					result1.contentIndex === result2.contentIndex &&
-					result1.rowIndex === result2.rowIndex &&
-					result1.cellIndex === result2.cellIndex
-				);
-			}
-			case 'body': {
-				return (
-					result2.type === 'body' &&
-					result1.id === result2.id &&
-					result1.contentIndex === result2.contentIndex &&
-					result1.row === result2.row &&
-					result1.position === result2.position
-				);
-			}
-			default: {
-				return false;
-			}
-		}
+		return undefined;
 	};
 
 	compareResult = (type: PanelType, result: ReaderSearchResult) =>
@@ -651,14 +614,17 @@ export class JSONViewerStore {
 		this.modalType = modalType;
 	};
 
-	@action setTreeNodes(n: TreeNode[], type: PanelType) {
+	@action setTreeNodes(nodes: TreeNode[], type: PanelType) {
 		this.clearHeights(type);
 		const nodeHolder = this.getNodeHolder(type);
-		nodeHolder.nodes = n.slice();
+		nodeHolder.nodes = nodes.slice();
 		nodeHolder.idToIndex.clear();
 		nodeHolder.nodes.forEach((n, i) => nodeHolder.idToIndex.set(n.id, i));
-		if (nodeHolder.nodes.length != nodeHolder.idToIndex.size) {
-			throw new Error(`Number of nodes '${nodeHolder.nodes.length}' isn't matched to number of unique ids '${nodeHolder.idToIndex.size}'`);
+		if (nodeHolder.nodes.length !== nodeHolder.idToIndex.size) {
+			throw new Error(
+				// eslint-disable-next-line max-len
+				`Number of nodes '${nodeHolder.nodes.length}' isn't matched to number of unique ids '${nodeHolder.idToIndex.size}'`,
+			);
 		}
 		this.selectedTreeNode[type] = nullTreeNode;
 		this.initHeightsData(type);
@@ -688,11 +654,11 @@ export class JSONViewerStore {
 	}
 
 	private static getNodeById(id: string, nodeHolder: TreeNodeHolder) {
-		const index = nodeHolder.idToIndex.get(id)
+		const index = nodeHolder.idToIndex.get(id);
 		if (index !== undefined) {
-			return nodeHolder.nodes[index]
+			return nodeHolder.nodes[index];
 		}
-		return undefined
+		return undefined;
 	}
 
 	@action addNodes(tree: TreeNode[], type: PanelType) {
@@ -700,14 +666,21 @@ export class JSONViewerStore {
 		const previousLength = nodeHolder.nodes.length;
 		nodeHolder.nodes = nodeHolder.nodes.concat(tree);
 		tree.forEach((n, i) => nodeHolder.idToIndex.set(n.id, i + previousLength));
-		if (nodeHolder.nodes.length != nodeHolder.idToIndex.size) {
-			throw new Error(`Number of nodes '${nodeHolder.nodes.length}' isn't matched to number of unique ids '${nodeHolder.idToIndex.size}'`);
+		if (nodeHolder.nodes.length !== nodeHolder.idToIndex.size) {
+			throw new Error(
+				// eslint-disable-next-line max-len
+				`Number of nodes '${nodeHolder.nodes.length}' isn't matched to number of unique ids '${nodeHolder.idToIndex.size}'`,
+			);
 		}
 		this.initHeightsData(type);
 		this.deactivateSearch(type);
 	}
 
-	private static collectRelatedIndexes(ids: string[], result: Set<string>, nodeHolder: TreeNodeHolder) {
+	private static collectRelatedIndexes(
+		ids: string[],
+		result: Set<string>,
+		nodeHolder: TreeNodeHolder,
+	) {
 		ids.forEach(id => {
 			result.add(id);
 			const node = JSONViewerStore.getNodeById(id, nodeHolder);
@@ -721,8 +694,7 @@ export class JSONViewerStore {
 		const relatedIds = new Set<string>();
 		JSONViewerStore.collectRelatedIndexes(ids, relatedIds, nodeHolder);
 		nodeHolder.nodes = nodeHolder.nodes.filter(node => !relatedIds.has(node.id));
-		nodeHolder.idToIndex.clear();
-		nodeHolder.nodes.forEach((n, i) => nodeHolder.idToIndex.set(n.id, i + length));
+		relatedIds.forEach(id => nodeHolder.idToIndex.delete(id));
 	}
 
 	@action setNodeHeight(
@@ -919,9 +891,7 @@ export class JSONViewerStore {
 					node,
 					...this.chunksHeights[type].filter(
 						chunkData =>
-							this.isCompare && 
-						    chunkData.height > 0 && 
-							chunkData.lastElement === node.id,
+							this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
 					),
 				]),
 		];
