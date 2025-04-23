@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2025 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,13 @@ export function createSearchToken(
 	color: string,
 	isScrollable = true,
 	isActive = true,
+	isCaseSensitive = false,
 ): SearchToken {
 	return {
 		pattern: value.trim(),
 		color,
 		isScrollable,
 		isActive,
+		isCaseSensitive,
 	};
 }

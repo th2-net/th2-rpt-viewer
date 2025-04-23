@@ -454,6 +454,29 @@
 		}
 	}
 
+	&-search-select {
+		width: 150px;
+		min-width: 150px;
+		border-radius: 3px;
+		display: flex;
+		align-items: center;
+		font-size: 12px;
+		font-weight: bold;
+		color: $alternativeTextColor;
+		background-color: $searchButtonColor;
+		border: 1px $alternativeTextColor solid;
+		padding: 0px 2px;
+		font-family: 'Open Sans', sans-serif;
+		cursor: pointer;
+		outline: none;
+		margin: 5px;
+
+		&:disabled {
+			color: $secondaryLightTextColor;
+			border-color: $secondaryLightTextColor;
+		}
+	}
+
 	&-virtuoso {
 		@include scrollbar;
 		height: calc(100% - 47px);

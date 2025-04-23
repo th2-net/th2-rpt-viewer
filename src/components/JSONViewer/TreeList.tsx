@@ -18,9 +18,7 @@ const TreeList = ({ type }: { type: PanelType }) => {
 		(index: number, dataNode: TreeNode | NotebookNode | ChunkHeightData) =>
 			`${
 				'id' in dataNode
-					? `${dataNode.id}-${dataNode.viewType}-${JSONViewerStore.openTreeNodes[type].has(
-							dataNode.id,
-					  )}`
+					? `${dataNode.id}-${dataNode.viewType}-${JSONViewerStore.isOpenNode(dataNode.id, type)}`
 					: 'lastElement' in dataNode
 					? `${dataNode.chunk}-${dataNode.firstElement}-${dataNode.lastElement}-${dataNode.height}`
 					: dataNode.name

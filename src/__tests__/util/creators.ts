@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2025 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ export function createSearchToken(
 	isActive = false,
 	isScrollable = true,
 	panels: Panel[] = [Panel.ACTIONS, Panel.MESSAGES, Panel.KNOWN_BUGS, Panel.LOGS],
+	isCaseSensitive = false,
 ): PanelSearchToken {
 	return {
 		pattern,
 		color,
 		isActive,
 		isScrollable,
+		isCaseSensitive,
 		panels,
 	};
 }

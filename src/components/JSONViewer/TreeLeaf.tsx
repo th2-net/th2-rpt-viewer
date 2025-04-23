@@ -21,7 +21,9 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	const isSelected = treeNode.id === JSONViewerStore.selectedTreeNode[type].id;
 	const viewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
 	const [open, setOpen] = React.useState(
-		viewType === TreeViewType.DISPLAY_TABLE || JSONViewerStore.openTreeNodes[type].has(treeNode.id),
+		viewType === TreeViewType.DISPLAY_TABLE ||
+			viewType === TreeViewType.JSON ||
+			JSONViewerStore.isOpenNode(treeNode.id, type),
 	);
 
 	const nodeName = useMemo(() => {
@@ -62,19 +64,19 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	);
 
 	useEffect(() => {
-		const isChildDisplay =
-			(treeNode.isRoot || viewType === TreeViewType.EVENTS_LIST) &&
-			JSONViewerStore.openTreeNodes[type].has(treeNode.id);
-		if (isChildDisplay) {
-			JSONViewerStore.openNode(treeNode.id, type);
-		} else JSONViewerStore.closeNode(treeNode.id, type);
-		setOpen(viewType === TreeViewType.DISPLAY_TABLE || isChildDisplay);
+		setOpen(JSONViewerStore.isOpenNode(treeNode.id, type));
+		if (viewType !== TreeViewType.EVENTS_LIST) {
+			for (let i = 0; i < treeNode.childIds.length; i++) {
+				JSONViewerStore.closeNode(treeNode.childIds[i], type);
+			}
+		}
 	}, [viewType]);
 
 	useEffect(() => {
 		setOpen(
 			viewType === TreeViewType.DISPLAY_TABLE ||
-				JSONViewerStore.openTreeNodes[type].has(treeNode.id),
+				viewType === TreeViewType.JSON ||
+				JSONViewerStore.isOpenNode(treeNode.id, type),
 		);
 	}, [JSONViewerStore.openTreeNodes[type].values]);
 
@@ -108,12 +110,10 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 			JSONViewerStore.closeNode(treeNode.id, type);
 		} else {
 			setOpen(true);
-			if (viewType === TreeViewType.EVENTS_LIST) {
-				if (treeNode.isRoot) {
-					JSONViewerStore.openNodeAndCloseOthers([treeNode.id, ...treeNode.parentIds], type);
-					JSONViewerStore.scrollToId(treeNode.id, type);
-				} else JSONViewerStore.openNode(treeNode.id, type);
-			}
+			if (treeNode.isRoot) {
+				JSONViewerStore.openNodeAndCloseOthers([treeNode.id, ...treeNode.parentIds], type);
+				JSONViewerStore.scrollToId(treeNode.id, type);
+			} else JSONViewerStore.openNode(treeNode.id, type);
 		}
 	};
 
@@ -192,6 +192,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 						}}>
 						<div className={createBemBlock('event-status-icon')} />
 						<span style={{ color: treeNode.isGeneratedKey ? '#333333' : undefined }}>
+							{/* {treeNode.id} ={'>'} {treeNode.parentIds.join(', ')}{' '} */}
 							{splitContent.map((contentPart, index) => (
 								<span
 									key={index}
