@@ -121,6 +121,14 @@ export class JSONViewerStore {
 		compare: [],
 	};
 
+	private defaultHeight: {
+		default: number;
+		compare: number;
+	} = {
+		default: 30,
+		compare: 30,
+	};
+
 	@observable treeNodeHolders: {
 		default: TreeNodeHolder;
 		compare: TreeNodeHolder;
@@ -728,10 +736,26 @@ export class JSONViewerStore {
 		this.heights[type].clear();
 	}
 
+	@action updateDefaultHeight(height: number, type: PanelType) {
+		const defaultHeight = this.defaultHeight[type];
+		if (height !== defaultHeight) {
+			const heights = this.heights[type];
+			for (const [key, value] of heights) {
+				if (value.height === defaultHeight) {
+					heights.delete(key);
+				}
+			}
+			this.defaultHeight[type] = height;
+			this.initHeightsData(type);
+		}
+	}
+
 	@action initHeightsData(type: PanelType) {
+		const defaultHeight = this.defaultHeight[type];
 		this.getNodeHolder(type).nodes.forEach(node => {
-			if (isTreeNode(node) && !this.heights[type].has(node.id))
-				this.setNodeHeight(node.id, node.displayTimestamp, 30, node.parentIds, type);
+			if (isTreeNode(node) && !this.heights[type].has(node.id)) {
+				this.setNodeHeight(node.id, node.displayTimestamp, defaultHeight, node.parentIds, type);
+			}
 		});
 	}
 

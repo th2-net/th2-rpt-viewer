@@ -87,7 +87,8 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 				entries[0].borderBoxSize?.length > 0
 					? entries[0].borderBoxSize[0].blockSize
 					: entries[0].contentRect.height;
-			if (!currentHeight || currentHeight.height !== height)
+			if (!currentHeight || currentHeight.height !== height) {
+				JSONViewerStore.updateDefaultHeight(height, type);
 				JSONViewerStore.setNodeHeight(
 					treeNode.id,
 					treeNode.displayTimestamp,
@@ -95,6 +96,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 					treeNode.parentIds,
 					type,
 				);
+			}
 		});
 		if (leafRef.current) {
 			resizeObserver.observe(leafRef.current);
