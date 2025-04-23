@@ -917,7 +917,6 @@ export class JSONViewerStore {
 		default: (TreeNode | NotebookNode | ChunkHeightData)[];
 		compare: (TreeNode | NotebookNode | ChunkHeightData)[];
 	} {
-		// console.log("Hello, world!");
 		return {
 			default: this.createListData('default'),
 			compare: this.createListData('compare'),
