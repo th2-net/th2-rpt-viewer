@@ -37,6 +37,7 @@ import { downloadTxtFile } from '../../helpers/files/downloadTxt';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 import SearchSplitResult from '../../models/search/SearchSplitResult';
+import { HeightsMetadata } from './HeightsMetadata';
 
 const SEARCH_COLOR = 'black';
 
@@ -122,14 +123,6 @@ export class JSONViewerStore {
 	};
 
 	private panelWidth: {
-		default: number;
-		compare: number;
-	} = {
-		default: 30,
-		compare: 30,
-	};
-
-	private itemHeight: {
 		default: number;
 		compare: number;
 	} = {
@@ -259,14 +252,8 @@ export class JSONViewerStore {
 
 	@observable
 	public heights: {
-		default: Map<
-			number,
-			{ height: number; isDefault: boolean; displayTimestamp: number; parentIds: number[] }
-		>;
-		compare: Map<
-			number,
-			{ height: number; isDefault: boolean; displayTimestamp: number; parentIds: number[] }
-		>;
+		default: Map<number, HeightsMetadata>;
+		compare: Map<number, HeightsMetadata>;
 	} = {
 		default: new Map(),
 		compare: new Map(),
@@ -749,11 +736,7 @@ export class JSONViewerStore {
 	@action updateNodeHeight(id: number, height: number, type: PanelType) {
 		const current = this.heights[type].get(id);
 		if (current) {
-			if (height !== current.height) {
-				this.updateItemHeight(height, type);
-			}
 			current.height = height;
-			current.isDefault = false;
 		}
 	}
 
@@ -766,15 +749,12 @@ export class JSONViewerStore {
 		type: PanelType,
 	) {
 		if (displayTimestamp) {
-			this.heights[type].set(id, { displayTimestamp, height, isDefault, parentIds });
+			this.heights[type].set(id, new HeightsMetadata(height, displayTimestamp, parentIds));
 			const current = this.heights[type].get(id);
 			if (current) {
-				current.displayTimestamp = displayTimestamp;
-				current.height = height;
-				current.isDefault = isDefault;
-				current.parentIds = parentIds;
+				current.update(height, displayTimestamp, parentIds);
 			} else {
-				this.heights[type].set(id, { displayTimestamp, height, isDefault, parentIds });
+				this.heights[type].set(id, new HeightsMetadata(height, displayTimestamp, parentIds));
 			}
 		}
 	}
@@ -786,48 +766,14 @@ export class JSONViewerStore {
 	@action updatePanelWidth(width: number, type: PanelType) {
 		const panelWidth = this.panelWidth[type];
 		if (width !== panelWidth) {
-			this.resetHeights(type);
 			this.panelWidth[type] = width;
 		}
 	}
 
-	private resetHeights(type: PanelType) {
-		for (const value of this.heights[type].values()) {
-			value.isDefault = true;
-		}
-	}
-
-	private resetHeight(id: number, type: PanelType) {
-		const data = this.heights[type].get(id);
-		if (data) {
-			data.isDefault = true;
-		}
-	}
-
-	private updateItemHeight(height: number, type: PanelType) {
-		const itemHeight = this.itemHeight[type];
-		if (height !== itemHeight) {
-			for (const value of this.heights[type].values()) {
-				if (value.isDefault) {
-					value.height = height;
-				}
-			}
-			this.itemHeight[type] = height;
-		}
-	}
-
 	private initHeightsData(type: PanelType) {
-		const defaultHeight = this.itemHeight[type];
 		this.getNodeHolder(type).nodes.forEach(node => {
 			if (isTreeNode(node) && !this.heights[type].has(node.id)) {
-				this.setNodeHeight(
-					node.id,
-					node.displayTimestamp,
-					defaultHeight,
-					true,
-					node.parentIds,
-					type,
-				);
+				this.setNodeHeight(node.id, node.displayTimestamp, 30, true, node.parentIds, type);
 			}
 		});
 	}
@@ -857,14 +803,12 @@ export class JSONViewerStore {
 
 	@action setNodeView(id: number, viewType: TreeViewType, type: PanelType) {
 		JSONViewerStore.updateNodeView(id, viewType, false, this.getNodeHolder(type));
-		this.resetHeight(id, type);
 	}
 
 	@action setGroupView(id: number, viewType: TreeViewType, type: PanelType) {
 		const node = JSONViewerStore.updateNodeView(id, viewType, true, this.getNodeHolder(type));
 		if (node === undefined) return;
 
-		this.resetHeights(type);
 		if (node.isRoot) this.openNodeAndCloseOthers([node.id], type);
 		this.lastViewType = viewType;
 	}
