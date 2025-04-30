@@ -122,14 +122,6 @@ export class JSONViewerStore {
 		compare: [],
 	};
 
-	private panelWidth: {
-		default: number;
-		compare: number;
-	} = {
-		default: 30,
-		compare: 30,
-	};
-
 	@observable treeNodeHolders: {
 		default: TreeNodeHolder;
 		compare: TreeNodeHolder;
@@ -761,13 +753,6 @@ export class JSONViewerStore {
 
 	@action clearHeights(type: PanelType) {
 		this.heights[type].clear();
-	}
-
-	@action updatePanelWidth(width: number, type: PanelType) {
-		const panelWidth = this.panelWidth[type];
-		if (width !== panelWidth) {
-			this.panelWidth[type] = width;
-		}
 	}
 
 	private initHeightsData(type: PanelType) {

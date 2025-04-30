@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
@@ -97,29 +97,8 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 		}
 	};
 
-	const panelRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const resizeObserver = new ResizeObserver(entries => {
-			const width =
-				entries[0].borderBoxSize?.length > 0
-					? entries[0].borderBoxSize[0].inlineSize
-					: entries[0].contentRect.width;
-			JSONViewerStore.updatePanelWidth(width, type);
-		});
-		if (panelRef.current) {
-			resizeObserver.observe(panelRef.current);
-		}
-		return () => {
-			if (panelRef.current) resizeObserver.unobserve(panelRef.current);
-		};
-	}, []);
-
 	return (
-		<div
-			ref={panelRef}
-			className='JSON-wrapper'
-			style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+		<div className='JSON-wrapper' style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
 			<div className='JSON-header-wrapper'>
 				<div className='JSON-buttons-wrapper'>
 					<button
