@@ -18,7 +18,7 @@
 import { action, observable } from 'mobx';
 
 export class HeightsMetadata {
-	private _height: number;
+	@observable private _height: number;
 
 	@observable private _displayTimestamp: number;
 
