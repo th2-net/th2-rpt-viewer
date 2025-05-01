@@ -121,21 +121,21 @@ export const convertJSONtoNode = (
 		}
 	}
 	return new TreeNode(
-		id,
-		key,
-		parentIds,
-		complexFields.map(node => node.id),
-		complexFields,
-		simpleFields,
-		failed,
-		viewInstruction,
-		displayName,
-		displayTimestamp,
-		displayTable,
-		isArray,
-		isGeneratedKey,
-		false,
-		defaultViewType,
+		id, // id
+		key, // key
+		parentIds, // parentIds
+		complexFields.map(node => node.id), // childIds
+		complexFields, // complexFields
+		simpleFields, // simpleFields
+		failed, // failed
+		viewInstruction, // viewInstruction
+		displayName, // displayName
+		displayTimestamp, // displayTimestamp
+		displayTable, // displayTable
+		isArray, // isArray
+		isGeneratedKey, // isGeneratedKey
+		false, // isRoot
+		defaultViewType, // viewType
 	);
 };
 

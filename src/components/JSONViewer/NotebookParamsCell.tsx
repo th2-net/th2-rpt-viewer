@@ -138,21 +138,14 @@ const NotebookParamsCell = ({
 							}
 						}
 					}
-					const node = new TreeNode(
-						nextid(),
-						`Result of ${notebook.name}'s run`,
-						[],
-						[],
-						[],
-						[{ id: nextid(), key: 'filepath', value: path }],
-						complexFields.some(v => v.failed),
-						'',
-						undefined,
-						undefined,
-						undefined,
-						undefined,
-						true,
-						true,
+					const node = TreeNode.create(
+						nextid(), // id
+						`Result of ${notebook.name}'s run`, // key
+						complexFields,
+						[{ id: nextid(), key: 'filepath', value: path }], // simpleFields
+						complexFields.some(v => v.failed), // failed
+						true, // isGeneratedKey
+						true, // isRoot
 						JSONViewerStore.lastViewType,
 					);
 					const newResults = [node.id, ...results];

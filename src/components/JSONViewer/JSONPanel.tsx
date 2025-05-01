@@ -54,21 +54,13 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 					if (lines[i] !== '') complexFields.push(...parseText(lines[i], String(i), true));
 				}
 			}
-			return new TreeNode(
-				nextid(),
-				fileName,
-				[],
-				[],
+			return TreeNode.createComplex(
+				nextid(), // id
+				fileName, // key
 				complexFields,
-				[],
-				false,
-				'',
-				undefined,
-				undefined,
-				undefined,
-				undefined,
-				true,
-				true,
+				false, // failed
+				true, // isGeneratedKey
+				true, // isRoot
 			);
 		});
 		JSONViewerStore.setTreeNodes(

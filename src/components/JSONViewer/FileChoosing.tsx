@@ -136,21 +136,13 @@ const FileChoosing = ({
 								}
 							}
 							fileData.push(
-								new TreeNode(
-									nextid(),
-									filePath,
-									[],
-									[],
+								TreeNode.createComplex(
+									nextid(), // id
+									filePath, // key
 									complexFields,
-									[],
-									complexFields.some(v => v.failed),
-									'',
-									undefined,
-									undefined,
-									undefined,
-									undefined,
-									true,
-									true,
+									complexFields.some(v => v.failed), // failed
+									true, // isGeneratedKey
+									true, // isRoot
 								),
 							);
 						}),

@@ -185,4 +185,61 @@ export class TreeNode {
 			update.viewType ?? this._viewType,
 		);
 	}
+
+	public static createComplex(
+		id: number,
+		key: string,
+		complexFields: TreeNode[],
+		failed: boolean,
+		isGeneratedKey: boolean,
+		isRoot: boolean,
+		viewType?: TreeViewType,
+	): TreeNode {
+		return new TreeNode(
+			id,
+			key,
+			[],
+			[],
+			complexFields,
+			[],
+			failed,
+			'',
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			isGeneratedKey,
+			isRoot,
+			viewType,
+		);
+	}
+
+	public static create(
+		id: number,
+		key: string,
+		complexFields: TreeNode[],
+		simpleFields: SimpleField[],
+		failed: boolean,
+		isGeneratedKey: boolean,
+		isRoot: boolean,
+		viewType?: TreeViewType,
+	): TreeNode {
+		return new TreeNode(
+			id,
+			key,
+			[],
+			[],
+			complexFields,
+			simpleFields,
+			failed,
+			'',
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			isGeneratedKey,
+			isRoot,
+			viewType,
+		);
+	}
 }
