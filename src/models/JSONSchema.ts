@@ -44,29 +44,6 @@ export interface BlankTreeNode {
 	prevId: number;
 }
 
-export interface TreeNode {
-	id: number;
-	key: string;
-	parentIds: number[];
-	displayName?: string;
-	displayTimestamp?: number;
-	displayTable?: string[][];
-	failed: boolean;
-	viewInstruction: string;
-	complexFields: TreeNode[];
-	childIds: number[];
-	simpleFields: SimpleField[];
-	isArray?: boolean;
-	isGeneratedKey?: boolean;
-	isRoot?: boolean;
-	viewType?: TreeViewType;
-}
-
-export interface TreeNodeHolder {
-	nodes: TreeNode[];
-	idToIndex: Map<number, number>;
-}
-
 export interface NotebookNode {
 	name: string;
 	parameters: NotebookParameter[];

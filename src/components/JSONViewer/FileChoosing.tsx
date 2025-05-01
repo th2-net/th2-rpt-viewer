@@ -15,11 +15,12 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { NotebookNode, NotebookParameters, TreeNode } from '../../models/JSONSchema';
+import { NotebookNode, NotebookParameters } from '../../models/JSONSchema';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener } from '../../hooks';
 import api from '../../api';
 import { convertParameterToInput, parseText, nextid } from '../../helpers/JSONViewer';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 export const IGNORED_PARAMETERS_NAMES = ['output_path', 'customization_path'];
 
@@ -123,29 +124,35 @@ const FileChoosing = ({
 				selectedFiles.forEach(filePath =>
 					promises.push(
 						api.jsonViewer.getFile(filePath).then(({ result }) => {
-							const node: TreeNode = {
-								id: nextid(),
-								parentIds: [],
-								key: filePath,
-								failed: false,
-								viewInstruction: '',
-								simpleFields: [],
-								complexFields: [],
-								childIds: [],
-								isGeneratedKey: true,
-								isRoot: true,
-							};
+							const complexFields: TreeNode[] = [];
 							try {
-								node.complexFields.push(...parseText(result, '0', true));
+								complexFields.push(...parseText(result, '0', true));
 							} catch {
 								const lines = result.split('\n');
 								for (let i = 0; i < lines.length; i++) {
-									if (lines[i] !== '')
-										node.complexFields.push(...parseText(lines[i], String(i), true));
+									if (lines[i] !== '') {
+										complexFields.push(...parseText(lines[i], String(i), true));
+									}
 								}
 							}
-							node.failed = node.complexFields.some(v => v.failed);
-							fileData.push(node);
+							fileData.push(
+								new TreeNode(
+									nextid(),
+									filePath,
+									[],
+									[],
+									complexFields,
+									[],
+									complexFields.some(v => v.failed),
+									'',
+									undefined,
+									undefined,
+									undefined,
+									undefined,
+									true,
+									true,
+								),
+							);
 						}),
 					),
 				);

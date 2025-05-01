@@ -17,7 +17,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import '../../styles/JSONviewer.scss';
-import { TreeNode, TreeViewType } from '../../models/JSONSchema';
+import { TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import JSONView from './JSONViewSimpleField';
@@ -28,6 +28,7 @@ import { formatTime } from '../../helpers/date';
 import { Chip } from '../Chip';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { getChunk } from '../../helpers/JSONViewer';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 export const LEAF_COLORS = ['lightgray', 'black'];
 export const LEAF_BACKGROUND_COLORS = ['white', 'gainsboro'];

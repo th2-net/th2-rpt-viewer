@@ -16,20 +16,12 @@
 
 import { action, computed, observable } from 'mobx';
 import { nanoid } from 'nanoid';
-import {
-	BlankTreeNode,
-	NotebookNode,
-	SimpleField,
-	TreeNode,
-	TreeNodeHolder,
-	TreeViewType,
-} from '../../models/JSONSchema';
+import { BlankTreeNode, NotebookNode, SimpleField, TreeViewType } from '../../models/JSONSchema';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import {
 	getChunk,
 	getFlatListFromTree,
 	getFlatListFromTreeWSimple,
-	isTreeNode,
 } from '../../helpers/JSONViewer';
 import SearchToken from '../../models/search/SearchToken';
 import notificationsStore from '../NotificationsStore';
@@ -38,19 +30,12 @@ import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 import SearchSplitResult from '../../models/search/SearchSplitResult';
 import { HeightsMetadata } from './HeightsMetadata';
+import { TreeNode, TreeNodeHolder } from './TreeNode';
 
 const SEARCH_COLOR = 'black';
 
-const nullTreeNode: TreeNode = {
-	id: Number.MIN_SAFE_INTEGER,
-	parentIds: [],
-	key: '',
-	failed: false,
-	viewInstruction: '',
-	complexFields: [],
-	childIds: [],
-	simpleFields: [],
-};
+const nullTreeNode: TreeNode = new TreeNode(Number.MIN_SAFE_INTEGER, '', [], [], [], [], false, '');
+
 export interface ChunkHeightData {
 	chunk: number;
 	firstElement: number;
@@ -673,10 +658,7 @@ export class JSONViewerStore {
 
 		const oldNode = nodeHolder.nodes[index];
 		if (oldNode && oldNode.viewType !== viewType) {
-			const newNode = {
-				...oldNode,
-				viewType,
-			};
+			const newNode = oldNode.with({ viewType });
 			// eslint-disable-next-line no-param-reassign
 			nodeHolder.nodes[index] = newNode;
 			if (recursively) {
@@ -757,7 +739,7 @@ export class JSONViewerStore {
 
 	private initHeightsData(type: PanelType) {
 		this.getNodeHolder(type).nodes.forEach(node => {
-			if (isTreeNode(node) && !this.heights[type].has(node.id)) {
+			if (node instanceof TreeNode && !this.heights[type].has(node.id)) {
 				this.setNodeHeight(node.id, node.displayTimestamp, 30, true, node.parentIds, type);
 			}
 		});
@@ -1026,7 +1008,7 @@ export class JSONViewerStore {
 		const nearestNodeIndex = this.listData[convertType].findIndex(node =>
 			!('paramsValue' in node) && 'lastElement' in node
 				? node.chunk >= chunk
-				: isTreeNode(node) &&
+				: node instanceof TreeNode &&
 				  node.displayTimestamp &&
 				  node.parentIds.every(parentId => this.isOpenNode(parentId, convertType)) &&
 				  getChunk(node.displayTimestamp, this.chunkInterval) >= chunk,
@@ -1034,17 +1016,17 @@ export class JSONViewerStore {
 		const nearestNodeLocalIndex = this.listData[type].findIndex(node =>
 			!('paramsValue' in node) && 'lastElement' in node
 				? node.chunk >= chunk
-				: isTreeNode(node) &&
+				: node instanceof TreeNode &&
 				  node.displayTimestamp &&
 				  node.parentIds.every(parentId => this.isOpenNode(parentId, type)) &&
 				  getChunk(node.displayTimestamp, this.chunkInterval) >= chunk,
 		);
 		if (nearestNodeIndex && nearestNodeLocalIndex) {
 			const nearestNode = this.listData[convertType][nearestNodeIndex];
-			if (isTreeNode(nearestNode)) this.selectedTreeNode[convertType] = nearestNode;
+			if (nearestNode instanceof TreeNode) this.selectedTreeNode[convertType] = nearestNode;
 			this.activeIndex[convertType] = nearestNodeIndex;
 			const nearestNodeLocal = this.listData[type][nearestNodeLocalIndex];
-			if (isTreeNode(nearestNodeLocal)) this.selectedTreeNode[type] = nearestNodeLocal;
+			if (nearestNodeLocal instanceof TreeNode) this.selectedTreeNode[type] = nearestNodeLocal;
 			this.activeIndex[type] = nearestNodeLocalIndex;
 		}
 	}

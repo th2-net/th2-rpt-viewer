@@ -19,11 +19,12 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer } from 'mobx-react-lite';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import StateSaverProvider from '../util/StateSaverProvider';
-import { NotebookNode, TreeNode } from '../../models/JSONSchema';
+import { NotebookNode } from '../../models/JSONSchema';
 import TreeLeaf from './TreeLeaf';
 import NotebookParamsCell from './NotebookParamsCell';
 import { ChunkHeightData, PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import EmptyLeaf from './EmptyLeaf';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 const TreeList = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();

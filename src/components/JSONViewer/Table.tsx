@@ -17,7 +17,7 @@
 import React, { useMemo } from 'react';
 import { TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer } from 'mobx-react-lite';
-import { SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
+import { SimpleField, TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
 import { decodeBase64RawContent } from '../../helpers/rawFormatter';
@@ -30,6 +30,7 @@ import SearchToken from '../../models/search/SearchToken';
 import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import DisplayTable from './DisplayTable';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 const Table = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();

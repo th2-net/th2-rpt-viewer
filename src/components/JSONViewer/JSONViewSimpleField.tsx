@@ -17,13 +17,13 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import debounce from 'lodash.debounce';
-import { TreeNode } from '../../models/JSONSchema';
 import { createBemElement } from '../../helpers/styleCreators';
 import SearchToken from '../../models/search/SearchToken';
 import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 

@@ -20,9 +20,9 @@ import {
 	Notebook,
 	NotebookParameter,
 	SimpleField,
-	TreeNode,
 	TreeViewType,
 } from '../models/JSONSchema';
+import { TreeNode } from '../stores/JSONViewer/TreeNode';
 
 class CounterStore {
 	value: number = Date.now();
@@ -43,8 +43,6 @@ export const isNotebook = (obj: Object): obj is Notebook => {
 		entries.length === 2 && typeof entries[0][1] === 'string' && typeof entries[1][1] === 'object'
 	);
 };
-
-export const isTreeNode = (obj: Object): obj is TreeNode => 'displayTimestamp' in obj;
 
 export const isKeyFailed = (key: string) => key.includes('[fail]') || key.trim().startsWith('#');
 export const isValueFailed = (value: string) =>
@@ -122,22 +120,23 @@ export const convertJSONtoNode = (
 			}
 		}
 	}
-	return {
+	return new TreeNode(
 		id,
 		key,
 		parentIds,
-		displayTable,
+		complexFields.map(node => node.id),
+		complexFields,
+		simpleFields,
+		failed,
+		viewInstruction,
 		displayName,
 		displayTimestamp,
-		failed,
+		displayTable,
 		isArray,
 		isGeneratedKey,
-		viewInstruction,
-		viewType: defaultViewType,
-		simpleFields,
-		complexFields,
-		childIds: complexFields.map(node => node.id),
-	};
+		false,
+		defaultViewType,
+	);
 };
 
 export const parseText = (
@@ -155,12 +154,7 @@ export const parseText = (
 		node.displayTable ||
 		node.displayTimestamp
 	) {
-		return [
-			{
-				...node,
-				key: name,
-			},
-		];
+		return [node.with({ key: name })];
 	}
 	return node.complexFields;
 };
@@ -312,7 +306,7 @@ export const convertParameterToInput = (parameter: NotebookParameter): InputNote
 
 export const getFlatListFromTree = (tree: TreeNode) => {
 	const flatten = (node: TreeNode, parentIds: number[] = []): TreeNode[] => [
-		{ ...node, parentIds, childIds: node.complexFields.map(f => f.id) },
+		node.with({ parentIds, childIds: node.complexFields.map(f => f.id) }),
 		...node.complexFields.flatMap(child => flatten(child, [...parentIds, node.id])),
 	];
 	return flatten(tree);
@@ -320,7 +314,7 @@ export const getFlatListFromTree = (tree: TreeNode) => {
 
 export const getFlatListFromTreeWSimple = (tree: TreeNode) => {
 	const flatten = (node: TreeNode, parentIds: number[] = []): (TreeNode | SimpleField)[] => [
-		{ ...node, parentIds, complexFields: [], childIds: node.complexFields.map(f => f.id) },
+		node.with({ parentIds, complexFields: [], childIds: node.complexFields.map(f => f.id) }),
 		...node.simpleFields.flatMap(child => ({ ...child, parentIds: [...parentIds, node.id] })),
 		...node.complexFields.flatMap(child => flatten(child, [...parentIds, node.id])),
 	];

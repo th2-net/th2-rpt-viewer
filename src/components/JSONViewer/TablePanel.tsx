@@ -19,10 +19,10 @@ import { observer } from 'mobx-react-lite';
 import { createBemBlock } from '../../helpers/styleCreators';
 import Table from './Table';
 import '../../styles/JSONviewer.scss';
-import { TreeNode } from '../../models/JSONSchema';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 interface props {
 	type: PanelType;

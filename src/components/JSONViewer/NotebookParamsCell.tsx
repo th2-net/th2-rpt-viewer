@@ -22,7 +22,6 @@ import {
 	NotebookNode,
 	NotebookParameter,
 	NotebookParameters,
-	TreeNode,
 } from '../../models/JSONSchema';
 import api from '../../api';
 import '../../styles/jupyter.scss';
@@ -42,6 +41,7 @@ import { downloadTxtFile } from '../../helpers/files/downloadTxt';
 import { ToolsPopup } from './LeafTools';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { IGNORED_PARAMETERS_NAMES } from './FileChoosing';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 const timeBetweenResults = 50;
 
@@ -125,32 +125,36 @@ const NotebookParamsCell = ({
 		switch (status) {
 			case 'success':
 				if (result.includes('{')) {
-					const node: TreeNode = {
-						id: nextid(),
-						parentIds: [],
-						key: `Result of ${notebook.name}'s run`,
-						failed: false,
-						viewInstruction: '',
-						simpleFields: [{ id: nextid(), key: 'filepath', value: path }],
-						complexFields: [],
-						childIds: [],
-						isGeneratedKey: true,
-						isRoot: true,
-						viewType: JSONViewerStore.lastViewType,
-					};
+					const complexFields: TreeNode[] = [];
 					try {
-						node.complexFields.push(...parseText(result, '0', true, JSONViewerStore.lastViewType));
+						complexFields.push(...parseText(result, '0', true, JSONViewerStore.lastViewType));
 					} catch {
 						const lines = result.split('\n');
 						for (let i = 0; i < lines.length; i++) {
 							if (lines[i] !== '') {
-								node.complexFields.push(
+								complexFields.push(
 									...parseText(lines[i], String(i), true, JSONViewerStore.lastViewType),
 								);
 							}
 						}
 					}
-					node.failed = node.complexFields.some(v => v.failed);
+					const node = new TreeNode(
+						nextid(),
+						`Result of ${notebook.name}'s run`,
+						[],
+						[],
+						[],
+						[{ id: nextid(), key: 'filepath', value: path }],
+						complexFields.some(v => v.failed),
+						'',
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+						true,
+						true,
+						JSONViewerStore.lastViewType,
+					);
 					const newResults = [node.id, ...results];
 					const maxResultCount = Number(resultCount);
 					const convertResultCount = Math.max(1, Math.round(maxResultCount));
