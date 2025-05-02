@@ -928,27 +928,29 @@ export class JSONViewerStore {
 		const heightsFiltered = Array.from(this.heights[type].entries()).filter(([_id, data]) =>
 			data.parentIds.every(parentId => this.isOpenNode(parentId, type)),
 		);
-		const chunks: {
-			[chunk: string]: {
+		const chunks: Map<
+			number,
+			{
 				height: number;
 				lastElement: number;
 				firstElement: number;
-			};
-		} = {};
+			}
+		> = new Map();
 		for (let i = 0; i < heightsFiltered.length; i++) {
-			const chunk = getChunk(heightsFiltered[i][1].displayTimestamp, this.chunkInterval);
-			if (chunks[chunk]) {
-				chunks[chunk] = {
-					height: chunks[chunk].height + heightsFiltered[i][1].height,
+			const chunkNum = getChunk(heightsFiltered[i][1].displayTimestamp, this.chunkInterval);
+			const chunk = chunks.get(chunkNum);
+			if (chunk) {
+				chunks.set(chunkNum, {
+					height: chunk.height + heightsFiltered[i][1].height,
 					lastElement: heightsFiltered[i][0],
-					firstElement: chunks[chunk].firstElement,
-				};
+					firstElement: chunk.firstElement,
+				});
 			} else {
-				chunks[chunk] = {
+				chunks.set(chunkNum, {
 					height: heightsFiltered[i][1].height,
 					lastElement: heightsFiltered[i][0],
 					firstElement: heightsFiltered[i][0],
-				};
+				});
 			}
 		}
 		return chunks;
@@ -957,40 +959,47 @@ export class JSONViewerStore {
 	public fixChunksHeight = (type: PanelType) => {
 		const chunks1 = this.getChunksHeight(type);
 		const chunks2 = this.getChunksHeight(type === 'default' ? 'compare' : 'default');
-		const chunkFixed = [];
-		const keys1 = Object.keys(chunks1);
-		const keys2 = Object.keys(chunks2);
+		const chunkFixed: {
+			chunk: number;
+			height: number;
+			lastElement: number;
+			firstElement: number;
+		}[] = [];
+		const keys1 = Array.from(chunks1.keys());
+		const keys2 = Array.from(chunks2.keys());
 		const sameKeys = keys1.filter(key => keys2.includes(key));
 		const exclusiveKeys = keys1.filter(key => !keys2.includes(key));
 		const newKeys = keys2.filter(key => !keys1.includes(key));
 
-		for (let i = 0; i < sameKeys.length; i++) {
+		sameKeys.forEach(chunkNum => {
+			const chunk1 = chunks1.get(chunkNum);
+			const chunk2 = chunks2.get(chunkNum);
 			chunkFixed.push({
-				chunk: Number(sameKeys[i]),
-				firstElement: chunks1[sameKeys[i]].firstElement,
-				lastElement: chunks1[sameKeys[i]].lastElement,
-				height: Math.max(chunks2[sameKeys[i]].height - chunks1[sameKeys[i]].height, 0),
+				chunk: chunkNum,
+				firstElement: chunk1?.firstElement ?? Number.MIN_SAFE_INTEGER,
+				lastElement: chunk1?.lastElement ?? Number.MIN_SAFE_INTEGER,
+				height: Math.max((chunk2?.height ?? 0) - (chunk1?.height ?? 0), 0),
 			});
-		}
-		exclusiveKeys.forEach(key =>
+		});
+		exclusiveKeys.forEach(chunkNum =>
 			chunkFixed.push({
-				chunk: Number(key),
-				firstElement: chunks1[key].firstElement,
-				lastElement: chunks1[key].lastElement,
+				chunk: chunkNum,
+				firstElement: chunks1.get(chunkNum)?.firstElement ?? Number.MIN_SAFE_INTEGER,
+				lastElement: chunks1.get(chunkNum)?.lastElement ?? Number.MIN_SAFE_INTEGER,
 				height: 0,
 			}),
 		);
-		for (let i = 0; i < newKeys.length; i++) {
+		newKeys.forEach(chunkNum => {
 			const lastExisting =
-				[...keys1].reverse().find(key => Number(key) <= Number(newKeys[i])) || '';
-			const firstExisting = keys1.find(key => Number(key) >= Number(newKeys[i])) || '';
+				[...keys1].reverse().find(key => key <= chunkNum) ?? Number.MIN_SAFE_INTEGER;
+			const firstExisting = keys1.find(key => key >= chunkNum) ?? Number.MIN_SAFE_INTEGER;
 			chunkFixed.push({
-				chunk: Number(newKeys[i]),
-				firstElement: chunks1[firstExisting]?.firstElement || Number.MIN_SAFE_INTEGER,
-				lastElement: chunks1[lastExisting]?.lastElement || Number.MIN_SAFE_INTEGER,
-				height: chunks2[newKeys[i]].height,
+				chunk: chunkNum,
+				firstElement: chunks1.get(firstExisting)?.firstElement ?? Number.MIN_SAFE_INTEGER,
+				lastElement: chunks1.get(lastExisting)?.lastElement ?? Number.MIN_SAFE_INTEGER,
+				height: chunks2.get(chunkNum)?.height ?? 0,
 			});
-		}
+		});
 		return chunkFixed.sort((a, b) => a.chunk - b.chunk);
 	};
 
