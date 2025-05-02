@@ -883,8 +883,8 @@ export class JSONViewerStore {
 							...this.chunksHeights[type].filter(
 								chunkData =>
 									chunkData.height > 0 &&
-									chunkData.lastElement === Number.MIN_SAFE_INTEGER &&
-									chunkData.firstElement === node.id,
+									chunkData.firstElement === node.id &&
+									chunkData.lastElement === Number.MIN_SAFE_INTEGER,
 							),
 							node,
 							...this.chunksHeights[type].filter(
@@ -939,23 +939,23 @@ export class JSONViewerStore {
 				firstElement: number;
 			}
 		> = new Map();
-		for (let i = 0; i < heightsFiltered.length; i++) {
-			const chunkNum = getChunk(heightsFiltered[i][1].displayTimestamp, this.chunkInterval);
+		heightsFiltered.values().forEach(entity => {
+			const chunkNum = getChunk(entity[1].displayTimestamp, this.chunkInterval);
 			const chunk = chunks.get(chunkNum);
 			if (chunk) {
 				chunks.set(chunkNum, {
-					height: chunk.height + heightsFiltered[i][1].height,
-					lastElement: heightsFiltered[i][0],
+					height: chunk.height + entity[1].height,
 					firstElement: chunk.firstElement,
+					lastElement: entity[0],
 				});
 			} else {
 				chunks.set(chunkNum, {
-					height: heightsFiltered[i][1].height,
-					lastElement: heightsFiltered[i][0],
-					firstElement: heightsFiltered[i][0],
+					height: entity[1].height,
+					firstElement: entity[0],
+					lastElement: entity[0],
 				});
 			}
-		}
+		});
 		return chunks;
 	};
 
@@ -993,13 +993,12 @@ export class JSONViewerStore {
 			}),
 		);
 		newKeys.forEach(chunkNum => {
-			const lastExisting =
-				[...keys1].reverse().find(key => key <= chunkNum) ?? Number.MIN_SAFE_INTEGER;
-			const firstExisting = keys1.find(key => key >= chunkNum) ?? Number.MIN_SAFE_INTEGER;
+			const previous = [...keys1].reverse().find(key => key <= chunkNum) ?? Number.MIN_SAFE_INTEGER;
+			const next = keys1.find(key => key >= chunkNum) ?? Number.MIN_SAFE_INTEGER;
 			chunkFixed.push({
 				chunk: chunkNum,
-				firstElement: chunks1.get(firstExisting)?.firstElement ?? Number.MIN_SAFE_INTEGER,
-				lastElement: chunks1.get(lastExisting)?.lastElement ?? Number.MIN_SAFE_INTEGER,
+				firstElement: chunks1.get(next)?.firstElement ?? Number.MIN_SAFE_INTEGER,
+				lastElement: chunks1.get(previous)?.lastElement ?? Number.MIN_SAFE_INTEGER,
 				height: chunks2.get(chunkNum)?.height ?? 0,
 			});
 		});

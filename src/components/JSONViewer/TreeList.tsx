@@ -49,17 +49,7 @@ const TreeList = ({ type }: { type: PanelType }) => {
 				return <TreeLeaf treeNode={dataNode} type={type} />;
 			}
 			if ('lastElement' in dataNode) {
-				const nextNode = JSONViewerStore.listData[type][index + 1];
-				const nextTimestamp = nextNode && 'id' in nextNode ? nextNode.displayTimestamp : undefined;
-				const nextChunk = nextNode && 'lastElement' in nextNode ? nextNode.chunk : undefined;
-				return (
-					<EmptyLeaf
-						chunkNode={dataNode}
-						type={type}
-						nextNodeTimestamp={nextTimestamp}
-						nextNodeChunk={nextChunk}
-					/>
-				);
+				return <EmptyLeaf chunkNode={dataNode} type={type} />;
 			}
 			return <NotebookParamsCell notebookProp={dataNode} type={type} />;
 		},

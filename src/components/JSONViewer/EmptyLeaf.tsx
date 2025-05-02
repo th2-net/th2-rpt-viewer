@@ -17,15 +17,12 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChunkHeightData, PanelType } from '../../stores/JSONViewer/JSONViewerStore';
-import { getChunk } from '../../helpers/JSONViewer';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import { LEAF_BACKGROUND_COLORS, LEAF_COLORS } from './TreeLeaf';
 
 const EmptyLeaf = ({
 	chunkNode,
 	type,
-	nextNodeTimestamp,
-	nextNodeChunk,
 }: {
 	chunkNode: ChunkHeightData;
 	type: PanelType;
@@ -36,24 +33,9 @@ const EmptyLeaf = ({
 	const borderSide = type === 'default' ? 'Right' : 'Left';
 	const otherBorderSide = type === 'default' ? 'Left' : 'Right';
 
-	const nextChunk = useMemo(
-		() => nextNodeChunk || getChunk(nextNodeTimestamp, JSONViewerStore.chunkInterval),
-		[nextNodeChunk, nextNodeTimestamp, JSONViewerStore.chunkInterval],
-	);
-
 	const chunkColor = useMemo(
 		() => JSONViewerStore.intervalsColor[chunkNode.chunk],
 		[chunkNode.chunk],
-	);
-	const nextChunkColor = useMemo(() => JSONViewerStore.intervalsColor[nextChunk], [nextChunk]);
-
-	const isNextDifferentChunk = useMemo(
-		() =>
-			nextChunkColor === chunkColor &&
-			nextChunk !== chunkNode.chunk &&
-			chunkNode.chunk !== -1 &&
-			nextChunk !== -1,
-		[chunkNode.chunk, nextChunk, chunkColor, nextChunkColor],
 	);
 
 	return (
@@ -67,36 +49,13 @@ const EmptyLeaf = ({
 				[`borderTop${borderSide}Radius`]: '0px',
 				[`borderBottom${borderSide}Radius`]: '0px',
 				[`borderBottomColor`]: LEAF_COLORS[chunkColor],
-				[`borderBottomWidth`]: isNextDifferentChunk ? '4px' : undefined,
-				[`borderBottom${otherBorderSide}Radius`]: isNextDifferentChunk ? '0px' : undefined,
+				[`borderBottomWidth`]: undefined,
+				[`borderBottom${otherBorderSide}Radius`]: undefined,
 				padding: '5px',
 				flexDirection: 'row',
 				justifyContent: borderSide === 'Left' ? 'flex-start' : 'flex-end',
 				alignItems: 'center',
-			}}>
-			{/*
-			{JSONViewerStore.isCompare && borderSide === 'Left' && (
-				<div
-					title='Move to nearest chunk in other panel'
-					className={`timestamp-pointer-left`}
-					onClick={e => {
-						e.preventDefault();
-						JSONViewerStore.scrollToNearest(chunkNode.chunk * JSONViewerStore.сhunkInterval, type);
-					}}
-				/>
-			)}
-			{JSONViewerStore.isCompare && borderSide === 'Right' && (
-				<div
-					title='Move to nearest chunk in other panel'
-					className={`timestamp-pointer-right`}
-					onClick={e => {
-						e.preventDefault();
-						JSONViewerStore.scrollToNearest(chunkNode.chunk * JSONViewerStore.сhunkInterval, type);
-					}}
-				/>
-			)} 
-			*/}
-		</div>
+			}}></div>
 	);
 };
 
