@@ -272,7 +272,7 @@ export class JSONViewerStore {
 					const cell = row[cellIndex];
 					const content = typeof cell === 'string' ? `"${cell}"` : String(cell);
 					const contentIndex = multiTokenSplit(content, searchTokens).findIndex(
-						content => content.token,
+						result => result.token,
 					);
 					if (contentIndex !== -1) {
 						this.searchResults[type].push({
@@ -871,26 +871,29 @@ export class JSONViewerStore {
 					if (parentId) {
 						const parent = JSONViewerStore.getNodeById(parentId, nodeHolder);
 						return (
-							node.parentIds.every(parentId => this.isOpenNode(parentId, type)) &&
+							node.parentIds.every(id => this.isOpenNode(id, type)) &&
 							(parent?.isRoot || parent?.viewType === TreeViewType.EVENTS_LIST)
 						);
 					}
 					return true;
 				})
-				.flatMap(node => [
-					...this.chunksHeights[type].filter(
-						chunkData =>
-							this.isCompare &&
-							chunkData.height > 0 &&
-							chunkData.lastElement === Number.MIN_SAFE_INTEGER &&
-							chunkData.firstElement === node.id,
-					),
-					node,
-					...this.chunksHeights[type].filter(
-						chunkData =>
-							this.isCompare && chunkData.height > 0 && chunkData.lastElement === node.id,
-					),
-				]),
+				.flatMap(node => {
+					if (this.isCompare) {
+						return [
+							...this.chunksHeights[type].filter(
+								chunkData =>
+									chunkData.height > 0 &&
+									chunkData.lastElement === Number.MIN_SAFE_INTEGER &&
+									chunkData.firstElement === node.id,
+							),
+							node,
+							...this.chunksHeights[type].filter(
+								chunkData => chunkData.height > 0 && chunkData.lastElement === node.id,
+							),
+						];
+					}
+					return [node];
+				}),
 		];
 		return result;
 	}
