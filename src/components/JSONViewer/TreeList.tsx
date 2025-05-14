@@ -22,9 +22,10 @@ import StateSaverProvider from '../util/StateSaverProvider';
 import { NotebookNode } from '../../models/JSONSchema';
 import TreeLeaf from './TreeLeaf';
 import NotebookParamsCell from './NotebookParamsCell';
-import { ChunkHeightData, PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import EmptyLeaf from './EmptyLeaf';
 import { TreeNode } from '../../stores/JSONViewer/TreeNode';
+import { Chunk } from '../../stores/JSONViewer/Chunk';
 
 const TreeList = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -32,23 +33,23 @@ const TreeList = ({ type }: { type: PanelType }) => {
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
 	const computeTreeKey = React.useCallback(
-		(index: number, dataNode: TreeNode | NotebookNode | ChunkHeightData) =>
+		(index: number, dataNode: TreeNode | NotebookNode | Chunk) =>
 			`${
-				'id' in dataNode
-					? `${dataNode.id}-${dataNode.viewType}-${JSONViewerStore.isOpenNode(dataNode.id, type)}`
-					: 'lastElement' in dataNode
-					? `${dataNode.chunk}-${dataNode.firstElement}-${dataNode.lastElement}-${dataNode.height}`
+				dataNode instanceof TreeNode
+					? dataNode.id
+					: dataNode instanceof Chunk
+					? dataNode.id
 					: dataNode.name
 			}`,
 		[],
 	);
 
 	const renderTree = React.useCallback(
-		(index: number, dataNode: TreeNode | NotebookNode | ChunkHeightData) => {
-			if ('id' in dataNode) {
+		(index: number, dataNode: TreeNode | NotebookNode | Chunk) => {
+			if (dataNode instanceof TreeNode) {
 				return <TreeLeaf treeNode={dataNode} type={type} />;
 			}
-			if ('lastElement' in dataNode) {
+			if (dataNode instanceof Chunk) {
 				return <EmptyLeaf chunkNode={dataNode} type={type} />;
 			}
 			return <NotebookParamsCell notebookProp={dataNode} type={type} />;
@@ -71,8 +72,8 @@ const TreeList = ({ type }: { type: PanelType }) => {
 			<Virtuoso
 				ref={virtuoso}
 				className='JSON-virtuoso'
-				data={JSONViewerStore.listData[type]}
-				totalCount={JSONViewerStore.listData[type].length}
+				data={JSONViewerStore.visibleData[type]}
+				totalCount={JSONViewerStore.visibleData[type].length}
 				computeItemKey={computeTreeKey}
 				overscan={3}
 				itemContent={renderTree}

@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-import { observable } from 'mobx';
-import { SimpleField, TreeViewType } from '../../models/JSONSchema';
+import { action, computed, observable } from 'mobx';
+import { TreeViewType } from '../../models/JSONSchema';
+import { SimpleField } from './SimpleField';
+import { nextid } from '../../helpers/JSONViewer';
 
 export interface TreeNodeHolder {
 	nodes: TreeNode[];
@@ -24,13 +26,36 @@ export interface TreeNodeHolder {
 }
 
 export class TreeNode {
+	public static readonly EMPTY = new TreeNode(Number.MIN_SAFE_INTEGER, '', [], [], false, '');
+
+	public static readonly DISPLAY_NAME_FIELD = '#display-name';
+
+	public static readonly DISPLAY_TIMESTAMP_FIELD = '#display-timestamp';
+
+	public static readonly DISPLAY_TABLE_FIELD = '#display-table';
+
+	public static readonly VIEW_INSTRUCTION_FIELD = '#view-instruction';
+
+	public static readonly TECHNICAL_FIELDS = new Set([
+		TreeNode.DISPLAY_NAME_FIELD,
+		TreeNode.DISPLAY_TIMESTAMP_FIELD,
+		TreeNode.DISPLAY_TABLE_FIELD,
+		TreeNode.VIEW_INSTRUCTION_FIELD,
+	]);
+
+	public static readonly a = '';
+
 	private _id: number;
 
 	private _key: string;
 
-	private _parentIds: number[];
+	@observable private _height: number;
 
-	private _childIds: number[];
+	@observable private _isOpen: boolean;
+
+	private _parent?: TreeNode;
+
+	private _children: TreeNode[];
 
 	private _displayName?: string;
 
@@ -40,8 +65,6 @@ export class TreeNode {
 
 	private _viewInstruction: string;
 
-	private _complexFields: TreeNode[];
-
 	private _simpleFields: SimpleField[];
 
 	private _failed: boolean;
@@ -50,41 +73,39 @@ export class TreeNode {
 
 	private _isGeneratedKey?: boolean;
 
-	private _isRoot?: boolean;
-
 	@observable private _viewType?: TreeViewType;
 
-	public constructor(
+	private constructor(
 		id: number,
 		key: string,
-		parentIds: number[],
-		childIds: number[],
-		complexFields: TreeNode[],
+		children: TreeNode[],
 		simpleFields: SimpleField[],
 		failed: boolean,
 		viewInstruction: string,
+		parent?: TreeNode,
+		isOpen?: boolean,
+		height?: number,
 		displayName?: string,
 		displayTimestamp?: number,
 		displayTable?: string[][],
 		isArray?: boolean,
 		isGeneratedKey?: boolean,
-		isRoot?: boolean,
 		viewType?: TreeViewType,
 	) {
 		this._id = id;
 		this._key = key;
-		this._parentIds = parentIds;
-		this._childIds = childIds;
+		this._height = height ?? 30;
+		this._isOpen = isOpen ?? false;
+		this._parent = parent;
+		this._children = children;
 		this._displayName = displayName;
 		this._displayTimestamp = displayTimestamp;
 		this._displayTable = displayTable;
 		this._viewInstruction = viewInstruction;
-		this._complexFields = complexFields;
 		this._simpleFields = simpleFields;
 		this._failed = failed;
 		this._isArray = isArray;
 		this._isGeneratedKey = isGeneratedKey;
-		this._isRoot = isRoot;
 		this._viewType = viewType;
 	}
 
@@ -96,12 +117,52 @@ export class TreeNode {
 		return this._key;
 	}
 
-	public get parentIds(): number[] {
-		return this._parentIds;
+	public get height(): number {
+		return this._height;
 	}
 
-	public get childIds(): number[] {
-		return this._childIds;
+	public set height(height: number) {
+		this._height = height;
+	}
+
+	public get isOpen(): boolean {
+		return this._isOpen;
+	}
+
+	public set isOpen(isOpen: boolean) {
+		this._isOpen = isOpen;
+	}
+
+	@computed public get isOpenInTree(): boolean {
+		return (this.parent?.isOpen ?? true) && (this.parent?.isOpenInTree ?? true);
+	}
+
+	public get parent(): TreeNode | undefined {
+		return this._parent;
+	}
+
+	public get root(): TreeNode {
+		return this._parent === undefined ? this : this._parent.root;
+	}
+
+	public get isRoot(): boolean {
+		return this._parent === undefined;
+	}
+
+	public get level(): number {
+		let result = 0;
+		for (let parent = this.parent; parent !== undefined; parent = parent.parent) {
+			result++;
+		}
+		return result;
+	}
+
+	public get isLevel1(): boolean {
+		return this._parent !== undefined && this._parent.isRoot;
+	}
+
+	public get children(): TreeNode[] {
+		return this._children;
 	}
 
 	public get displayName(): string | undefined {
@@ -120,10 +181,6 @@ export class TreeNode {
 		return this._viewInstruction;
 	}
 
-	public get complexFields(): TreeNode[] {
-		return this._complexFields;
-	}
-
 	public get simpleFields(): SimpleField[] {
 		return this._simpleFields;
 	}
@@ -140,106 +197,206 @@ export class TreeNode {
 		return this._isGeneratedKey;
 	}
 
-	public get isRoot(): boolean | undefined {
-		return this._isRoot;
-	}
-
 	public get viewType(): TreeViewType | undefined {
 		return this._viewType;
 	}
 
-	public with(
-		update: Partial<{
-			id: number;
-			key: string;
-			parentIds: number[];
-			childIds: number[];
-			complexFields: TreeNode[];
-			simpleFields: SimpleField[];
-			failed: boolean;
-			viewInstruction: string;
-			displayName?: string;
-			displayTimestamp?: number;
-			displayTable?: string[][];
-			isArray?: boolean;
-			isGeneratedKey?: boolean;
-			isRoot?: boolean;
-			viewType?: TreeViewType;
-		}>,
-	): TreeNode {
-		return new TreeNode(
-			update.id ?? this._id,
-			update.key ?? this._key,
-			update.parentIds ?? this._parentIds,
-			update.childIds ?? this._childIds,
-			update.complexFields ?? this._complexFields,
-			update.simpleFields ?? this._simpleFields,
-			update.failed ?? this._failed,
-			update.viewInstruction ?? this._viewInstruction,
-			update.displayName ?? this._displayName,
-			update.displayTimestamp ?? this._displayTimestamp,
-			update.displayTable ?? this._displayTable,
-			update.isArray ?? this._isArray,
-			update.isGeneratedKey ?? this._isGeneratedKey,
-			update.isRoot ?? this._isRoot,
-			update.viewType ?? this._viewType,
-		);
+	public set viewType(viewType: TreeViewType | undefined) {
+		this._viewType = viewType;
 	}
 
-	public static createComplex(
-		id: number,
-		key: string,
-		complexFields: TreeNode[],
-		failed: boolean,
-		isGeneratedKey: boolean,
-		isRoot: boolean,
-		viewType?: TreeViewType,
-	): TreeNode {
+	@action public updateViewTypeRecursively(viewType: TreeViewType) {
+		this.viewType = viewType;
+		this._children.forEach(childNode => {
+			childNode.updateViewTypeRecursively(viewType);
+		});
+	}
+
+	public static createComplex(key: string, viewType?: TreeViewType): TreeNode {
 		return new TreeNode(
-			id,
+			nextid(),
 			key,
 			[],
 			[],
-			complexFields,
-			[],
-			failed,
+			false,
 			'',
 			undefined,
 			undefined,
 			undefined,
 			undefined,
-			isGeneratedKey,
-			isRoot,
+			undefined,
+			undefined,
+			undefined,
+			true,
 			viewType,
 		);
 	}
 
-	public static create(
-		id: number,
-		key: string,
-		complexFields: TreeNode[],
-		simpleFields: SimpleField[],
-		failed: boolean,
-		isGeneratedKey: boolean,
-		isRoot: boolean,
-		viewType?: TreeViewType,
+	public addComplex(
+		obj: object,
+		key = '',
+		isGeneratedKey = false,
+		viewType = TreeViewType.EVENTS_LIST,
+		index?: number,
+	) {
+		const filed = TreeNode.parse(obj, this, key, isGeneratedKey, viewType, index);
+		this._failed = this._failed && filed.failed;
+		this._children.push(filed);
+	}
+
+	public addSimple(key: string, value: unknown) {
+		// TODO: check because code maybe incorrect
+		// if (!failed && typeof item === 'string') {
+		// 	failed = TreeNode.isValueFailed(item);
+		// }
+		if (this._failed && typeof value === 'string' && !TreeNode.isValueFailed(value)) {
+			this._failed = false;
+		}
+		this._simpleFields.push(new SimpleField(nextid(), key, value, this));
+	}
+
+	public toString(): string {
+		const path: string[] = [this._key];
+		for (let parent = this.parent; parent !== undefined; parent = parent.parent) {
+			const text = parent._key;
+			path.push(text.length > 10 ? `${text.slice(0, 7)}…` : text);
+		}
+		return `node:${path.reverse().join('/')}`;
+	}
+
+	private static parse(
+		obj: object,
+		parent: TreeNode,
+		key = '',
+		isGeneratedKey = false,
+		viewType = TreeViewType.EVENTS_LIST,
+		index?: number,
 	): TreeNode {
-		return new TreeNode(
-			id,
-			key,
-			[],
-			[],
-			complexFields,
-			simpleFields,
-			failed,
-			'',
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			isGeneratedKey,
-			isRoot,
-			viewType,
+		const id = nextid();
+		const isArray = Array.isArray(obj);
+		const failed = TreeNode.isKeyFailed(key);
+		const viewInstruction = TreeNode.extractViewInstruction(obj);
+		const displayName = TreeNode.extractDisplayName(
+			obj,
+			typeof index !== 'undefined' ? String(index) : undefined,
 		);
+		const displayTimestamp = TreeNode.extractDisplayTimestamp(obj);
+		const displayTable = TreeNode.extractDisplayTable(obj);
+
+		const result = new TreeNode(
+			id, // id
+			key, // key
+			[], // children
+			[], // simpleFields
+			failed, // failed
+			viewInstruction, // viewInstruction
+			parent, // parent
+			parent === undefined, // isOpen
+			undefined, // height
+			displayName, // displayName
+			displayTimestamp, // displayTimestamp
+			displayTable, // displayTable
+			isArray, // isArray
+			isGeneratedKey, // isGeneratedKey
+			viewType, // viewType
+		);
+		if (isArray) {
+			for (let i = 0; i < obj.length; i++) {
+				const item = obj[i];
+				if (
+					typeof item === 'object' &&
+					!(
+						(key.endsWith('-table') || (displayName && displayName.endsWith('-table'))) &&
+						Array.isArray(item)
+					)
+				) {
+					result.addComplex(item, i.toString(), true, viewType, i);
+				} else {
+					result.addSimple(i.toString(), item);
+				}
+			}
+		} else {
+			for (const [entryKey, value] of Object.entries(obj)) {
+				// if (entryKey === )
+				if (!(entryKey in TreeNode.TECHNICAL_FIELDS)) {
+					if (typeof value === 'object' && value !== null) {
+						result.addComplex(value, entryKey, false, viewType);
+					} else {
+						result.addSimple(entryKey, value);
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
+	private static isKeyFailed(key: string): boolean {
+		return key.includes('[fail]') || key.trim().startsWith('#');
+	}
+
+	private static isValueFailed(value: string): boolean {
+		return value.trim().startsWith('#') || value.trim().startsWith('!#');
+	}
+
+	private static extractField(obj: unknown, key: string): unknown {
+		if (typeof obj !== 'object') return undefined;
+		if (Array.isArray(obj)) return undefined;
+		if (obj === null) return undefined;
+		if (!(key in obj)) return undefined;
+		return (obj as Record<string, unknown>)[key];
+	}
+
+	private static extractViewInstruction(obj: unknown): string {
+		const key = TreeNode.VIEW_INSTRUCTION_FIELD;
+		const value = TreeNode.extractField(obj, key);
+		if (value === undefined) return '';
+		if (typeof value !== 'string') {
+			console.error(`Unexpected '${typeof value}' type of '${key}' filed: ${value}`);
+			return '';
+		}
+		return value;
+	}
+
+	private static extractDisplayName(
+		obj: unknown,
+		defaultValue: string | undefined,
+	): string | undefined {
+		const key = TreeNode.DISPLAY_NAME_FIELD;
+		const value = TreeNode.extractField(obj, key);
+		if (value === undefined) return defaultValue;
+		if (typeof value !== 'string') {
+			console.error(`Unexpected '${typeof value}' type of '${key}' filed: ${value}`);
+			return defaultValue;
+		}
+		return value;
+	}
+
+	private static extractDisplayTimestamp(obj: unknown): number | undefined {
+		const key = TreeNode.DISPLAY_TIMESTAMP_FIELD;
+		const value = TreeNode.extractField(obj, key);
+		if (value === undefined) return undefined;
+		if (typeof value === 'string') return Number(value) / 1_000_000;
+		if (typeof value === 'number') return value / 1_000_000;
+		console.error(`Unexpected '${typeof value}' type of '${key}' filed: ${value}`);
+		return undefined;
+	}
+
+	private static extractDisplayTable(obj: unknown): string[][] | undefined {
+		const key = TreeNode.DISPLAY_TABLE_FIELD;
+		const value = TreeNode.extractField(obj, key);
+		if (value === undefined) return undefined;
+		if (
+			!(
+				Array.isArray(value) &&
+				value.every(
+					item => Array.isArray(item) && item.every(subItem => typeof subItem === 'string'),
+				)
+			)
+		) {
+			console.error(`Unexpected '${typeof value}' type of '${key}' filed: ${value}`);
+			return undefined;
+		}
+		return value;
 	}
 }

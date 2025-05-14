@@ -204,10 +204,10 @@ const JSONView = ({
 							{isBeautified || idx === arr.length - 1 ? null : ', '}
 						</React.Fragment>
 					))}
-					{isBeautified || node.simpleFields.length === 0 || node.complexFields.length === 0
+					{isBeautified || node.simpleFields.length === 0 || node.children.length === 0
 						? null
 						: ', '}
-					{node.complexFields.map((n, idx, arr) => (
+					{node.children.map((n, idx, arr) => (
 						<React.Fragment key={n.id}>
 							<JSONView
 								type={type}

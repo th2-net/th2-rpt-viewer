@@ -19,7 +19,7 @@ import { NotebookNode, NotebookParameters } from '../../models/JSONSchema';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener } from '../../hooks';
 import api from '../../api';
-import { convertParameterToInput, parseText, nextid } from '../../helpers/JSONViewer';
+import { convertParameterToInput, parseText } from '../../helpers/JSONViewer';
 import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 export const IGNORED_PARAMETERS_NAMES = ['output_path', 'customization_path'];
@@ -124,27 +124,18 @@ const FileChoosing = ({
 				selectedFiles.forEach(filePath =>
 					promises.push(
 						api.jsonViewer.getFile(filePath).then(({ result }) => {
-							const complexFields: TreeNode[] = [];
+							const node = TreeNode.createComplex(filePath);
 							try {
-								complexFields.push(...parseText(result, '0', true));
+								parseText(result, node, '0', true);
 							} catch {
 								const lines = result.split('\n');
 								for (let i = 0; i < lines.length; i++) {
 									if (lines[i] !== '') {
-										complexFields.push(...parseText(lines[i], String(i), true));
+										parseText(lines[i], node, String(i), true);
 									}
 								}
 							}
-							fileData.push(
-								TreeNode.createComplex(
-									nextid(), // id
-									filePath, // key
-									complexFields,
-									complexFields.some(v => v.failed), // failed
-									true, // isGeneratedKey
-									true, // isRoot
-								),
-							);
+							fileData.push(node);
 						}),
 					),
 				);

@@ -54,7 +54,7 @@ const JSONViewerWorkspace = () => {
 			JSONViewerStore.notebooks.default,
 			JSONViewerStore.isModalOpen.default,
 			JSONViewerStore.selectedTreeNode.default,
-			JSONViewerStore.openTreeNodes.default,
+			JSONViewerStore.visibleData.default,
 			JSONViewerStore.tokens,
 		],
 	).get();
@@ -72,7 +72,7 @@ const JSONViewerWorkspace = () => {
 			JSONViewerStore.notebooks.compare,
 			JSONViewerStore.isModalOpen.compare,
 			JSONViewerStore.selectedTreeNode.compare,
-			JSONViewerStore.openTreeNodes.compare,
+			JSONViewerStore.visibleData.compare,
 			JSONViewerStore.tokens,
 		],
 	).get();

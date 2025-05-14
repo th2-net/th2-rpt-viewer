@@ -16,15 +16,16 @@
 
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ChunkHeightData, PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import { LEAF_BACKGROUND_COLORS, LEAF_COLORS } from './TreeLeaf';
+import { Chunk } from '../../stores/JSONViewer/Chunk';
 
 const EmptyLeaf = ({
 	chunkNode,
 	type,
 }: {
-	chunkNode: ChunkHeightData;
+	chunkNode: Chunk;
 	type: PanelType;
 	nextNodeTimestamp?: number;
 	nextNodeChunk?: number;
@@ -34,15 +35,15 @@ const EmptyLeaf = ({
 	const otherBorderSide = type === 'default' ? 'Left' : 'Right';
 
 	const chunkColor = useMemo(
-		() => JSONViewerStore.intervalsColor[chunkNode.chunk],
-		[chunkNode.chunk],
+		() => JSONViewerStore.intervalsColor[chunkNode.chunkId],
+		[JSONViewerStore.intervalsColor],
 	);
 
 	return (
 		<div
 			className='leaf'
 			style={{
-				height: chunkNode.height,
+				height: chunkNode.visibleHeight,
 				backgroundColor: LEAF_BACKGROUND_COLORS[chunkColor],
 				[`border${borderSide}Color`]: LEAF_COLORS[chunkColor],
 				[`border${borderSide}Width`]: '5px',

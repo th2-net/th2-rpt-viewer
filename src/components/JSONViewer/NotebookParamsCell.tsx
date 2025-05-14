@@ -33,7 +33,6 @@ import {
 	OFF_VALUE_SERVER,
 	parseText,
 	validateParameter,
-	nextid,
 } from '../../helpers/JSONViewer';
 import { useNotificationsStore, useOutsideClickListener } from '../../hooks';
 import ParametersRow from './ParametersRow';
@@ -124,30 +123,23 @@ const NotebookParamsCell = ({
 
 		switch (status) {
 			case 'success':
+				// TODO: code duplicate FileChoosing and JSONPanel
 				if (result.includes('{')) {
-					const complexFields: TreeNode[] = [];
+					const node = TreeNode.createComplex(
+						`Result of ${notebook.name}'s run`,
+						JSONViewerStore.lastViewType,
+					);
 					try {
-						complexFields.push(...parseText(result, '0', true, JSONViewerStore.lastViewType));
+						parseText(result, node, '0', true, JSONViewerStore.lastViewType);
 					} catch {
 						const lines = result.split('\n');
 						for (let i = 0; i < lines.length; i++) {
 							if (lines[i] !== '') {
-								complexFields.push(
-									...parseText(lines[i], String(i), true, JSONViewerStore.lastViewType),
-								);
+								parseText(lines[i], node, String(i), true, JSONViewerStore.lastViewType);
 							}
 						}
 					}
-					const node = TreeNode.create(
-						nextid(), // id
-						`Result of ${notebook.name}'s run`, // key
-						complexFields,
-						[{ id: nextid(), key: 'filepath', value: path }], // simpleFields
-						complexFields.some(v => v.failed), // failed
-						true, // isGeneratedKey
-						true, // isRoot
-						JSONViewerStore.lastViewType,
-					);
+					node.addSimple('filepath', path);
 					const newResults = [node.id, ...results];
 					const maxResultCount = Number(resultCount);
 					const convertResultCount = Math.max(1, Math.round(maxResultCount));
@@ -416,7 +408,7 @@ const NotebookParamsCell = ({
 								}}
 							/>
 						</button>
-						<button onClick={savePreset} disabled={isLoading} title='Save Preseet'>
+						<button onClick={savePreset} disabled={isLoading} title='Save Preset'>
 							<label>Save</label>
 						</button>
 					</div>
@@ -433,7 +425,7 @@ const NotebookParamsCell = ({
 							pattern='\d+'
 							onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
 								setResultCount(ev.target.value);
-								JSONViewerStore.updateotebookResultCount(notebookProp.name, ev.target.value, type);
+								JSONViewerStore.updateNotebookResultCount(notebookProp.name, ev.target.value, type);
 							}}
 						/>
 					</div>

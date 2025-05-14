@@ -29,13 +29,6 @@ export enum TreeViewType {
 	ORIGIN = 'Origin',
 }
 
-export interface SimpleField {
-	id: number;
-	key: string;
-	value: any;
-	parentIds?: number[];
-}
-
 export interface BlankTreeNode {
 	id: number;
 	displayTimestamp: number;

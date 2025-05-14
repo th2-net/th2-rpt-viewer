@@ -18,7 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
-import { getFlatListFromTree, parseText, nextid } from '../../helpers/JSONViewer';
+import { getFlatListFromTree, parseText } from '../../helpers/JSONViewer';
 import { NotebookNode } from '../../models/JSONSchema';
 import FileChoosing from './FileChoosing';
 import JSONView from './JSONView';
@@ -44,24 +44,18 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 				promises.push(getFileContent(file));
 			}
 		}
+		// TODO: code duplicate FileChoosing
 		const nodes: TreeNode[] = (await Promise.all(promises)).map(([fileName, text]) => {
-			const complexFields: TreeNode[] = [];
+			const node = TreeNode.createComplex(fileName);
 			try {
-				complexFields.push(...parseText(text, '0', true));
+				parseText(text, node, '0', true);
 			} catch {
 				const lines = text.split('\n');
 				for (let i = 0; i < lines.length; i++) {
-					if (lines[i] !== '') complexFields.push(...parseText(lines[i], String(i), true));
+					if (lines[i] !== '') parseText(lines[i], node, String(i), true);
 				}
 			}
-			return TreeNode.createComplex(
-				nextid(), // id
-				fileName, // key
-				complexFields,
-				false, // failed
-				true, // isGeneratedKey
-				true, // isRoot
-			);
+			return node;
 		});
 		JSONViewerStore.setTreeNodes(
 			nodes.flatMap(node => getFlatListFromTree(node)),

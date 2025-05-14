@@ -27,20 +27,18 @@ import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import { formatTime } from '../../helpers/date';
 import { Chip } from '../Chip';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
-import { getChunk } from '../../helpers/JSONViewer';
+import { getChunkId } from '../../helpers/JSONViewer';
 import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 export const LEAF_COLORS = ['lightgray', 'black'];
 export const LEAF_BACKGROUND_COLORS = ['white', 'gainsboro'];
 
 const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) => {
-	const JSONViewerStore = useJSONViewerStore();
-	const isSelected = treeNode.id === JSONViewerStore.selectedTreeNode[type].id;
+	const jsonViewerStore = useJSONViewerStore();
+	const isSelected = treeNode.id === jsonViewerStore.selectedTreeNode[type].id;
 	const viewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
 	const [open, setOpen] = React.useState(
-		viewType === TreeViewType.DISPLAY_TABLE ||
-			viewType === TreeViewType.JSON ||
-			JSONViewerStore.isOpenNode(treeNode.id, type),
+		viewType === TreeViewType.DISPLAY_TABLE || viewType === TreeViewType.JSON || treeNode.isOpen,
 	);
 
 	const nodeName = useMemo(() => {
@@ -57,45 +55,45 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 		[open, viewType],
 	);
 
-	const chunk = useMemo(
-		() => getChunk(treeNode.displayTimestamp, JSONViewerStore.chunkInterval),
-		[treeNode.displayTimestamp, JSONViewerStore.chunkInterval],
+	const chunkId = useMemo(
+		() => getChunkId(treeNode.displayTimestamp, jsonViewerStore.chunkInterval),
+		[jsonViewerStore.chunkInterval],
 	);
 
-	const chunkColor = useMemo(() => JSONViewerStore.intervalsColor[chunk], [chunk]);
+	const chunkColor = useMemo(
+		() => jsonViewerStore.intervalsColor[chunkId],
+		[chunkId, jsonViewerStore.intervalsColor],
+	);
 
 	const leafRef = useRef<HTMLDivElement>(null);
 	const borderSide = type === 'default' ? 'Right' : 'Left';
 
 	const borderStyle = {
-		[`border${borderSide}Color`]: chunk !== -1 ? LEAF_COLORS[chunkColor] : undefined,
-		[`border${borderSide}Width`]: chunk !== -1 ? '5px' : undefined,
-		[`borderTop${borderSide}Radius`]: chunk !== -1 ? '0px' : undefined,
-		[`borderBottom${borderSide}Radius`]: chunk !== -1 ? '0px' : undefined,
+		[`border${borderSide}Color`]: chunkId !== -1 ? LEAF_COLORS[chunkColor] : undefined,
+		[`border${borderSide}Width`]: chunkId !== -1 ? '5px' : undefined,
+		[`borderTop${borderSide}Radius`]: chunkId !== -1 ? '0px' : undefined,
+		[`borderBottom${borderSide}Radius`]: chunkId !== -1 ? '0px' : undefined,
 	};
 
-	const splitContent = JSONViewerStore.compareNameResults(
+	const splitContent = jsonViewerStore.compareNameResults(
 		type,
 		treeNode.id,
-		multiTokenSplit(nodeName, JSONViewerStore.tokens),
+		multiTokenSplit(nodeName, jsonViewerStore.tokens),
 	);
 
 	useEffect(() => {
-		setOpen(JSONViewerStore.isOpenNode(treeNode.id, type));
+		setOpen(treeNode.isOpen);
 		if (viewType !== TreeViewType.EVENTS_LIST) {
-			for (let i = 0; i < treeNode.childIds.length; i++) {
-				JSONViewerStore.closeNode(treeNode.childIds[i], type);
-			}
+			// eslint-disable-next-line no-param-reassign
+			treeNode.children.forEach(child => (child.isOpen = false));
 		}
 	}, [viewType]);
 
 	useEffect(() => {
 		setOpen(
-			viewType === TreeViewType.DISPLAY_TABLE ||
-				viewType === TreeViewType.JSON ||
-				JSONViewerStore.isOpenNode(treeNode.id, type),
+			viewType === TreeViewType.DISPLAY_TABLE || viewType === TreeViewType.JSON || treeNode.isOpen,
 		);
-	}, [JSONViewerStore.openTreeNodes[type].values]);
+	}, [treeNode.isOpen]);
 
 	useEffect(() => {
 		const resizeObserver = new ResizeObserver(entries => {
@@ -103,7 +101,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 				entries[0].borderBoxSize?.length > 0
 					? entries[0].borderBoxSize[0].blockSize
 					: entries[0].contentRect.height;
-			JSONViewerStore.updateNodeHeight(treeNode.id, height, type);
+			jsonViewerStore.updateNodeHeight(treeNode.id, height, type);
 		});
 		if (leafRef.current) {
 			resizeObserver.observe(leafRef.current);
@@ -116,20 +114,24 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	const toggleNode = () => {
 		if (open) {
 			setOpen(false);
-			JSONViewerStore.closeNode(treeNode.id, type);
+			// eslint-disable-next-line no-param-reassign
+			treeNode.isOpen = false;
 		} else {
 			setOpen(true);
 			if (treeNode.isRoot) {
-				JSONViewerStore.openNodeAndCloseOthers([treeNode.id, ...treeNode.parentIds], type);
-				JSONViewerStore.scrollToId(treeNode.id, type);
-			} else JSONViewerStore.openNode(treeNode.id, type);
+				// eslint-disable-next-line no-param-reassign
+				treeNode.isOpen = true;
+				jsonViewerStore.openRootNodeOnly(treeNode, type);
+				jsonViewerStore.scrollToId(treeNode.id, type);
+				// eslint-disable-next-line no-param-reassign
+			} else treeNode.isOpen = true;
 		}
 	};
 
 	const complexFieldsDisplay = () => (
 		<span title={treeNode.isArray ? 'Complex Elements amount' : `Complex Fields amount`}>
 			{treeNode.isArray ? '[' : '{'}
-			{treeNode.childIds.length}
+			{treeNode.children.length}
 			{treeNode.isArray ? ']' : '}'}
 		</span>
 	);
@@ -142,12 +144,13 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 
 	const changeViewType = (newType: TreeViewType) => {
 		if (treeNode.isRoot) {
-			JSONViewerStore.setGroupView(treeNode.id, newType, type);
-		} else JSONViewerStore.setNodeView(treeNode.id, newType, type);
+			jsonViewerStore.setGroupView(treeNode, newType, type);
+			// eslint-disable-next-line no-param-reassign
+		} else treeNode.viewType = newType;
 	};
 
 	const selectNode = () => {
-		JSONViewerStore.selectTreeNode(type, treeNode);
+		jsonViewerStore.selectTreeNode(type, treeNode);
 	};
 
 	return (
@@ -159,32 +162,32 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 				isSelected ? 'selected' : null,
 			)}
 			style={{
-				backgroundColor: chunk !== -1 ? LEAF_BACKGROUND_COLORS[chunkColor] : undefined,
+				backgroundColor: chunkId !== -1 ? LEAF_BACKGROUND_COLORS[chunkColor] : undefined,
 				...borderStyle,
 			}}>
 			<div className={borderSide === 'Left' ? 'leafWrapper-right' : 'leafWrapper'}>
-				{JSONViewerStore.isCompare && treeNode.displayTimestamp && borderSide === 'Left' && (
+				{jsonViewerStore.isCompare && treeNode.displayTimestamp && borderSide === 'Left' && (
 					<div
 						title='Move to nearest chunk in other panel'
 						className={`timestamp-pointer-left`}
 						onClick={e => {
 							e.preventDefault();
-							JSONViewerStore.scrollToNearest(treeNode.displayTimestamp || -1, type);
+							jsonViewerStore.scrollToNearest(treeNode.displayTimestamp || -1, type);
 						}}
 					/>
 				)}
 				<div
 					style={{
 						width: `${
-							20 * treeNode.parentIds.length +
-							(treeNode.childIds.length === 0 && viewType === TreeViewType.EVENTS_LIST ? 23 : 0) -
-							(JSONViewerStore.isCompare && treeNode.displayTimestamp && borderSide === 'Left'
+							20 * treeNode.level +
+							(treeNode.children.length === 0 && viewType === TreeViewType.EVENTS_LIST ? 23 : 0) -
+							(jsonViewerStore.isCompare && treeNode.displayTimestamp && borderSide === 'Left'
 								? 12
 								: 0)
 						}px`,
 					}}
 				/>
-				{((treeNode.childIds.length > 0 &&
+				{((treeNode.children.length > 0 &&
 					(treeNode.isRoot || viewType === TreeViewType.EVENTS_LIST)) ||
 					viewType !== TreeViewType.EVENTS_LIST) && (
 					<div
@@ -234,13 +237,13 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 						/>
 					</div>
 				</div>
-				{JSONViewerStore.isCompare && treeNode.displayTimestamp && borderSide === 'Right' && (
+				{jsonViewerStore.isCompare && treeNode.displayTimestamp && borderSide === 'Right' && (
 					<div
 						title='Move to nearest chunk in other panel'
 						className={`timestamp-pointer-right`}
 						onClick={e => {
 							e.preventDefault();
-							JSONViewerStore.scrollToNearest(treeNode.displayTimestamp || -1, type);
+							jsonViewerStore.scrollToNearest(treeNode.displayTimestamp || -1, type);
 						}}
 					/>
 				)}
@@ -257,7 +260,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 								type={type}
 								isBeautified={viewType === TreeViewType.PRETTY}
 								node={treeNode}
-								tokens={JSONViewerStore.tokens}
+								tokens={jsonViewerStore.tokens}
 							/>
 						</div>
 					</div>

@@ -17,7 +17,7 @@
 import React, { useMemo } from 'react';
 import { TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer } from 'mobx-react-lite';
-import { SimpleField, TreeViewType } from '../../models/JSONSchema';
+import { TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
 import { decodeBase64RawContent } from '../../helpers/rawFormatter';
@@ -31,6 +31,7 @@ import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import DisplayTable from './DisplayTable';
 import { TreeNode } from '../../stores/JSONViewer/TreeNode';
+import { SimpleField } from '../../stores/JSONViewer/SimpleField';
 
 const Table = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -42,12 +43,9 @@ const Table = ({ type }: { type: PanelType }) => {
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
-	const toggleNode = (nodeId: number) => {
-		if (JSONViewerStore.openSelectedRows[type].has(nodeId)) {
-			JSONViewerStore.closeSelectRow(nodeId, type);
-		} else {
-			JSONViewerStore.openSelectRow(nodeId, type);
-		}
+	const toggleNode = (node: TreeNode) => {
+		// eslint-disable-next-line no-param-reassign
+		node.isOpen = !node.isOpen;
 	};
 
 	const computeRowKey = React.useCallback(
@@ -57,7 +55,7 @@ const Table = ({ type }: { type: PanelType }) => {
 
 	const renderRow = React.useCallback(
 		(index: number, row: TreeNode | SimpleField) => {
-			if ('complexFields' in row) {
+			if (row instanceof TreeNode) {
 				const rowName = row.displayName
 					? row.displayName
 					: row.key && !(row.isGeneratedKey && !row.isRoot)
@@ -68,7 +66,8 @@ const Table = ({ type }: { type: PanelType }) => {
 				return (
 					<ExpandRow
 						field={row}
-						isOpen={JSONViewerStore.openSelectedRows[type].has(row.id)}
+						// FIXME: functional doesn't work and combined between view and table
+						isOpen={row.isOpen}
 						setOpen={toggleNode}
 						tokens={JSONViewerStore.tokens}
 					/>
@@ -164,7 +163,7 @@ const SimpleRow = ({ field, tokens }: { field: SimpleField; tokens: SearchToken[
 	const keyTokens = keyValueTokens.map(({ keyToken }) => keyToken);
 	const valueTokens = keyValueTokens.map(({ valueToken }) => valueToken);
 
-	const { key, value, parentIds } = field;
+	const { key, value, level } = field;
 
 	const getValue = () => {
 		if (key.endsWith('Base64')) {
@@ -201,7 +200,7 @@ const SimpleRow = ({ field, tokens }: { field: SimpleField; tokens: SearchToken[
 					className={'json-table-row-value'}
 					colSpan={2}
 					style={{
-						paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
+						paddingLeft: `${(level - 1) * 10}px`,
 						overflowWrap: 'anywhere',
 					}}>
 					<p>
@@ -221,7 +220,7 @@ const SimpleRow = ({ field, tokens }: { field: SimpleField; tokens: SearchToken[
 						className={'json-table-row-value'}
 						style={{
 							width: `30%`,
-							paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
+							paddingLeft: `${(level - 1) * 10}px`,
 							overflowWrap: 'anywhere',
 						}}>
 						<p>
@@ -252,7 +251,7 @@ const ExpandRow = ({
 }: {
 	field: TreeNode;
 	isOpen: boolean;
-	setOpen: (id: number) => void;
+	setOpen: (node: TreeNode) => void;
 	tokens: SearchToken[];
 }) => {
 	const nodeName = useMemo(() => {
@@ -269,10 +268,10 @@ const ExpandRow = ({
 				className={'json-table-row-togler'}
 				style={{
 					gridColumn: `1/3`,
-					paddingLeft: `${field.parentIds.length * 10}px`,
+					paddingLeft: `${field.level * 10}px`,
 				}}
 				colSpan={2}
-				onClick={() => setOpen(field.id)}>
+				onClick={() => setOpen(field)}>
 				<div className='leafWrapper'>
 					<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
 					<div className={'valueLeaf-table'} title={nodeName}>
@@ -323,7 +322,7 @@ const TableRow = ({
 				className={'json-table-row-togler'}
 				style={{
 					gridColumn: `1/3`,
-					paddingLeft: `${field.parentIds.length * 10}px`,
+					paddingLeft: `${field.level * 10}px`,
 				}}
 				colSpan={2}
 				onClick={toggleOpen}>
