@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, trace } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { BlankTreeNode, NotebookNode, TreeViewType } from '../../models/JSONSchema';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
@@ -575,8 +575,8 @@ export class JSONViewerStore {
 
 	@action setTreeNodes(nodes: TreeNode[], type: PanelType) {
 		const nodeHolder = this.getNodeHolder(type);
-		nodeHolder.nodes = nodes.slice();
 		nodeHolder.idToIndex.clear();
+		nodeHolder.nodes = nodes.slice();
 		nodeHolder.nodes.forEach((n, i) => nodeHolder.idToIndex.set(n.id, i));
 		if (nodeHolder.nodes.length !== nodeHolder.idToIndex.size) {
 			throw new Error(
@@ -630,7 +630,7 @@ export class JSONViewerStore {
 		return node;
 	}
 
-	@action addNodes(tree: TreeNode[], type: PanelType) {
+	private addNodes(tree: TreeNode[], type: PanelType) {
 		const nodeHolder = this.getNodeHolder(type);
 		const previousLength = nodeHolder.nodes.length;
 		nodeHolder.nodes = nodeHolder.nodes.concat(tree);
@@ -641,7 +641,6 @@ export class JSONViewerStore {
 				`Number of nodes '${nodeHolder.nodes.length}' isn't matched to number of unique ids '${nodeHolder.idToIndex.size}'`,
 			);
 		}
-		this.model = this.createModel();
 		this.deactivateSearch(type);
 	}
 
@@ -663,12 +662,18 @@ export class JSONViewerStore {
 		return result;
 	}
 
-	@action removeNodesById(ids: number[], type: PanelType) {
+	private removeNodesById(ids: number[], type: PanelType) {
 		const nodeHolder = this.getNodeHolder(type);
 		const relatedIds = new Set<number>();
 		JSONViewerStore.collectRelatedIndexes(ids, relatedIds, nodeHolder);
 		nodeHolder.nodes = nodeHolder.nodes.filter(node => !relatedIds.has(node.id));
 		relatedIds.forEach(id => nodeHolder.idToIndex.delete(id));
+		if (nodeHolder.nodes.length !== nodeHolder.idToIndex.size) {
+			throw new Error(
+				// eslint-disable-next-line max-len
+				`Number of nodes '${nodeHolder.nodes.length}' isn't matched to number of unique ids '${nodeHolder.idToIndex.size}'`,
+			);
+		}
 	}
 
 	@action updateNodeHeight(id: number, height: number, type: PanelType) {
@@ -735,10 +740,10 @@ export class JSONViewerStore {
 		const newResults = [newResult.id, ...notebook.results];
 
 		if (newResult.children.length > 0) {
-			this.addNodes(getFlatListFromTree(newResult), type);
 			if (newResults.length > resultCount) {
 				this.removeNodesById(newResults.slice(resultCount), type);
 			}
+			this.addNodes(getFlatListFromTree(newResult), type);
 			notebook.results = newResults.slice(0, resultCount);
 			this.selectTreeNode(type, newResult);
 			this.openRootNodeOnly(newResult, type);
@@ -749,6 +754,7 @@ export class JSONViewerStore {
 			notebook,
 			...this.notebooks[type].slice(index + 1),
 		];
+		this.model = this.createModel();
 	}
 
 	@action updateNotebookResultCount(name: string, newCount: string, type: PanelType) {
@@ -762,6 +768,7 @@ export class JSONViewerStore {
 			},
 			...this.notebooks[type].slice(index + 1),
 		];
+		this.model = this.createModel();
 	}
 
 	@computed
@@ -789,7 +796,6 @@ export class JSONViewerStore {
 	) {
 		const nodeHolder = this.getNodeHolder(type);
 		const result = [
-			...this.notebooks[type],
 			...nodeHolder.nodes.flatMap(node => {
 				if (this.isCompare) {
 					return [
@@ -807,24 +813,26 @@ export class JSONViewerStore {
 	}
 
 	@observable model: {
-		default: (TreeNode | NotebookNode | Chunk)[];
-		compare: (TreeNode | NotebookNode | Chunk)[];
+		default: (TreeNode | Chunk)[];
+		compare: (TreeNode | Chunk)[];
 	} = {
 		default: [],
 		compare: [],
 	};
 
 	private filterVisibleData(type: PanelType) {
-		trace();
-		return this.model[type].filter(node => {
-			if (node instanceof TreeNode && !node.isOpenInTree) {
-				return false;
-			}
-			if (node instanceof Chunk && !node.isVisible) {
-				return false;
-			}
-			return true;
-		});
+		return [
+			...this.notebooks[type],
+			...this.model[type].filter(node => {
+				if (node instanceof TreeNode && !node.isOpenInTree) {
+					return false;
+				}
+				if (node instanceof Chunk && !node.isVisible) {
+					return false;
+				}
+				return true;
+			}),
+		];
 	}
 
 	@computed public get visibleData(): {
