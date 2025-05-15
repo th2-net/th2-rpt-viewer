@@ -38,7 +38,9 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	const isSelected = treeNode.id === jsonViewerStore.selectedTreeNode[type].id;
 	const viewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
 	const [open, setOpen] = React.useState(
-		viewType === TreeViewType.DISPLAY_TABLE || viewType === TreeViewType.JSON || treeNode.isOpen,
+		viewType === TreeViewType.DISPLAY_TABLE ||
+			viewType === TreeViewType.JSON ||
+			treeNode.isOpenInTree,
 	);
 
 	const nodeName = useMemo(() => {
@@ -82,18 +84,20 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	);
 
 	useEffect(() => {
-		setOpen(treeNode.isOpen);
+		setOpen(treeNode.isOpenInTree);
 		if (viewType !== TreeViewType.EVENTS_LIST) {
 			// eslint-disable-next-line no-param-reassign
-			treeNode.children.forEach(child => (child.isOpen = false));
+			treeNode.children.forEach(child => (child.isOpenInTree = false));
 		}
 	}, [viewType]);
 
 	useEffect(() => {
 		setOpen(
-			viewType === TreeViewType.DISPLAY_TABLE || viewType === TreeViewType.JSON || treeNode.isOpen,
+			viewType === TreeViewType.DISPLAY_TABLE ||
+				viewType === TreeViewType.JSON ||
+				treeNode.isOpenInTree,
 		);
-	}, [treeNode.isOpen]);
+	}, [treeNode.isOpenInTree]);
 
 	useEffect(() => {
 		const resizeObserver = new ResizeObserver(entries => {
@@ -115,16 +119,16 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 		if (open) {
 			setOpen(false);
 			// eslint-disable-next-line no-param-reassign
-			treeNode.isOpen = false;
+			treeNode.isOpenInTree = false;
 		} else {
 			setOpen(true);
 			if (treeNode.isRoot) {
 				// eslint-disable-next-line no-param-reassign
-				treeNode.isOpen = true;
+				treeNode.isOpenInTree = true;
 				jsonViewerStore.openRootNodeOnly(treeNode, type);
 				jsonViewerStore.scrollToId(treeNode.id, type);
 				// eslint-disable-next-line no-param-reassign
-			} else treeNode.isOpen = true;
+			} else treeNode.isOpenInTree = true;
 		}
 	};
 

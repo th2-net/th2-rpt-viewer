@@ -85,11 +85,7 @@ const JSONViewerWorkspace = () => {
 				component: <TablePanel type={'default'} />,
 				isActive: true,
 			})),
-		[
-			JSONViewerStore.selectedTreeNode.default,
-			JSONViewerStore.openRows.default,
-			JSONViewerStore.tokens,
-		],
+		[JSONViewerStore.selectedTreeNode.default, JSONViewerStore.tokens],
 	).get();
 
 	const viewerWorkspacePanels = React.useMemo(

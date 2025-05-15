@@ -45,7 +45,7 @@ const Table = ({ type }: { type: PanelType }) => {
 
 	const toggleNode = (node: TreeNode) => {
 		// eslint-disable-next-line no-param-reassign
-		node.isOpen = !node.isOpen;
+		node.isOpenInTable = !node.isOpenInTable;
 	};
 
 	const computeRowKey = React.useCallback(
@@ -67,7 +67,7 @@ const Table = ({ type }: { type: PanelType }) => {
 					<ExpandRow
 						field={row}
 						// FIXME: functional doesn't work and combined between view and table
-						isOpen={row.isOpen}
+						isOpen={row.isOpenInTable}
 						setOpen={toggleNode}
 						tokens={JSONViewerStore.tokens}
 					/>

@@ -18,11 +18,7 @@ import { action, computed, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { BlankTreeNode, NotebookNode, TreeViewType } from '../../models/JSONSchema';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import {
-	getChunkId,
-	getFlatListFromTree,
-	getFlatListFromTreeWSimple,
-} from '../../helpers/JSONViewer';
+import { flattenForTable, getChunkId, getFlatListFromTree } from '../../helpers/JSONViewer';
 import SearchToken from '../../models/search/SearchToken';
 import notificationsStore from '../NotificationsStore';
 import { downloadTxtFile } from '../../helpers/files/downloadTxt';
@@ -126,22 +122,6 @@ export class JSONViewerStore {
 	} = {
 		default: TreeNode.EMPTY,
 		compare: TreeNode.EMPTY,
-	};
-
-	@observable selectedFlatTreeNode: {
-		default: (TreeNode | SimpleField)[];
-		compare: (TreeNode | SimpleField)[];
-	} = {
-		default: [],
-		compare: [],
-	};
-
-	@observable openRows: {
-		default: Set<string>;
-		compare: Set<string>;
-	} = {
-		default: new Set(),
-		compare: new Set(),
 	};
 
 	@observable searchResults: {
@@ -364,12 +344,15 @@ export class JSONViewerStore {
 				break;
 		}
 
-		if (!rootNode.isOpen) {
+		if (!rootNode.isOpenInTree) {
 			this.openRootNodeOnly(rootNode, type);
 		}
 
-		if ((searchResult.type === 'table' || searchResult.type === 'body') && !searchNode.isOpen) {
-			searchNode.isOpen = true;
+		if (
+			(searchResult.type === 'table' || searchResult.type === 'body') &&
+			!searchNode.isOpenInTree
+		) {
+			searchNode.isOpenInTree = true;
 		}
 
 		this.scrollToId(id, type);
@@ -585,7 +568,7 @@ export class JSONViewerStore {
 			);
 		}
 		this.model = this.createModel();
-		this.selectedTreeNode[type] = TreeNode.EMPTY;
+		this.selectTreeNode(type, TreeNode.EMPTY);
 		this.deactivateSearch(type);
 	}
 
@@ -593,13 +576,13 @@ export class JSONViewerStore {
 		this.notebooks[type] = n.slice();
 	}
 
-	@action selectTreeNode(type: PanelType, tree?: TreeNode) {
-		if (tree) {
-			this.selectedTreeNode[type] = tree;
-			this.selectedFlatTreeNode[type] = getFlatListFromTreeWSimple(tree);
-		} else {
+	@action selectTreeNode(type: PanelType, node: TreeNode) {
+		if (node === TreeNode.EMPTY) {
 			this.selectedTreeNode[type] = TreeNode.EMPTY;
-			this.selectedFlatTreeNode[type] = [];
+		} else {
+			// eslint-disable-next-line no-param-reassign
+			node.isOpenInTable = true;
+			this.selectedTreeNode[type] = node;
 		}
 	}
 
@@ -693,11 +676,11 @@ export class JSONViewerStore {
 		nodeHolder.nodes.forEach(node => {
 			if (node.isRoot && node.id !== rootNode.id) {
 				// eslint-disable-next-line no-param-reassign
-				node.isOpen = false;
+				node.isOpenInTree = false;
 			}
 		});
 		// eslint-disable-next-line no-param-reassign
-		rootNode.isOpen = true;
+		rootNode.isOpenInTree = true;
 	}
 
 	@action scrollToId(id: number, type: PanelType) {
@@ -774,8 +757,8 @@ export class JSONViewerStore {
 	@computed
 	public get shownSelectRows() {
 		return {
-			default: this.selectedFlatTreeNode.default.slice(1).filter(field => field.isOpenInTree),
-			compare: this.selectedFlatTreeNode.compare.slice(1).filter(field => field.isOpenInTree),
+			default: flattenForTable(this.selectedTreeNode.default).slice(1),
+			compare: flattenForTable(this.selectedTreeNode.compare).slice(1),
 		};
 	}
 
@@ -827,7 +810,7 @@ export class JSONViewerStore {
 				if ('name' in node) {
 					return true;
 				}
-				if (node instanceof TreeNode && node.isOpenInTree) {
+				if (node instanceof TreeNode && node.isVisibleInTree) {
 					return true;
 				}
 				if (this.isCompare && node instanceof Chunk && node.isVisible) {
@@ -972,7 +955,7 @@ export class JSONViewerStore {
 				? node.chunkId >= chunk
 				: node instanceof TreeNode &&
 				  node.displayTimestamp &&
-				  node.isOpenInTree &&
+				  node.isVisibleInTree &&
 				  getChunkId(node.displayTimestamp, this.chunkInterval) >= chunk,
 		);
 		const nearestNodeLocalIndex = this.visibleData[type].findIndex(node =>
@@ -980,7 +963,7 @@ export class JSONViewerStore {
 				? node.chunkId >= chunk
 				: node instanceof TreeNode &&
 				  node.displayTimestamp &&
-				  node.isOpenInTree &&
+				  node.isVisibleInTree &&
 				  getChunkId(node.displayTimestamp, this.chunkInterval) >= chunk,
 		);
 		if (nearestNodeIndex && nearestNodeLocalIndex) {

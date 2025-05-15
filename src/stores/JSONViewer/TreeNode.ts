@@ -51,7 +51,9 @@ export class TreeNode {
 
 	@observable private _height: number;
 
-	@observable private _isOpen: boolean;
+	@observable private _isOpenInTree: boolean;
+
+	@observable private _isOpenInTable: boolean;
 
 	private _parent?: TreeNode;
 
@@ -83,7 +85,8 @@ export class TreeNode {
 		failed: boolean,
 		viewInstruction: string,
 		parent?: TreeNode,
-		isOpen?: boolean,
+		isOpenInTree?: boolean,
+		isOpenInTable?: boolean,
 		height?: number,
 		displayName?: string,
 		displayTimestamp?: number,
@@ -95,7 +98,8 @@ export class TreeNode {
 		this._id = id;
 		this._key = key;
 		this._height = height ?? 30;
-		this._isOpen = isOpen ?? false;
+		this._isOpenInTree = isOpenInTree ?? false;
+		this._isOpenInTable = isOpenInTable ?? false;
 		this._parent = parent;
 		this._children = children;
 		this._displayName = displayName;
@@ -125,16 +129,24 @@ export class TreeNode {
 		this._height = height;
 	}
 
-	public get isOpen(): boolean {
-		return this._isOpen;
+	public get isOpenInTree(): boolean {
+		return this._isOpenInTree;
 	}
 
-	public set isOpen(isOpen: boolean) {
-		this._isOpen = isOpen;
+	public set isOpenInTree(isOpen: boolean) {
+		this._isOpenInTree = isOpen;
 	}
 
-	@computed public get isOpenInTree(): boolean {
-		return (this.parent?.isOpen ?? true) && (this.parent?.isOpenInTree ?? true);
+	@computed public get isVisibleInTree(): boolean {
+		return (this.parent?.isOpenInTree ?? true) && (this.parent?.isVisibleInTree ?? true);
+	}
+
+	public get isOpenInTable(): boolean {
+		return this._isOpenInTable;
+	}
+
+	public set isOpenInTable(isOpen: boolean) {
+		this._isOpenInTable = isOpen;
 	}
 
 	public get parent(): TreeNode | undefined {
@@ -227,6 +239,7 @@ export class TreeNode {
 			undefined,
 			undefined,
 			undefined,
+			undefined,
 			true,
 			viewType,
 		);
@@ -291,7 +304,8 @@ export class TreeNode {
 			failed, // failed
 			viewInstruction, // viewInstruction
 			parent, // parent
-			parent === undefined, // isOpen
+			parent === undefined, // isOpenInTree
+			parent === undefined, // isOpenInTable
 			undefined, // height
 			displayName, // displayName
 			displayTimestamp, // displayTimestamp

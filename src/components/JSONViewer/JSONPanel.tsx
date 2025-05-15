@@ -62,7 +62,7 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 			type,
 		);
 		JSONViewerStore.setNotebooks([], type);
-		JSONViewerStore.selectTreeNode(type);
+		JSONViewerStore.selectTreeNode(type, TreeNode.EMPTY);
 		if (nodes.length > 0) JSONViewerStore.selectTreeNode(type, nodes[0]);
 	};
 
@@ -73,7 +73,7 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 			nodes.flatMap(node => getFlatListFromTree(node)),
 			type,
 		);
-		JSONViewerStore.selectTreeNode(type);
+		JSONViewerStore.selectTreeNode(type, TreeNode.EMPTY);
 		if (nodes.length > 0) JSONViewerStore.selectTreeNode(type, nodes[0]);
 		JSONViewerStore.setNotebooks(notebooks, type);
 		JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType, type);

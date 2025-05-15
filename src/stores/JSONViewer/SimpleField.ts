@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import { computed, observable } from 'mobx';
 import { TreeNode } from './TreeNode';
 
 export class SimpleField {
@@ -27,14 +26,11 @@ export class SimpleField {
 
 	private _parent: TreeNode;
 
-	@observable private _isOpen: boolean;
-
-	public constructor(id: number, key: string, value: any, parent: TreeNode, isOpen?: boolean) {
+	public constructor(id: number, key: string, value: any, parent: TreeNode) {
 		this._id = id;
 		this._key = key;
 		this._value = value;
 		this._parent = parent;
-		this._isOpen = isOpen ?? false;
 	}
 
 	public get id(): number {
@@ -51,18 +47,6 @@ export class SimpleField {
 
 	public get parent(): TreeNode | undefined {
 		return this._parent;
-	}
-
-	public get isOpen(): boolean {
-		return this._isOpen;
-	}
-
-	public set isOpen(isOpen: boolean) {
-		this._isOpen = isOpen;
-	}
-
-	@computed public get isOpenInTree(): boolean {
-		return this._parent === undefined ? true : this._parent.isOpenInTree;
 	}
 
 	public get level(): number {

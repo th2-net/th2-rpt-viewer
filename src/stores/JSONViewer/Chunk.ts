@@ -72,12 +72,12 @@ export class Chunk {
 
 	@computed get height(): number {
 		return this._nodes
-			.filter(node => node.isOpenInTree)
+			.filter(node => node.isVisibleInTree)
 			.reduce((sum, nodes) => sum + nodes.height, 0);
 	}
 
 	@computed get visibleHeight(): number {
-		return this._rootNode === undefined || this._rootNode.isOpen
+		return this._rootNode === undefined || this._rootNode.isOpenInTree
 			? Math.max(this.height, this._relatedChunk === undefined ? 0 : this._relatedChunk.height) -
 					this.height
 			: 0;
