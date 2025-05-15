@@ -824,13 +824,16 @@ export class JSONViewerStore {
 		return [
 			...this.notebooks[type],
 			...this.model[type].filter(node => {
-				if (node instanceof TreeNode && !node.isOpenInTree) {
-					return false;
+				if ('name' in node) {
+					return true;
 				}
-				if (node instanceof Chunk && !node.isVisible) {
-					return false;
+				if (node instanceof TreeNode && node.isOpenInTree) {
+					return true;
 				}
-				return true;
+				if (this.isCompare && node instanceof Chunk && node.isVisible) {
+					return true;
+				}
+				return false;
 			}),
 		];
 	}
