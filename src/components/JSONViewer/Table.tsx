@@ -44,7 +44,6 @@ const Table = ({ type }: { type: PanelType }) => {
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
 	const toggleNode = (node: TreeNode) => {
-		// eslint-disable-next-line no-param-reassign
 		node.isOpenInTable = !node.isOpenInTable;
 	};
 

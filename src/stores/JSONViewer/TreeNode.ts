@@ -138,7 +138,8 @@ export class TreeNode {
 	}
 
 	@computed public get isVisibleInTree(): boolean {
-		return (this.parent?.isOpenInTree ?? true) && (this.parent?.isVisibleInTree ?? true);
+		if (this.parent === undefined) return true;
+		return this.parent.isOpenInTree && this.parent.isVisibleInTree;
 	}
 
 	public get isOpenInTable(): boolean {

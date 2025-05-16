@@ -32,30 +32,42 @@ import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 export const LEAF_COLORS = ['lightgray', 'black'];
 export const LEAF_BACKGROUND_COLORS = ['white', 'gainsboro'];
+export const PRETTY_VIEW_TYPES = new Set([
+	TreeViewType.DISPLAY_TABLE,
+	TreeViewType.JSON,
+	TreeViewType.PRETTY,
+]);
 
 const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) => {
 	const jsonViewerStore = useJSONViewerStore();
 	const isSelected = treeNode.id === jsonViewerStore.selectedTreeNode[type].id;
-	const viewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
-	const [open, setOpen] = React.useState(
-		viewType === TreeViewType.DISPLAY_TABLE ||
-			viewType === TreeViewType.JSON ||
-			treeNode.isOpenInTree,
-	);
+	const viewType: TreeViewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
+	/*
+	Tree / Closed --  Open  --> Tree / Opened
+	Tree / Closed -- Pretty --> Pretty / Opened
+	----
+	Tree / Opened -- Close  --> Tree / Closed
+	Tree / Opened -- Pretty --> Pretty / Opened
+	----
+	Pretty / Closed -- Open --> Pretty / Opened
+	Pretty / Closed -- Tree --> Tree / Closed
+	----
+	Pretty / Opened -- Close --> Pretty / Closed
+	Pretty / Opened -- Tree  --> Tree / Opened
+	*/
+	const [open, setOpen] = React.useState(() => {
+		const state = PRETTY_VIEW_TYPES.has(viewType) || treeNode.isOpenInTree;
+		// console.log(`init state (${treeNode.key}): ${state}`);
+		return state;
+	});
 
 	const nodeName = useMemo(() => {
 		if (treeNode.displayName) return treeNode.displayName;
 		if (treeNode.key && !(treeNode.isGeneratedKey && !treeNode.isRoot)) return treeNode.key;
 		return 'no display name';
-	}, [treeNode.displayName, treeNode.key, treeNode.isGeneratedKey]);
+	}, []);
 
-	const needBounding = useMemo(
-		() =>
-			(open && viewType === TreeViewType.DISPLAY_TABLE) ||
-			viewType === TreeViewType.JSON ||
-			viewType === TreeViewType.PRETTY,
-		[open, viewType],
-	);
+	const needBounding = useMemo(() => open && PRETTY_VIEW_TYPES.has(viewType), [open, viewType]);
 
 	const chunkId = useMemo(
 		() => getChunkId(treeNode.displayTimestamp, jsonViewerStore.chunkInterval),
@@ -84,20 +96,26 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	);
 
 	useEffect(() => {
-		setOpen(treeNode.isOpenInTree);
-		if (viewType !== TreeViewType.EVENTS_LIST) {
-			// eslint-disable-next-line no-param-reassign
+		// console.log(`view changed ${treeNode.key}: ${viewType} / ${treeNode.isOpenInTree}`);
+		if (PRETTY_VIEW_TYPES.has(viewType)) {
+			treeNode.isOpenInTree = true;
 			treeNode.children.forEach(child => (child.isOpenInTree = false));
 		}
 	}, [viewType]);
 
 	useEffect(() => {
-		setOpen(
-			viewType === TreeViewType.DISPLAY_TABLE ||
-				viewType === TreeViewType.JSON ||
-				treeNode.isOpenInTree,
-		);
+		// console.log(`isOpenInTree changed ${treeNode.key}: ${treeNode.isOpenInTree}`);
+		setOpen(treeNode.isOpenInTree);
 	}, [treeNode.isOpenInTree]);
+
+	const toggleNode = () => {
+		// console.log(`toggle ${treeNode.key}: ${treeNode.isOpenInTree}`);
+		treeNode.isOpenInTree = !treeNode.isOpenInTree;
+		if (treeNode.isRoot && treeNode.isOpenInTree) {
+			jsonViewerStore.openRootNodeOnly(treeNode, type);
+			jsonViewerStore.scrollToId(treeNode.id, type);
+		}
+	};
 
 	useEffect(() => {
 		const resizeObserver = new ResizeObserver(entries => {
@@ -114,23 +132,6 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 			if (leafRef.current) resizeObserver.unobserve(leafRef.current);
 		};
 	}, []);
-
-	const toggleNode = () => {
-		if (open) {
-			setOpen(false);
-			// eslint-disable-next-line no-param-reassign
-			treeNode.isOpenInTree = false;
-		} else {
-			setOpen(true);
-			if (treeNode.isRoot) {
-				// eslint-disable-next-line no-param-reassign
-				treeNode.isOpenInTree = true;
-				jsonViewerStore.openRootNodeOnly(treeNode, type);
-				jsonViewerStore.scrollToId(treeNode.id, type);
-				// eslint-disable-next-line no-param-reassign
-			} else treeNode.isOpenInTree = true;
-		}
-	};
 
 	const complexFieldsDisplay = () => (
 		<span title={treeNode.isArray ? 'Complex Elements amount' : `Complex Fields amount`}>
@@ -149,7 +150,6 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	const changeViewType = (newType: TreeViewType) => {
 		if (treeNode.isRoot) {
 			jsonViewerStore.setGroupView(treeNode, newType, type);
-			// eslint-disable-next-line no-param-reassign
 		} else treeNode.viewType = newType;
 	};
 

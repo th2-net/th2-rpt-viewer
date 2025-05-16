@@ -580,7 +580,6 @@ export class JSONViewerStore {
 		if (node === TreeNode.EMPTY) {
 			this.selectedTreeNode[type] = TreeNode.EMPTY;
 		} else {
-			// eslint-disable-next-line no-param-reassign
 			node.isOpenInTable = true;
 			this.selectedTreeNode[type] = node;
 		}
@@ -601,7 +600,6 @@ export class JSONViewerStore {
 	// TODO: move to TreeNode class
 	private static updateNodeView(node: TreeNode, viewType: TreeViewType, recursively: boolean) {
 		if (node.viewType !== viewType) {
-			// eslint-disable-next-line no-param-reassign
 			node.viewType = viewType;
 			if (recursively) {
 				node.children.forEach(childNode => {
@@ -675,11 +673,9 @@ export class JSONViewerStore {
 		const nodeHolder = this.getNodeHolder(type);
 		nodeHolder.nodes.forEach(node => {
 			if (node.isRoot && node.id !== rootNode.id) {
-				// eslint-disable-next-line no-param-reassign
 				node.isOpenInTree = false;
 			}
 		});
-		// eslint-disable-next-line no-param-reassign
 		rootNode.isOpenInTree = true;
 	}
 
