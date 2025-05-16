@@ -580,7 +580,6 @@ export class JSONViewerStore {
 		if (node === TreeNode.EMPTY) {
 			this.selectedTreeNode[type] = TreeNode.EMPTY;
 		} else {
-			node.isOpenInTable = true;
 			this.selectedTreeNode[type] = node;
 		}
 	}

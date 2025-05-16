@@ -17,7 +17,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import '../../styles/JSONviewer.scss';
-import { TreeViewType } from '../../models/JSONSchema';
+import { PRETTY_VIEW_TYPES, TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import JSONView from './JSONViewSimpleField';
@@ -32,11 +32,6 @@ import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 export const LEAF_COLORS = ['lightgray', 'black'];
 export const LEAF_BACKGROUND_COLORS = ['white', 'gainsboro'];
-export const PRETTY_VIEW_TYPES = new Set([
-	TreeViewType.DISPLAY_TABLE,
-	TreeViewType.JSON,
-	TreeViewType.PRETTY,
-]);
 
 const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) => {
 	const jsonViewerStore = useJSONViewerStore();

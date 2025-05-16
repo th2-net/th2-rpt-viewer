@@ -16,7 +16,7 @@
  */
 
 import { action, computed, observable } from 'mobx';
-import { TreeViewType } from '../../models/JSONSchema';
+import { PRETTY_VIEW_TYPES, TreeViewType } from '../../models/JSONSchema';
 import { SimpleField } from './SimpleField';
 import { nextid } from '../../helpers/JSONViewer';
 
@@ -75,7 +75,7 @@ export class TreeNode {
 
 	private _isGeneratedKey?: boolean;
 
-	@observable private _viewType?: TreeViewType;
+	@observable private _viewType: TreeViewType;
 
 	private constructor(
 		id: number,
@@ -110,7 +110,7 @@ export class TreeNode {
 		this._failed = failed;
 		this._isArray = isArray;
 		this._isGeneratedKey = isGeneratedKey;
-		this._viewType = viewType;
+		this._viewType = viewType ?? TreeViewType.EVENTS_LIST;
 	}
 
 	public get id(): number {
@@ -139,7 +139,11 @@ export class TreeNode {
 
 	@computed public get isVisibleInTree(): boolean {
 		if (this.parent === undefined) return true;
-		return this.parent.isOpenInTree && this.parent.isVisibleInTree;
+		return (
+			this.parent.isOpenInTree &&
+			(this.parent.isRoot || !PRETTY_VIEW_TYPES.has(this.parent.viewType)) &&
+			this.parent.isVisibleInTree
+		);
 	}
 
 	public get isOpenInTable(): boolean {
@@ -210,11 +214,11 @@ export class TreeNode {
 		return this._isGeneratedKey;
 	}
 
-	public get viewType(): TreeViewType | undefined {
+	public get viewType(): TreeViewType {
 		return this._viewType;
 	}
 
-	public set viewType(viewType: TreeViewType | undefined) {
+	public set viewType(viewType: TreeViewType) {
 		this._viewType = viewType;
 	}
 

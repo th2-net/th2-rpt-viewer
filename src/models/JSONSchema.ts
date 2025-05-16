@@ -29,6 +29,12 @@ export enum TreeViewType {
 	ORIGIN = 'Origin',
 }
 
+export const PRETTY_VIEW_TYPES = new Set([
+	TreeViewType.DISPLAY_TABLE,
+	TreeViewType.JSON,
+	TreeViewType.PRETTY,
+]);
+
 export interface BlankTreeNode {
 	id: number;
 	displayTimestamp: number;
