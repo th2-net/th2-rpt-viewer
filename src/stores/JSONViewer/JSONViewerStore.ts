@@ -679,9 +679,12 @@ export class JSONViewerStore {
 	}
 
 	@action scrollToId(id: number, type: PanelType) {
-		this.activeIndex[type] = this.visibleData[type].findIndex(
-			node => node instanceof TreeNode && node.id === id,
-		);
+		const visibleData = this.visibleData[type];
+		const index = visibleData.findIndex(node => node instanceof TreeNode && node.id === id);
+		this.activeIndex[type] = index;
+		if (index !== -1) {
+			this.selectTreeNode(type, visibleData[index] as TreeNode);
+		}
 	}
 
 	@action setGroupView(node: TreeNode, viewType: TreeViewType, type: PanelType) {
