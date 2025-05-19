@@ -36,7 +36,6 @@ export const LEAF_BACKGROUND_COLORS = ['white', 'gainsboro'];
 const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) => {
 	const jsonViewerStore = useJSONViewerStore();
 	const isSelected = treeNode.id === jsonViewerStore.selectedTreeNode[type].id;
-	const viewType: TreeViewType = treeNode.viewType || TreeViewType.EVENTS_LIST;
 	/*
 	Tree / Closed --  Open  --> Tree / Opened
 	Tree / Closed -- Pretty --> Pretty / Opened
@@ -51,8 +50,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	Pretty / Opened -- Tree  --> Tree / Opened
 	*/
 	const [open, setOpen] = React.useState(() => {
-		const state = PRETTY_VIEW_TYPES.has(viewType) || treeNode.isOpenInTree;
-		// console.log(`init state (${treeNode.key}): ${state}`);
+		const state = treeNode.isOpenInTree;
 		return state;
 	});
 
@@ -62,7 +60,10 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 		return 'no display name';
 	}, []);
 
-	const needBounding = useMemo(() => open && PRETTY_VIEW_TYPES.has(viewType), [open, viewType]);
+	const needBounding = useMemo(
+		() => open && PRETTY_VIEW_TYPES.has(treeNode.viewType),
+		[open, treeNode.viewType],
+	);
 
 	const chunkId = useMemo(
 		() => getChunkId(treeNode.displayTimestamp, jsonViewerStore.chunkInterval),
@@ -89,14 +90,6 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 		treeNode.id,
 		multiTokenSplit(nodeName, jsonViewerStore.tokens),
 	);
-
-	useEffect(() => {
-		// console.log(`view changed ${treeNode.key}: ${viewType} / ${treeNode.isOpenInTree}`);
-		if (PRETTY_VIEW_TYPES.has(viewType)) {
-			treeNode.isOpenInTree = true;
-			treeNode.children.forEach(child => (child.isOpenInTree = false));
-		}
-	}, [viewType]);
 
 	useEffect(() => {
 		// console.log(`isOpenInTree changed ${treeNode.key}: ${treeNode.isOpenInTree}`);
@@ -143,9 +136,13 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 	);
 
 	const changeViewType = (newType: TreeViewType) => {
-		if (treeNode.isRoot) {
-			jsonViewerStore.setGroupView(treeNode, newType, type);
-		} else treeNode.viewType = newType;
+		jsonViewerStore.setGroupView(treeNode, newType, type);
+		treeNode.isOpenInTree = true;
+		if (PRETTY_VIEW_TYPES.has(newType)) {
+			treeNode.updateChildrenIsOpenInTreeRecursively(treeNode.isRoot);
+		} else {
+			treeNode.updateChildrenIsOpenInTreeRecursively(false);
+		}
 	};
 
 	const selectNode = () => {
@@ -179,7 +176,9 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 					style={{
 						width: `${
 							20 * treeNode.level +
-							(treeNode.children.length === 0 && viewType === TreeViewType.EVENTS_LIST ? 23 : 0) -
+							(treeNode.children.length === 0 && treeNode.viewType === TreeViewType.EVENTS_LIST
+								? 23
+								: 0) -
 							(jsonViewerStore.isCompare && treeNode.displayTimestamp && borderSide === 'Left'
 								? 12
 								: 0)
@@ -187,8 +186,8 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 					}}
 				/>
 				{((treeNode.children.length > 0 &&
-					(treeNode.isRoot || viewType === TreeViewType.EVENTS_LIST)) ||
-					viewType !== TreeViewType.EVENTS_LIST) && (
+					(treeNode.isRoot || treeNode.viewType === TreeViewType.EVENTS_LIST)) ||
+					treeNode.viewType !== TreeViewType.EVENTS_LIST) && (
 					<div
 						className={createBemBlock('expand-icon', open ? 'expanded' : 'hidden')}
 						onClick={toggleNode}
@@ -220,7 +219,7 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 					<div style={{ display: 'flex', minWidth: treeNode.displayTimestamp ? '135px' : '20px' }}>
 						{treeNode.displayTimestamp && <Chip text={formatTime(treeNode.displayTimestamp)} />}
 						<LeafTools
-							activeViewType={viewType}
+							activeViewType={treeNode.viewType}
 							toggleViewType={changeViewType}
 							isRoot={treeNode.isRoot}
 							viewTypes={
@@ -247,17 +246,17 @@ const TreeLeaf = ({ treeNode, type }: { treeNode: TreeNode; type: PanelType }) =
 					/>
 				)}
 			</div>
-			{!treeNode.isRoot && open && viewType === TreeViewType.DISPLAY_TABLE && (
+			{!treeNode.isRoot && open && treeNode.viewType === TreeViewType.DISPLAY_TABLE && (
 				<DisplayTable id={treeNode.id} value={treeNode.displayTable} type={type} />
 			)}
 			{!treeNode.isRoot &&
 				open &&
-				(viewType === TreeViewType.JSON || viewType === TreeViewType.PRETTY) && (
+				(treeNode.viewType === TreeViewType.JSON || treeNode.viewType === TreeViewType.PRETTY) && (
 					<div className='message-card-wrapper'>
 						<div className='mc__mc-body mc-body'>
 							<JSONView
 								type={type}
-								isBeautified={viewType === TreeViewType.PRETTY}
+								isBeautified={treeNode.viewType === TreeViewType.PRETTY}
 								node={treeNode}
 								tokens={jsonViewerStore.tokens}
 							/>

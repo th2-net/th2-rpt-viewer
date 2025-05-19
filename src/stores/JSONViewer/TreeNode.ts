@@ -137,6 +137,17 @@ export class TreeNode {
 		this._isOpenInTree = isOpen;
 	}
 
+	@action public updateIsOpenInTreeRecursively(isOpen: boolean) {
+		this._isOpenInTree = isOpen;
+		this.updateChildrenIsOpenInTreeRecursively(isOpen);
+	}
+
+	@action public updateChildrenIsOpenInTreeRecursively(isOpen: boolean) {
+		this._children.forEach(childNode => {
+			childNode.updateIsOpenInTreeRecursively(isOpen);
+		});
+	}
+
 	@computed public get isVisibleInTree(): boolean {
 		if (this.parent === undefined) return true;
 		return (
@@ -405,14 +416,7 @@ export class TreeNode {
 		const key = TreeNode.DISPLAY_TABLE_FIELD;
 		const value = TreeNode.extractField(obj, key);
 		if (value === undefined) return undefined;
-		if (
-			!(
-				Array.isArray(value) &&
-				value.every(
-					item => Array.isArray(item) && item.every(subItem => typeof subItem === 'string'),
-				)
-			)
-		) {
+		if (!(Array.isArray(value) && value.every(item => Array.isArray(item)))) {
 			console.error(`Unexpected '${typeof value}' type of '${key}' filed: ${value}`);
 			return undefined;
 		}
