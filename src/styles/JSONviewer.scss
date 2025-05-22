@@ -165,7 +165,9 @@
 
 	&.selected {
 		border: 2px solid;
-		border-color: var(--status-primary-border-color);
+		// FIXME: maybe this approach is incorrect
+		// previous value: var(--status-primary-border-color)
+		border-color: #fa8100;
 	}
 	
 	&.compared {
