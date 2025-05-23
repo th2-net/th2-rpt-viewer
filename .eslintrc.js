@@ -109,6 +109,7 @@ module.exports = {
 		'prefer-destructuring': 'off',
 		'no-useless-constructor': 'off',
 		'prettier/prettier': ['error'],
+		'no-param-reassign': ['error', { props: false }],
 	},
 	settings: {
 		react: {

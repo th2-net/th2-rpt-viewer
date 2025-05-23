@@ -1,7 +1,23 @@
+/** ****************************************************************************
+ * Copyright 2024-2025 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************** */
+
 import React, { useMemo } from 'react';
 import { TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer } from 'mobx-react-lite';
-import { SimpleField, TreeNode, TreeViewType } from '../../models/JSONSchema';
+import { TreeViewType } from '../../models/JSONSchema';
 import { createBemBlock } from '../../helpers/styleCreators';
 import DetailedMessageRaw from '../message/message-card/raw/DetailedMessageRaw';
 import { decodeBase64RawContent } from '../../helpers/rawFormatter';
@@ -14,6 +30,8 @@ import SearchToken from '../../models/search/SearchToken';
 import { getKeyValueTokens } from '../../helpers/search/getSpecificTokens';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import DisplayTable from './DisplayTable';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
+import { SimpleField } from '../../stores/JSONViewer/SimpleField';
 
 const Table = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -25,12 +43,8 @@ const Table = ({ type }: { type: PanelType }) => {
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
-	const toggleNode = (nodeId: string) => {
-		if (JSONViewerStore.openSelectedRows[type].has(nodeId)) {
-			JSONViewerStore.closeSelectRow(nodeId, type);
-		} else {
-			JSONViewerStore.openSelectRow(nodeId, type);
-		}
+	const toggleNode = (node: TreeNode) => {
+		node.isOpenInTable = !node.isOpenInTable;
 	};
 
 	const computeRowKey = React.useCallback(
@@ -40,7 +54,7 @@ const Table = ({ type }: { type: PanelType }) => {
 
 	const renderRow = React.useCallback(
 		(index: number, row: TreeNode | SimpleField) => {
-			if ('complexFields' in row) {
+			if (row instanceof TreeNode) {
 				const rowName = row.displayName
 					? row.displayName
 					: row.key && !(row.isGeneratedKey && !row.isRoot)
@@ -51,7 +65,7 @@ const Table = ({ type }: { type: PanelType }) => {
 				return (
 					<ExpandRow
 						field={row}
-						isOpen={JSONViewerStore.openSelectedRows[type].has(row.id)}
+						isOpen={row.isOpenInTable}
 						setOpen={toggleNode}
 						tokens={JSONViewerStore.tokens}
 					/>
@@ -147,7 +161,7 @@ const SimpleRow = ({ field, tokens }: { field: SimpleField; tokens: SearchToken[
 	const keyTokens = keyValueTokens.map(({ keyToken }) => keyToken);
 	const valueTokens = keyValueTokens.map(({ valueToken }) => valueToken);
 
-	const { key, value, parentIds } = field;
+	const { key, value, level } = field;
 
 	const getValue = () => {
 		if (key.endsWith('Base64')) {
@@ -184,7 +198,7 @@ const SimpleRow = ({ field, tokens }: { field: SimpleField; tokens: SearchToken[
 					className={'json-table-row-value'}
 					colSpan={2}
 					style={{
-						paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
+						paddingLeft: `${(level - 1) * 10}px`,
 						overflowWrap: 'anywhere',
 					}}>
 					<p>
@@ -204,7 +218,7 @@ const SimpleRow = ({ field, tokens }: { field: SimpleField; tokens: SearchToken[
 						className={'json-table-row-value'}
 						style={{
 							width: `30%`,
-							paddingLeft: `${parentIds ? (parentIds.length - 1) * 10 : 0}px`,
+							paddingLeft: `${(level - 1) * 10}px`,
 							overflowWrap: 'anywhere',
 						}}>
 						<p>
@@ -235,7 +249,7 @@ const ExpandRow = ({
 }: {
 	field: TreeNode;
 	isOpen: boolean;
-	setOpen: (id: string) => void;
+	setOpen: (node: TreeNode) => void;
 	tokens: SearchToken[];
 }) => {
 	const nodeName = useMemo(() => {
@@ -252,10 +266,10 @@ const ExpandRow = ({
 				className={'json-table-row-togler'}
 				style={{
 					gridColumn: `1/3`,
-					paddingLeft: `${field.parentIds.length * 10}px`,
+					paddingLeft: `${field.level * 10}px`,
 				}}
 				colSpan={2}
-				onClick={() => setOpen(field.id)}>
+				onClick={() => setOpen(field)}>
 				<div className='leafWrapper'>
 					<div className={createBemBlock('expand-icon', isOpen ? 'expanded' : 'hidden')} />
 					<div className={'valueLeaf-table'} title={nodeName}>
@@ -306,7 +320,7 @@ const TableRow = ({
 				className={'json-table-row-togler'}
 				style={{
 					gridColumn: `1/3`,
-					paddingLeft: `${field.parentIds.length * 10}px`,
+					paddingLeft: `${field.level * 10}px`,
 				}}
 				colSpan={2}
 				onClick={toggleOpen}>

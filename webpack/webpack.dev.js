@@ -44,7 +44,7 @@ module.exports = merge(commonConfig, {
 		historyApiFallback: true,
 		proxy: { 
 			'/json-stream-provider': {
-				target: 'http://localhost:8080/',
+				target: 'http://localhost:8081/',
 				changeOrigin: true,
 				secure: false,
 				pathRewrite: { '^/json-stream-provider': '' },

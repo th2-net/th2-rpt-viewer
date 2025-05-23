@@ -50,11 +50,11 @@ const JSONViewerWorkspace = () => {
 				isActive: true,
 			})),
 		[
-			JSONViewerStore.treeNodes.default,
+			JSONViewerStore.treeNodeHolders.default,
 			JSONViewerStore.notebooks.default,
 			JSONViewerStore.isModalOpen.default,
 			JSONViewerStore.selectedTreeNode.default,
-			JSONViewerStore.openTreeNodes.default,
+			JSONViewerStore.visibleData.default,
 			JSONViewerStore.tokens,
 		],
 	).get();
@@ -68,11 +68,11 @@ const JSONViewerWorkspace = () => {
 				isActive: true,
 			})),
 		[
-			JSONViewerStore.treeNodes.compare,
+			JSONViewerStore.treeNodeHolders.compare,
 			JSONViewerStore.notebooks.compare,
 			JSONViewerStore.isModalOpen.compare,
 			JSONViewerStore.selectedTreeNode.compare,
-			JSONViewerStore.openTreeNodes.compare,
+			JSONViewerStore.visibleData.compare,
 			JSONViewerStore.tokens,
 		],
 	).get();
@@ -85,11 +85,7 @@ const JSONViewerWorkspace = () => {
 				component: <TablePanel type={'default'} />,
 				isActive: true,
 			})),
-		[
-			JSONViewerStore.selectedTreeNode.default,
-			JSONViewerStore.openRows.default,
-			JSONViewerStore.tokens,
-		],
+		[JSONViewerStore.selectedTreeNode.default, JSONViewerStore.tokens],
 	).get();
 
 	const viewerWorkspacePanels = React.useMemo(

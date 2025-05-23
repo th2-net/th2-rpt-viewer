@@ -1,3 +1,19 @@
+/** ****************************************************************************
+ * Copyright 2024-2025 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************** */
+
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
@@ -6,7 +22,6 @@ import {
 	NotebookNode,
 	NotebookParameter,
 	NotebookParameters,
-	TreeNode,
 } from '../../models/JSONSchema';
 import api from '../../api';
 import '../../styles/jupyter.scss';
@@ -25,6 +40,7 @@ import { downloadTxtFile } from '../../helpers/files/downloadTxt';
 import { ToolsPopup } from './LeafTools';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { IGNORED_PARAMETERS_NAMES } from './FileChoosing';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 const timeBetweenResults = 50;
 
@@ -51,7 +67,7 @@ const NotebookParamsCell = ({
 	const [timer, setTimer] = React.useState<NodeJS.Timeout | null>();
 	const [taskId, setTaskId] = React.useState<string | null>();
 	const [resultCount, setResultCount] = React.useState<string>(String(notebook.resultsCount));
-	const [results, setResults] = React.useState<string[]>(notebook.results);
+	const [results, setResults] = React.useState<number[]>(notebook.results);
 	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid || v.isOff), [paramsValue]);
 	const reloadRef = React.useRef<HTMLButtonElement>(null);
 	const inputJSONRef = React.useRef<HTMLInputElement>(null);
@@ -107,33 +123,23 @@ const NotebookParamsCell = ({
 
 		switch (status) {
 			case 'success':
+				// TODO: code duplicate FileChoosing and JSONPanel
 				if (result.includes('{')) {
-					const node: TreeNode = {
-						id: nanoid(),
-						parentIds: [],
-						key: `Result of ${notebook.name}'s run`,
-						failed: false,
-						viewInstruction: '',
-						simpleFields: [{ id: nanoid(), key: 'filepath', value: path }],
-						complexFields: [],
-						childIds: [],
-						isGeneratedKey: true,
-						isRoot: true,
-						viewType: JSONViewerStore.lastViewType,
-					};
+					const node = TreeNode.createComplex(
+						`Result of ${notebook.name}'s run`,
+						JSONViewerStore.lastViewType,
+					);
 					try {
-						node.complexFields.push(...parseText(result, '0', true, JSONViewerStore.lastViewType));
+						parseText(result, node, '0', true, JSONViewerStore.lastViewType);
 					} catch {
 						const lines = result.split('\n');
 						for (let i = 0; i < lines.length; i++) {
 							if (lines[i] !== '') {
-								node.complexFields.push(
-									...parseText(lines[i], String(i), true, JSONViewerStore.lastViewType),
-								);
+								parseText(lines[i], node, String(i), true, JSONViewerStore.lastViewType);
 							}
 						}
 					}
-					node.failed = node.complexFields.some(v => v.failed);
+					node.addSimple('filepath', path);
 					const newResults = [node.id, ...results];
 					const maxResultCount = Number(resultCount);
 					const convertResultCount = Math.max(1, Math.round(maxResultCount));
@@ -402,7 +408,7 @@ const NotebookParamsCell = ({
 								}}
 							/>
 						</button>
-						<button onClick={savePreset} disabled={isLoading} title='Save Preseet'>
+						<button onClick={savePreset} disabled={isLoading} title='Save Preset'>
 							<label>Save</label>
 						</button>
 					</div>
@@ -419,7 +425,7 @@ const NotebookParamsCell = ({
 							pattern='\d+'
 							onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
 								setResultCount(ev.target.value);
-								JSONViewerStore.updateotebookResultCount(notebookProp.name, ev.target.value, type);
+								JSONViewerStore.updateNotebookResultCount(notebookProp.name, ev.target.value, type);
 							}}
 						/>
 					</div>

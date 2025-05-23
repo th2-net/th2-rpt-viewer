@@ -1,15 +1,31 @@
+/** ****************************************************************************
+ * Copyright 2024-2025 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************** */
+
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { nanoid } from 'nanoid';
 import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
 import { getFlatListFromTree, parseText } from '../../helpers/JSONViewer';
-import { NotebookNode, TreeNode } from '../../models/JSONSchema';
+import { NotebookNode } from '../../models/JSONSchema';
 import FileChoosing from './FileChoosing';
 import JSONView from './JSONView';
 import TreeList from './TreeList';
 import Select from '../util/Select';
 import SearchToken from '../../models/search/SearchToken';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
 const JSONPanel = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -28,25 +44,15 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 				promises.push(getFileContent(file));
 			}
 		}
+		// TODO: code duplicate FileChoosing
 		const nodes: TreeNode[] = (await Promise.all(promises)).map(([fileName, text]) => {
-			const node: TreeNode = {
-				id: nanoid(),
-				parentIds: [],
-				key: fileName,
-				failed: false,
-				viewInstruction: '',
-				simpleFields: [],
-				complexFields: [],
-				childIds: [],
-				isGeneratedKey: true,
-				isRoot: true,
-			};
+			const node = TreeNode.createComplex(fileName);
 			try {
-				node.complexFields.push(...parseText(text, '0', true));
+				parseText(text, node, '0', true);
 			} catch {
 				const lines = text.split('\n');
 				for (let i = 0; i < lines.length; i++) {
-					if (lines[i] !== '') node.complexFields.push(...parseText(lines[i], String(i), true));
+					if (lines[i] !== '') parseText(lines[i], node, String(i), true);
 				}
 			}
 			return node;
@@ -56,7 +62,7 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 			type,
 		);
 		JSONViewerStore.setNotebooks([], type);
-		JSONViewerStore.selectTreeNode(type);
+		JSONViewerStore.selectTreeNode(type, TreeNode.EMPTY);
 		if (nodes.length > 0) JSONViewerStore.selectTreeNode(type, nodes[0]);
 	};
 
@@ -67,7 +73,7 @@ const JSONPanel = ({ type }: { type: PanelType }) => {
 			nodes.flatMap(node => getFlatListFromTree(node)),
 			type,
 		);
-		JSONViewerStore.selectTreeNode(type);
+		JSONViewerStore.selectTreeNode(type, TreeNode.EMPTY);
 		if (nodes.length > 0) JSONViewerStore.selectTreeNode(type, nodes[0]);
 		JSONViewerStore.setNotebooks(notebooks, type);
 		JSONViewerStore.setIsModalOpen(false, JSONViewerStore.modalType, type);
