@@ -65,7 +65,6 @@ const Table = ({ type }: { type: PanelType }) => {
 				return (
 					<ExpandRow
 						field={row}
-						// FIXME: functional doesn't work and combined between view and table
 						isOpen={row.isOpenInTable}
 						setOpen={toggleNode}
 						tokens={JSONViewerStore.tokens}
