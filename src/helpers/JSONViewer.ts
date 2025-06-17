@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { parse } from 'lossless-json';
 import moment from 'moment';
 import {
 	InputNotebookParameter,
@@ -51,7 +52,7 @@ export const parseText = (
 	isGeneratedKey = false,
 	defaultViewType = TreeViewType.EVENTS_LIST,
 ) => {
-	const js = JSON.parse(text);
+	const js = parse(text, null, (value: string) => value) as any;
 	parent.addComplex(js, name, isGeneratedKey, defaultViewType);
 };
 
