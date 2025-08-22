@@ -121,8 +121,8 @@ const ParamsTableBase = (props: Props) => {
 	const renderValueNode = (
 		rowTitle: string,
 		columns: { [columnTitle: string]: string } = {},
-		paddingLevel: number,
-		key: string,
+		paddingLevel: number = 0,
+		key: string = '',
 	): React.ReactNode => {
 		const cellStyle = {
 			paddingLeft: PADDING_LEVEL_VALUE * paddingLevel,
@@ -166,7 +166,7 @@ const ParamsTableBase = (props: Props) => {
 		we need this for optimization - render SearchableContent component
 		only if it contains some search results
 	*/
-	const renderContent = (contentKey: string, content: string): React.ReactNode => {
+	const renderContent = (_contentKey: string, content: string): React.ReactNode => {
 		if (typeof content === 'boolean' && (content as boolean))
 			return <div className='boolean-value-cell' />;
 		return content;

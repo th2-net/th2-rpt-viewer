@@ -58,7 +58,7 @@ const eventHttpApi: EventApiSchema = {
 			}
 
 			return path;
-		} catch (error) {
+		} catch (_error) {
 			return path;
 		}
 	},

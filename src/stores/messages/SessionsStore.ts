@@ -75,7 +75,7 @@ export class SessionsStore {
 			runInAction(() => {
 				this.messageSessions = messageSessions;
 			});
-		} catch (error) {
+		} catch (_error) {
 			console.error("Couldn't fetch sessions");
 		} finally {
 			runInAction(() => (this.isLoadingSessions = false));

@@ -105,7 +105,7 @@ export default class EventsStore {
 
 	@observable.ref selectedEvent: EventAction | null = null;
 
-	@observable scrolledIndex: Number | null = null;
+	@observable scrolledIndex: number | null = null;
 
 	@observable isExpandedMap: Map<string, boolean> = new Map();
 
@@ -168,7 +168,6 @@ export default class EventsStore {
 		return rootNodes.flatMap(eventNode =>
 			this.getFlatExpandedList(
 				eventNode,
-				[],
 				[...this.eventDataStore.targetNodeParents.slice(1), this.eventDataStore.targetNode].filter(
 					notEmpty,
 				),
@@ -302,11 +301,11 @@ export default class EventsStore {
 			[...parents.map(parentNode => parentNode.eventId), eventId].forEach(id => {
 				const eventIndex = this.nodesList.findIndex(ev => ev.eventId === id);
 				if (eventIndex !== -1 && id !== eventId) this.isExpandedMap.set(id, true);
-				if (id === eventId) this.scrolledIndex = new Number(eventIndex);
+				if (id === eventId) this.scrolledIndex = Number(eventIndex);
 			});
 		} else {
 			index = this.flattenedEventList.findIndex(event => event.eventId === eventId);
-			this.scrolledIndex = index !== -1 ? new Number(index) : null;
+			this.scrolledIndex = index !== -1 ? Number(index) : null;
 		}
 	};
 
@@ -444,7 +443,7 @@ export default class EventsStore {
 				initialState.selectedEventId = event.eventId;
 				initialState.targetEvent = event;
 				this.goToEvent(event);
-			} catch (error) {
+			} catch (_error) {
 				console.error(`Couldnt fetch target event node ${defaultState}`);
 				this.eventDataStore.fetchEventTree({
 					filter: this.filterStore.filter,
@@ -512,8 +511,8 @@ export default class EventsStore {
 
 	private getFlatExpandedList = (
 		eventTreeNode: EventTreeNode,
-		parents: string[] = [],
 		targetNodes: EventTreeNode[],
+		parents: string[] = [],
 	): EventTreeNode[] => {
 		let childList = this.getChildrenNodes(eventTreeNode.eventId);
 
@@ -526,7 +525,7 @@ export default class EventsStore {
 		return [
 			eventTreeNode,
 			...childList.flatMap(node =>
-				this.getFlatExpandedList(node, [...parents, eventTreeNode.eventId], targetNodes),
+				this.getFlatExpandedList(node, targetNodes, [...parents, eventTreeNode.eventId]),
 			),
 		];
 	};

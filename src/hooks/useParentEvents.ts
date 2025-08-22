@@ -53,7 +53,7 @@ export const useParentEvents = (initialSelectedNode: EventTreeNode | null) => {
 			const parentEvent = await api.getEvent(parentId, abortSignal);
 			setParentEvents(new Map(parentEvents.set(parentId, parentEvent)));
 			selectParentEvent(parentEvent);
-		} catch (error) {
+		} catch (_error) {
 			console.error(`Couldn't fetch parent event ${parentId}`);
 		}
 	};

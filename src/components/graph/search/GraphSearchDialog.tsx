@@ -40,7 +40,7 @@ interface Props {
 	setTimestamp: (timestamp: number) => void;
 	setIsIdSearchDisabled: (isIdSearchDisabled: boolean) => void;
 	closeModal: () => void;
-	submittedId: String | null;
+	submittedId: string | null;
 	isIdMode: boolean;
 	submittedTimestamp: number | null;
 }
@@ -108,7 +108,7 @@ const GraphSearchDialog = (props: Props) => {
 				IndexedDbStores.GRAPH_SEARCH_HISTORY,
 			);
 			setSearchHistory(graphSearchHistory);
-		} catch (error) {
+		} catch (_error) {
 			console.error("Couldn't fetch graph search history");
 		}
 	}

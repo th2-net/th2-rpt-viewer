@@ -412,11 +412,11 @@ const VerificationTableBase = (props: Props) => {
 	 * @param isEmpty - confirms the absence of content in the cells
 	 */
 	const renderContent = (
-		contentKey: string,
+		_contentKey: string,
 		content: string | null,
 		wrapperClassName: string | null = null,
 		fakeContent: string = content || '',
-		isEmpty: Boolean = false,
+		isEmpty: boolean = false,
 	): React.ReactNode => {
 		if (content === null) {
 			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'null');

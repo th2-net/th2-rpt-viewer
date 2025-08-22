@@ -133,7 +133,7 @@ export default class MessagesFilterStore {
 	public setMessagesFilter(
 		filter: MessagesFilter,
 		sseFilters: MessageFilterState | null = null,
-		isSoftFilterApplied: boolean,
+		isSoftFilterApplied: boolean = false,
 	) {
 		this.isSoftFilter = isSoftFilterApplied;
 		this.sseMessagesFilter = sseFilters;

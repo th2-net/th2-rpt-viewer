@@ -29,7 +29,7 @@ import { EventsScopeProvider } from '../../contexts/eventsScopeProvider';
 import '../../styles/action.scss';
 
 interface Props {
-	scrolledIndex: Number | null;
+	scrolledIndex: number | null;
 	selectedNode: EventTreeNode | null;
 	isFlat?: boolean;
 }
@@ -56,7 +56,7 @@ function EventTreeListBase(props: Props) {
 	const prevIsExpandedMap = React.useRef<Map<string, boolean>>(new Map());
 
 	const renderEvent = React.useCallback(
-		(index: number, node: EventTreeNode) => {
+		(_index: number, node: EventTreeNode) => {
 			if (isFlat) {
 				return <FlatEventListItem node={node} />;
 			}
@@ -128,7 +128,7 @@ function EventTreeListBase(props: Props) {
 		}
 	}, [scrolledIndex]);
 
-	const computeKey = React.useCallback((index: number, event: EventTreeNode) => event.eventId, []);
+	const computeKey = React.useCallback((_index: number, event: EventTreeNode) => event.eventId, []);
 
 	const onItemsRendered = React.useCallback((listItems: ListItem<EventTreeNode>[]) => {
 		eventsInViewport.current = listItems;

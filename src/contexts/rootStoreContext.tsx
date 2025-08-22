@@ -60,7 +60,7 @@ export async function createRootStore(api: ApiSchema): Promise<RootStore> {
 			initialBook = lastSelectedBook && books.find(book => book.name === lastSelectedBook.name);
 		}
 		initialBook = initialBook || books[0];
-	} catch (e) {
+	} catch (_e) {
 		if (!books.length) {
 			notificationsStore.addMessage({
 				header: 'Failed to load books',

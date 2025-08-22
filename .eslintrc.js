@@ -27,7 +27,7 @@ module.exports = {
 		'plugin:import/warnings',
 		'plugin:import/typescript',
 	],
-	plugins: ['react-hooks', 'prettier'],
+	plugins: ['react-hooks', 'prettier', '@typescript-eslint', '@stylistic'],
 	env: {
 		browser: true,
 		jest: true,
@@ -55,9 +55,8 @@ module.exports = {
 				code: 100,
 			},
 		],
-		semi: 'off',
-		'@typescript-eslint/semi': ['error'],
-		'@typescript-eslint/member-delimiter-style': [
+		'@stylistic/semi': 'error',
+		'@stylistic/member-delimiter-style': [
 			'error',
 			{
 				multiline: {
@@ -70,10 +69,12 @@ module.exports = {
 				},
 			},
 		],
+		'no-empty-function': 'warn',
 		'no-use-before-define': 'off',
 		'@typescript-eslint/no-use-before-define': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'off',
 		'@typescript-eslint/ban-types': 'off',
+		'@typescript-eslint/no-explicit-any': 'warn',
 		'implicit-arrow-linebreak': 'off',
 		'arrow-parens': ['error', 'as-needed'],
 		'no-plusplus': 'off',
@@ -81,7 +82,21 @@ module.exports = {
 		'no-unused-vars': 'off',
 		'@typescript-eslint/no-unused-vars': [
 			'error',
-			{ argsIgnorePattern: '^_', ignoreRestSiblings: true },
+			{
+				args: 'all',
+				argsIgnorePattern: '^_',
+				caughtErrors: 'all',
+				caughtErrorsIgnorePattern: '^_',
+				destructuredArrayIgnorePattern: '^_',
+				varsIgnorePattern: '^_',
+				ignoreRestSiblings: true,
+			},
+		],
+		'@typescript-eslint/no-empty-object-type': [
+			'error',
+			{
+				allowObjectTypes: 'always',
+			},
 		],
 		'no-shadow': ['warn', { ignoreOnInitialization: false }],
 		'no-unused-expressions': 'off',

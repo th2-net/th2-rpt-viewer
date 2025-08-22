@@ -37,7 +37,7 @@ export function nextid(): number {
 	return counterStore.nextid();
 }
 
-export const isNotebook = (obj: Object): obj is Notebook => {
+export const isNotebook = (obj: object): obj is Notebook => {
 	const entries = Object.entries(obj);
 	return (
 		entries.length === 2 && typeof entries[0][1] === 'string' && typeof entries[1][1] === 'object'
@@ -105,12 +105,6 @@ export const convertParameterValue = (
 					type,
 				};
 			}
-			default: {
-				return {
-					value,
-					type,
-				};
-			}
 			case 'file path': {
 				return {
 					value: cutString ? value.slice(1, value.length - 1) : value,
@@ -120,6 +114,12 @@ export const convertParameterValue = (
 			case 'timestamp': {
 				return {
 					value: cutString ? value.slice(1, value.length - 1) : value,
+					type,
+				};
+			}
+			default: {
+				return {
+					value,
 					type,
 				};
 			}
