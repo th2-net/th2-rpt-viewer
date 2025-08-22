@@ -139,6 +139,27 @@ export function replaceUnfilledDateStringWithMinValues(
 				maskedValue.substr(6, 4).replace(/__/g, '01').replace(/_/g, '0') +
 				maskedValue.substring(10).replace(/_/g, '0')
 			);
+		case DateTimeMask.DATE_TIME_ISO_MASK:
+			return (
+				// eslint-disable-next-line prefer-template
+				maskedValue.substr(0, 4).replace(/__/g, '01').replace(/_/g, '0') +
+				'-' +
+				maskedValue
+					.substr(5, 2)
+					.replace(/__/g, '01')
+					.replace(/(?<=1)_/g, '0')
+					.replace(/(?<=0)_/g, '1')
+					.replace(/_/g, '0') +
+				'-' +
+				maskedValue
+					.substr(8, 2)
+					.replace(/__/g, '01')
+					.replace(/(?<=1)_/g, '0')
+					.replace(/(?<=0)_/g, '1')
+					.replace(/_/g, '0') +
+				'T' +
+				+maskedValue.substring(10).replace(/_/g, '0')
+			);
 
 		case DateTimeMask.DATE_MASK:
 			return (

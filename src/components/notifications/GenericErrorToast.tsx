@@ -29,8 +29,14 @@ export default function GenericErrorToast(props: GenericError) {
 		setCopied(true);
 	};
 
-	const shortenedDesc = description.length > 48 ? `${description.slice(0, 48)}...` : description;
-	const shortenedHeader = header.length > 48 ? `${header.slice(0, 48)}...` : header;
+	const shortenedDesc =
+		description.length > 48 && action && action.label === 'Copy details'
+			? `${description.slice(0, 48)}...`
+			: description;
+	const shortenedHeader =
+		header.length > 48 && action && action.label === 'Copy details'
+			? `${header.slice(0, 48)}...`
+			: header;
 
 	return (
 		<div className='toast-content'>

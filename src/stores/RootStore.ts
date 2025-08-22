@@ -40,11 +40,11 @@ import { getBookFromEventId } from '../helpers/event';
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
-	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
+	filtersHistoryStore: FiltersHistoryStore;
 
-	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
+	messageDisplayRulesStore: MessageDisplayRulesStore;
 
-	messageBodySortStore = new MessageBodySortOrderStore(this, this.api.indexedDb);
+	messageBodySortStore: MessageBodySortOrderStore;
 
 	workspacesStore: WorkspacesStore;
 
@@ -52,6 +52,9 @@ export default class RootStore {
 
 	constructor(private api: ApiSchema, public bookStore: BooksStore) {
 		const defaultState = this.parseUrlState();
+		this.filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
+		this.messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
+		this.messageBodySortStore = new MessageBodySortOrderStore(this, this.api.indexedDb);
 
 		this.sessionsStore = new SessionsStore(this.api, this.bookStore);
 

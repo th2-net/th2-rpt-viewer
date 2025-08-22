@@ -19,7 +19,7 @@ import { Observer, observer } from 'mobx-react-lite';
 import Workspace from './Workspace';
 import SearchWorkspace from './SearchWorkspace';
 import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
-import { useWorkspaces } from '../../hooks';
+import { useOutsideClickListener, useWorkspaces } from '../../hooks';
 import Tabs, { TabListRenderProps } from '../tabs/Tabs';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
@@ -30,9 +30,12 @@ import '../../styles/root.scss';
 import JSONViewerWorkspaceStore from '../../stores/workspace/JSONViewerWorkspaceStore';
 import { JSONViewWorspaceContextProvider } from '../../contexts/JSONViewWorspaceContextProvider';
 import JSONViewerWorkspace from './JSONViewerWorkspace';
+import { ToolsPopup } from '../JSONViewer/LeafTools';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();
+	const createMenuRef = React.useRef<HTMLDivElement>(null);
+	const [isCreateMenuOpen, setIsCreateMenuOpen] = React.useState(false);
 
 	const renderTabs: TabListRenderProps = ({ activeTabIndex, setActiveTab }) => {
 		const getTabLayout = (
@@ -44,7 +47,7 @@ const WorkspacesLayout = () => {
 					<div
 						className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
 						onClick={() => setActiveTab(index)}>
-						{workspacesStore.workspaces.length > 0 && isWorkspaceStore(workspace) && (
+						{workspacesStore.workspaces.length > 0 && !isSearchWorkspaceStore(workspace) && (
 							<span
 								className={createStyleSelector(
 									'workspace-tab__close',
@@ -58,10 +61,10 @@ const WorkspacesLayout = () => {
 						)}
 						<h3 className='workspace-tab__title'>
 							{isWorkspaceStore(workspace)
-								? `Workspace ${index - 1}`
+								? `Workspace ${index}`
 								: isSearchWorkspaceStore(workspace)
 								? 'Search'
-								: 'JSON Reader'}
+								: `JSONL Reader ${index}`}
 						</h3>
 					</div>
 				)}
@@ -70,13 +73,69 @@ const WorkspacesLayout = () => {
 
 		return [
 			getTabLayout(workspacesStore.searchWorkspace, 0),
-			getTabLayout(workspacesStore.JSONViewerWorkspace, 1),
-			...workspacesStore.workspaces.map((workspace, index) => getTabLayout(workspace, index + 2)),
+			...workspacesStore.workspaces.map((workspace, index) => getTabLayout(workspace, index + 1)),
 		];
 	};
 
+	useOutsideClickListener(
+		createMenuRef,
+		(e: MouseEvent) => {
+			if (
+				e.target instanceof Element &&
+				createMenuRef.current &&
+				!createMenuRef.current.contains(e.target)
+			) {
+				setIsCreateMenuOpen(false);
+			}
+		},
+		isCreateMenuOpen,
+	);
+
+	const addTools = () => (
+		<div className='message-card-tools' ref={createMenuRef}>
+			<div
+				className='workspace-tab workspace-tab__add'
+				onClick={e => {
+					e.stopPropagation();
+					setIsCreateMenuOpen(isOpen => !isOpen);
+				}}>
+				+
+			</div>
+			<ToolsPopup isOpen={isCreateMenuOpen} isLeft={true}>
+				<div className='message-card-tools__controls-group'>
+					<div
+						title={'Add event workspace'}
+						className='message-card-tools__item'
+						onClick={e => {
+							e.stopPropagation();
+							addWorkspace();
+							setIsCreateMenuOpen(false);
+						}}>
+						<span className='message-card-tools__item-title'>Add event workspace</span>
+					</div>
+					<div
+						title={'Add JSONL reader'}
+						className='message-card-tools__item'
+						onClick={e => {
+							e.stopPropagation();
+							addJSONWorkspace();
+							setIsCreateMenuOpen(false);
+						}}>
+						<span className='message-card-tools__item-title'>Add JSON reader</span>
+					</div>
+				</div>
+			</ToolsPopup>
+		</div>
+	);
+
 	function addWorkspace() {
 		workspacesStore.createWorkspace().then(workspace => workspacesStore.addWorkspace(workspace));
+	}
+
+	function addJSONWorkspace() {
+		workspacesStore
+			.createJSONWorkspace()
+			.then(workspace => workspacesStore.addWorkspace(workspace));
 	}
 
 	return (
@@ -87,9 +146,7 @@ const WorkspacesLayout = () => {
 			tabList={tabListInjectedProps => (
 				<>
 					{renderTabs(tabListInjectedProps)}
-					<div className='workspace-tab workspace-tab__add' onClick={addWorkspace}>
-						+
-					</div>
+					{addTools()}
 				</>
 			)}
 			tabPanels={[
@@ -98,16 +155,19 @@ const WorkspacesLayout = () => {
 					key='search-workspace'>
 					<SearchWorkspace />
 				</SearchWorkspaceContextProvider>,
-				<JSONViewWorspaceContextProvider
-					value={workspacesStore.JSONViewerWorkspace}
-					key='json-reader-workspace'>
-					<JSONViewerWorkspace />
-				</JSONViewWorspaceContextProvider>,
-				...workspacesStore.workspaces.map(workspace => (
-					<WorkspaceContextProvider value={workspace} key={workspace.id}>
-						<Workspace />
-					</WorkspaceContextProvider>
-				)),
+				...workspacesStore.workspaces.map(workspace => {
+					if (isWorkspaceStore(workspace))
+						return (
+							<WorkspaceContextProvider value={workspace} key={workspace.id}>
+								<Workspace />
+							</WorkspaceContextProvider>
+						);
+					return (
+						<JSONViewWorspaceContextProvider value={workspace} key={workspace.id}>
+							<JSONViewerWorkspace />
+						</JSONViewWorspaceContextProvider>
+					);
+				}),
 			]}
 		/>
 	);

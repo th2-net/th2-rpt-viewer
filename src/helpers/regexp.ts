@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2025 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,17 @@ export function createCaseInsensitiveRegexp(str: string): RegExp {
 	const escapedStr = escapeSpecialSymbols(str);
 
 	return new RegExp(escapedStr, 'gi');
+}
+
+/**
+ * Returns regexp, that will ignore all special symbols from target string
+ * @param str target string
+ * @param flags RegExp flags
+ */
+export function createCaseSensitiveRegexp(str: string): RegExp {
+	const escapedStr = escapeSpecialSymbols(str);
+
+	return new RegExp(escapedStr, 'g');
 }
 
 /**

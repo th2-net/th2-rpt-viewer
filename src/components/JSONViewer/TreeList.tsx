@@ -1,0 +1,88 @@
+/** ****************************************************************************
+ * Copyright 2024-2025 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************** */
+
+import React, { useEffect } from 'react';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { observer } from 'mobx-react-lite';
+import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
+import StateSaverProvider from '../util/StateSaverProvider';
+import { NotebookNode } from '../../models/JSONSchema';
+import TreeLeaf from './TreeLeaf';
+import NotebookParamsCell from './NotebookParamsCell';
+import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
+import EmptyLeaf from './EmptyLeaf';
+import { TreeNode } from '../../stores/JSONViewer/TreeNode';
+import { Chunk } from '../../stores/JSONViewer/Chunk';
+
+const TreeList = ({ type }: { type: PanelType }) => {
+	const JSONViewerStore = useJSONViewerStore();
+
+	const virtuoso = React.useRef<VirtuosoHandle>(null);
+
+	const computeTreeKey = React.useCallback(
+		(index: number, dataNode: TreeNode | NotebookNode | Chunk) =>
+			`${
+				dataNode instanceof TreeNode
+					? dataNode.id
+					: dataNode instanceof Chunk
+					? dataNode.id
+					: dataNode.name
+			}`,
+		[],
+	);
+
+	const renderTree = React.useCallback(
+		(index: number, dataNode: TreeNode | NotebookNode | Chunk) => {
+			if (dataNode instanceof TreeNode) {
+				return <TreeLeaf treeNode={dataNode} type={type} />;
+			}
+			if (dataNode instanceof Chunk) {
+				return <EmptyLeaf chunkNode={dataNode} type={type} />;
+			}
+			return <NotebookParamsCell notebookProp={dataNode} type={type} />;
+		},
+		[],
+	);
+
+	useEffect(() => {
+		if (JSONViewerStore.activeIndex[type] !== -1) {
+			virtuoso.current?.scrollToIndex({
+				index: JSONViewerStore.activeIndex[type],
+				align: 'center',
+			});
+			JSONViewerStore.activeIndex = {
+				...JSONViewerStore.activeIndex,
+				[type]: -1,
+			};
+		}
+	}, [JSONViewerStore.activeIndex[type]]);
+
+	return (
+		<StateSaverProvider>
+			<Virtuoso
+				ref={virtuoso}
+				className='JSON-virtuoso'
+				data={JSONViewerStore.visibleData[type]}
+				totalCount={JSONViewerStore.visibleData[type].length}
+				computeItemKey={computeTreeKey}
+				overscan={3}
+				itemContent={renderTree}
+			/>
+		</StateSaverProvider>
+	);
+};
+
+export default observer(TreeList);
