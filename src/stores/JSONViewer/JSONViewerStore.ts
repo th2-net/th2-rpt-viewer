@@ -485,7 +485,7 @@ export class JSONViewerStore {
 
 	@action
 	updateTokensFromText = (text: string) => {
-		const newTokens: SearchToken[] = [...defaultSearchTokens];
+		const newTokens: SearchToken[] = this.tokens;
 		try {
 			const json = JSON.parse(text);
 			for (let i = 0; i < json.length; i++) {
