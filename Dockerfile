@@ -1,7 +1,7 @@
 FROM node:14.21-alpine AS build
 ARG app_version=0.0.0
 RUN apk update \
-    && apk add --no-cache make build-base
+    && apk add --no-cache make build-base python
 WORKDIR /home/node
 COPY ./ .
 RUN npm ci && npm run build
