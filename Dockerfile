@@ -1,7 +1,7 @@
 FROM node:14.21-alpine AS build
 ARG app_version=0.0.0
-RUN apt-get update \
-    && apt-get install --yes --no-install-recommends make build-essential
+RUN apk update \
+    && apk add make build-essential
 WORKDIR /home/node
 COPY ./ .
 RUN npm ci && npm run build
