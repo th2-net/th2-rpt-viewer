@@ -297,7 +297,7 @@ const TableRow = ({
 	tokens: SearchToken[];
 	type: PanelType;
 }) => {
-	const [isTableOpen, setTableOpen] = React.useState(false);
+	const [isTableOpen, setTableOpen] = React.useState(field.key === TreeNode.DISPLAY_TABLE_FIELD);
 	const nodeName = useMemo(() => {
 		if (field.displayName) return field.displayName;
 		if (field.key && !(field.isGeneratedKey && !field.isRoot)) return field.key;
