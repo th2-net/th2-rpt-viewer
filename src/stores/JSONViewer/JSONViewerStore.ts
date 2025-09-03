@@ -701,11 +701,7 @@ export class JSONViewerStore {
 
 	@action setNotebook(notebook: NotebookNode, type: PanelType) {
 		const index = this.notebooks[type].findIndex(n => n.name === notebook.name);
-		this.notebooks[type] = [
-			...this.notebooks[type].slice(0, index),
-			notebook,
-			...this.notebooks[type].slice(index + 1),
-		];
+		this.notebooks[type][index] = notebook;
 	}
 
 	@action addNotebookResult(
@@ -717,7 +713,7 @@ export class JSONViewerStore {
 		const index = this.notebooks[type].findIndex(n => n.name === name);
 		if (index < 0) return;
 		const notebook = this.notebooks[type][index];
-		notebook.resultsCount = String(resultCount);
+		notebook.resultsCount = resultCount;
 		const newResults = [newResult.id, ...notebook.results];
 
 		if (newResult.children.length > 0) {
@@ -730,15 +726,11 @@ export class JSONViewerStore {
 			this.openRootNodeOnly(newResult, type);
 		}
 		notebook.open = false;
-		this.notebooks[type] = [
-			...this.notebooks[type].slice(0, index),
-			notebook,
-			...this.notebooks[type].slice(index + 1),
-		];
+		this.notebooks[type][index] = notebook;
 		this.model = this.createModel();
 	}
 
-	@action updateNotebookResultCount(name: string, newCount: string, type: PanelType) {
+	@action updateNotebookResultCount(name: string, newCount: number, type: PanelType) {
 		const index = this.notebooks[type].findIndex(n => n.name === name);
 		if (index < 0) return;
 		this.notebooks[type] = [

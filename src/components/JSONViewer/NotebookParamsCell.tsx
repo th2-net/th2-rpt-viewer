@@ -17,12 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
-import {
-	InputNotebookParameter,
-	NotebookNode,
-	NotebookParameter,
-	NotebookParameters,
-} from '../../models/JSONSchema';
+import { InputNotebookParameter, NotebookNode, NotebookParameters } from '../../models/JSONSchema';
 import api from '../../api';
 import '../../styles/jupyter.scss';
 import { useJSONViewerStore } from '../../hooks/useJSONViewerStore';
@@ -53,22 +48,13 @@ const NotebookParamsCell = ({
 }) => {
 	const JSONViewerStore = useJSONViewerStore();
 	const notificationsStore = useNotificationsStore();
-	const notebook: NotebookNode = {
-		...JSONViewerStore.getNotebook(notebookProp.name, notebookProp, type),
-	};
-	const [parameters, setParameters] = React.useState<NotebookParameter[]>(notebook.parameters);
-	const [paramsValue, setParamsValue] = React.useState<InputNotebookParameter[]>(
-		notebook.paramsValue,
-	);
+	const notebook: NotebookNode = JSONViewerStore.getNotebook(notebookProp.name, notebookProp, type);
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [isRunLoading, setIsRunLoading] = React.useState(false);
 	const [isReloadOpen, setIsReloadOpen] = React.useState(false);
-	const [isExpanded, setIsExpanded] = React.useState(notebook.open);
 	const [timer, setTimer] = React.useState<NodeJS.Timeout | null>();
 	const [taskId, setTaskId] = React.useState<string | null>();
-	const [resultCount, setResultCount] = React.useState<string>(String(notebook.resultsCount));
-	const [results, setResults] = React.useState<number[]>(notebook.results);
-	const isValid = React.useMemo(() => paramsValue.every(v => v.isValid || v.isOff), [paramsValue]);
+	const isValid = notebook.paramsValue.every(v => v.isValid || v.isOff);
 	const reloadRef = React.useRef<HTMLButtonElement>(null);
 	const inputJSONRef = React.useRef<HTMLInputElement>(null);
 
@@ -81,32 +67,25 @@ const NotebookParamsCell = ({
 					param => !IGNORED_PARAMETERS_NAMES.includes(param.name),
 				);
 				const newParamsValue = newParameters.map(convertParameterToInput);
-				setParameters(newParameters);
-				setParamsValue(newParamsValue);
+				notebook.parameters = newParameters;
+				notebook.paramsValue = newParamsValue;
 			})
 			.finally(() => {
 				setIsLoading(false);
-				setIsExpanded(true);
+				notebook.open = true;
 			});
 	};
 
 	const open = () => {
 		if (isLoading) return;
-		setIsExpanded(!isExpanded);
-		JSONViewerStore.setNotebook(
-			{
-				...notebook,
-				open: !isExpanded,
-			},
-			type,
-		);
+		notebook.open = !notebook.open;
 	};
 
 	const savePreset = () => {
 		downloadTxtFile(
 			[
 				JSON.stringify(
-					paramsValue.map(val => ({
+					notebook.paramsValue.map(val => ({
 						name: val.name,
 						value: val.value,
 						type: val.type,
@@ -140,14 +119,14 @@ const NotebookParamsCell = ({
 						}
 					}
 					node.addSimple('filepath', path);
-					const newResults = [node.id, ...results];
-					const maxResultCount = Number(resultCount);
+					const newResults = [node.id, ...notebook.results];
+					const maxResultCount = notebook.resultsCount;
 					const convertResultCount = Math.max(1, Math.round(maxResultCount));
 					JSONViewerStore.addNotebookResult(notebook.name, node, convertResultCount, type);
-					setResultCount(String(convertResultCount));
-					setResults(newResults.slice(0, convertResultCount));
+					notebook.resultsCount = convertResultCount;
+					notebook.results = newResults.slice(0, convertResultCount);
 					if (customization) JSONViewerStore.updateTokensFromText(customization);
-					setIsExpanded(false);
+					notebook.open = false;
 				} else {
 					notificationsStore.addMessage({
 						id: nanoid(),
@@ -181,7 +160,7 @@ const NotebookParamsCell = ({
 	};
 
 	const filterParameters = (inputParameter: InputNotebookParameter, index: number) => {
-		const parameter = parameters[index];
+		const parameter = notebook.parameters[index];
 		const parameterType = getParameterType(parameter);
 		const newValue = convertParameterValue(inputParameter.value, inputParameter.type);
 		const oldValue = convertParameterValue(parameter.default, parameterType, true);
@@ -206,7 +185,7 @@ const NotebookParamsCell = ({
 		}
 		setIsRunLoading(true);
 		const paramsWithType = Object.fromEntries(
-			paramsValue
+			notebook.paramsValue
 				.filter(filterParameters)
 				.map(({ name, type: paramType, value, isOff }) => [
 					name,
@@ -233,13 +212,14 @@ const NotebookParamsCell = ({
 	const readFile = async (files: FileList) => {
 		setIsReloadOpen(false);
 		const presetText = await files[0].text();
-		const prevValue = JSON.parse(JSON.stringify(paramsValue));
-		let params = JSON.parse(JSON.stringify(paramsValue));
+		// FIXME: use deep copy instead
+		const prevValue = JSON.parse(JSON.stringify(notebook.paramsValue));
+		let params = JSON.parse(JSON.stringify(notebook.paramsValue));
 		try {
 			const preset: Array<{ name: string; value: string; type: string; isOff: string }> =
 				JSON.parse(presetText);
 			const presetKeys = preset.map(p => p.name);
-			const parametersKeys = parameters.map(p => p.name);
+			const parametersKeys = notebook.parameters.map(p => p.name);
 			const indexes = presetKeys.map(p => parametersKeys.indexOf(p));
 			const notIncludedParameters = parametersKeys.filter(p => !presetKeys.includes(p));
 			const errors = [];
@@ -269,13 +249,13 @@ const NotebookParamsCell = ({
 					action: {
 						label: 'Revert Changes',
 						callback: () => {
-							setParamsValue(prevValue);
+							notebook.paramsValue = prevValue;
 						},
 					},
 					description: errors.join('\n'),
 				});
 			}
-			setParamsValue(params.slice());
+			notebook.paramsValue = params.slice();
 		} catch (error) {
 			notificationsStore.addMessage({
 				id: nanoid(),
@@ -303,20 +283,20 @@ const NotebookParamsCell = ({
 
 	return (
 		<div className='notebookCell'>
-			<div className={`notebookCell-header ${isExpanded ? 'expanded' : ''}`} onClick={open}>
+			<div className={`notebookCell-header ${notebook.open ? 'expanded' : ''}`} onClick={open}>
 				<label>Parameters for {notebook.name}</label>
 				<div
 					className={`notebookCell-icon ${
-						isLoading ? 'loading' : isExpanded ? 'expanded' : 'hidden'
+						isLoading ? 'loading' : notebook.open ? 'expanded' : 'hidden'
 					}`}
 				/>
 			</div>
-			{isExpanded && !isLoading && (
+			{notebook.open && !isLoading && (
 				<div className='notebookCell-body'>
 					<div className='notebookCell-body-table'>
 						<table>
 							<thead>
-								{parameters.length > 0 && (
+								{notebook.parameters.length > 0 && (
 									<tr style={{ textAlign: 'left' }}>
 										<th>On</th>
 										<th>Name</th>
@@ -326,38 +306,32 @@ const NotebookParamsCell = ({
 								)}
 							</thead>
 							<tbody>
-								{parameters.map((parameter, index) => (
+								{notebook.parameters.map((parameter, index) => (
 									<ParametersRow
 										parameter={parameter}
-										parameterValue={paramsValue[index]}
+										parameterValue={notebook.paramsValue[index]}
 										setParametersValue={(newValue: string) => {
-											const newState = paramsValue[index];
-											newState.value = newValue;
-											newState.isValid = validateParameter(newState.value, newState.type);
-											setParamsValue([
-												...paramsValue.slice(0, index),
-												newState,
-												...paramsValue.slice(index + 1),
-											]);
+											const state = notebook.paramsValue[index];
+											notebook.paramsValue[index] = {
+												...state,
+												value: newValue,
+												isValid: validateParameter(newValue, state.type),
+											};
 										}}
-										setParametersType={(newValue: string) => {
-											const newState = paramsValue[index];
-											newState.type = newValue;
-											newState.isValid = validateParameter(newState.value, newState.type);
-											setParamsValue([
-												...paramsValue.slice(0, index),
-												newState,
-												...paramsValue.slice(index + 1),
-											]);
+										setParametersType={(newType: string) => {
+											const state = notebook.paramsValue[index];
+											notebook.paramsValue[index] = {
+												...state,
+												type: newType,
+												isValid: validateParameter(state.value, newType),
+											};
 										}}
 										toggleParameter={(newToggle: boolean) => {
-											const newState = paramsValue[index];
-											newState.isOff = newToggle;
-											setParamsValue([
-												...paramsValue.slice(0, index),
-												newState,
-												...paramsValue.slice(index + 1),
-											]);
+											const state = notebook.paramsValue[index];
+											notebook.paramsValue[index] = {
+												...state,
+												isOff: newToggle,
+											};
 										}}
 										key={parameter.name}
 									/>
@@ -414,18 +388,17 @@ const NotebookParamsCell = ({
 					</div>
 				</div>
 			)}
-			{isExpanded && (
+			{notebook.open && (
 				<div className='notebookCell-settings'>
 					<div style={{ display: 'flex', gap: '5px' }}>
 						<div>Results Amount:</div>
 						<input
 							style={{ maxWidth: 400 }}
 							type='number'
-							value={resultCount}
+							value={notebook.resultsCount}
 							pattern='\d+'
 							onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-								setResultCount(ev.target.value);
-								JSONViewerStore.updateNotebookResultCount(notebookProp.name, ev.target.value, type);
+								notebook.resultsCount = Number(ev.target.value);
 							}}
 						/>
 					</div>
