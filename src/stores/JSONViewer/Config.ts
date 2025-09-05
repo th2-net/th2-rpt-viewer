@@ -23,7 +23,7 @@ interface Config {
 async function loadConfig<T = unknown>(url: string): Promise<T | null> {
 	const response = await fetch(url);
 	if (!response.ok) {
-		console.error(`Failed to load config: ${response.statusText}`);
+		console.error(`Failed to load config by url '${url}': ${response.statusText}`);
 		return null;
 	}
 	return response.json() as T;
