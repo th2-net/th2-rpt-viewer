@@ -28,6 +28,7 @@ import SearchSplitResult from '../../models/search/SearchSplitResult';
 import { TreeNode, TreeNodeHolder } from './TreeNode';
 import { SimpleField } from './SimpleField';
 import { Chunk } from './Chunk';
+import { getCustomConfig } from './Config';
 
 const SEARCH_COLOR = 'black';
 
@@ -59,7 +60,7 @@ export interface BodyReaderSearchResult extends BaseReaderSearchResult {
 	position: 'key' | 'value';
 }
 
-const defaultSearchTokens: SearchToken[] = [
+let defaultSearchTokens: SearchToken[] = [
 	{
 		pattern: 'PASS',
 		color: 'green',
@@ -75,6 +76,16 @@ const defaultSearchTokens: SearchToken[] = [
 		isCaseSensitive: true,
 	},
 ];
+
+getCustomConfig().then(cfg => {
+	defaultSearchTokens =
+		cfg?.jsonlReaderTab?.searchTokens?.map(item => ({
+			...item,
+			isActive: false,
+			isScrollable: true,
+			isCaseSensitive: true,
+		})) || defaultSearchTokens;
+});
 
 type ReaderSearchResult = NameReaderSearchResult | TableReaderSearchResult | BodyReaderSearchResult;
 

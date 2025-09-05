@@ -12,5 +12,7 @@ COPY ./metrics/metrics /usr/share/nginx/html/metrics
 COPY ./metrics/metrics.conf /etc/nginx/conf.d/metrics.conf
 RUN chmod g+rwx /var/cache/nginx /var/run /var/log/nginx
 RUN sed -i 's/listen\(.*\)80;/listen 8080;/' /etc/nginx/conf.d/default.conf
+RUN mkdir -p /usr/share/nginx/html/config/th2
+RUN ln -s /var/th2/config/custom.json /usr/share/nginx/html/config/th2/custom.json
 EXPOSE 8080
 RUN sed -i 's/^user/#user/' /etc/nginx/nginx.conf
