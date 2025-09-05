@@ -21,9 +21,11 @@ interface Config {
 }
 
 async function loadConfig<T = unknown>(url: string): Promise<T | null> {
-	const response = await fetch(url);
+	const baseUrl = window.location.pathname.replace(/\/$/, '');
+	const targetUrl = `${baseUrl}/${url}`;
+	const response = await fetch(targetUrl);
 	if (!response.ok) {
-		console.error(`Failed to load config by url '${url}': ${response.statusText}`);
+		console.error(`Failed to load config by url '${targetUrl}': ${response.statusText}`);
 		return null;
 	}
 	return response.json() as T;
