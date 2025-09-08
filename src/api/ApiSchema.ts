@@ -109,8 +109,15 @@ export interface BooksApiSchema {
 	getBookScope: (bookId: string, abortSignal?: AbortSignal) => Promise<string[]>;
 }
 
+export interface CustomConfig {
+	jsonlReaderTab?: {
+		searchTokens?: [{ pattern: string; color: string }];
+	};
+}
+
 export interface JSONViewerApiSchema {
 	formatImageLink: (path: string) => string;
+	getCustomConfig: () => Promise<CustomConfig>;
 	getLinks: (type: string, dir?: string) => Promise<{ directories: string[]; files: string[] }>;
 	getParameters: (path: string) => Promise<NotebookParameters>;
 	getResults: (

@@ -28,7 +28,7 @@ import SearchSplitResult from '../../models/search/SearchSplitResult';
 import { TreeNode, TreeNodeHolder } from './TreeNode';
 import { SimpleField } from './SimpleField';
 import { Chunk } from './Chunk';
-import { getCustomConfig } from './Config';
+import api from '../../api';
 
 const SEARCH_COLOR = 'black';
 
@@ -77,7 +77,7 @@ let defaultSearchTokens: SearchToken[] = [
 	},
 ];
 
-getCustomConfig().then(cfg => {
+api.jsonViewer.getCustomConfig().then(cfg => {
 	defaultSearchTokens =
 		cfg?.jsonlReaderTab?.searchTokens?.map(item => ({
 			...item,

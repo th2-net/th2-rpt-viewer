@@ -15,12 +15,20 @@
  ***************************************************************************** */
 
 import notificationsStore from '../stores/NotificationsStore';
-import { JSONViewerApiSchema } from './ApiSchema';
+import { JSONViewerApiSchema, CustomConfig } from './ApiSchema';
 
 const baseUrl = 'json-stream-provider';
 
 const JSONViewerHttpApi: JSONViewerApiSchema = {
 	formatImageLink: (path: string) => `${baseUrl}/image?path=${path}`,
+	getCustomConfig: async () => {
+		const response = await fetch('config/th2/custom.json');
+		if (!response.ok) {
+			console.error(`Failed to load custom config': ${response.statusText}`);
+			return {};
+		}
+		return response.json() as CustomConfig;
+	},
 	getLinks: async (type: string, dir?: string) => {
 		const res = await fetch(`${baseUrl}/files/${type}${dir ? `?path=${dir}` : ''}`, {
 			cache: 'reload',
