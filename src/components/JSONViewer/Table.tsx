@@ -363,7 +363,7 @@ const ImageRow = ({
 	tokens: SearchToken[];
 	url: string;
 }) => {
-	const [isTableOpen, setTableOpen] = React.useState(false);
+	const [isTableOpen, setTableOpen] = React.useState(true);
 
 	const toggleOpen = () => {
 		setTableOpen(!isTableOpen);
@@ -396,7 +396,11 @@ const ImageRow = ({
 						))}
 					</div>
 				</div>
-				{isTableOpen && <MessageScreenshotZoom src={imageUrl} alt={imageUrl} />}
+				{isTableOpen && (
+					<span>
+						<MessageScreenshotZoom src={imageUrl} alt={imageUrl} />
+					</span>
+				)}
 			</td>
 		</>
 	);
