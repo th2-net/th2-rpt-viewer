@@ -32,6 +32,8 @@ import { PanelType } from '../../stores/JSONViewer/JSONViewerStore';
 import DisplayTable from './DisplayTable';
 import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 import { SimpleField } from '../../stores/JSONViewer/SimpleField';
+import { MessageScreenshotZoom } from '../message/message-card/MessageScreenshot';
+import JSONViewerHttpApi from '../../api/JSONViewer';
 
 const Table = ({ type }: { type: PanelType }) => {
 	const JSONViewerStore = useJSONViewerStore();
@@ -60,8 +62,9 @@ const Table = ({ type }: { type: PanelType }) => {
 					: row.key && !(row.isGeneratedKey && !row.isRoot)
 					? row.key
 					: 'no display name';
-				if (rowName.endsWith('-table'))
+				if (rowName.endsWith('-table')) {
 					return <TableRow type={type} field={row} tokens={JSONViewerStore.tokens} />;
+				}
 				return (
 					<ExpandRow
 						field={row}
@@ -71,7 +74,15 @@ const Table = ({ type }: { type: PanelType }) => {
 					/>
 				);
 			}
-
+			if (row.key === TreeNode.DISPLAY_IMAGE_FIELD) {
+				return (
+					<ImageRow
+						field={row}
+						tokens={JSONViewerStore.tokens}
+						url={JSONViewerHttpApi.formatImageLink(row.value)}
+					/>
+				);
+			}
 			return <SimpleRow field={row} tokens={JSONViewerStore.tokens} />;
 		},
 		[JSONViewerStore.tokens],
@@ -338,6 +349,54 @@ const TableRow = ({
 					</div>
 				</div>
 				{isTableOpen && <DisplayTable type={type} value={fields} id={field.id} />}
+			</td>
+		</>
+	);
+};
+
+const ImageRow = ({
+	field,
+	tokens,
+	url: imageUrl,
+}: {
+	field: SimpleField;
+	tokens: SearchToken[];
+	url: string;
+}) => {
+	const [isTableOpen, setTableOpen] = React.useState(false);
+
+	const toggleOpen = () => {
+		setTableOpen(!isTableOpen);
+	};
+
+	const splitContent = multiTokenSplit(field.key, tokens);
+
+	return (
+		<>
+			<td
+				className={'json-table-row-togler'}
+				style={{
+					gridColumn: `1/3`,
+					paddingLeft: `${field.level * 10}px`,
+				}}
+				colSpan={2}>
+				<div className='leafWrapper'>
+					<div
+						className={createBemBlock('expand-icon', isTableOpen ? 'expanded' : 'hidden')}
+						onClick={toggleOpen}
+					/>
+					<div className={'valueLeaf-table'} title={field.key}>
+						{splitContent.map((contentPart, index) => (
+							<span
+								key={index}
+								className={contentPart.token != null ? 'found-content' : undefined}
+								style={{ backgroundColor: contentPart.token?.color }}>
+								{contentPart.content}
+							</span>
+						))}
+					</div>
+				</div>
+				{isTableOpen && <MessageScreenshotZoom src={imageUrl} alt={imageUrl} />}
 			</td>
 		</>
 	);
