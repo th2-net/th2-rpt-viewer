@@ -758,8 +758,8 @@ export class JSONViewerStore {
 	@computed
 	public get shownSelectRows() {
 		return {
-			default: flattenForTable(this.selectedTreeNode.default).slice(1),
-			compare: flattenForTable(this.selectedTreeNode.compare).slice(1),
+			default: flattenForTable(this.selectedTreeNode.default, true),
+			compare: flattenForTable(this.selectedTreeNode.compare, true),
 		};
 	}
 
