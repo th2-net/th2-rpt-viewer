@@ -22,7 +22,7 @@ import api from '../../api';
 import { convertParameterToInput, parseText } from '../../helpers/JSONViewer';
 import { TreeNode } from '../../stores/JSONViewer/TreeNode';
 
-export const IGNORED_PARAMETERS_NAMES = ['output_path', 'customization_path'];
+export const IGNORED_PARAMETERS_NAMES = ['output_path', 'output_images_path', 'customization_path'];
 
 const FileChoosing = ({
 	type,
@@ -110,7 +110,7 @@ const FileChoosing = ({
 								parameters,
 								paramsValue,
 								results: [],
-								resultsCount: '1',
+								resultsCount: 1,
 								open: true,
 							};
 							notebookData.push(node);

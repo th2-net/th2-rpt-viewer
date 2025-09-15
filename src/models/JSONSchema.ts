@@ -48,7 +48,7 @@ export interface NotebookNode {
 	parameters: NotebookParameter[];
 	paramsValue: InputNotebookParameter[];
 	results: number[];
-	resultsCount: string;
+	resultsCount: number;
 	open: boolean;
 }
 

@@ -34,12 +34,15 @@ export class TreeNode {
 
 	public static readonly DISPLAY_TABLE_FIELD = '#display-table';
 
+	public static readonly DISPLAY_IMAGE_FIELD = '#display-image';
+
 	public static readonly VIEW_INSTRUCTION_FIELD = '#view-instruction';
 
 	public static readonly TECHNICAL_FIELDS = new Set([
 		TreeNode.DISPLAY_NAME_FIELD,
 		TreeNode.DISPLAY_TIMESTAMP_FIELD,
 		TreeNode.DISPLAY_TABLE_FIELD,
+		TreeNode.DISPLAY_IMAGE_FIELD,
 		TreeNode.VIEW_INSTRUCTION_FIELD,
 	]);
 
@@ -64,6 +67,8 @@ export class TreeNode {
 	private _displayTimestamp?: number;
 
 	private _displayTable?: string[][];
+
+	private _displayImageUrl?: string;
 
 	private _viewInstruction: string;
 
@@ -91,6 +96,7 @@ export class TreeNode {
 		displayName?: string,
 		displayTimestamp?: number,
 		displayTable?: string[][],
+		displayImageUrl?: string,
 		isArray?: boolean,
 		isGeneratedKey?: boolean,
 		viewType?: TreeViewType,
@@ -105,6 +111,7 @@ export class TreeNode {
 		this._displayName = displayName;
 		this._displayTimestamp = displayTimestamp;
 		this._displayTable = displayTable;
+		this._displayImageUrl = displayImageUrl;
 		this._viewInstruction = viewInstruction;
 		this._simpleFields = simpleFields;
 		this._failed = failed;
@@ -205,6 +212,10 @@ export class TreeNode {
 		return this._displayTable;
 	}
 
+	public get displayImageUrl(): string | undefined {
+		return this._displayImageUrl;
+	}
+
 	public get viewInstruction(): string {
 		return this._viewInstruction;
 	}
@@ -248,6 +259,7 @@ export class TreeNode {
 			[],
 			false,
 			'',
+			undefined,
 			undefined,
 			undefined,
 			undefined,
@@ -311,6 +323,7 @@ export class TreeNode {
 		);
 		const displayTimestamp = TreeNode.extractDisplayTimestamp(obj);
 		const displayTable = TreeNode.extractDisplayTable(obj);
+		const displayImage = TreeNode.extractDisplayImage(obj);
 
 		const result = new TreeNode(
 			id, // id
@@ -326,6 +339,7 @@ export class TreeNode {
 			displayName, // displayName
 			displayTimestamp, // displayTimestamp
 			displayTable, // displayTable
+			displayImage, // displayImage
 			isArray, // isArray
 			isGeneratedKey, // isGeneratedKey
 			viewType, // viewType
@@ -421,5 +435,14 @@ export class TreeNode {
 			return undefined;
 		}
 		return value;
+	}
+
+	private static extractDisplayImage(obj: unknown): string | undefined {
+		const key = TreeNode.DISPLAY_IMAGE_FIELD;
+		const value = TreeNode.extractField(obj, key);
+		if (value === undefined) return undefined;
+		if (typeof value === 'string') return value;
+		console.error(`Unexpected '${typeof value}' type of '${key}' filed: ${value}`);
+		return undefined;
 	}
 }

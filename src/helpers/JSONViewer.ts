@@ -208,11 +208,28 @@ export const getFlatListFromTree = (tree: TreeNode) => {
 	return flatten(tree);
 };
 
-export const flattenForTable = (node: TreeNode): (TreeNode | SimpleField)[] => [
-	node,
-	...node.simpleFields.flatMap(child => child),
-	...node.children.flatMap(child => (child.isOpenInTable ? flattenForTable(child) : [child])),
-];
+export const flattenForTable = (node: TreeNode, root: boolean): (TreeNode | SimpleField)[] => {
+	if (root) {
+		if (node.key.endsWith('-table')) {
+			// node is used to build TableRaw
+			return [node];
+		}
+		return [
+			...node.simpleFields.flatMap(child => child),
+			...node.children.flatMap(child =>
+				child.isOpenInTable ? flattenForTable(child, false) : [child],
+			),
+		];
+	}
+
+	return [
+		node,
+		...node.simpleFields.flatMap(child => child),
+		...node.children.flatMap(child =>
+			child.isOpenInTable ? flattenForTable(child, false) : [child],
+		),
+	];
+};
 
 export const getChunkId = (timestamp: number | undefined, chunkInterval: number) =>
 	timestamp ? Math.floor(timestamp / chunkInterval) : -1;
