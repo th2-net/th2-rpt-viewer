@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2025 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,15 +147,56 @@
 			margin: auto;
 
 			&.equal {
-				@include icon(url(../../resources/icons/equal.svg), 8px, 16px);
+				@include icon(url(../../resources/icons/equal.svg), 16px, 16px);
 			}
 
 			&.not-equal {
-				@include icon(url(../../resources/icons/not-equal.svg), 11px, 13px);
+				@include icon(url(../../resources/icons/not-equal.svg), 16px, 16px);
+			}
+
+			&.not-empty {
+				@include icon(url(../../resources/icons/empty.svg), 16px, 16px);
 			}
 
 			&.not-empty {
 				@include icon(url(../../resources/icons/not-empty.svg), 16px, 16px);
+			}
+
+			&.in  {
+				@include icon(url(../../resources/icons/in.svg), 16px, 16px);
+			}
+			&.not-in  {
+				@include icon(url(../../resources/icons/not-in.svg), 16px, 16px);
+			}
+			&.like  {
+				@include icon(url(../../resources/icons/like.svg), 16px, 16px);
+			}
+			&.not-like  {
+				@include icon(url(../../resources/icons/not-like.svg), 16px, 16px);
+			}
+			&.more  {
+				@include icon(url(../../resources/icons/more.svg), 16px, 16px);
+			}
+			&.not-more  {
+				@include icon(url(../../resources/icons/not-more.svg), 16px, 16px);
+			}
+			&.less  {
+				@include icon(url(../../resources/icons/less.svg), 16px, 16px);
+			}
+			&.not-less  {
+				@include icon(url(../../resources/icons/not-less.svg), 16px, 16px);
+			}
+			&.wildcard  {
+				@include icon(url(../../resources/icons/wildcard.svg), 16px, 16px);
+			}
+			&.not-wildcard  {
+				@include icon(url(../../resources/icons/not-wildcard.svg), 16px, 16px);
+			}
+			&.eq-time-precision  {
+				@include icon(url(../../resources/icons/eq-time-precision.svg), 16px, 16px);
+			}
+			&.eq-decimal-precision  {
+				@include icon(url(../../resources/icons/eq-decimal-precision.svg), 16px, 16px);
 			}
 		}
 
