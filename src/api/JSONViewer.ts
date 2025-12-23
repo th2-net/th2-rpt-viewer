@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { parse } from 'lossless-json';
 import notificationsStore from '../stores/NotificationsStore';
 import { JSONViewerApiSchema, CustomConfig } from './ApiSchema';
 
@@ -50,7 +51,8 @@ const JSONViewerHttpApi: JSONViewerApiSchema = {
 		});
 
 		if (res.ok) {
-			return res.json();
+			const text = await res.text();
+			return parse(text, null, (value: string) => value) as any;
 		}
 		notificationsStore.handleRequestError(res);
 		return {};
