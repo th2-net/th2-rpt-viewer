@@ -150,52 +150,52 @@
 				@include icon(url(../../resources/icons/equal.svg), 16px, 16px);
 			}
 
-			&.not-equal {
+			&.not_equal {
 				@include icon(url(../../resources/icons/not-equal.svg), 16px, 16px);
 			}
 
-			&.not-empty {
+			&.empty {
 				@include icon(url(../../resources/icons/empty.svg), 16px, 16px);
 			}
 
-			&.not-empty {
+			&.not_empty {
 				@include icon(url(../../resources/icons/not-empty.svg), 16px, 16px);
 			}
 
 			&.in  {
 				@include icon(url(../../resources/icons/in.svg), 16px, 16px);
 			}
-			&.not-in  {
+			&.not_in  {
 				@include icon(url(../../resources/icons/not-in.svg), 16px, 16px);
 			}
 			&.like  {
 				@include icon(url(../../resources/icons/like.svg), 16px, 16px);
 			}
-			&.not-like  {
+			&.not_like  {
 				@include icon(url(../../resources/icons/not-like.svg), 16px, 16px);
 			}
 			&.more  {
 				@include icon(url(../../resources/icons/more.svg), 16px, 16px);
 			}
-			&.not-more  {
+			&.not_more  {
 				@include icon(url(../../resources/icons/not-more.svg), 16px, 16px);
 			}
 			&.less  {
 				@include icon(url(../../resources/icons/less.svg), 16px, 16px);
 			}
-			&.not-less  {
+			&.not_less  {
 				@include icon(url(../../resources/icons/not-less.svg), 16px, 16px);
 			}
 			&.wildcard  {
 				@include icon(url(../../resources/icons/wildcard.svg), 16px, 16px);
 			}
-			&.not-wildcard  {
+			&.not_wildcard  {
 				@include icon(url(../../resources/icons/not-wildcard.svg), 16px, 16px);
 			}
-			&.eq-time-precision  {
+			&.eq_time_precision  {
 				@include icon(url(../../resources/icons/eq-time-precision.svg), 16px, 16px);
 			}
-			&.eq-decimal-precision  {
+			&.eq_decimal_precision  {
 				@include icon(url(../../resources/icons/eq-decimal-precision.svg), 16px, 16px);
 			}
 		}
