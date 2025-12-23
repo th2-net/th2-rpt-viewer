@@ -29,6 +29,7 @@ import SearchSplitResult from '../../models/search/SearchSplitResult';
 import { TreeNode, TreeNodeHolder } from './TreeNode';
 import { SimpleField } from './SimpleField';
 import { Chunk } from './Chunk';
+import api from '../../api';
 
 const SEARCH_COLOR = 'black';
 
@@ -60,7 +61,7 @@ export interface BodyReaderSearchResult extends BaseReaderSearchResult {
 	position: 'key' | 'value';
 }
 
-const defaultSearchTokens: SearchToken[] = [
+let defaultSearchTokens: SearchToken[] = [
 	{
 		pattern: 'PASS',
 		color: 'green',
@@ -76,6 +77,16 @@ const defaultSearchTokens: SearchToken[] = [
 		isCaseSensitive: true,
 	},
 ];
+
+api.jsonViewer.getCustomConfig().then(cfg => {
+	defaultSearchTokens =
+		cfg?.jsonlReaderTab?.searchTokens?.map(item => ({
+			...item,
+			isActive: false,
+			isScrollable: true,
+			isCaseSensitive: true,
+		})) || defaultSearchTokens;
+});
 
 type ReaderSearchResult = NameReaderSearchResult | TableReaderSearchResult | BodyReaderSearchResult;
 
@@ -486,7 +497,7 @@ export class JSONViewerStore {
 
 	@action
 	updateTokensFromText = (text: string) => {
-		const newTokens: SearchToken[] = [...defaultSearchTokens];
+		const newTokens: SearchToken[] = this.tokens;
 		try {
 			const json = parse(text, null, (value: string) => value) as any;
 			for (let i = 0; i < json.length; i++) {
@@ -702,11 +713,7 @@ export class JSONViewerStore {
 
 	@action setNotebook(notebook: NotebookNode, type: PanelType) {
 		const index = this.notebooks[type].findIndex(n => n.name === notebook.name);
-		this.notebooks[type] = [
-			...this.notebooks[type].slice(0, index),
-			notebook,
-			...this.notebooks[type].slice(index + 1),
-		];
+		this.notebooks[type][index] = notebook;
 	}
 
 	@action addNotebookResult(
@@ -718,7 +725,7 @@ export class JSONViewerStore {
 		const index = this.notebooks[type].findIndex(n => n.name === name);
 		if (index < 0) return;
 		const notebook = this.notebooks[type][index];
-		notebook.resultsCount = String(resultCount);
+		notebook.resultsCount = resultCount;
 		const newResults = [newResult.id, ...notebook.results];
 
 		if (newResult.children.length > 0) {
@@ -731,15 +738,11 @@ export class JSONViewerStore {
 			this.openRootNodeOnly(newResult, type);
 		}
 		notebook.open = false;
-		this.notebooks[type] = [
-			...this.notebooks[type].slice(0, index),
-			notebook,
-			...this.notebooks[type].slice(index + 1),
-		];
+		this.notebooks[type][index] = notebook;
 		this.model = this.createModel();
 	}
 
-	@action updateNotebookResultCount(name: string, newCount: string, type: PanelType) {
+	@action updateNotebookResultCount(name: string, newCount: number, type: PanelType) {
 		const index = this.notebooks[type].findIndex(n => n.name === name);
 		if (index < 0) return;
 		this.notebooks[type] = [
@@ -756,8 +759,8 @@ export class JSONViewerStore {
 	@computed
 	public get shownSelectRows() {
 		return {
-			default: flattenForTable(this.selectedTreeNode.default).slice(1),
-			compare: flattenForTable(this.selectedTreeNode.compare).slice(1),
+			default: flattenForTable(this.selectedTreeNode.default, true),
+			compare: flattenForTable(this.selectedTreeNode.compare, true),
 		};
 	}
 

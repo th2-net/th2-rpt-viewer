@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2025 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,23 @@ export interface VerificationPayload {
 
 export interface VerificationPayloadField {
 	type: 'field' | 'collection';
-	operation: 'EQUAL' | 'NOT_EQUAL' | 'NOT_EMPTY';
+	operation:
+		| 'EQUAL'
+		| 'NOT_EQUAL'
+		| 'EMPTY'
+		| 'NOT_EMPTY'
+		| 'IN'
+		| 'NOT_IN'
+		| 'LIKE'
+		| 'NOT_LIKE'
+		| 'MORE'
+		| 'NOT_MORE'
+		| 'LESS'
+		| 'NOT_LESS'
+		| 'WILDCARD'
+		| 'NOT_WILDCARD'
+		| 'EQ_TIME_PRECISION'
+		| 'EQ_DECIMAL_PRECISION';
 	status: StatusType;
 	key: boolean;
 	actual: string;

@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2025 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,15 @@ export interface BooksApiSchema {
 	getBookScope: (bookId: string, abortSignal?: AbortSignal) => Promise<string[]>;
 }
 
+export interface CustomConfig {
+	jsonlReaderTab?: {
+		searchTokens?: [{ pattern: string; color: string }];
+	};
+}
+
 export interface JSONViewerApiSchema {
+	formatImageLink: (path: string) => string;
+	getCustomConfig: () => Promise<CustomConfig>;
 	getLinks: (type: string, dir?: string) => Promise<{ directories: string[]; files: string[] }>;
 	getParameters: (path: string) => Promise<NotebookParameters>;
 	getResults: (
