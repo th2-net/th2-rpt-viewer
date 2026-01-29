@@ -38,6 +38,9 @@ module.exports = merge(commonConfig, {
 		client: {
 			overlay: false,
 		},
+		static: {
+			directory: 'public',
+		},
 		compress: true,
 		port: 9001,
 		host: '0.0.0.0',
@@ -49,7 +52,7 @@ module.exports = merge(commonConfig, {
 				secure: false,
 				pathRewrite: { '^/json-stream-provider': '' },
 			},
-			'/': {
+			'/backend': {
 				target: 'http://kos-perftest-kuber-master:30000/th2-demo-transport/',
 				changeOrigin: true,
 				secure: false,

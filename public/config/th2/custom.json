@@ -1,0 +1,22 @@
+{
+    "jsonlReaderTab": {
+        "enabled": true,
+        "searchTokens": [
+            {
+                "color": "green",
+                "pattern": "PASS"
+            },
+            {
+                "color": "red",
+                "pattern": "FAIL"
+            },
+            {
+                "color": "orange",
+                "pattern": "BROKEN"
+            }
+        ]
+    },
+    "workspaceTab": {
+        "enabled": true
+    }
+}

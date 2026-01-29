@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2025 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2026 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ export default interface ApiSchema {
 	sse: SSESchema;
 	jsonViewer: JSONViewerApiSchema;
 	indexedDb: IndexedDB;
+	files: FileApiSchema;
 }
 
 export type SSEChannelType = 'event' | 'message';
@@ -111,13 +112,20 @@ export interface BooksApiSchema {
 
 export interface CustomConfig {
 	jsonlReaderTab?: {
+		enabled?: boolean;
 		searchTokens?: [{ pattern: string; color: string }];
 	};
+	workspaceTab?: {
+		enabled?: boolean;
+	};
+}
+
+export interface FileApiSchema {
+	getCustomConfig: () => Promise<CustomConfig>;
 }
 
 export interface JSONViewerApiSchema {
 	formatImageLink: (path: string) => string;
-	getCustomConfig: () => Promise<CustomConfig>;
 	getLinks: (type: string, dir?: string) => Promise<{ directories: string[]; files: string[] }>;
 	getParameters: (path: string) => Promise<NotebookParameters>;
 	getResults: (

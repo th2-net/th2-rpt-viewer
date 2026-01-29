@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2024-2025 Exactpro (Exactpro Systems Limited)
+ * Copyright 2024-2026 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ let defaultSearchTokens: SearchToken[] = [
 	},
 ];
 
-api.jsonViewer.getCustomConfig().then(cfg => {
+api.files.getCustomConfig().then(cfg => {
 	defaultSearchTokens =
 		cfg?.jsonlReaderTab?.searchTokens?.map(item => ({
 			...item,

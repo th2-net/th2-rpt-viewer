@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2024-2025 Exactpro (Exactpro Systems Limited)
+ * Copyright 2024-2026 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,12 @@
  ***************************************************************************** */
 
 import notificationsStore from '../stores/NotificationsStore';
-import { JSONViewerApiSchema, CustomConfig } from './ApiSchema';
+import { JSONViewerApiSchema } from './ApiSchema';
 
 const baseUrl = 'json-stream-provider';
 
 const JSONViewerHttpApi: JSONViewerApiSchema = {
 	formatImageLink: (path: string) => `${baseUrl}/image?path=${path}`,
-	getCustomConfig: async () => {
-		const response = await fetch('config/th2/custom.json');
-		if (!response.ok) {
-			console.error(`Failed to load custom config': ${response.statusText}`);
-			return {};
-		}
-		return response.json() as CustomConfig;
-	},
 	getLinks: async (type: string, dir?: string) => {
 		const res = await fetch(`${baseUrl}/files/${type}${dir ? `?path=${dir}` : ''}`, {
 			cache: 'reload',
