@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2026 Exactpro (Exactpro Systems Limited)
+ * Copyright 2026 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from './ApiSchema';
-import { IndexedDB } from './indexedDb';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
-import booksHttpApi from './books';
-import JSONViewerHttpApi from './JSONViewer';
-import FileHttpApi from './files';
+import { CustomConfig, FileApiSchema } from './ApiSchema';
 
-const envName =
-	process.env.NODE_ENV === 'development'
-		? 'development'
-		: `${window.location.host}${window.location.pathname}`;
-
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	books: booksHttpApi,
-	sse: sseApi,
-	jsonViewer: JSONViewerHttpApi,
-	indexedDb: new IndexedDB(envName),
-	files: FileHttpApi,
+const FileHttpApi: FileApiSchema = {
+	getCustomConfig: async () => {
+		const response = await fetch('config/th2/custom.json');
+		if (!response.ok) {
+			console.error(`Failed to load custom config': ${response.statusText}`);
+			return {};
+		}
+		return response.json() as CustomConfig;
+	},
 };
 
-export default api;
+export default FileHttpApi;

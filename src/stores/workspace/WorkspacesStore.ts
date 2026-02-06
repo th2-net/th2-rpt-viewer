@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2026 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,9 +80,13 @@ export default class WorkspacesStore {
 		);
 	}
 
-	@observable workspaces: Array<WorkspaceStore | JSONViewerWorkspaceStore> = [
-		new JSONViewerWorkspaceStore(this),
-	];
+	@observable workspaces: Array<WorkspaceStore | JSONViewerWorkspaceStore> = [];
+
+	@observable workspaceEnabled = false;
+
+	@observable jsonlReaderEnabled = false;
+
+	@observable addTabEnabled = false;
 
 	@computed get eventStores() {
 		return this.workspaces
@@ -103,13 +107,23 @@ export default class WorkspacesStore {
 
 	@action
 	private createEmptyWorkspace = async () => {
-		await this.createWorkspace({
-			layout: [50, 50],
-		}).then(workspace => this.addWorkspace(workspace));
+		if (this.jsonlReaderEnabled) {
+			await this.createJSONWorkspace().then(workspace => this.addWorkspace(workspace));
+		}
+		if (this.workspaceEnabled) {
+			await this.createWorkspace({
+				layout: [50, 50],
+			}).then(workspace => this.addWorkspace(workspace));
+		}
 	};
 
 	@action
 	private async init(initialState: AppState | null) {
+		const cfg = await this.api.files.getCustomConfig();
+		this.workspaceEnabled = cfg?.workspaceTab?.enabled ?? true;
+		this.jsonlReaderEnabled = cfg?.jsonlReaderTab?.enabled ?? true;
+		this.addTabEnabled = this.workspaceEnabled || this.jsonlReaderEnabled;
+
 		if (initialState !== null && initialState.bookId) {
 			const book = this.booksStore.books.find(b => b.name === initialState.bookId);
 

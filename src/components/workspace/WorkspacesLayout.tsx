@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2026 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,26 +103,31 @@ const WorkspacesLayout = () => {
 			</div>
 			<ToolsPopup isOpen={isCreateMenuOpen} isLeft={true}>
 				<div className='message-card-tools__controls-group'>
-					<div
-						title={'Add event workspace'}
-						className='message-card-tools__item'
-						onClick={e => {
-							e.stopPropagation();
-							addWorkspace();
-							setIsCreateMenuOpen(false);
-						}}>
-						<span className='message-card-tools__item-title'>Add event workspace</span>
-					</div>
-					<div
-						title={'Add JSONL reader'}
-						className='message-card-tools__item'
-						onClick={e => {
-							e.stopPropagation();
-							addJSONWorkspace();
-							setIsCreateMenuOpen(false);
-						}}>
-						<span className='message-card-tools__item-title'>Add JSON reader</span>
-					</div>
+					{workspacesStore.workspaceEnabled && (
+						<div
+							title={'Add event workspace'}
+							className='message-card-tools__item'
+							onClick={e => {
+								e.stopPropagation();
+								addWorkspace();
+								setIsCreateMenuOpen(false);
+							}}>
+							<span className='message-card-tools__item-title'>Add event workspace</span>
+						</div>
+					)}
+
+					{workspacesStore.jsonlReaderEnabled && (
+						<div
+							title={'Add JSONL reader'}
+							className='message-card-tools__item'
+							onClick={e => {
+								e.stopPropagation();
+								addJSONWorkspace();
+								setIsCreateMenuOpen(false);
+							}}>
+							<span className='message-card-tools__item-title'>Add JSON reader</span>
+						</div>
+					)}
 				</div>
 			</ToolsPopup>
 		</div>
@@ -146,7 +151,7 @@ const WorkspacesLayout = () => {
 			tabList={tabListInjectedProps => (
 				<>
 					{renderTabs(tabListInjectedProps)}
-					{addTools()}
+					{workspacesStore.addTabEnabled && addTools()}
 				</>
 			)}
 			tabPanels={[
