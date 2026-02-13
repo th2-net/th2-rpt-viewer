@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { parse } from 'lossless-json';
 import moment from 'moment';
 import {
 	InputNotebookParameter,
@@ -51,12 +52,13 @@ export const parseText = (
 	isGeneratedKey = false,
 	defaultViewType = TreeViewType.EVENTS_LIST,
 ) => {
-	const js = JSON.parse(text);
+	const js = parse(text, null, (value: string) => value) as any;
 	parent.addComplex(js, name, isGeneratedKey, defaultViewType);
 };
 
 const stringPunct = `'"\``;
-const numberReg = /^-?\d*\.?\d{0,}$/;
+const floatReg = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
+const intReg = /^[+-]?\d+$/;
 export const OFF_VALUE = [`'[NA]'`, `"[NA]"`];
 export const OFF_VALUE_SERVER = '[NA]';
 
@@ -64,7 +66,7 @@ export const convertParameterValue = (
 	value: string,
 	type: string,
 	cutString = false,
-): { value: number | string | boolean; type: string } => {
+): { value: string | boolean; type: string } => {
 	try {
 		switch (type) {
 			case 'bool': {
@@ -94,14 +96,20 @@ export const convertParameterValue = (
 				};
 			}
 			case 'int': {
+				if (!intReg.test(value)) {
+					throw new Error(`the '${value}' value isn't int`);
+				}
 				return {
-					value: Number.parseInt(value),
+					value,
 					type,
 				};
 			}
 			case 'float': {
+				if (!floatReg.test(value)) {
+					throw new Error(`the '${value}' value isn't float`);
+				}
 				return {
-					value: Number.parseFloat(value),
+					value,
 					type,
 				};
 			}
@@ -135,10 +143,10 @@ export const convertParameterValue = (
 export const validateParameter = (value: string, type: string): boolean => {
 	switch (type) {
 		case 'int': {
-			return numberReg.test(value) && Number.isInteger(Number(value));
+			return intReg.test(value);
 		}
 		case 'float': {
-			return numberReg.test(value);
+			return floatReg.test(value);
 		}
 		case 'str': {
 			return true;
@@ -174,16 +182,22 @@ export const getParameterType = (parameter: NotebookParameter) => {
 	if (name.endsWith('_file')) {
 		return 'file path';
 	}
+	if (name.endsWith('_int') && intReg.test(value)) {
+		return 'int';
+	}
+	if (name.endsWith('_float') && floatReg.test(value)) {
+		return 'float';
+	}
 	if (stringPunct.includes(value[0]) && value[0] === value[value.length - 1]) {
 		return 'str';
 	}
 	if (value === 'True' || value === 'False') {
 		return 'bool';
 	}
-	if (numberReg.test(value)) {
-		if (Number.isInteger(Number(value))) {
-			return 'int';
-		}
+	if (intReg.test(value)) {
+		return 'int';
+	}
+	if (floatReg.test(value)) {
 		return 'float';
 	}
 	return 'str';

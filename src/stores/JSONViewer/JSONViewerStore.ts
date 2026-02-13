@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { parse } from 'lossless-json';
 import { action, computed, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { BlankTreeNode, NotebookNode, TreeViewType } from '../../models/JSONSchema';
@@ -498,7 +499,7 @@ export class JSONViewerStore {
 	updateTokensFromText = (text: string) => {
 		const newTokens: SearchToken[] = this.tokens;
 		try {
-			const json = JSON.parse(text);
+			const json = parse(text, null, (value: string) => value) as any;
 			for (let i = 0; i < json.length; i++) {
 				if (
 					json[i].pattern &&
